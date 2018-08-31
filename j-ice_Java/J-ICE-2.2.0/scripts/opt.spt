@@ -1,0 +1,2 @@
+frame all;
+frame title "@{_modelName}"

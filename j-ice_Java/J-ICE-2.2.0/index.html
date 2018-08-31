@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+
+<script type="text/javascript" src="jmol/Jmol.js"></script>
+<script type="text/javascript" src="Js/jicefunction.js"></script>
+<script type="text/javascript" src="Js/constant.js"></script>
+<script type="text/javascript" src="Js/JmolColorPicker.js"></script>
+<script type="text/javascript" src="Js/castepfunction.js"></script>
+<script type="text/javascript" src="Js/crystalfunction.js"></script>
+<script type="text/javascript" src="Js/dmol.js"></script>
+<script type="text/javascript" src="Js/gaussian.js"></script>
+<script type="text/javascript" src="Js/gromacs.js"></script>
+<script type="text/javascript" src="Js/gulp.js"></script>
+<script type="text/javascript" src="Js/moldenfreq.js"></script>
+<script type="text/javascript" src="Js/IsoSurface.js"></script>
+<script type="text/javascript" src="Js/quantumespresso.js"></script>
+<script type="text/javascript" src="Js/vaspfunction.js"></script>
+<script type="text/javascript" src="Js/convertion.js"></script>
+<script type="text/javascript" src="Js/siesta.js"></script>
+<script type="text/javascript" src="Js/spectra.js"></script>
+<script type="text/javascript" src="Js/uff.js"></script>
+<script type="text/javascript" src="Js/form.js"></script>
+<script type="text/javascript" src="Js/menu.js"></script>
+<script type="text/Javascript" src="Js/jtkt.js"></script>
+<script type="text/javascript" src="Js/tabs.js"></script>
+<script type="text/javascript" src="Js/plotgraph.js"></script>
+<script type="text/javascript" src="libraries/flot/excanvas.js"></script>
+<script type="text/javascript" src="libraries/flot/jquery.js"></script>
+<script type="text/javascript" src="libraries/flot/jquery.flot2.js"></script>
+<script type="text/javascript" src="libraries/flot/showobj.js"></script>
+<script type="text/javascript" src="libraries/flot/json2.js"></script>
+<script type="text/javascript" src="Js/range.js"></script>
+<script type="text/javascript" src="Js/timer.js"></script>
+<script type="text/javascript" src="Js/slider.js"></script>
+<script type="text/javascript" src="Js/freqhtml.js"></script>
+
+<link rel="stylesheet" href="css/style.css" type="text/css">
+<link rel="stylesheet" href="css/luna/luna.css" type="text/css">
+<link rel="stylesheet" href="libraries/toltip/jquery.tooltip.css" />
+
+<link rel="shortcut icon" href="images/favicon.ico" >
+<link rel="icon" type="image/gif" href="images/animated_favicon1.gif" >
+<script type="text/javascript">
+
+
+	defineMenu();
+</script>
+<title>J-ICE web-manipulator</title>
+    <meta name="description" content="J-ICE a Jmol interface for Crystallographic and Electronic properties">
+    <meta name="keywords" content="J-ICE, j-ice, CRYSTAL, CRYSTAL09, CRYSTAL98, CRYSTAL03, CRYSTAL06, crystal, crystal09, crystal06, crystal03, crystal98, VASP, vasp, CASTEP, castep, PWSCF, pwscf, quantum espresso, QUANTUM ESPRESSO, Siesta, SIESTA, siesta, CUBE, cube , Jmol, JMOL, jmol, J-ICE, Crystallographic ">
+    <meta name="keywords" content="Pieremanuele Canepa, Canepa, Pieremanuele, pieremanuele ">
+
+    <meta name="author" content="J-ICE">
+    <meta name="Distribution" content="Global">
+    <meta name="Rating" content="General">
+    <meta name="Robots" content="INDEX,FOLLOW">
+    <meta name="Revisit-after" content="1 Day">
+    
+ <script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-25927657-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+ </script>
+</head>
+<body>
+
+
+<div id="whole">
+	<div class="top">
+	<p class="parleft">Release 2.2.0
+	by P. Canepa - Updated Sun 26 Feb 2017 21:10:17 GMT - powered by <a href='http://jmol.sourceforge.net/' target='blank'>Jmol</a></p>
+	<p class="paright"><a href='http://j-ice.sourceforge.net/?page_id=6' target='_blank'>Help</a> | <a href='http://j-ice.sourceforge.net/#ack' target='_blank'>Acknowledgments</a></p>
+	</div>
+	<div class="menubar">
+	<script language="JavaScript" type="text/javascript">
+		loadTabs();
+	</script>
+	</div>
+<div id="middle">
+	<div class="japplet">
+		
+		<script language="JavaScript" type="text/javascript">
+	jmolInitialize(".", "jmol/JmolAppletSigned.jar");
+	jmolSetAppletColor("white");
+	jmolApplet(
+			[ "570", "570" ],
+			"load 'http://j-ice.sourceforge.net/ondemand/output/hematite.out' PACKED; script scripts/init.spt; set messageCallback 'myMessageCryCallback';message CRYDONE");
+
+</script>
+
+	<div class="bottomframe">
+	<script type="text/javascript" src="Js/jicebottom.js"></script>
+	</div>
+
+
+</div>
+		<div class="rightframe">
+		<script type="text/javascript" src="Js/overall.js"></script>
+		</div>
+</div>
+
+</div>
+</body>
+</html>
