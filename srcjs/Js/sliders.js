@@ -22,8 +22,6 @@
  *  02111-1307  USA.
  */
 
-loadMenus();
-
 function applyBond(x) {
 	if (firstTimeBond) {
 		setV("wireframe .2;");

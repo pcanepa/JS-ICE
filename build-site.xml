@@ -92,9 +92,9 @@
   	</fileset>
     </copy>
 
-  	<loadfile srcFile="classesjs" property="js.list"/>  	
+  	<loadfile srcFile="srcjs/imports" property="imports"/>  	
   	<echo file="${site.dir}/J-Ice.js"></echo>
-    <for param="line" list="${js.list}" delimiter="${line.separator}">
+    <for param="line" list="${imports}" delimiter="${line.separator}">
       <sequential>
       	<echo file="${site.dir}/J-Ice.js" append="true">      		
 ///js// @{line} /////

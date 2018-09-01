@@ -27,10 +27,9 @@
 <script>
 
 	jmolInitialize("jsmol");
-
-
 	defineMenu();
 
+/*
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-25927657-1']);
   _gaq.push(['_trackPageview']);
@@ -40,45 +39,31 @@
     ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
+*/
 
  </script>
 </head>
 <body>
-
-
 <div id="whole">
 	<div class="top">
-	<p class="parleft">Release 2.2.0
-	by P. Canepa - Updated Sun 26 Feb 2017 21:10:17 GMT - powered by <a href='http://jmol.sourceforge.net/' target='blank'>JSmol</a></p>
-	<p class="paright"><a href='http://j-ice.sourceforge.net/?page_id=6' target='_blank'>Help</a> | <a href='http://j-ice.sourceforge.net/#ack' target='_blank'>Acknowledgments</a></p>
+  		<p class="parleft">Release 2.2.0
+		by P. Canepa - Updated Sun 26 Feb 2017 21:10:17 GMT - powered by <a href='http://jmol.sourceforge.net/' target='blank'>JSmol</a></p>
+		<p class="paright"><a href='http://j-ice.sourceforge.net/?page_id=6' target='_blank'>Help</a> | <a href='http://j-ice.sourceforge.net/#ack' target='_blank'>Acknowledgments</a></p>
 	</div>
 	<div class="menubar">
-	<script language="JavaScript">
-		loadTabs();
-	</script>
+		<script>loadTabs()</script>
 	</div>
-<div id="middle">
-	<div class="japplet">
-		
-		<script language="JavaScript">
-	jmolSetAppletColor("white");
-	jmolApplet(
-			[ "570", "570" ],
-			"load 'output/hematite.out' PACKED; script scripts/init.spt; set messageCallback 'myMessageCryCallback';message CRYDONE");
-
-</script>
-
-	<div class="bottomframe">
-	<script src="Js/jicebottom.js"></script>
-	</div>
-
-
-</div>
-		<div class="rightframe">
-		<script src="Js/overall.js"></script>
+	<div id="middle">
+		<div class="japplet">
+			<script>createApplet()</script>
+			<div class="bottomframe">
+				<script>loadBottomButtons()</script>
+			</div>
 		</div>
-</div>
-
+		<div class="rightframe">
+			<script>loadMenus()</script>
+		</div>
+	</div>
 </div>
 </body>
 </html>

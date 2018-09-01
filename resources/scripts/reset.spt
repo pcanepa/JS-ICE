@@ -1,4 +1,4 @@
-load http://j-ice.sourceforge.net/ondemand/output/hematite.out PACKED; 
+load output/hematite.out PACKED; 
 history on; 
 set history 2; 
 set messageCallback 'myMessageCallback';

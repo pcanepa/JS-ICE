@@ -29,3 +29,6 @@ Js/range.js
 Js/timer.js
 Js/slider.js
 Js/freqhtml.js
+Js/createApplet.js
+Js/loadBottomButtons.js
+Js/sliders.js
