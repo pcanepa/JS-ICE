@@ -189,16 +189,16 @@ function createAppearanceGrp() {
 	strApp += "by element "
 		+ createListKey("colourbyElementList", "elementSelected(value)",
 				"elementSelected(value)", "", 1) + "\n";
-	// strApp += "&nbsp by atom &nbsp"
+	// strApp += "&nbsp;by atom &nbsp;"
 	// + createList2('colourbyAtomList', 'atomSelected(value)', '', 1)
 	// + "\n";
-	strApp += createCheck("byselection", "&nbsp by picking &nbsp",
+	strApp += createCheck("byselection", "by picking &nbsp;",
 			'setPicking(this)', 0, 0, "set picking");
 
-	strApp += createCheck("bydistance", "within a sphere (&#197); &nbsp",
+	strApp += createCheck("bydistance", "within a sphere (&#197); &nbsp;",
 			'setDistancehidehide(this)', 0, 0, "");
 	strApp += "</td></tr><tr><td colspan='2'>\n";
-	strApp += createCheck("byplane", "&nbsp within a plane &nbsp",
+	strApp += createCheck("byplane", "within a plane &nbsp;",
 			'setPlanehide(this)', 0, 0, "");
 	strApp += "</td></tr><tr><td colspan='2'>\n";
 	strApp += createButton('select All', 'select All', 'selectAll()', '')
@@ -248,7 +248,7 @@ function createAppearanceGrp() {
 			+ "\n";
 	strApp += "</td></tr>"
 		strApp += "<tr><td><div id='transulcencyDiv' style='display:none; margin-top:20px'>	";
-	strApp += '<div tabIndex="1" class="slider" id="transSlider" style="float:left;width:150px;" >';
+	strApp += '<div tabIndex="1" class="slider" id="transSlider-div" style="float:left;width:150px;" >';
 	strApp += '<input class="slider-input" id="transSlider-input" name="transSlider-input" />';
 	strApp += '</div><div id="transMsg" class="msgSlider"></div></div>';
 	strApp += "</td></tr><tr><td>";
@@ -274,14 +274,14 @@ function createAppearanceGrp() {
 	strApp += "<tr><td >";
 	strApp += "wireframe";
 	strApp += "</td><td>"
-		strApp += '<div tabIndex="1" class="slider" id="bondSlider" style="float:left;width:150px;" >';
+		strApp += '<div tabIndex="1" class="slider" id="bondSlider-div" style="float:left;width:150px;" >';
 	strApp += '<input class="slider-input" id="bondSlider-input" name="bondSlider-input" />';
 	strApp += '</div><div id="bondMsg" class="msgSlider"></div>';
 	strApp += "</td></tr>";
 	strApp += "<tr><td >";
 	strApp += "vdW radii";
 	strApp += "</td><td>";
-	strApp += '<div tabIndex="1" class="slider" id="radiiSlider" style="float:left;width:150px;" >';
+	strApp += '<div tabIndex="1" class="slider" id="radiiSlider-div" style="float:left;width:150px;" >';
 	strApp += '<input class="slider-input" id="radiiSlider-input" name="radiiSlider-input" />';
 	strApp += '</div><div id="radiiMsg" class="msgSlider"></div>';
 	strApp += "</td></tr>";
@@ -331,17 +331,17 @@ function createEditGroup() {
 				"deletebyElementList",
 				"elementSelectedDelete(value) + elementSelectedHide(value) ",
 				false, 1) + "\n";
-	// strEdit += "&nbsp by atom &nbsp"
+	// strEdit += "&nbsp;by atom &nbsp;"
 	// + createList2('deltebyAtomList',
 	// 'atomSelectedDelete(value) + atomSelectedHide(value) ', '',
 	// 1) + "\n";
-	strEdit += createCheck("byselection", "&nbsp by picking &nbsp",
+	strEdit += createCheck("byselection", "by picking &nbsp;",
 			'setPickingDelete(this) + setPickingHide(this)', 0, 0, "");
 	;
-	strEdit += createCheck("bydistance", "within a sphere (&#197); &nbsp",
+	strEdit += createCheck("bydistance", "within a sphere (&#197); &nbsp;",
 			'setDistancehidehide(this)', 0, 0, "");
 	strEdit += "</td></tr><tr><td colspan='2'>\n"
-		strEdit += createCheck("byplane", "&nbsp within a plane &nbsp",
+		strEdit += createCheck("byplane", "within a plane &nbsp;",
 				'setPlanehide(this)', 0, 0, "");
 	strEdit += "</td></tr><tr><td colspan='2'>\n";
 	strEdit += createButton('select All', 'select All',
@@ -382,7 +382,7 @@ function createEditGroup() {
 	strEdit += "<tr><td >";
 	strEdit += "Connectivity</a>";
 	strEdit += "</td><td>";
-	strEdit += '<div tabIndex="1" class="slider" id="radiiConnect" style="float:left;width:150px;" >';
+	strEdit += '<div tabIndex="1" class="slider" id="radiiConnect-div" style="float:left;width:150px;" >';
 	strEdit += '<input class="slider-input" id="radiiConnect-input" name="radiiConnect-input" />';
 	strEdit += '</div><div id="radiiConnectMsg" class="msgSlider"></div>';
 	strEdit += '<br>'
@@ -514,14 +514,14 @@ function createBuildGroup() {
 	// strBuild += "by element "
 	// + createListKey("colourbyElementList", "elementSelected(value)",
 	// "elementSelected(value)", "", 1) + "\n";
-	// strBuild += "&nbsp by atom &nbsp"
+	// strBuild += "&nbsp;by atom &nbsp;"
 	// + createList2('colourbyAtomList', 'atomSelected(value)', '', 1)
 	// + "\n";
-	strBuild += createCheck("byselection", "by picking &nbsp",
+	strBuild += createCheck("byselection", "by picking &nbsp;",
 			'setPicking(this)', 0, 0, "set picking");
-	strBuild += createCheck("bydistance", "within a sphere (&#197) &nbsp",
+	strBuild += createCheck("bydistance", "within a sphere (&#197) &nbsp;",
 			'setDistancehidehide(this)', 0, 0, "");
-	strBuild += createCheck("byplane", " within a plane &nbsp",
+	strBuild += createCheck("byplane", " within a plane &nbsp;",
 			'setPlanehide(this)', 0, 0, "");
 	strBuild += "</div>";
 	strBuild += "</td></tr><tr><td>\n";
@@ -658,7 +658,7 @@ function createOrientGrp() {
 	strOrient += "Front";
 	strOrient += "</td></tr>\n";
 	strOrient += "<tr><td>\n";
-	strOrient += '<div tabIndex="1" class="slider" id="slabSlider" style="float:left;width:150px;" >';
+	strOrient += '<div tabIndex="1" class="slider" id="slabSlider-div" style="float:left;width:150px;" >';
 	strOrient += '<input class="slider-input" id="slabSlider-input" name="slabSlider-input" />';
 	strOrient += '</div><div id="slabSliderMsg" class="msgSlider"></div>';
 	strOrient += "</td></tr>\n";
@@ -666,7 +666,7 @@ function createOrientGrp() {
 	strOrient += "Back";
 	strOrient += "</td></tr>\n";
 	strOrient += "<tr><td>\n";
-	strOrient += '<div tabIndex="1" class="slider" id="depthSlider" style="float:left;width:150px;" >';
+	strOrient += '<div tabIndex="1" class="slider" id="depthSlider-div" style="float:left;width:150px;" >';
 	strOrient += '<input class="slider-input" id="depthSlider-input" name="depthSlider-input" />';
 	strOrient += '</div><div id="depthSliderMsg" class="msgSlider"></div>';
 	strOrient += "</td></tr>\n";
@@ -693,9 +693,9 @@ function createOrientGrp() {
 	strOrient += "<tr><td colspan='2'> ";
 	strOrient += "by element "
 		+ createList2("byElementAtomMotion", "elementSelected(value)", false, 1) + "\n";
-	// strOrient += "&nbsp by atom &nbsp"
+	// strOrient += "&nbsp;by atom &nbsp;"
 	// + createList2('byAtomMotion', 'atomSelected(value)', '', 1) + "\n";
-	strOrient += createCheck("byselectionOrient", "&nbsp by picking &nbsp",
+	strOrient += createCheck("byselectionOrient", "by picking &nbsp;",
 			'setPicking(this)', 0, 0, "set picking");
 	strOrient += "</td></tr><tr><td colspan='2'>\n";
 	strOrient += createButton('select All', 'select All', 'selectAll()', '')
@@ -783,7 +783,7 @@ function createCellGrp() {
 	strCell += "</td></tr>\n";
 	strCell += "<tr><td> \n";
 	strCell += "<div id='packDiv' style='display:none; margin-top:30px'>";
-	strCell += '<div tabIndex="1" class="slider" id="packSlider" style="float:left;width:150px;" >';
+	strCell += '<div tabIndex="1" class="slider" id="packSlider-div" style="float:left;width:150px;" >';
 	strCell += '<input class="slider-input" id="packSlider-input" name="packSlider-input" />';
 	strCell += '</div><div id="packMsg" class="msgSlider"></div></div></div>';
 	strCell += "</td></tr>\n";
@@ -883,23 +883,23 @@ function createPolyGrp() {
 	strPoly += "<tr><td  colspan='2'>\n";
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
-	strPoly += "&nbsp a) Select central atom:  <br>\n";
-	strPoly += "&nbsp &nbsp   by element "
+	strPoly += "&nbsp;a) Select central atom:  <br>\n";
+	strPoly += "&nbsp;&nbsp;  by element "
 		+ createList2('polybyElementList', "", false, 0);
-	// strPoly+=createCheck("byselectionPoly", "&nbsp by picking &nbsp",
+	// strPoly+=createCheck("byselectionPoly", "&nbsp;by picking &nbsp;",
 	// 'setPolybyPicking(this)', 0, 0, "set picking") + "<br>\n";
-	strPoly += "<br>&nbsp &nbsp just central atom"
+	strPoly += "<br>&nbsp;&nbsp;just central atom"
 		+ createCheck("centralPoly", "",
 				'checkBoxStatus(this, "poly2byElementList")', 0, 0, "");
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
-	strPoly += "&nbsp  b) select vertex atoms:  <br>\n";
-	strPoly += "&nbsp &nbsp   by element "
+	strPoly += "&nbsp; b) select vertex atoms:  <br>\n";
+	strPoly += "&nbsp;&nbsp;  by element "
 		+ createList2('poly2byElementList', "", false, 0) + "\n";
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
-	strPoly += "&nbsp  c) based on <br>";
-	strPoly += "&nbsp "
+	strPoly += "&nbsp; c) based on <br>";
+	strPoly += "&nbsp;"
 		+ createRadio("bondPoly", "bond", 'makeDisable("polyDistance") ',
 				0, 0, "bondPoly", "off");
 	strPoly += createRadio("bondPoly", " max distance ",
@@ -907,13 +907,13 @@ function createPolyGrp() {
 	strPoly += createText2("polyDistance", "2.0", "3", "") + " &#197;";
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
-	strPoly += "&nbsp d) number of vertex "
+	strPoly += "&nbsp;d) number of vertex "
 		+ createList('polyEdge', '', 0, 0, polyEdgeName) + "\n";
 	strPoly += createLine('blue', '');
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
 	strPoly += "Polyedra style:<br>\n";
-	strPoly += "</td></tr><tr><td > &nbsp a) colour polyhedra\n";
+	strPoly += "</td></tr><tr><td > &nbsp;a) colour polyhedra\n";
 	strPoly += createButton("polyColor", "Default colour",
 			'setV("set defaultColors Jmol")', 0);
 	strPoly += "</td><td align='left'><script type='text/javascript'>\n";
@@ -925,7 +925,7 @@ function createPolyGrp() {
 			'toggleDivValue(true,"advancePolyDiv")', '')
 			+ " Advanced style options"
 			strPoly += "<div id='advancePolyDiv' style='display:none; margin-top:20px'>"
-				strPoly += "<br> &nbsp b)"
+				strPoly += "<br> &nbsp;b)"
 					+ createRadio("polyFashion", "opaque",
 							'setV("color polyhedra opaque") ', 0, 1, "opaque", "opaque")
 							+ "\n";
@@ -933,11 +933,11 @@ function createPolyGrp() {
 			'setV("color polyhedra translucent") ', 0, 0, "translucent",
 	"translucent")
 	+ "\n<br><br>";
-	strPoly += "&nbsp c) style edges\n"
+	strPoly += "&nbsp;c) style edges\n"
 		+ createList('polyVert', 'checkPolyValue(this.value)', 0, 0,
 				polyStyleValue, polyStyleName) + "\n";
 	strPoly += "<br>"
-		strPoly += "&nbsp &nbsp collapsed faces Offset \n"
+		strPoly += "&nbsp;&nbsp;collapsed faces Offset \n"
 			+ createList('polyFace', '', 0, 0, polyFaceName) + "\n";
 	strPoly += "</div>";
 	strPoly += createLine('blue', '');
@@ -985,7 +985,7 @@ function createIsoGrp() {
 	strIso += "Molecular (classic) isoSurfaces: \n <br>";
 	strIso += createList('isoCommon', 'setIsoClassic(this.value)', 0, 0,
 			isoValue, isoName)
-			+ "&nbsp";
+			+ "&nbsp;";
 	strIso += createButton('removeIso', 'remove iso', 'setV("isosurface OFF")',
 	'');
 	strIso += createLine('blue', '');
@@ -1285,7 +1285,7 @@ function createotherpropGroup() {
 				0, 0, "set perspectiveDepth");
 	strOther += "</td></tr><tr><td>"
 		strOther += "<div id='perspectiveDiv' style='display:none; margin-top:20px'>";
-	strOther += '<div tabIndex="1" class="slider" id="persSlider" style="float:left;width:150px;" >';
+	strOther += '<div tabIndex="1" class="slider" id="persSlider-div" style="float:left;width:150px;" >';
 	strOther += '<input class="slider-input" id="persSlider-input" name="persSlider-input" />';
 	strOther += '</div><div id="perspMsg" class="msgSlider"></div></div>';
 	strOther += "</td></tr>\n";
@@ -1311,15 +1311,15 @@ function createotherpropGroup() {
 	strOther += "Light settings";
 	strOther += "</td></tr>";
 	strOther += "<tr><td>";
-	strOther += '<div tabIndex="1" class="slider" id="light1Slider" style="float:left;width:150px;" >';
+	strOther += '<div tabIndex="1" class="slider" id="light1Slider-div" style="float:left;width:150px;" >';
 	strOther += '<input class="slider-input" id="light1Slider-input" name="light1Slider-input" />';
 	strOther += '</div>Reflection	<div id="light1Msg" class="msgSlider"></div></div>';
 	strOther += "</td></tr><tr><td>";
-	strOther += '<div tabIndex="1" class="slider" id="light2Slider" style="float:left;width:150px;" >';
+	strOther += '<div tabIndex="1" class="slider" id="light2Slider-div" style="float:left;width:150px;" >';
 	strOther += '<input class="slider-input" id="light2Slider-input" name="light2Slider-input" />';
 	strOther += '</div>Ambient	<div id="light2Msg" class="msgSlider"></div></div>';
 	strOther += "</td></tr><tr><td>";
-	strOther += '<div tabIndex="1" class="slider" id="light3Slider" style="float:left;width:150px;" >';
+	strOther += '<div tabIndex="1" class="slider" id="light3Slider-div" style="float:left;width:150px;" >';
 	strOther += '<input class="slider-input" id="light3Slider-input" name="light3Slider-input" />';
 	strOther += '</div>Diffuse	<div id="light3Msg" class="msgSlider"></div></div>';
 	strOther += "</td></tr><tr><td colspan='2'>" + createLine('blue', '');

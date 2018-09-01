@@ -106,11 +106,29 @@ function createMenus() {
 	return strMenu;
 }
 
+var tabTimeouts = [];
+var tabDelayMS = 1000;
+var grpDispDelayed = function(n, isClick) {
+	for (var i = tabTimeouts.length; --i >= 0;) {
+		if (tabTimeouts[i])
+			clearTimeout(tabTimeouts[i]);
+		tabTimeouts = [];
+	}	
+	switch(isClick) {
+	case 1:
+		grpDisp(n);	
+		break;
+	case 2:
+		return;
+	default:
+		tabTimeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},tabDelayMS);
+	}
+}
+
 function createMenuCell(i) {
 
-	// var sTab = "<TD id=menu'+i+' ";
 	var sTab = "<li id='menu'+ i +' "; // Space is mandatory between i and "
-	sTab += "onClick='grpDisp(" + i + ")' ";
+	sTab += "onClick='grpDispDelayed(" + i + ",1)' onmouseenter='grpDispDelayed("+i+",0)' onmouseexit='grpDispDelayed("+i+",2)'"; // BH 2018
 	sTab += "class = 'menu' ";
 	sTab += ">";
 	sTab += "<a class = 'menu'>";

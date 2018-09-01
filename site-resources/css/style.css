@@ -5,6 +5,13 @@
 
 input{
     border:none;
+    vertical-align: middle;
+}
+
+input.checkbox{
+    border:none;
+    vertical-align: middle;
+	transform: scale(0.8) translate(6px,-3px);
 }
 
 .slider { 

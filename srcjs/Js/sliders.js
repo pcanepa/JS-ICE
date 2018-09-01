@@ -142,7 +142,7 @@ function toggleSlab() {
 
 loadSliders = function() {
 
-	var bondSlider = new Slider(getbyID("bondSlider"), getbyID("bondSlider-input"), "horizontal");
+	bondSlider = new Slider(getbyID("bondSlider-div"), getbyID("bondSlider-input"), "horizontal");
 	bondSlider.setMaximum(100);
 	//does not work with values < 1
 	bondSlider.setMinimum(0);
@@ -153,7 +153,7 @@ loadSliders = function() {
 		applyBond(getbyID("bondSlider-input").value)
 	}
 	
-	var radiiSlider = new Slider(getbyID("radiiSlider"), getbyID("radiiSlider-input"), "horizontal");
+	radiiSlider = new Slider(getbyID("radiiSlider-div"), getbyID("radiiSlider-input"), "horizontal");
 	radiiSlider.setMaximum(100);
 	//does not work with values < 1
 	radiiSlider.setMinimum(0);
@@ -164,7 +164,7 @@ loadSliders = function() {
 		applyRadii(getbyID("radiiSlider-input").value)
 	}
 	
-	var radiiConnect = new Slider(getbyID("radiiConnect"), getbyID("radiiConnect-input"), "horizontal");
+	radiiConnect = new Slider(getbyID("radiiConnect-div"), getbyID("radiiConnect-input"), "horizontal");
 	radiiConnect.setMaximum(100);
 	//does not work with values < 1
 	radiiConnect.setMinimum(0);
@@ -175,7 +175,7 @@ loadSliders = function() {
 		applyConnect(getbyID("radiiConnect-input").value)
 	}
 	
-	var transSlider = new Slider(getbyID("transSlider"), getbyID("transSlider-input"), "horizontal");
+	transSlider = new Slider(getbyID("transSlider-div"), getbyID("transSlider-input"), "horizontal");
 	transSlider.setMaximum(100);
 	//does not work with values < 1
 	transSlider.setMinimum(0);
@@ -186,7 +186,7 @@ loadSliders = function() {
 		applyTrans(getbyID("transSlider-input").value)
 	}
 	
-	var packSlider = new Slider(getbyID("packSlider"), getbyID("packSlider-input"), "horizontal");
+	packSlider = new Slider(getbyID("packSlider-div"), getbyID("packSlider-input"), "horizontal");
 	packSlider.setMaximum(100);
 	//does not work with values < 1
 	packSlider.setMinimum(0);
@@ -197,7 +197,7 @@ loadSliders = function() {
 		applyPack(getbyID("packSlider-input").value)
 	}
 	
-	var persSlider = new Slider(getbyID("persSlider"), getbyID("persSlider-input"), "horizontal");
+	persSlider = new Slider(getbyID("persSlider-div"), getbyID("persSlider-input"), "horizontal");
 	persSlider.setMaximum(100);
 	//does not work with values < 1
 	persSlider.setMinimum(0);
@@ -208,7 +208,7 @@ loadSliders = function() {
 		applyPers(getbyID("persSlider-input").value)
 	}
 	
-	var light1Slider = new Slider(getbyID("light1Slider"), getbyID("light1Slider-input"), "horizontal");
+	light1Slider = new Slider(getbyID("light1Slider-div"), getbyID("light1Slider-input"), "horizontal");
 	light1Slider.setMaximum(100);
 	//does not work with values < 1
 	light1Slider.setMinimum(0);
@@ -219,7 +219,7 @@ loadSliders = function() {
 		applyLight1(getbyID("light1Slider-input").value)
 	}
 	
-	var light2Slider = new Slider(getbyID("light2Slider"), getbyID("light2Slider-input"), "horizontal");
+	light2Slider = new Slider(getbyID("light2Slider-div"), getbyID("light2Slider-input"), "horizontal");
 	light2Slider.setMaximum(100);
 	//does not work with values < 1
 	light2Slider.setMinimum(0);
@@ -230,7 +230,7 @@ loadSliders = function() {
 		applyLight2(getbyID("light2Slider-input").value)
 	}
 	
-	var light3Slider = new Slider(getbyID("light3Slider"), getbyID("light3Slider-input"), "horizontal");
+	light3Slider = new Slider(getbyID("light3Slider-div"), getbyID("light3Slider-input"), "horizontal");
 	light3Slider.setMaximum(100);
 	//does not work with values < 1
 	light3Slider.setMinimum(0);
@@ -241,7 +241,7 @@ loadSliders = function() {
 		applyLight3(getbyID("light3Slider-input").value)
 	}
 	
-	var slabSlider = new Slider(getbyID("slabSlider"), getbyID("slabSlider-input"), "horizontal");
+	slabSlider = new Slider(getbyID("slabSlider-div"), getbyID("slabSlider-input"), "horizontal");
 	slabSlider.setMaximum(100)
 	slabSlider.setMinimum(0)
 	slabSlider.setUnitIncrement(2) // amount to increment the value when using the
@@ -251,7 +251,7 @@ loadSliders = function() {
 		applySlab(getbyID("slabSlider-input").value)
 	}
 	
-	var depthSlider = new Slider(getbyID("depthSlider"), getbyID("depthSlider-input"), "horizontal");
+	depthSlider = new Slider(getbyID("depthSlider-div"), getbyID("depthSlider-input"), "horizontal");
 	depthSlider.setMaximum(100);
 	depthSlider.setMinimum(0);
 	depthSlider.setUnitIncrement(2); // amount to increment the value when using

@@ -1457,7 +1457,7 @@ function getSymInfo() {
 			.replace(
 					/lattice type/,
 			"<a href=http://cst-www.nrl.navy.mil/bind/static/lattypes.html target=_blank>lattice type</a>");
-			else if (line[0].indexOf(" employed") >= 0)
+			else if (line[0].indexOf(" symmetry operation") >= 0)
 				nop = parseInt(line[0]);
 			else if (nop > 0 && line[0].indexOf(",") >= 0)
 				slist += "\n" + S[i];
@@ -1469,7 +1469,7 @@ function getSymInfo() {
 		var S = slist.split("\n");
 		var n = 0;
 		var i = -1;
-		while (S[++i].indexOf(",") < 0) {
+		while (++i < S.length && S[i].indexOf(",") < 0) {
 		}
 		s += "<br><select id='symselect' onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\" class='select'><option value=0>select a symmetry operation</option>";
 		for (; i < S.length; i++)
