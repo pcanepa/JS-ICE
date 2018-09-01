@@ -1,0 +1,2 @@
+load "" PACKED;
+set messageCallback 'cellOperation'; message CELL;

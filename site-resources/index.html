@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html style="height:101%">
+<head>
+<title>J-ICE web-manipulator</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="description" content="J-ICE a Jmol interface for Crystallographic and Electronic properties">
+    <meta name="keywords" content="J-ICE, j-ice, CRYSTAL, CRYSTAL09, CRYSTAL98, CRYSTAL03, CRYSTAL06, crystal, crystal09, crystal06, crystal03, crystal98, VASP, vasp, CASTEP, castep, PWSCF, pwscf, quantum espresso, QUANTUM ESPRESSO, Siesta, SIESTA, siesta, CUBE, cube , Jmol, JMOL, jmol, J-ICE, Crystallographic ">
+    <meta name="keywords" content="Pieremanuele Canepa, Canepa, Pieremanuele, pieremanuele ">
+
+    <meta name="author" content="J-ICE">
+    <meta name="Distribution" content="Global">
+    <meta name="Rating" content="General">
+    <meta name="Robots" content="INDEX,FOLLOW">
+    <meta name="Revisit-after" content="1 Day">
+    
+
+
+
+<script src="jsmol/JSmol.min.js"></script>
+<script src="jsmol/js/Jmol2.js"></script>
+
+<script src="libraries/flot/excanvas.js"></script>
+<script src="libraries/flot/jquery.flot2.js"></script>
+<script src="libraries/flot/showobj.js"></script>
+<script src="libraries/flot/json2.js"></script>
+
+<script src="libraries/jmol/JmolColorPicker.js"></script>
+
+<script src="libraries/webfx/range.js"></script>
+<script src="libraries/webfx/timer.js"></script>
+<script src="libraries/webfx/slider.js"></script>
+
+<script src="libraries/iucr/jtkt.js"></script>
+
+<script src="J-Ice.js"></script>
+
+<link rel="stylesheet" href="css/style.css" type="text/css">
+<link rel="stylesheet" href="css/luna/luna.css" type="text/css">
+<link rel="stylesheet" href="libraries/toltip/jquery.tooltip.css" />
+
+<link rel="shortcut icon" href="images/favicon.ico" >
+<link rel="icon" type="image/gif" href="images/animated_favicon1.gif" >
+<script>
+
+createApplet = function() {
+	jmolSetAppletColor("white");
+	jmolApplet(
+			[ "570", "570" ],
+			"load 'output/hematite.out' PACKED; script scripts/init.spt; set messageCallback 'myMessageCryCallback';message CRYDONE");
+}
+jmolInitialize("jsmol", "jmol/JmolAppletSigned0.jar");
+defineMenu();
+
+loadBottomButtons = function() {
+
+	document.write("<br> ");	
+	document.write(createText5('filename', 'Filename:', '108', '', '', "disab"));
+	document.write("<br>");
+	document.write(createButton1("reload", "Reload",
+			'setV("script ./scripts/reload.spt") + resetAll() + setName()', 0,
+			"specialbutton"));
+	document.write(createButton1("reset", "Reset",
+			'setV("script ./scripts/reset.spt")', 0, "specialbutton"));
+	document.write(createButton1("Console", "Console", 'setV("console")', 0,
+			"specialbutton"));
+	document.write(createButton("NewWindow", "New window", "newAppletWindow()", 0));
+	document.write(createButton("viewfile", "File content", "printFileContent()", 0));
+	document.write(createButton1("saveState", 'Save state', 'saveCurrentState()',
+			0, "savebutton"));
+	document.write(createButton1("restoreState", 'Restore state',
+			'reloadCurrentState()', 0, "savebutton"));
+	document.write(createButton("Feedback", 'Feedback', 'newAppletWindowFeed()', 0));
+}
+
+/*
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-25927657-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+*/
+
+ </script>
+</head>
+<body>
+<div id="whole">
+	<div class="top">
+  		<p class="parleft">Release 2.2.0
+		by P. Canepa - Updated Sun 26 Feb 2017 21:10:17 GMT - powered by <a href='http://jmol.sourceforge.net/' target='blank'>JSmol</a></p>
+		<p class="paright"><a href='http://j-ice.sourceforge.net/?page_id=6' target='_blank'>Help</a> | <a href='http://j-ice.sourceforge.net/#ack' target='_blank'>Acknowledgments</a></p>
+	</div>
+	<div class="menubar">
+		<script>loadTabs()</script>
+	</div>
+	<div id="middle">
+		<div class="japplet">
+			<script>createApplet()</script>
+			<div class="bottomframe">
+				<script>loadBottomButtons()</script>
+			</div>
+		</div>
+		<div class="rightframe">
+			<script>loadMenus();loadSliders()</script>
+		</div>
+	</div>
+</div>
+</body>
+</html>

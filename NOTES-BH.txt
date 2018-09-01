@@ -1,0 +1,46 @@
+Notes - Bob Hanson 2018.09.01
+
+- created branch hanson1
+- created directories:
+
+libjs/          contains jsmol.zip
+ 
+site-resources/ contains all non-J-ice resources, including:
+ 	
+ 	 css/
+ 	 images/
+ 	 libraries/
+ 	 	flot/
+ 	 	iucr/jtkt.js
+ 	 	jmol/JmolColorPicker.js
+ 	 	webfx/range.js, slider.js, timer.js
+ 	 output/hematite.out
+ 	 scripts/
+ 	 *.html
+ 	 
+srcjs/          contains files to concatenate into J-Ice.js (by build-site.xml)
+ 
+ 	Js/
+ 	imports (the list of files in order)
+ 
+tools/           contains ant-contrib.jar and closure_compiler.jar
+
+unused/          contains all unused files 
+
+- reorganized Js files into srcjs and site-resources/libraries
+
+- cleaned up Js references to document.getElementById (now all getbyID) and jmolScript (now runJmolScript)
+
+- added PNGJ image+state option
+
+- added "original" in file export 
+
+- changed console font to monospaced for "file contents" button
+
+- fixed OutputResized.html, which was missing !DOCTYPE and body and head style="height:100%" tags for HTML5
+
+- fixed checkboxes and radio size and alignment
+
+- fixed error from sliders having same name for div as object
+
+- minor work on spectrum.html

@@ -1,7 +1,0 @@
-load '';
-#reset ALL;
-select *;font label 18
-frame last
-color {*} property partialCharge
-#color partialcharge
-label %5.3P

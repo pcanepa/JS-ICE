@@ -1,6 +1,0 @@
-load "";
-reset ALL;
-frame first;
-label %6.2[property_magneticMoment];
-select *;font label 20;
-color property_magneticMoment;
