@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html style="height:100%">
 <head>
 <title>J ICE web-manipulator-Output Resized</title>
 
-<script src="jmol/Jmol.js"></script>
 <script src="jsmol/JSmol.min.js"></script>
 <script src="jsmol/js/Jmol2.js"></script>
 <!--  script src="Js/jicefunction.js"></script> -->
@@ -19,13 +18,18 @@
 		}
 		return opener.jmolGetPropertyAsString("stateInfo")//.replace(/initialize/,"initialize;zoomLarge = false")
 	}
+
+	jmolInitialize("jsmol");
+
+	// note that body AND html BOTH must have style="height:100%" in html5 in order to use 100%
+	
 </script>
 <link href="css/style.css" rel="stylesheet" type="text/css">
 </head>
-<body>
+<body style="height:100%">
 |
 <a href="javascript:jmolScript(getState())" class="message">Refresh
-model</a>
+Model</a>
 |
 <a href='javascript:jmolScript("write IMAGE ?");' class="message">Save
 Image</a>
@@ -33,9 +37,6 @@ Image</a>
 <a href='javascript:jmolScript("write POVRAY ?.pov");' class="message">Save
 POV-ray</a>
 |
-<script>
-	jmolInitialize("jsmol", "jmol/JmolAppletSigned0.jar");
-	jmolApplet( [ "100%", "90%" ], "script javascript:getState()")
-</script>
+<script>jmolApplet( [ "100%", "90%" ],"script javascript:getState()")</script>
 </body>
 </html>

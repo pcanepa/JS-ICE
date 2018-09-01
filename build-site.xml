@@ -95,7 +95,6 @@
   	<copy todir="${site.dir}">
       <fileset dir="${site.resource.dir}">
       	<include name="**"/>
-      	<exclude name="jmol/**"/>
   	</fileset>
     </copy>
 
