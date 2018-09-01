@@ -565,7 +565,7 @@ function createMeasureGroup() {
 	strMeas += createRadio("distance", "torsional", 'checkMeasure(value)', '',
 			0, "", "torsional");
 	strMeas += "<br><br> Measure value: <br>"
-		+ createTextArea("textMeasure", "", 4, 40, "");
+		+ createTextArea("textMeasure", "", 10, 60, "");
 	strMeas += "<br>"
 		+ createButton('resetMeasure', 'Delete Measure/s', 'mesReset()', '')
 		+ "<br>";

@@ -1053,11 +1053,11 @@ function checkMeasure(value) {
 	setV('set pickingStyle MEASURE ON;');
 	if (radiobutton == "distance") {
 		if (unit == 'select') {
-			messageMsg('Select please the desired measure unit.');
+			measureHint('Select the desired measure unit.');
 			uncheckRadio("distance");
 			return false;
 		}
-		messageMsg('Now Pick two atoms');
+		measureHint('Pick two atoms');
 		setV('set defaultDistanceLabel "%10.2VALUE %UNITS"');
 		setV('showSelections TRUE; select none;  label on ; set picking on; set picking LABEL; set picking SELECT atom; set picking DISTANCE;');
 		setV("measure ON; set measurements ON; set showMeasurements ON; set measurements ON; set measurementUnits "
@@ -1067,7 +1067,7 @@ function checkMeasure(value) {
 		setV('label ON');
 
 	} else if (radiobutton == "angle") {
-		messageMsg('Now Pick three atoms');
+		measureHint('Pick three atoms');
 		setV('set defaultAngleLabel "%10.2VALUE %UNITS"');
 		setV('showSelections TRUE; select none;  label on ; set picking on; set picking LABEL; set picking SELECT atom; set picking ANGLE;');
 		setV("measure ON; set measurements ON; set showMeasurements ON; set picking MEASURE ANGLE; set MeasureCallback 'measuramentCallback';");
@@ -1075,7 +1075,7 @@ function checkMeasure(value) {
 		setV('label ON');
 
 	} else if (radiobutton == "torsional") {
-		messageMsg('Now Pick four atoms');
+		measureHint('Pick four atoms');
 		setV('set defaultTorsionLabel "%10.2VALUE %UNITS"');
 		setV('showSelections TRUE; select none;  label on ; set picking on; set picking TORSION; set picking SELECT atom; set picking ANGLE;');
 		setV("measure ON; set measurements ON; set showMeasurements ON; set picking MEASURE TORSION; set MeasureCallback 'measuramentCallback';");
@@ -1086,21 +1086,25 @@ function checkMeasure(value) {
 
 }
 
-function measuramentCallback(a, b, c, d, e) {
-	// alert(b)
-	setMeasureText(b);
 
+var measureHint = function(msg) {	
+	// BH 2018
+	document.measureGroup.textMeasure.value = msg + "...";
+}
+
+function measuramentCallback(app, msg, type, state, value) {
+	// BH 2018
+	if (state == "measurePicked")
+		setMeasureText(msg);
 }
 
 function setMeasureText(value) {
 	setV("show measurements");
 	var init = "\n";
-	// alert(mesCount)
+	// BH 2018
 	if (mesCount == 0)
-		init = '';
-	document.measureGroup.textMeasure.value += init + mesCount + " " + value;
-	mesCount++;
-
+		document.measureGroup.textMeasure.value = init = '';
+	document.measureGroup.textMeasure.value += init + ++mesCount + " " + value;
 }
 
 function mesReset() {
