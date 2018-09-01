@@ -1,3 +1,0 @@
-connect {_O} {_H} hbond delete; 
-connect {_N} {_H} hbond delete; 
-connect {_S} {_H} hbond delete; 

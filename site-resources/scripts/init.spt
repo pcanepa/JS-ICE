@@ -1,0 +1,3 @@
+set antialiasdisplay
+javascript(setName());
+javascript(makeDisable("filename"));

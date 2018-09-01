@@ -1,0 +1,2 @@
+load '' FILTER 'conventional';#{1 1 1} removed
+set messageCallback 'cellOperation'; message CELL;

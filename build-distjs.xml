@@ -1,0 +1,17 @@
+<project name="JSmol" default="todist" basedir=".">
+ 
+   <property name="site.path" value="site/" />
+   <property name="dist.path" value="dist/" />
+   <property name="file.zip" value="${dist.path}/J-ICE.zip" />	  	  	
+
+
+   <target name="todist" id="todist">
+
+   	<echo> Zipping up ${file.zip} </echo>
+  	<zip destfile="${file.zip}" basedir="${site.path}" 	/>
+       
+    
+  </target>
+
+	
+</project>

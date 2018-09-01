@@ -1,6 +1,0 @@
-label on;
-select{1.1}; #file 1 frame 1
-xyzFract = {1.1}.label("%a %16.9[fxyz]"); a gives the  atom label
-xyzFract = {1.1}.label("%l %16.9[fxyz]"); gives the atomic number
-getProperty("auxiliaryinfo.models[1].notionalUnitCell"); this give the parameters
-
