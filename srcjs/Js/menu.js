@@ -144,12 +144,11 @@ function createFileGrp() { // Here the order is crucial
 			"ShelX (*.*)", "VASP (OUTCAR, POSCAR)", "VASP (*.xml)",
 			"WIEN2k (*.struct)", "Xcrysden (*.xtal)", "map (*.CUBE)",
 			"map (*.jvxl)", "Jmol state (*.spt,*.png)");
-	var elOptionChk = [1];
 	var strFile = "<form id='fileGroup' name='fileGroup' style='display:inline' class='contents'>\n";
 	strFile += "<h2>File manager</h2>\n";
 	strFile += "Load File<BR>\n";
 	strFile += createListmenu('Load File', 'onChangeLoad(value)', 0, 1,
-			elOptionArr, elOptionText, elOptionChk);
+			elOptionArr, elOptionText);
 	strFile += "<BR><BR>\n";
 	strFile += "Export/Save File<BR>\n";
 	// Save section
@@ -164,9 +163,8 @@ function createFileGrp() { // Here the order is crucial
 			// "save Frequencies HTML (*.HTML)",
 			"image PNG (*.png)", "coordinates PDB (*.PDB)",
 			"image POV-ray (*.pov)", "current state (*.spt)", "image+state (PNGJ)");
-	var elSOptionChk = [1];
 	strFile += createListmenu('Export File', 'onChangeSave(value)', 0, 1,
-			elSOptionArr, elSOptionText, elSOptionChk);
+			elSOptionArr, elSOptionText);
 	strFile += "<p ><img src='images/j-ice.png' alt='logo'/></p>";
 	strFile += "<p style='color:#f00; font-weight:bold'>New readers <br> CASTEP, VASP POSCAR, and XcrysDen</p>";
 	strFile += "<div style='margin-top:230px;'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
@@ -182,9 +180,7 @@ function createFileGrp() { // Here the order is crucial
 ///////////////////////////// create Appearance Grp
 function createAppearanceGrp() {
 	var colorBondsName = new Array("select", "atom", "bond");
-	var colorBondsChk = new Array(1, 0, 0);
 	var dotName = new Array("select", "1", "2", "3", "4");
-	var dotChk = new Array(1, 0, 0, 0, 0);
 	var strApp = "<form id='apparenceGroup' name='apparenceGroup' style='display:none' >";
 	strApp += "<table class='contents'><tr><td colspan='2'>\n";
 	strApp += "<h2>Structure Appearance</h2>\n";
@@ -248,8 +244,7 @@ function createAppearanceGrp() {
 			'toggleDivRadioTrans(value,"transulcencyDiv") + setV("color " +  getValue("setFashion") + " TRANSLUCENT")',
 			0, 0, "off", "off")
 			+ "\n";
-	strApp += createList('setFashion', '', 0, 1, colorBondsName,
-			colorBondsName, colorBondsChk)
+	strApp += createList('setFashion', '', 0, 1, colorBondsName)
 			+ "\n";
 	strApp += "</td></tr>"
 		strApp += "<tr><td><div id='transulcencyDiv' style='display:none; margin-top:20px'>	";
@@ -260,7 +255,7 @@ function createAppearanceGrp() {
 	strApp += "Dot surface ";
 	strApp += createList('setDot',
 			'setV("dots on; set dotScale " + value + "; draw off")', 0, 1,
-			dotName, dotName, dotChk);
+			dotName);
 	strApp += createRadio("dotStyle", "off", 'setV("dots off")', 0, 0, "off",
 	"off");
 	strApp += createLine('blue', '');
@@ -323,7 +318,6 @@ function createEditGroup() {
 	var bondValue = new Array("select", "single", "partial", "hbond", "double",
 			"aromatic", "partialDouble", "triple", "partialTriple",
 	"parialTriple2");
-	var bondChk = new Array(1, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	var strEdit = "<form id='editGroup' name='editGroup' style='display:none'>";
 	strEdit += "<table class='contents'><tr><td > \n";
 	strEdit += "<h2>Edit structure</h2>\n";
@@ -336,7 +330,7 @@ function createEditGroup() {
 		+ createList2(
 				"deletebyElementList",
 				"elementSelectedDelete(value) + elementSelectedHide(value) ",
-				"", 1) + "\n";
+				false, 1) + "\n";
 	// strEdit += "&nbsp by atom &nbsp"
 	// + createList2('deltebyAtomList',
 	// 'atomSelectedDelete(value) + atomSelectedHide(value) ', '',
@@ -371,7 +365,7 @@ function createEditGroup() {
 	strEdit += "Rename atom/s<br>";
 	strEdit += "Element Name ";
 	strEdit += createList('renameEle', 'changeElement(value)', 0, 1,
-			eleSymb, eleSymb, eleChk);
+			eleSymb);
 	strEdit += createLine('blue', '');
 	strEdit += "</td></tr>\n";
 	strEdit += "<tr><td colspan='2'>\n";
@@ -408,8 +402,8 @@ function createEditGroup() {
 	strEdit += createRadio("connect", "all", 'checkBondStatus(value)', 0, 0,
 			"connect", "all")
 			+ "<br>\n";
-	strEdit += "From " + createList2("connectbyElementList", "", "", 1) + " ";
-	strEdit += "To " + createList2("connectbyElementListone", "", "", 1)
+	strEdit += "From " + createList2("connectbyElementList", "", false, 1) + " ";
+	strEdit += "To " + createList2("connectbyElementListone", "", false, 1)
 	+ "<br>\n";
 	strEdit += "Mode "
 		+ createRadio("range", "whithin", 'checkWhithin(value)', 'disab',
@@ -422,8 +416,7 @@ function createEditGroup() {
 	strEdit += " to " + createText2("radiuscoonectTo", "", "2", "disab")
 	+ " &#197;";
 	strEdit += "<br> Style bond "
-		+ createList('setBondFashion', '', 0, 1, bondValue, bondValue,
-				bondChk) + "<br> \n";
+		+ createList('setBondFashion', '', 0, 1, bondValue) + "<br> \n";
 	strEdit += createButton('connect2', 'Connect atom', 'connectAtom()', '');
 	strEdit += createButton('connect0', 'Delete bond', 'deleteBond()', '')
 	+ "<br>\n";
@@ -438,7 +431,6 @@ function createEditGroup() {
 function createBuildGroup() {
 	var periodicityName = new Array("select", "crystal", "film", "polymer");
 	var periodicityValue = new Array("", "crystal", "slab", "polymer");
-	var periodicityChk = new Array(1, 0, 0, 0);
 
 	var strBuild = "<form id='builGroup' name='builGroup' style='display:none'>";
 	strBuild += "<table class='contents'><tr><td> \n";
@@ -451,7 +443,7 @@ function createBuildGroup() {
 	 * 'toggleDiv(this,"addAtomZmatrix") + addAtomZmatrix(this)', "", "", "");
 	 * strBuild += "<div id='addAtomZmatrix' style='display:none;
 	 * margin-top:20px'>"; strBuild += "<br> Element: " + createList('addEleZ',
-	 * '', 0, 1, 100, eleSymb, eleSymb, eleChk); strBuild += "<br>"; strBuild +=
+	 * '', 0, 1, 100, eleSymb, eleSymb); strBuild += "<br>"; strBuild +=
 	 * createButton("addAtom", "add Atom", "addZatoms()", ""); strBuild += "</div>"
 	 * strBuild += createLine('blue', ''); strBuild += "</td></tr>\n";
 	 */
@@ -465,8 +457,7 @@ function createBuildGroup() {
 	strBuild += "y <input type='text'  name='y_frac' id='y_frac' size='1' class='text'> ";
 	strBuild += "z <input type='text'  name='z_frac' id='z_frac' size='1' class='text'> ";
 	strBuild += ", Element: "
-		+ createList('addNewFracList', '', 0, 1, eleSymb, eleSymb,
-				eleChk);
+		+ createList('addNewFracList', '', 0, 1, eleSymb);
 	strBuild += createButton("addNewFracListBut", "add Atom", "addNewatom()",
 	"");
 	strBuild += "<br><br> Read out coordinates of neighbor atom/s";
@@ -488,10 +479,10 @@ function createBuildGroup() {
 	strBuild += "<div id='createmolecularCrystal' style='display:none; margin-top:20px'>";
 	strBuild += "<br> Periodicity: "
 		+ createList('typeMole', 'checkIfThreeD(value)', 0, 1,
-				periodicityValue, periodicityName, periodicityChk);
+				periodicityValue, periodicityName);
 	strBuild += "<br> Space group: "
 		+ createList('periodMole', 'setCellParamSpaceGroup(value)', 0, 1,
-				spaceGroupValue, spaceGroupName, spaceGroupChk)
+				spaceGroupValue, spaceGroupName)
 				+ " <a href=http://en.wikipedia.org/wiki/Hermann%E2%80%93Mauguin_notation target=_blank>Hermann-Mauguin</a>"; // space
 	// group
 	// list
@@ -553,9 +544,7 @@ function createMeasureGroup() {
 	var measureName = new Array("select", "Angstroms", "Bohr", "nanometers",
 	"picometers");
 	var measureValue = new Array("select", "angstroms", "BOHR", "nm", "pm");
-	var measurechk = new Array(1, 0, 0, 0, 0);
 	var textValue = new Array("0", "6", "8", "10", "12", "16", "20", "24", "30");
-	var textCk = new Array(1, 0, 0, 0, 0, 0, 0, 0, 0);
 	var textText = new Array("select", "6 pt", "8 pt", "10 pt", "12 pt",
 			"16 pt", "20 pt", "24 pt", "30 pt");
 	
@@ -569,7 +558,7 @@ function createMeasureGroup() {
 			0, "", "distance");
 	strMeas += createListFunc('measureDist', 'setMeasureUnit(value)',
 			'setTimeout("setMeasureUnit(value) ",50)', 0, 1, measureValue,
-			measureName, measurechk)
+			measureName)
 			+ " ";
 	strMeas += createRadio("distance", "angle", 'checkMeasure(value)', '', 0,
 			"", "angle");
@@ -600,7 +589,7 @@ function createMeasureGroup() {
 	strMeas += "<tr><td colspan='2'>";
 	strMeas += "Font size ";
 	strMeas += createList("fSize", "setMeasureSize(value)", 0, 1,
-			textValue, textText, textCk);
+			textValue, textText);
 	strMeas += createLine('blue', '');
 	strMeas += "</td></tr>";
 	strMeas += "</table></FORM>  \n";
@@ -611,7 +600,6 @@ function createMeasureGroup() {
 
 function createOrientGrp() {
 	var motionValueName = new Array("select", "translate", "rotate");
-	var motionValueChk = new Array(1, 0, 0);
 	var strOrient = "<form id='orientGroup' name='orientGroup' style='display:none'>\n";
 	strOrient += "<table class='contents' ><tr><td><h2>Orientation and Views</td><tr>\n";
 	strOrient += "<tr><td>\n";
@@ -691,7 +679,7 @@ function createOrientGrp() {
 	strOrient += "<tr><td colspan='3'>Motion "
 		+ createListFunc('setmotion', 'setKindMotion(value)',
 				'setTimeout("setKindMotion(value)",50)', 0, 1,
-				motionValueName, motionValueName, motionValueChk);
+				motionValueName, motionValueName);
 	strOrient += " magnitude\n";
 	strOrient += "<input type='text' value='5' class='text' id='fineOrientMagn' size='3'> &#197 / degree;";
 	strOrient += "</td></tr>\n";
@@ -704,8 +692,7 @@ function createOrientGrp() {
 	strOrient += "</td></tr>\n";
 	strOrient += "<tr><td colspan='2'> ";
 	strOrient += "by element "
-		+ createList2("byElementAtomMotion", "elementSelected(value)", "",
-				1) + "\n";
+		+ createList2("byElementAtomMotion", "elementSelected(value)", false, 1) + "\n";
 	// strOrient += "&nbsp by atom &nbsp"
 	// + createList2('byAtomMotion', 'atomSelected(value)', '', 1) + "\n";
 	strOrient += createCheck("byselectionOrient", "&nbsp by picking &nbsp",
@@ -757,11 +744,8 @@ function createCellGrp() {
 	var unitcellName = new Array("0 0 0", "1/2 1/2 1/2", "1/2 0 0", "0 1/2 0",
 			"0 0 1/2", "-1/2 -1/2 -1/2", "1 1 1", "-1 -1 -1", "1 0 0", "0 1 0",
 	"0 0 1");
-	var unitcellChk = new Array(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	var unitcellSize = new Array("1", "2", "3", "4", "5", "6", "7", "8", "9",
 			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19");
-	var unitcellSizeChk = new Array(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0);
 	var strCell = "<form id='cellGroup' name='cellGroup' style='display:none'>";
 	strCell += "<table class='contents'><tr><td><h2>Cell properties</h2></td></tr>\n";
 	strCell += "<tr><td colspan='2'>"
@@ -774,7 +758,7 @@ function createCellGrp() {
 		+ createListFunc('offsetCell',
 				'setV("set unitcell " + value + ";")',
 				'setTimeout("setV("set unitcell " + value +";")",50)', 0,
-				1, unitcellSize, unitcellSize, unitcellSizeChk) + "\n";
+				1, unitcellSize, unitcellSize) + "\n";
 	strCell += " dotted "
 		+ createCheck("cellDott", "dotted, ", "setCellDotted()", 0, 0,
 		"DOTTED") + "  color ";
@@ -824,7 +808,7 @@ function createCellGrp() {
 	strCell += "Common sets "
 		+ createListFunc('offsetCell', 'setUnitCellOrigin(value)',
 				'setTimeout("setUnitCellOrigin(value)",50)', 0, 1,
-				unitcellName, unitcellName, unitcellChk) + "\n";
+				unitcellName, unitcellName) + "\n";
 	strCell += "<br>  \n"
 		strCell += createButton('advanceCelloffset', '+',
 				'toggleDivValue(true,"advanceCelloff")', '')
@@ -883,14 +867,11 @@ function createCellGrp() {
 
 function createPolyGrp() {
 	var polyEdgeName = new Array("select", "4, 6", "4 ", "6", "8", "10", "12");
-	var polyEdgeChk = [1];
 	var polyStyleName = new Array("select", "flat", "collapsed edges",
 			"no edges", "edges", "frontedges");
 	var polyStyleValue = new Array("NOEDGES", "flat edges", "collapsed",
 			"noedges", "edges", "frontedges");
-	var polyStyleChk = new Array(1, 0, 0, 0, 0, 0);
 	var polyFaceName = new Array("0.0", "0.25", "0.5", "0.9", "1.2");
-	var polyFaceChk = new Array(1, 0, 0, 0, 0);
 	var strPoly = "<FORM id='polyGroup' name='polyGroup' style='display:none'>\n";
 	strPoly += "<table class='contents'>\n";
 	strPoly += "<tr><td>\n";
@@ -904,7 +885,7 @@ function createPolyGrp() {
 	strPoly += "<tr><td colspan='2'>\n";
 	strPoly += "&nbsp a) Select central atom:  <br>\n";
 	strPoly += "&nbsp &nbsp   by element "
-		+ createList2('polybyElementList', "", "", 0);
+		+ createList2('polybyElementList', "", false, 0);
 	// strPoly+=createCheck("byselectionPoly", "&nbsp by picking &nbsp",
 	// 'setPolybyPicking(this)', 0, 0, "set picking") + "<br>\n";
 	strPoly += "<br>&nbsp &nbsp just central atom"
@@ -914,7 +895,7 @@ function createPolyGrp() {
 	strPoly += "<tr><td colspan='2'>\n";
 	strPoly += "&nbsp  b) select vertex atoms:  <br>\n";
 	strPoly += "&nbsp &nbsp   by element "
-		+ createList2('poly2byElementList', " ", "", 0) + "\n";
+		+ createList2('poly2byElementList', "", false, 0) + "\n";
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
 	strPoly += "&nbsp  c) based on <br>";
@@ -927,8 +908,7 @@ function createPolyGrp() {
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
 	strPoly += "&nbsp d) number of vertex "
-		+ createList('polyEdge', '', 0, 0, polyEdgeName, polyEdgeName,
-				polyEdgeChk) + "\n";
+		+ createList('polyEdge', '', 0, 0, polyEdgeName) + "\n";
 	strPoly += createLine('blue', '');
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
@@ -955,11 +935,10 @@ function createPolyGrp() {
 	+ "\n<br><br>";
 	strPoly += "&nbsp c) style edges\n"
 		+ createList('polyVert', 'checkPolyValue(this.value)', 0, 0,
-				polyStyleValue, polyStyleName, polyStyleChk) + "\n";
+				polyStyleValue, polyStyleName) + "\n";
 	strPoly += "<br>"
 		strPoly += "&nbsp &nbsp collapsed faces Offset \n"
-			+ createList('polyFace', '', 0, 0, polyFaceName, polyFaceName,
-					polyFaceChk) + "\n";
+			+ createList('polyFace', '', 0, 0, polyFaceName) + "\n";
 	strPoly += "</div>";
 	strPoly += createLine('blue', '');
 	strPoly += "</td></tr>\n";
@@ -979,20 +958,19 @@ function createPolyGrp() {
 
 ///introduce keypress onkeypress=\"setTimeout('
 function createIsoGrp() {
-	var isoName = new Array("no isosurface", "molecular", "VdW  surface",
-			"solvent access", "MEP", "geodesic VdW", "geodesic IONIC",
+	var isoName = new Array("no isosurface", "Van der Waals",
+			"solvent accessible", "molecular", "MEP", "geodesic VdW", "geodesic IONIC",
 			"dots VdW", "dots IONIC");
 	var isoValue = new Array('load ""; isosurface OFF',
+			'load ""; isosurface VDW'/*BH Q: Why was this 2.0? 2.0'*/, 
+			'load ""; isosurface SASURFACE',
 			'load ""; isosurface MOLSURFACE resolution 0 molecular',
-			'load ""; isosurface VDW 2.0', 'load ""; isosurface SASURFACE',
 			'load ""; isosurface resolution 7 SOLVENT map MEP',
 			'load ""; geoSurface VANDERWAALS', 'load ""; geoSurface IONIC',
 			'load "";  dots VANDERWAALS', 'load "";  dots IONIC');
-	var isoChk = new Array(1, 0, 0, 0, 0, 0, 0, 0, 0);
 	var colSchemeName = new Array("Rainbow (default)", "Black & White",
 			"Blue-White-Red", "Red-Green", "Green-Blue");
 	var colSchemeValue = new Array("roygb", "bw", "bwr", "low", "high");
-	var colSchemeChk = new Array(1, 0, 0, 0, 0);
 	/*
 	 * TODO slab unitcell. /
 	 * http://chemapps.stolaf.edu/jmol/docs/examples-11/new.htm isosurface /
@@ -1006,7 +984,7 @@ function createIsoGrp() {
 	strIso += "<tr><td colspan='2'>\n";
 	strIso += "Molecular (classic) isoSurfaces: \n <br>";
 	strIso += createList('isoCommon', 'setIsoClassic(this.value)', 0, 0,
-			isoValue, isoName, isoChk)
+			isoValue, isoName)
 			+ "&nbsp";
 	strIso += createButton('removeIso', 'remove iso', 'setV("isosurface OFF")',
 	'');
@@ -1019,7 +997,7 @@ function createIsoGrp() {
 	+ createText2("dataMax", "", "12", 0) + " e- *bohr^-3<br>";
 	strIso += "<br> Colour-scheme "
 		+ createList('isoColorScheme', 'setIsoColorscheme()', 0, 0,
-				colSchemeValue, colSchemeName, colSchemeChk) + "&nbsp<br>";
+				colSchemeValue, colSchemeName) + "&nbsp<br>";
 	strIso += createButton('up', 'Update map', 'setIsoColorRange()', '');
 	// + createButton('reverseColor', 'Reverse colour', 'setIsoColorReverse()',
 	// '');
@@ -1094,12 +1072,9 @@ function createGeometryGrp() {
 			"set animationFps 30", "set animationFps 35");
 	var vecAnimText = new Array("select", "5", "10", "15", "20", "25", "30",
 	"35");
-	var vecAnimCheck = new Array(1, 0, 0, 0, 0, 0, 0, 0);
-
 	var vecUnitEnergyVal = new Array("h", "e", "r", "kj", "kc");
 	var vecUnitEnergyText = new Array("Hartree", "eV", "Rydberg", "kJ*mol-1",
 	"kcal*mol-1");
-	var vecUnitEnergyCheck = new Array(1, 0, 0, 0, 0)
 	var strGeom = "<form id='geometryGroup' name='modelsGeom' style='display:none'>";
 	strGeom += "<table class='contents'><tr><td>";
 	strGeom += "<h2>Geometry optimiziation</h2>\n";
@@ -1126,12 +1101,12 @@ function createGeometryGrp() {
 			+ "\n";
 	strGeom += "<br>"
 		+ createList("framepersec", "setV(value)", 0, 1, vecAnimValue,
-				vecAnimText, vecAnimCheck) + " motion speed | ";
+				vecAnimText) + " motion speed | ";
 	strGeom += createCheck('saveFrames', ' save video frames', 'saveFrame()',
 			0, 0, "");
 	strGeom += "<br> Energy unit measure: ";
 	strGeom += createList("unitMeasureEnergy", "convertPlot(value)", 0, 1,
-			vecUnitEnergyVal, vecUnitEnergyText, vecUnitEnergyCheck);
+			vecUnitEnergyVal, vecUnitEnergyText);
 	strGeom += "</td></tr><tr><td>";
 	strGeom += "<select id='geom' name='models' onchange='showFrame(value)'  class='selectmodels' size='10'></select>";
 	strGeom += "</td></tr><tr><td style='margin=0px; padding=0px;'><div id='appletdiv' style='display:none'>\n";
@@ -1168,9 +1143,6 @@ function createFreqGrp() {
 	"vibration Scale 10");
 	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
-	var vecscaleCheck = new Array(1, 0, 0, 0, 0, 0, 0, 0);
-	var vecsizeCheck = new Array(1, 0, 0, 0, 0, 0, 0, 0);
-	var vibAmplitudeCheck = new Array(1, 0, 0, 0, 0, 0);
 
 	var strFreq = "<table class='contents'><tr><td valign='top'><form id='freqGroup' name='modelsVib' style='display:none'>";
 	strFreq += "<h2>IR-Raman Frequencies</h2>\n";
@@ -1194,18 +1166,18 @@ function createFreqGrp() {
 			"", "off");
 	strFreq += "<BR>\n";
 	strFreq += createList("vecsamplitude", "setV(value)", 0, 1,
-			vibAmplitudeValue, vibAmplitudeText, vibAmplitudeCheck)
+			vibAmplitudeValue, vibAmplitudeText)
 			+ " vib. amplitude";
 	strFreq += "<BR>\n";
 	strFreq += createCheck("vectors", "view vectors",
 			"setVCheckbox(this, this.value)", 0, 1, "vectors");
 	strFreq += "<BR>\n";
 	strFreq += createList("vecscale", "setV(value)", 0, 1, vecscaleValue,
-			vecscaleText, vecscaleCheck)
+			vecscaleText)
 			+ " vector scale";
 	strFreq += "<BR>\n";
 	strFreq += createList("sizevec", "setV(value)", 0, 1, vecsizeValue,
-			vecscaleText, vecscaleCheck)
+			vecscaleText)
 			+ " vector size";
 	strFreq += "<BR>\n";
 	strFreq += "<table class='contents'> <tr><td>vector color</td> <td><script type='text/javascript'>jmolColorPickerBox('color vectors $COLOR$',[255,255,255])</script></td>";
@@ -1254,7 +1226,6 @@ function createElecpropGrp() {
 	var colSchemeName = new Array("Rainbow (default)", "Black & White",
 			"Blue-White-Red", "Red-Green", "Green-Blue");
 	var colSchemeValue = new Array('roygb', 'bw', 'bwr', 'low', 'high');
-	var colSchemeChk = new Array(1, 0, 0, 0, 0);
 	var strElec = "<form id='elecGroup' name='elecGroup' style='display:none'>\n";
 	strElec += "<table class='contents'><tr><td ><h2>Electronic - Magnetic properties</h2> \n";
 	strElec += "</td></tr>\n";
@@ -1264,7 +1235,7 @@ function createElecpropGrp() {
 			'setV("script scripts/mulliken.spt")', 0);
 	strElec += "<br> Colour-scheme "
 		+ createList('chergeColorScheme', 'setColorMulliken(value)', 0, 0,
-				colSchemeValue, colSchemeName, colSchemeChk)
+				colSchemeValue, colSchemeName)
 				+ "&nbsp<br>";
 	strElec += "</td></tr>\n";
 	strElec += "<tr><td>\n";
@@ -1295,13 +1266,11 @@ function createElecpropGrp() {
 ///////////////////////////// create other properties
 function createotherpropGroup() {
 	var textValue = new Array("0", "6", "8", "10", "12", "16", "20", "24", "30");
-	var textCk = new Array(1, 0, 0, 0, 0, 0, 0, 0, 0);
 	var textText = new Array("select", "6 pt", "8 pt", "10 pt", "12 pt",
 			"16 pt", "20 pt", "24 pt", "30 pt");
 
 	var shadeName = new Array("select", "1", "2", "3")
 	var shadeValue = new Array("0", "1", "2", "3")
-	var shadeChk = new Array(1, 0, 0, 0)
 	var strOther = "<form id='otherpropGroup' name='otherpropGroup' style='display:none' >";
 	strOther += "<table class='contents'><tr><td> \n";
 	strOther += "<h2>Other properties</h2></td></tr>\n";
@@ -1327,7 +1296,7 @@ function createotherpropGroup() {
 	strOther += createList(
 			'setzShadePower ',
 			'setV("set zShade; set zShadePower " + value + " ;") + setVCheckbox("z-shade","")',
-			0, 1, shadeValue, shadeName, shadeChk)
+			0, 1, shadeValue, shadeName)
 			+ " Fog level";
 	strOther += "</td></tr>\n";
 	strOther += "<tr><td colspan='2'> Anti-aliasing"
@@ -1379,7 +1348,7 @@ function createotherpropGroup() {
 	strOther += "<tr><td colspan='2'>";
 	strOther += "Font size ";
 	strOther += createList("fontSize", "setTextSize(value)", 0, 1,
-			textValue, textText, textCk);
+			textValue, textText);
 	strOther += "</td></tr>";
 	strOther += "<tr><td colspan='2'>"
 		+ createButton("removeText", "Remove messages", 'setV("echo")', 0);

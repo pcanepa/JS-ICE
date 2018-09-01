@@ -117,55 +117,39 @@ function createRadio(name, text, onclick, disab, def, id, value) {
 	return s;
 }
 
-function createList(name, onclick, disab, size, optionValue,
-		optionText, optionCheck) {
+function createList(name, onclick, disab, size, optionValue, optionText, optionCheck, type, onkey) {
+	optionText || (optionText = optionValue);
+	optionCheck || (optionCheck = [1]);
 	if (optionValue.length != optionText.length)
 		alert("form.js#createList optionValue not same length as optionText: " + name);
 	var optionN = optionValue.length
 	var s = "<SELECT ";
 	s += "NAME='" + name + "' ";
 	s += "ID='" + name + "' ";
-	s += "SIZE='" + size + "' ";
-	s += " CLASS='select'";
-	if (disab) {
-		s += "DISABLED ";
-	}
-	s += "OnChange='" + onclick + "'>";
-	for ( var n = 0; n < optionN; n++) {
-		s += "<OPTION VALUE='" + optionValue[n] + "'";
-		if (optionCheck[n] == 1) {
-			s += "checked";
-		}
-		;
-		s += ">";
-		s += optionText[n];
-		s += "</OPTION>";
-	}
-	s += "</SELECT>";
-	return s;
-}
-
-function createListFunc(name, onclick, onkey, disab, size,
-		optionValue, optionText, optionCheck) {
-	if (optionValue.length != optionText.length)
-		alert("form.js#createListMenu optionValue not same length as optionText: " + name);
-	var optionN = optionValue.length
-	var s = "<SELECT ";
-	s += "NAME='" + name + "' ";
-	s += "ID='" + name + "' ";
-	s += "SIZE='" + size + "' ";
-	s += " CLASS='select'";
+	s += "SIZE='" + size + "' ";	
 	if (disab) {
 		s += "DISABLED ";
 	}
 	s += "OnChange='" + onclick + "' ";
-	s += "OnKeypress='" + onkey + "'>";
+	if (onkey)
+		s += "OnKeypress='" + onkey + "' ";
+	s += " CLASS='select";
+	switch (type) {
+	case "menu":
+		s += "menu' resizable='yes";
+		break;
+	case "elem":
+		return s + "'><option value=0>select</option></SELECT>";
+	case "func":
+	default:
+		break;
+	}
+	s += "'>";
 	for ( var n = 0; n < optionN; n++) {
 		s += "<OPTION VALUE='" + optionValue[n] + "'";
 		if (optionCheck[n] == 1) {
 			s += "checked";
 		}
-		;
 		s += ">";
 		s += optionText[n];
 		s += "</OPTION>";
@@ -174,49 +158,24 @@ function createListFunc(name, onclick, onkey, disab, size,
 	return s;
 }
 
+function createListFunc(name, onclick, onkey, disab, size, optionValue, optionText, optionCheck) {
+	return createList(name, onclick, disab, size, optionValue, optionText, optionCheck, "func", onkey);
+}
+
+function createListmenu(name, onclick, disab, size, optionValue, optionText, optionCheck) {
+	return createList(name, onclick, disab, size, optionValue, optionText, optionCheck, "menu");
+}
+
 function createList2(name, onclick, disab, size) {
-	var s = "<SELECT ";
-	s += "NAME='" + name + "' ";
-	s += "ID='" + name + "' ";
-	s += "SIZE='" + size + "' ";
-	s += " CLASS='select'";
-	if (disab) {
-		s += "DISABLED ";
-	}
-	s += "OnChange='" + onclick + "'>";
-	s += "</SELECT>";
-	return s;
+	return createList(name, onclick, disab, size, []);
 }
 
 function createListKey(name, onclick, onkey, disab, size) {
-	var s = "<SELECT ";
-	s += "NAME='" + name + "' ";
-	s += "ID='" + name + "' ";
-	s += "SIZE='" + size + "' ";
-	s += " CLASS='select'";
-	if (disab) {
-		s += "DISABLED ";
-	}
-	s += "OnKeypress='" + onkey + "' ";
-	s += "OnChange='" + onclick + "'>";
-	s += "</SELECT>";
-	return s;
+	return createList(name, onclick, disab, size, [], [], [], "key", onkey)
 }
 
-function createListElement(name, onclick, onkey, disab, size) {
-	var s = "<SELECT ";
-	s += "NAME='" + name + "' ";
-	s += "ID='" + name + "' ";
-	s += "SIZE='" + size + "' ";
-	s += " CLASS='select'";
-	if (disab) {
-		s += "DISABLED ";
-	}
-	s += "OnKeypress='" + onkey + "' ";
-	s += "OnChange='" + onclick + "'>";
-	s += "<option value=0>select</option>";
-	s += "</SELECT>";
-	return s;
+function createListElement(name, onclick, onkey, disab, size, ) {
+	return createList(name, onclick, disab, size, [], [], [], "elem", onkey)
 }
 
 function createTextArea(name, text, rows, cols, disab) {
@@ -319,31 +278,3 @@ function createLine(color, style) {
 	return s;
 }
 
-function createListmenu(name, onclick, disab, size, optionValue,
-		optionText, optionCheck) {
-	if (optionValue.length != optionText.length)
-		alert("form.js#createListMenu optionValue not same length as optionText: " + name);
-	var optionN = optionValue.length
-	var s = "<SELECT ";
-	s += "NAME='" + name + "' ";
-	s += "ID='" + name + "' ";
-	s += "SIZE='" + size + "' ";
-	s += " CLASS='selectmenu'";
-	s += " resizable='yes'";
-	if (disab) {
-		s += "DISABLED ";
-	}
-	s += "OnChange='" + onclick + "'>";
-	for ( var n = 0; n < optionN; n++) {
-		s += "<OPTION VALUE='" + optionValue[n] + "'";
-		if (optionCheck[n] == 1) {
-			s += "checked";
-		}
-		;
-		s += ">";
-		s += optionText[n];
-		s += "</OPTION>";
-	}
-	s += "</SELECT>";
-	return s;
-}
