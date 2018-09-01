@@ -27,7 +27,7 @@ function applyBond(x) {
 		setV("wireframe .2;");
 	} else {
 		setV("wireframe " + (x / 100) + ";");
-		document.getElementById('bondMsg').innerHTML = parseFloat(x / 100)
+		getbyID('bondMsg').innerHTML = parseFloat(x / 100)
 		.toPrecision(1)
 		+ " &#197";
 		setV("save BONDS bondEdit");
@@ -36,7 +36,7 @@ function applyBond(x) {
 
 function applyRadii(x) {
 	setV("cpk " + x + " %;");
-	document.getElementById('radiiMsg').innerHTML = parseFloat(x)
+	getbyID('radiiMsg').innerHTML = parseFloat(x)
 	.toPrecision(2)
 	+ " %"
 }
@@ -65,14 +65,14 @@ function applyConnect(x) {
 		}
 		setV("save BONDS bondEdit");
 	}
-	document.getElementById('radiiConnectMsg').innerHTML = " "
+	getbyID('radiiConnectMsg').innerHTML = " "
 		+ parseFloat(x / 20.0).toPrecision(2) + " &#197";
 }
 
 function applyTrans(x) {
 	var dull = parseFloat(x);
 	setV("color " + getValueSel("setFashion") + " TRANSLUCENT " + dull + ";");
-	document.getElementById('transMsg').innerHTML = x + " %"
+	getbyID('transMsg').innerHTML = x + " %"
 }
 
 function applyPack(x) {
@@ -105,158 +105,28 @@ function applyLight3(x) {
 var defaultFront = 20, defaultBack = 100;
 
 function applySlab(x) {
-	document.getElementById('slabSliderMsg').innerHTML = x + "%" // display
+	getbyID('slabSliderMsg').innerHTML = x + "%" // display
 	// 0% for
 	// frontplane,
 	// 100% for
 	// backplane:
-	jmolScript("slab " + (100 - x) + ";")
+	runJmolScript("slab " + (100 - x) + ";")
 }
 
 function applyDepth(x) { // alternative displays:
-	// document.getElementById('backValue').innerHTML = x + "%" // 0% for
+	// getbyID('backValue').innerHTML = x + "%" // 0% for
 	// frontplane, 100% for backplane
-	document.getElementById('depthSliderMsg').innerHTML = (100 - x) + "%" // 100%
+	getbyID('depthSliderMsg').innerHTML = (100 - x) + "%" // 100%
 	// for
 	// frontplane,
 	// 0%
 	// for
 	// backplane
-	jmolScript("depth " + (100 - x) + ";")
-}
-
-var bondSlider = new Slider(document.getElementById("bondSlider"), document
-		.getElementById("bondSlider-input"), "horizontal");
-bondSlider.setMaximum(100);
-//does not work with values < 1
-bondSlider.setMinimum(0);
-bondSlider.setUnitIncrement(5);
-//amount to increment the value when using the arrow keys
-bondSlider.setValue(15);
-bondSlider.onchange = function() { // onchange MUST BE all lowercase
-	applyBond(document.getElementById("bondSlider-input").value)
-}
-
-var radiiSlider = new Slider(document.getElementById("radiiSlider"), document
-		.getElementById("radiiSlider-input"), "horizontal");
-radiiSlider.setMaximum(100);
-//does not work with values < 1
-radiiSlider.setMinimum(0);
-radiiSlider.setUnitIncrement(5);
-//amount to increment the value when using the arrow keys
-radiiSlider.setValue(26);
-radiiSlider.onchange = function() { // onchange MUST BE all lowercase
-	applyRadii(document.getElementById("radiiSlider-input").value)
-}
-
-var radiiConnect = new Slider(document.getElementById("radiiConnect"), document
-		.getElementById("radiiConnect-input"), "horizontal");
-radiiConnect.setMaximum(100);
-//does not work with values < 1
-radiiConnect.setMinimum(0);
-radiiConnect.setUnitIncrement(1);
-//amount to increment the value when using the arrow keys
-radiiConnect.setValue(80);
-radiiConnect.onchange = function() { // onchange MUST BE all lowercase
-	applyConnect(document.getElementById("radiiConnect-input").value)
-}
-
-var transSlider = new Slider(document.getElementById("transSlider"), document
-		.getElementById("transSlider-input"), "horizontal");
-transSlider.setMaximum(100);
-//does not work with values < 1
-transSlider.setMinimum(0);
-transSlider.setUnitIncrement(4);
-//amount to increment the value when using the arrow keys
-transSlider.setValue(100);
-transSlider.onchange = function() { // onchange MUST BE all lowercase
-	applyTrans(document.getElementById("transSlider-input").value)
-}
-
-var packSlider = new Slider(document.getElementById("packSlider"), document
-		.getElementById("packSlider-input"), "horizontal");
-packSlider.setMaximum(100);
-//does not work with values < 1
-packSlider.setMinimum(0);
-packSlider.setUnitIncrement(0.5);
-//amount to increment the value when using the arrow keys
-packSlider.setValue(10);
-packSlider.onchange = function() { // onchange MUST BE all lowercase
-	applyPack(document.getElementById("packSlider-input").value)
-}
-
-var persSlider = new Slider(document.getElementById("persSlider"), document
-		.getElementById("persSlider-input"), "horizontal");
-persSlider.setMaximum(100);
-//does not work with values < 1
-persSlider.setMinimum(0);
-persSlider.setUnitIncrement(2);
-//amount to increment the value when using the arrow keys
-persSlider.setValue(5);
-persSlider.onchange = function() { // onchange MUST BE all lowercase
-	applyPers(document.getElementById("persSlider-input").value)
-}
-
-var light1Slider = new Slider(document.getElementById("light1Slider"), document
-		.getElementById("light1Slider-input"), "horizontal");
-light1Slider.setMaximum(100);
-//does not work with values < 1
-light1Slider.setMinimum(0);
-light1Slider.setUnitIncrement(2);
-//amount to increment the value when using the arrow keys
-light1Slider.setValue(5);
-light1Slider.onchange = function() { // onchange MUST BE all lowercase
-	applyLight1(document.getElementById("light1Slider-input").value)
-}
-
-var light2Slider = new Slider(document.getElementById("light2Slider"), document
-		.getElementById("light2Slider-input"), "horizontal");
-light2Slider.setMaximum(100);
-//does not work with values < 1
-light2Slider.setMinimum(0);
-light2Slider.setUnitIncrement(2);
-//amount to increment the value when using the arrow keys
-light2Slider.setValue(5);
-light2Slider.onchange = function() { // onchange MUST BE all lowercase
-	applyLight2(document.getElementById("light2Slider-input").value)
-}
-
-var light3Slider = new Slider(document.getElementById("light3Slider"), document
-		.getElementById("light3Slider-input"), "horizontal");
-light3Slider.setMaximum(100);
-//does not work with values < 1
-light3Slider.setMinimum(0);
-light3Slider.setUnitIncrement(2);
-//amount to increment the value when using the arrow keys
-light3Slider.setValue(5);
-light3Slider.onchange = function() { // onchange MUST BE all lowercase
-	applyLight3(document.getElementById("light3Slider-input").value)
-}
-
-var slabSlider = new Slider(document.getElementById("slabSlider"), document
-		.getElementById("slabSlider-input"), "horizontal");
-slabSlider.setMaximum(100)
-slabSlider.setMinimum(0)
-slabSlider.setUnitIncrement(2) // amount to increment the value when using the
-// arrow keys
-slabSlider.setValue(defaultFront)
-slabSlider.onchange = function() { // onchange MUST BE all lowercase
-	applySlab(document.getElementById("slabSlider-input").value)
-}
-
-var depthSlider = new Slider(document.getElementById("depthSlider"), document
-		.getElementById("depthSlider-input"), "horizontal");
-depthSlider.setMaximum(100);
-depthSlider.setMinimum(0);
-depthSlider.setUnitIncrement(2); // amount to increment the value when using
-// the arrow keys
-depthSlider.setValue(defaultBack);
-depthSlider.onchange = function() { // onchange MUST BE all lowercase
-	applyDepth(document.getElementById("depthSlider-input").value)
+	runJmolScript("depth " + (100 - x) + ";")
 }
 
 function toggleSlab() {
-	var ctl = document.getElementById("slabToggle")
+	var ctl = getbyID("slabToggle")
 	if (ctl.checked) {
 		setV("spin off; slab on; slab 80;");
 		slabSlider.setValue(20);
@@ -269,3 +139,126 @@ function toggleSlab() {
 		depthSlider.setValue(0);
 	}
 }
+
+loadSliders = function() {
+
+	var bondSlider = new Slider(getbyID("bondSlider"), getbyID("bondSlider-input"), "horizontal");
+	bondSlider.setMaximum(100);
+	//does not work with values < 1
+	bondSlider.setMinimum(0);
+	bondSlider.setUnitIncrement(5);
+	//amount to increment the value when using the arrow keys
+	bondSlider.setValue(15);
+	bondSlider.onchange = function() { // onchange MUST BE all lowercase
+		applyBond(getbyID("bondSlider-input").value)
+	}
+	
+	var radiiSlider = new Slider(getbyID("radiiSlider"), getbyID("radiiSlider-input"), "horizontal");
+	radiiSlider.setMaximum(100);
+	//does not work with values < 1
+	radiiSlider.setMinimum(0);
+	radiiSlider.setUnitIncrement(5);
+	//amount to increment the value when using the arrow keys
+	radiiSlider.setValue(26);
+	radiiSlider.onchange = function() { // onchange MUST BE all lowercase
+		applyRadii(getbyID("radiiSlider-input").value)
+	}
+	
+	var radiiConnect = new Slider(getbyID("radiiConnect"), getbyID("radiiConnect-input"), "horizontal");
+	radiiConnect.setMaximum(100);
+	//does not work with values < 1
+	radiiConnect.setMinimum(0);
+	radiiConnect.setUnitIncrement(1);
+	//amount to increment the value when using the arrow keys
+	radiiConnect.setValue(80);
+	radiiConnect.onchange = function() { // onchange MUST BE all lowercase
+		applyConnect(getbyID("radiiConnect-input").value)
+	}
+	
+	var transSlider = new Slider(getbyID("transSlider"), getbyID("transSlider-input"), "horizontal");
+	transSlider.setMaximum(100);
+	//does not work with values < 1
+	transSlider.setMinimum(0);
+	transSlider.setUnitIncrement(4);
+	//amount to increment the value when using the arrow keys
+	transSlider.setValue(100);
+	transSlider.onchange = function() { // onchange MUST BE all lowercase
+		applyTrans(getbyID("transSlider-input").value)
+	}
+	
+	var packSlider = new Slider(getbyID("packSlider"), getbyID("packSlider-input"), "horizontal");
+	packSlider.setMaximum(100);
+	//does not work with values < 1
+	packSlider.setMinimum(0);
+	packSlider.setUnitIncrement(0.5);
+	//amount to increment the value when using the arrow keys
+	packSlider.setValue(10);
+	packSlider.onchange = function() { // onchange MUST BE all lowercase
+		applyPack(getbyID("packSlider-input").value)
+	}
+	
+	var persSlider = new Slider(getbyID("persSlider"), getbyID("persSlider-input"), "horizontal");
+	persSlider.setMaximum(100);
+	//does not work with values < 1
+	persSlider.setMinimum(0);
+	persSlider.setUnitIncrement(2);
+	//amount to increment the value when using the arrow keys
+	persSlider.setValue(5);
+	persSlider.onchange = function() { // onchange MUST BE all lowercase
+		applyPers(getbyID("persSlider-input").value)
+	}
+	
+	var light1Slider = new Slider(getbyID("light1Slider"), getbyID("light1Slider-input"), "horizontal");
+	light1Slider.setMaximum(100);
+	//does not work with values < 1
+	light1Slider.setMinimum(0);
+	light1Slider.setUnitIncrement(2);
+	//amount to increment the value when using the arrow keys
+	light1Slider.setValue(5);
+	light1Slider.onchange = function() { // onchange MUST BE all lowercase
+		applyLight1(getbyID("light1Slider-input").value)
+	}
+	
+	var light2Slider = new Slider(getbyID("light2Slider"), getbyID("light2Slider-input"), "horizontal");
+	light2Slider.setMaximum(100);
+	//does not work with values < 1
+	light2Slider.setMinimum(0);
+	light2Slider.setUnitIncrement(2);
+	//amount to increment the value when using the arrow keys
+	light2Slider.setValue(5);
+	light2Slider.onchange = function() { // onchange MUST BE all lowercase
+		applyLight2(getbyID("light2Slider-input").value)
+	}
+	
+	var light3Slider = new Slider(getbyID("light3Slider"), getbyID("light3Slider-input"), "horizontal");
+	light3Slider.setMaximum(100);
+	//does not work with values < 1
+	light3Slider.setMinimum(0);
+	light3Slider.setUnitIncrement(2);
+	//amount to increment the value when using the arrow keys
+	light3Slider.setValue(5);
+	light3Slider.onchange = function() { // onchange MUST BE all lowercase
+		applyLight3(getbyID("light3Slider-input").value)
+	}
+	
+	var slabSlider = new Slider(getbyID("slabSlider"), getbyID("slabSlider-input"), "horizontal");
+	slabSlider.setMaximum(100)
+	slabSlider.setMinimum(0)
+	slabSlider.setUnitIncrement(2) // amount to increment the value when using the
+	// arrow keys
+	slabSlider.setValue(defaultFront)
+	slabSlider.onchange = function() { // onchange MUST BE all lowercase
+		applySlab(getbyID("slabSlider-input").value)
+	}
+	
+	var depthSlider = new Slider(getbyID("depthSlider"), getbyID("depthSlider-input"), "horizontal");
+	depthSlider.setMaximum(100);
+	depthSlider.setMinimum(0);
+	depthSlider.setUnitIncrement(2); // amount to increment the value when using
+	// the arrow keys
+	depthSlider.setValue(defaultBack);
+	depthSlider.onchange = function() { // onchange MUST BE all lowercase
+		applyDepth(getbyID("depthSlider-input").value)
+	}
+}
+

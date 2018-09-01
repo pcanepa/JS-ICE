@@ -227,7 +227,7 @@ function _jmolColorBoxUpdate(pickedColor, boxNum){
         jmolColorPickerBoxes[boxNum].scriptStr[0](rgbCodes,jmolColorPickerBoxes[boxNum].scriptStr, jmolColorPickerBoxes[boxNum].appletID);
     }else {
     	var scriptStr = jmolColorPickerBoxes[boxNum].scriptStr.replace('$COLOR$', rgbCodes);
-    	jmolScript(scriptStr,jmolColorPickerBoxes[boxNum].appletID);
+    	runJmolScript(scriptStr,jmolColorPickerBoxes[boxNum].appletID);
     }
 }
 

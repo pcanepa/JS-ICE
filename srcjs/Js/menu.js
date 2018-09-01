@@ -1274,7 +1274,7 @@ function createElecpropGrp() {
 			'setV("script scripts/spin.spt")', 0);
 	strElec += " ";
 	strElec += createButton("magnetiMoment", "view Magnetic Moment",
-			'jmolScript("script scripts/spin.spt")', 0);
+			'runJmolScript("script scripts/spin.spt")', 0);
 	strElec += "<br> View only atoms with spin "
 		+ createButton("spindown", "&#8595",
 				'setV("display property_spin <= 0")', 0);

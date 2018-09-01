@@ -577,8 +577,7 @@ function plotClickCallback(event, pos, itemEnergy) {
 	if (!itemEnergy)return
 	var model = itemEnergy.datapoint[2];
 	var label = itemEnergy.datapoint[3];
-	var script = ' model '+ model; // 'set
-	jmolScriptWait(script);
+	runJmolScriptAndWait('model '+ model);
 	// This select the element from the list of the geometry models
 	// +1 keeps the right numeration of models
 	getbyID('geom').value = model + 1 ;
@@ -590,8 +589,7 @@ function plotClickCallbackForce(event, pos, itemForce) {
 	if (!itemForce)return
 	var model = itemForce.datapoint[2];
 	var label = itemForce.datapoint[3];
-	var script = ' model '+model; // 'set
-	jmolScriptWait(script);
+	runJmolScriptAndWait('model '+model);
 	// This select the element from the list of the geometry models
 	// +1 keeps the right numeration of models
 	getbyID('geom').value = model + 1 ;
@@ -684,7 +682,7 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 	}else{
 		var script = ' model '+ ( model + 1 ) +  '; ' + vibrationProp ;  // 'set
 	}
-	jmolScriptWait(script);
+	runJmolScriptAndWait(script);
 	onClickVibrate("on");
 	// This select the element from the list of the geometry models
 	// +1 keeps the right numeration of models
@@ -761,7 +759,7 @@ function doHighlight(app, modelIndex) {
 	theplot.unhighlight(0,-1)
 	theplot.highlight(0, modelIndex);
 	var label = data[0][modelIndex][3];
-        setTimeout('jmolScript("set echo top left; echo ' + label+'")',100);
+        setTimeout('runJmolScript("set echo top left; echo ' + label+'")',100);
 }
 
 

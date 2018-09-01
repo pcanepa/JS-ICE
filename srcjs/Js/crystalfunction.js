@@ -400,7 +400,7 @@ setTitleEcho();
 
 function onClickReloadSymm() {
 setV('set errorCallback "errCallback";');
-jmolScriptWait("load ''; set echo top left; echo reloading... HOLD ON;refresh; set messageCallback 'myMessageCryCallback'; message CRYDONE; echo;");
+runJmolScriptAndWait("load ''; set echo top left; echo reloading... HOLD ON;refresh; set messageCallback 'myMessageCryCallback'; message CRYDONE; echo;");
 if (!flagGauss) {
 	setName();
 } else {
@@ -616,10 +616,10 @@ for ( var i = 0; i < document.modelsVib.vibration.length; i++) {
 
 switch (radioval) {
 case "on":
-	jmolScript("vibration on; vectors SCALE 15; vector 5; vibration SCALE 7;");
+	runJmolScript("vibration on; vectors SCALE 15; vector 5; vibration SCALE 7;");
 	break;
 case "off":
-	jmolScript("vibration off;");
+	runJmolScript("vibration off;");
 	break;
 }
 }

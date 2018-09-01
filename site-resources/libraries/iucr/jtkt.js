@@ -1,3 +1,21 @@
+/* ***********************************************************************
+ * jtkt.js
+ * Library of functions supporting the IUCr Jmol enhanced figure toolkit
+ *  - includes some generic libraries (occasionally slightly modified)
+ * that are bundled for ease of portability. These insertions are indicated
+ * by a (+) in the contents list below.
+ *
+ * Contents:
+ *  (1) dom-drag.js: creating and manipulating draggable objects (+)
+ *  (2) various small utility functions (+)
+ *  (3) functions associated with help popups
+ *  (4) functions defining and modifying Jmol behaviour
+ *  (5) functions modifying the toolkit user interface
+ *  (6) Jmol scripts used in other applications (+)
+ *  (7) Dynamic widgets (sliders, colour pickers etc.)
+ *
+ *********************************************************************** */
+
 /**************************************************
  * dom-drag.js
  * 09.25.2001

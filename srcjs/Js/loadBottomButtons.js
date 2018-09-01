@@ -29,33 +29,3 @@
  * 
  * */
 
-loadBottomButtons = function() {
-
-	document.write("<br> ");
-	
-	document.write(createText5('filename', 'Filename:', '108', '', '', "disab"));
-	document.write("<br>");
-	document.write(createButton1("reload", "Reload",
-			'setV("script ./scripts/reload.spt") + resetAll() + setName()', 0,
-			"specialbutton"));
-	
-	document.write(createButton1("reset", "Reset",
-			'setV("script ./scripts/reset.spt")', 0, "specialbutton"));
-	
-	document.write(createButton1("Console", "Console", 'setV("console")', 0,
-			"specialbutton"));
-	
-	document.write(createButton("NewWindow", "New window", "newAppletWindow()", 0));
-	
-	document
-			.write(createButton("viewfile", "File content", "printFileContent()", 0));
-	
-	document.write(createButton1("saveState", 'Save state', 'saveCurrentState()',
-			0, "savebutton"));
-	
-	document.write(createButton1("restoreState", 'Restore state',
-			'reloadCurrentState()', 0, "savebutton"));
-	
-	document
-			.write(createButton("Feedback", 'Feedback', 'newAppletWindowFeed()', 0));
-}

@@ -29,12 +29,20 @@
 ////////////////////////////////COMMON FUNCTIONS  
 //Common functions to manipulate data of forms and objects
 
+runJmolScript = function(script) {
+	jmolScript(script);	
+}
+
+runJmolScriptAndWait = function(script) {
+	jmolScriptWait(script);	
+}
+
 function getbyID(id) {
 	return document.getElementById(id);
 }
 
 function setVbyID(id, val) {
-	document.getElementById(id).value = val;
+	getbyID(id).value = val;
 }
 
 function getbyName(na) {
@@ -42,27 +50,27 @@ function getbyName(na) {
 }
 
 function getValue(id) {
-	return document.getElementById(id).value;
+	return getbyID(id).value;
 }
 
 function getValueSel(id) {
-	return document.getElementById(id)[document.getElementById(id).selectedIndex].value;
+	return getbyID(id)[getbyID(id).selectedIndex].value;
 }
 
 function checkID(id) {
-	return document.getElementById(id).checked;
+	return getbyID(id).checked;
 }
 
 function unCheckID(id) {
-	return document.getElementById(id).unchecked;
+	return getbyID(id).unchecked;
 }
 
 function checkBox(id) {
-	document.getElementById(id).checked = true;
+	getbyID(id).checked = true;
 }
 
 function uncheckBox(id) {
-	document.getElementById(id).checked = false;
+	getbyID(id).checked = false;
 }
 
 function resetByID(form) {
@@ -211,7 +219,7 @@ function errCallback(a, b, c, d) {
 
 //This grabs the value given form the form
 function setV(value) {
-	jmolScript(value);
+	runJmolScript(value);
 }
 
 //This set the value on or off depending on the Checkbox status
@@ -1486,18 +1494,18 @@ function getSymInfo() {
 			+ "<option value=1.0>100%</option>" + "</select>";
 
 	}
-	document.getElementById("syminfo").innerHTML = s;
+	getbyID("syminfo").innerHTML = s;
 }
 
 function getSelect(symop) {
-	var d = document.getElementById("atomselect");
+	var d = getbyID("atomselect");
 	var atomi = d.selectedIndex;
 	var pt00 = d[d.selectedIndex].value;
-	var showatoms = (document.getElementById("chkatoms").checked || atomi == 0);
+	var showatoms = (getbyID("chkatoms").checked || atomi == 0);
 	setV("display " + (showatoms ? "all" : "none"));
-	var d = document.getElementById("symselect");
+	var d = getbyID("symselect");
 	var iop = parseInt(d[d.selectedIndex].value);
-	// if (!iop && !symop) symop = document.getElementById("txtop").value
+	// if (!iop && !symop) symop = getbyID("txtop").value
 	if (!symop) {
 		if (!iop) {
 			setV("select *;color opaque;draw sym_* delete");
@@ -1505,12 +1513,12 @@ function getSelect(symop) {
 
 		}
 		symop = d[d.selectedIndex].text.split("(")[1].split(")")[0];
-		// document.getElementById("txtop").value
+		// getbyID("txtop").value
 		// = symop
 	}
 	if (pt00.indexOf("{") < 0)
 		pt00 = "{atomindex=" + pt00 + "}";
-	var d = document.getElementById("selopacity");
+	var d = getbyID("selopacity");
 	var opacity = parseFloat(d[d.selectedIndex].value);
 	if (opacity < 0)
 		opacity = 1;
@@ -2477,7 +2485,7 @@ function onClickCPK() {
 	getbyID('bondMsg').innerHTML = 0.3 + " &#197";
 	radiiSlider.setValue(100);
 	bondSlider.setValue(30);
-	jmolScript("wireframe 0.30; spacefill 100% ;cartoon off;backbone off; draw off");
+	runJmolScript("wireframe 0.30; spacefill 100% ;cartoon off;backbone off; draw off");
 }
 
 function onClickWire() {
@@ -2486,7 +2494,7 @@ function onClickWire() {
 	getbyID('bondMsg').innerHTML = 0.01 + " &#197";
 	radiiSlider.setValue(0);
 	bondSlider.setValue(1);
-	jmolScript('wireframe 0.01; spacefill 1%;ellipsoids off;cartoon off;backbone off;');
+	runJmolScript('wireframe 0.01; spacefill 1%;ellipsoids off;cartoon off;backbone off;');
 }
 
 function onClickionic() {
@@ -2497,7 +2505,7 @@ function onClickionic() {
 	// getbyID('sliderGlobalBondWidths').style.left= 30+'px';
 	radiiSlider.setValue(0);
 	bondSlider.setValue(30);
-	jmolScript("spacefill IONIC; wireframe 0.15; draw off");
+	runJmolScript("spacefill IONIC; wireframe 0.15; draw off");
 }
 
 function onStickClick() {
@@ -2508,7 +2516,7 @@ function onStickClick() {
 	// /getbyID('sliderGlobalBondWidths').style.left=30+'px';
 	radiiSlider.setValue(0);
 	bondSlider.setValue(30);
-	jmolScript("wireframe 0.15;spacefill 1%;cartoon off;backbone off; draw off");
+	runJmolScript("wireframe 0.15;spacefill 1%;cartoon off;backbone off; draw off");
 }
 
 function onClickBS() {
@@ -2519,7 +2527,7 @@ function onClickBS() {
 	// getbyID('sliderGlobalBondWidths').style.left=20+'px';
 	radiiSlider.setValue(20);
 	bondSlider.setValue(20);
-	jmolScript("wireframe 0.15; spacefill 20%;cartoon off;backbone off; draw off");
+	runJmolScript("wireframe 0.15; spacefill 20%;cartoon off;backbone off; draw off");
 
 }
 
@@ -2531,7 +2539,7 @@ function onClickBall() {
 	// getbyID('sliderGlobalBondWidths').style.left=0+'px';
 	radiiSlider.setValue(20);
 	bondSlider.setValue(0);
-	jmolScript("select *; spacefill 20%; wireframe off ; draw off");
+	runJmolScript("select *; spacefill 20%; wireframe off ; draw off");
 }
 
 function initPerspective() {
@@ -2541,5 +2549,5 @@ function initPerspective() {
 }
 
 function printFileContent() {
-	setV("console; getProperty fileContents;");
+	runJmolScript("console; getProperty fileContents;");
 }

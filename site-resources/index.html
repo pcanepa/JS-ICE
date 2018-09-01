@@ -13,10 +13,25 @@
     <meta name="Revisit-after" content="1 Day">
     
 
+
 <script src="jmol/Jmol.js"></script>
-<script src="J-Ice.js"></script>
+<script src="jmol/JmolColorPicker.js"></script>
+
 <script src="jsmol/JSmol.min.js"></script>
 <script src="jsmol/js/Jmol2.js"></script>
+
+<script src="libraries/flot/excanvas.js"></script>
+<script src="libraries/flot/jquery.flot2.js"></script>
+<script src="libraries/flot/showobj.js"></script>
+<script src="libraries/flot/json2.js"></script>
+
+<script src="libraries/webfx/range.js"></script>
+<script src="libraries/webfx/timer.js"></script>
+<script src="libraries/webfx/slider.js"></script>
+
+<script src="libraries/iucr/jtkt.js"></script>
+
+<script src="J-Ice.js"></script>
 
 <link rel="stylesheet" href="css/style.css" type="text/css">
 <link rel="stylesheet" href="css/luna/luna.css" type="text/css">
@@ -26,8 +41,35 @@
 <link rel="icon" type="image/gif" href="images/animated_favicon1.gif" >
 <script>
 
-	jmolInitialize("jsmol");
-	defineMenu();
+createApplet = function() {
+	jmolSetAppletColor("white");
+	jmolApplet(
+			[ "570", "570" ],
+			"load 'output/hematite.out' PACKED; script scripts/init.spt; set messageCallback 'myMessageCryCallback';message CRYDONE");
+}
+jmolInitialize("jsmol", "jmol/JmolAppletSigned0.jar");
+defineMenu();
+
+loadBottomButtons = function() {
+
+	document.write("<br> ");	
+	document.write(createText5('filename', 'Filename:', '108', '', '', "disab"));
+	document.write("<br>");
+	document.write(createButton1("reload", "Reload",
+			'setV("script ./scripts/reload.spt") + resetAll() + setName()', 0,
+			"specialbutton"));
+	document.write(createButton1("reset", "Reset",
+			'setV("script ./scripts/reset.spt")', 0, "specialbutton"));
+	document.write(createButton1("Console", "Console", 'setV("console")', 0,
+			"specialbutton"));
+	document.write(createButton("NewWindow", "New window", "newAppletWindow()", 0));
+	document.write(createButton("viewfile", "File content", "printFileContent()", 0));
+	document.write(createButton1("saveState", 'Save state', 'saveCurrentState()',
+			0, "savebutton"));
+	document.write(createButton1("restoreState", 'Restore state',
+			'reloadCurrentState()', 0, "savebutton"));
+	document.write(createButton("Feedback", 'Feedback', 'newAppletWindowFeed()', 0));
+}
 
 /*
   var _gaq = _gaq || [];
@@ -61,7 +103,7 @@
 			</div>
 		</div>
 		<div class="rightframe">
-			<script>loadMenus()</script>
+			<script>loadMenus();loadSliders()</script>
 		</div>
 	</div>
 </div>

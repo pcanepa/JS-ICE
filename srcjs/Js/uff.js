@@ -78,6 +78,6 @@ function resetOptimize() {
 function scriptUffCallback(a, b, step, d, e, f, g) {
 	var text = ("s = " + counterUff + " E = " + parseFloat(d).toPrecision(10)
 			+ " kJ/mol, dE = " + parseFloat(e).toPrecision(6) + " kJ/mol")
-	document.getElementById("textUff").value = text
+	getbyID("textUff").value = text
 	counterUff++;
 }

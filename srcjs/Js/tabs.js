@@ -68,12 +68,12 @@ function getButtons() {
 	+ createButton(
 			"reload",
 			"Reload",
-			'jmolScript("script ./scripts/reload.spt") + resetAll() + setName()',
+			'runJmolScript("script ./scripts/reload.spt") + resetAll() + setName()',
 			null, "specialbutton")
 			+ createButton("reset", "Reset",
-					'jmolScript("script ./scripts/reset.spt")', null,
+					'runJmolScript("script ./scripts/reset.spt")', null,
 			"specialbutton")
-			+ createButton("Console", "Console", 'jmolScript("console")', null,
+			+ createButton("Console", "Console", 'runJmolScript("console")', null,
 			"specialbutton")
 			+ createButton("NewWindow", "New window", "newAppletWindow()")
 			+ createButton("viewfile", "File content", "printFileContent()")
@@ -137,15 +137,15 @@ function toggleElement(disp, me, index) {
 }
 
 function toggleSlab() {
-	var ctl = document.getElementById("slabToggle")
+	var ctl = getbyID("slabToggle")
 	if (ctl.checked) {
-		jmolScript("spin off; slab on; slab 80;");
+		runJmolScript("spin off; slab on; slab 80;");
 		slabSlider.setValue(20);
 		applySlab(defaultFront);
 		depthSlider.setValue(defaultBack);
 		applyDepth(defaultBack);
 	} else {
-		jmolScript("slab off; ")
+		runJmolScript("slab off; ")
 		slabSlider.setValue(0);
 		depthSlider.setValue(0);
 	}
@@ -163,8 +163,8 @@ function grpDisp(i) {
 		}
 	}
 	/*
-	 * if (tabMenu[i].picking) { jmolScript("set picking on;") } else {
-	 * jmolScript("set picking off;") }
+	 * if (tabMenu[i].picking) { runJmolScript("set picking on;") } else {
+	 * runJmolScript("set picking off;") }
 	 */
 }
 

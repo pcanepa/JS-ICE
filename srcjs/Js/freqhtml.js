@@ -61,21 +61,21 @@ function createHTML() {
 
 	stringWebPage += "\n <script language='JavaScript'>";
 
-	stringWebPage += "\n function activateVib(){ \n if(document.butopt.vibration.checked){ \n jmolScript(\' select all;vibration On; vibration scale 7;\') \n}else{ jmolScript(\' vibration off\') \n} \n\n }";
-	stringWebPage += "\n function vectorsOn(){ \n if(document.butopt.vectors.checked){ \n jmolScript(\' select all;vectors on;color vector yellow;vector scale 14;vector 0.08;\') \n} else{ jmolScript(\'vector off\') \n} } \n\n";
-	stringWebPage += "\n function cellOn(){ \n if(document.butopt.cell.checked){ \n jmolScript(\' unitcell on \') \n} else{ jmolScript(\'unitcell off\') \n} \n}\n\n";
-	stringWebPage += "\n  function perspOn(){ \n if(document.butopt.persp.checked){ \n jmolScript(\' set perspectiveDepth on \') \n} else{ jmolScript(\'set perspectiveDepth off\') \n} \n} \n\n";
-	stringWebPage += "\n function polyOn(){ \n  if(document.butopt.poly.checked){ \n jmolScript(\' polyhedra on;\') \n} else{ \n jmolScript(\' polyhedra off; \') \n } \n} \n\n";
-	stringWebPage += "\n function persptraspOn(){ \n if(document.butopt.polytrans.checked){ \n jmolScript(\'select *; color polyhedra translucent orange; \') \n }else{ \n jmolScript(\'select *; color polyhedra opaque orange; \') \n  } \n } \n\n";
-	stringWebPage += "\n function sbOn(){ \n  jmolScript(\' wireframe 0.15;spacefill 20%;cartoon off;backbone off; draw off ;\')  \n} \n\n";
-	stringWebPage += "\n function sOn(){ \n  jmolScript(\' wireframe 0.15;spacefill 0%;cartoon off;backbone off; draw off ;\')  \n} \n\n";
-	stringWebPage += "\n function bOn(){ \n  jmolScript(\' select *; spacefill 20%; wireframe off ; draw of ;\')  \n} \n\n";
-	stringWebPage += "\n function cpkOn(){ \n  jmolScript(\' wireframe 0.30;spacefill 100%;cartoon off;backbone off; draw off\')  \n} \n\n";
-	stringWebPage += "\n function wifiOn(){ \n if(document.butopt.wifi.checked){ \n jmolScript(\'select *; wireframe .05;\') \n }else{ \n jmolScript(\'select *; wireframe 0;\') \n  } \n } \n\n";
+	stringWebPage += "\n function activateVib(){ \n if(document.butopt.vibration.checked){ \n runJmolScript(\' select all;vibration On; vibration scale 7;\') \n}else{ runJmolScript(\' vibration off\') \n} \n\n }";
+	stringWebPage += "\n function vectorsOn(){ \n if(document.butopt.vectors.checked){ \n runJmolScript(\' select all;vectors on;color vector yellow;vector scale 14;vector 0.08;\') \n} else{ runJmolScript(\'vector off\') \n} } \n\n";
+	stringWebPage += "\n function cellOn(){ \n if(document.butopt.cell.checked){ \n runJmolScript(\' unitcell on \') \n} else{ runJmolScript(\'unitcell off\') \n} \n}\n\n";
+	stringWebPage += "\n  function perspOn(){ \n if(document.butopt.persp.checked){ \n runJmolScript(\' set perspectiveDepth on \') \n} else{ runJmolScript(\'set perspectiveDepth off\') \n} \n} \n\n";
+	stringWebPage += "\n function polyOn(){ \n  if(document.butopt.poly.checked){ \n runJmolScript(\' polyhedra on;\') \n} else{ \n runJmolScript(\' polyhedra off; \') \n } \n} \n\n";
+	stringWebPage += "\n function persptraspOn(){ \n if(document.butopt.polytrans.checked){ \n runJmolScript(\'select *; color polyhedra translucent orange; \') \n }else{ \n runJmolScript(\'select *; color polyhedra opaque orange; \') \n  } \n } \n\n";
+	stringWebPage += "\n function sbOn(){ \n  runJmolScript(\' wireframe 0.15;spacefill 20%;cartoon off;backbone off; draw off ;\')  \n} \n\n";
+	stringWebPage += "\n function sOn(){ \n  runJmolScript(\' wireframe 0.15;spacefill 0%;cartoon off;backbone off; draw off ;\')  \n} \n\n";
+	stringWebPage += "\n function bOn(){ \n  runJmolScript(\' select *; spacefill 20%; wireframe off ; draw of ;\')  \n} \n\n";
+	stringWebPage += "\n function cpkOn(){ \n  runJmolScript(\' wireframe 0.30;spacefill 100%;cartoon off;backbone off; draw off\')  \n} \n\n";
+	stringWebPage += "\n function wifiOn(){ \n if(document.butopt.wifi.checked){ \n runJmolScript(\'select *; wireframe .05;\') \n }else{ \n runJmolScript(\'select *; wireframe 0;\') \n  } \n } \n\n";
 	// += "\n function bondOn(){ \n if(document.butopt.wifi.checked){ \n
-	// jmolScript(\'select *; wireframe .05;\') \n }else{ \n jmolScript(\'select
+	// runJmolScript(\'select *; wireframe .05;\') \n }else{ \n runJmolScript(\'select
 	// *; wireframe 0;\') \n } \n } \n\n";
-	stringWebPage += "\n function showFrame(i){ \n jmolScript(\'frame \' + i); \n  jmolScript('select all;vibration On; vibration scale 7;');}";
+	stringWebPage += "\n function showFrame(i){ \n runJmolScript(\'frame \' + i); \n  runJmolScript('select all;vibration On; vibration scale 7;');}";
 	stringWebPage += "\n </script>";
 	// Close Head
 	stringWebPage += closeTag("HEAD");
@@ -146,7 +146,7 @@ function createHTML() {
 	// create jmol tag
 	stringWebPage += createTag("div", "class=\'japplet\' ", "", false);
 
-	stringWebPage += "<script language='JavaScript'>"
+	stringWebPage += "<script>"
 
 		stringWebPage += '\n jmolInitialize\(\'.\', \'jmol/JmolAppletSigned0.jar\'\) ; \n'; // To
 	// change
@@ -181,7 +181,7 @@ function createHTML() {
 
 ///Save the page
 function saveHtml(stringWeb) {
-	jmolScript(stringWeb);
+	runJmolScript(stringWeb);
 }
 
 /// Example <title>kaolinite vibration modes</title><SCRIPT
@@ -252,12 +252,12 @@ function createAuthors() {
 var outputNamefreq = null;
 function saveOutputFreq() {
 	messageMsg("Please save the output files as: output.dat. \n DON'T change its NAME");
-	jmolScript("write FILE ?output.dat");
+	runJmolScript("write FILE ?output.dat");
 }
 
 function saveOutputStatefreq() {
 	messageMsg("Now please save the file containing the style and orientation of your file; \n DON'T change its NAME");
-	jmolScript('write STATE LOCALPATH "." "current.spt"');
+	runJmolScript('write STATE LOCALPATH "." "current.spt"');
 }
 
 function createSaveStyle() {

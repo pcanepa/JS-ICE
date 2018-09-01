@@ -1,6 +1,5 @@
 Js/jicefunction.js
 Js/constant.js
-Js/JmolColorPicker.js
 Js/castepfunction.js
 Js/crystalfunction.js
 Js/dmol.js
@@ -17,18 +16,7 @@ Js/spectra.js
 Js/uff.js
 Js/form.js
 Js/menu.js
-Js/jtkt.js
 Js/tabs.js
 Js/plotgraph.js
-libraries/flot/excanvas.js
-libraries/flot/jquery.js
-libraries/flot/jquery.flot2.js
-libraries/flot/showobj.js
-libraries/flot/json2.js
-Js/range.js
-Js/timer.js
-Js/slider.js
 Js/freqhtml.js
-Js/createApplet.js
-Js/loadBottomButtons.js
 Js/sliders.js
