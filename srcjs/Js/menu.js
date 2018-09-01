@@ -143,13 +143,12 @@ function createFileGrp() { // Here the order is crucial
 			"PDB (*.pdb)", "QuantumESPRESSO (*.*)", "Siesta (*,*)",
 			"ShelX (*.*)", "VASP (OUTCAR, POSCAR)", "VASP (*.xml)",
 			"WIEN2k (*.struct)", "Xcrysden (*.xtal)", "map (*.CUBE)",
-			"map (*.jvxl)", "Jmol state (*.spt)");
-	var elOptionChk = new Array(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			"map (*.jvxl)", "Jmol state (*.spt,*.png)");
+	var elOptionChk = [1];
 	var strFile = "<form id='fileGroup' name='fileGroup' style='display:inline' class='contents'>\n";
 	strFile += "<h2>File manager</h2>\n";
 	strFile += "Load File<BR>\n";
-	strFile += createListmenu('Load File', 'onChangeLoad(value)', 0, 1, 25,
+	strFile += createListmenu('Load File', 'onChangeLoad(value)', 0, 1,
 			elOptionArr, elOptionText, elOptionChk);
 	strFile += "<BR><BR>\n";
 	strFile += "Export/Save File<BR>\n";
@@ -157,16 +156,16 @@ function createFileGrp() { // Here the order is crucial
 	var elSOptionArr = new Array("default", "saveCASTEP", "saveCRYSTAL",
 			"saveGULP", "saveGROMACS", "saveQuantum", "saveVASP", "saveXYZ",
 			"saveFrac", /* "savefreqHtml", */"savePNG", "savepdb", "savePOV",
-	"saveState");
+	"saveState", "savePNGJ");
 	var elSOptionText = new Array("Export File", "CASTEP (*.cell)",
 			"CRYSTAL (*.d12)", "GULP (*.gin)", "GROMACS (*.gro)",
 			"PWscf QuantumESPRESSO (*.inp)", "VASP (POSCAR)", "XYZ (*.XYZ)",
 			"frac. coord. (*.XYZfrac)",
 			// "save Frequencies HTML (*.HTML)",
 			"image PNG (*.png)", "coordinates PDB (*.PDB)",
-			"image POV-ray (*.pov)", "current state (*.spt)");
-	var elSOptionChk = new Array(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-	strFile += createListmenu('Export File', 'onChangeSave(value)', 0, 1, 13,
+			"image POV-ray (*.pov)", "current state (*.spt)", "image+state (PNGJ)");
+	var elSOptionChk = [1];
+	strFile += createListmenu('Export File', 'onChangeSave(value)', 0, 1,
 			elSOptionArr, elSOptionText, elSOptionChk);
 	strFile += "<p ><img src='images/j-ice.png' alt='logo'/></p>";
 	strFile += "<p style='color:#f00; font-weight:bold'>New readers <br> CASTEP, VASP POSCAR, and XcrysDen</p>";
@@ -249,7 +248,7 @@ function createAppearanceGrp() {
 			'toggleDivRadioTrans(value,"transulcencyDiv") + setV("color " +  getValue("setFashion") + " TRANSLUCENT")',
 			0, 0, "off", "off")
 			+ "\n";
-	strApp += createList('setFashion', '', 0, 1, 10, colorBondsName,
+	strApp += createList('setFashion', '', 0, 1, colorBondsName,
 			colorBondsName, colorBondsChk)
 			+ "\n";
 	strApp += "</td></tr>"
@@ -260,7 +259,7 @@ function createAppearanceGrp() {
 	strApp += "</td></tr><tr><td>";
 	strApp += "Dot surface ";
 	strApp += createList('setDot',
-			'setV("dots on; set dotScale " + value + "; draw off")', 0, 1, 5,
+			'setV("dots on; set dotScale " + value + "; draw off")', 0, 1,
 			dotName, dotName, dotChk);
 	strApp += createRadio("dotStyle", "off", 'setV("dots off")', 0, 0, "off",
 	"off");
@@ -371,7 +370,7 @@ function createEditGroup() {
 	strEdit += "<tr><td colspan='2'>\n";
 	strEdit += "Rename atom/s<br>";
 	strEdit += "Element Name ";
-	strEdit += createList('renameEle', 'changeElement(value)', 0, 1, 100,
+	strEdit += createList('renameEle', 'changeElement(value)', 0, 1,
 			eleSymb, eleSymb, eleChk);
 	strEdit += createLine('blue', '');
 	strEdit += "</td></tr>\n";
@@ -423,7 +422,7 @@ function createEditGroup() {
 	strEdit += " to " + createText2("radiuscoonectTo", "", "2", "disab")
 	+ " &#197;";
 	strEdit += "<br> Style bond "
-		+ createList('setBondFashion', '', 0, 1, 10, bondValue, bondValue,
+		+ createList('setBondFashion', '', 0, 1, bondValue, bondValue,
 				bondChk) + "<br> \n";
 	strEdit += createButton('connect2', 'Connect atom', 'connectAtom()', '');
 	strEdit += createButton('connect0', 'Delete bond', 'deleteBond()', '')
@@ -466,7 +465,7 @@ function createBuildGroup() {
 	strBuild += "y <input type='text'  name='y_frac' id='y_frac' size='1' class='text'> ";
 	strBuild += "z <input type='text'  name='z_frac' id='z_frac' size='1' class='text'> ";
 	strBuild += ", Element: "
-		+ createList('addNewFracList', '', 0, 1, 100, eleSymb, eleSymb,
+		+ createList('addNewFracList', '', 0, 1, eleSymb, eleSymb,
 				eleChk);
 	strBuild += createButton("addNewFracListBut", "add Atom", "addNewatom()",
 	"");
@@ -488,11 +487,11 @@ function createBuildGroup() {
 			"", "", "");
 	strBuild += "<div id='createmolecularCrystal' style='display:none; margin-top:20px'>";
 	strBuild += "<br> Periodicity: "
-		+ createList('typeMole', 'checkIfThreeD(value)', 0, 1, 4,
+		+ createList('typeMole', 'checkIfThreeD(value)', 0, 1,
 				periodicityValue, periodicityName, periodicityChk);
 	strBuild += "<br> Space group: "
 		+ createList('periodMole', 'setCellParamSpaceGroup(value)', 0, 1,
-				594, spaceGroupValue, spaceGroupName, spaceGroupChk)
+				spaceGroupValue, spaceGroupName, spaceGroupChk)
 				+ " <a href=http://en.wikipedia.org/wiki/Hermann%E2%80%93Mauguin_notation target=_blank>Hermann-Mauguin</a>"; // space
 	// group
 	// list
@@ -569,7 +568,7 @@ function createMeasureGroup() {
 	strMeas += createRadio("distance", "distance", 'checkMeasure(value)', '',
 			0, "", "distance");
 	strMeas += createListFunc('measureDist', 'setMeasureUnit(value)',
-			'setTimeout("setMeasureUnit(value) ",50)', 0, 1, 5, measureValue,
+			'setTimeout("setMeasureUnit(value) ",50)', 0, 1, measureValue,
 			measureName, measurechk)
 			+ " ";
 	strMeas += createRadio("distance", "angle", 'checkMeasure(value)', '', 0,
@@ -600,7 +599,7 @@ function createMeasureGroup() {
 	strMeas += "</td></tr>";
 	strMeas += "<tr><td colspan='2'>";
 	strMeas += "Font size ";
-	strMeas += createList("fSize", "setMeasureSize(value)", 0, 1, 9,
+	strMeas += createList("fSize", "setMeasureSize(value)", 0, 1,
 			textValue, textText, textCk);
 	strMeas += createLine('blue', '');
 	strMeas += "</td></tr>";
@@ -691,7 +690,7 @@ function createOrientGrp() {
 	strOrient += "<table class='contents'> \n";
 	strOrient += "<tr><td colspan='3'>Motion "
 		+ createListFunc('setmotion', 'setKindMotion(value)',
-				'setTimeout("setKindMotion(value)",50)', 0, 1, 3,
+				'setTimeout("setKindMotion(value)",50)', 0, 1,
 				motionValueName, motionValueName, motionValueChk);
 	strOrient += " magnitude\n";
 	strOrient += "<input type='text' value='5' class='text' id='fineOrientMagn' size='3'> &#197 / degree;";
@@ -775,7 +774,7 @@ function createCellGrp() {
 		+ createListFunc('offsetCell',
 				'setV("set unitcell " + value + ";")',
 				'setTimeout("setV("set unitcell " + value +";")",50)', 0,
-				1, 19, unitcellSize, unitcellSize, unitcellSizeChk) + "\n";
+				1, unitcellSize, unitcellSize, unitcellSizeChk) + "\n";
 	strCell += " dotted "
 		+ createCheck("cellDott", "dotted, ", "setCellDotted()", 0, 0,
 		"DOTTED") + "  color ";
@@ -824,7 +823,7 @@ function createCellGrp() {
 	strCell += "Offset unitcell \n<br>";
 	strCell += "Common sets "
 		+ createListFunc('offsetCell', 'setUnitCellOrigin(value)',
-				'setTimeout("setUnitCellOrigin(value)",50)', 0, 1, 11,
+				'setTimeout("setUnitCellOrigin(value)",50)', 0, 1,
 				unitcellName, unitcellName, unitcellChk) + "\n";
 	strCell += "<br>  \n"
 		strCell += createButton('advanceCelloffset', '+',
@@ -884,7 +883,7 @@ function createCellGrp() {
 
 function createPolyGrp() {
 	var polyEdgeName = new Array("select", "4, 6", "4 ", "6", "8", "10", "12");
-	var polyEdgeChk = new Array(1, 0, 0, 0, 0, 0, 0);
+	var polyEdgeChk = [1];
 	var polyStyleName = new Array("select", "flat", "collapsed edges",
 			"no edges", "edges", "frontedges");
 	var polyStyleValue = new Array("NOEDGES", "flat edges", "collapsed",
@@ -928,7 +927,7 @@ function createPolyGrp() {
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
 	strPoly += "&nbsp d) number of vertex "
-		+ createList('polyEdge', '', 0, 0, 7, polyEdgeName, polyEdgeName,
+		+ createList('polyEdge', '', 0, 0, polyEdgeName, polyEdgeName,
 				polyEdgeChk) + "\n";
 	strPoly += createLine('blue', '');
 	strPoly += "</td></tr>\n";
@@ -955,11 +954,11 @@ function createPolyGrp() {
 	"translucent")
 	+ "\n<br><br>";
 	strPoly += "&nbsp c) style edges\n"
-		+ createList('polyVert', 'checkPolyValue(this.value)', 0, 0, 6,
+		+ createList('polyVert', 'checkPolyValue(this.value)', 0, 0,
 				polyStyleValue, polyStyleName, polyStyleChk) + "\n";
 	strPoly += "<br>"
 		strPoly += "&nbsp &nbsp collapsed faces Offset \n"
-			+ createList('polyFace', '', 0, 0, 5, polyFaceName, polyFaceName,
+			+ createList('polyFace', '', 0, 0, polyFaceName, polyFaceName,
 					polyFaceChk) + "\n";
 	strPoly += "</div>";
 	strPoly += createLine('blue', '');
@@ -1006,7 +1005,7 @@ function createIsoGrp() {
 	strIso += "</td></tr>\n";
 	strIso += "<tr><td colspan='2'>\n";
 	strIso += "Molecular (classic) isoSurfaces: \n <br>";
-	strIso += createList('isoCommon', 'setIsoClassic(this.value)', 0, 0, 9,
+	strIso += createList('isoCommon', 'setIsoClassic(this.value)', 0, 0,
 			isoValue, isoName, isoChk)
 			+ "&nbsp";
 	strIso += createButton('removeIso', 'remove iso', 'setV("isosurface OFF")',
@@ -1019,7 +1018,7 @@ function createIsoGrp() {
 	strIso += "- " + createText2("dataMin", "", "12", 0) + " + "
 	+ createText2("dataMax", "", "12", 0) + " e- *bohr^-3<br>";
 	strIso += "<br> Colour-scheme "
-		+ createList('isoColorScheme', 'setIsoColorscheme()', 0, 0, 5,
+		+ createList('isoColorScheme', 'setIsoColorscheme()', 0, 0,
 				colSchemeValue, colSchemeName, colSchemeChk) + "&nbsp<br>";
 	strIso += createButton('up', 'Update map', 'setIsoColorRange()', '');
 	// + createButton('reverseColor', 'Reverse colour', 'setIsoColorReverse()',
@@ -1126,12 +1125,12 @@ function createGeometryGrp() {
 			0)
 			+ "\n";
 	strGeom += "<br>"
-		+ createList("framepersec", "setV(value)", 0, 1, 8, vecAnimValue,
+		+ createList("framepersec", "setV(value)", 0, 1, vecAnimValue,
 				vecAnimText, vecAnimCheck) + " motion speed | ";
 	strGeom += createCheck('saveFrames', ' save video frames', 'saveFrame()',
 			0, 0, "");
 	strGeom += "<br> Energy unit measure: ";
-	strGeom += createList("unitMeasureEnergy", "convertPlot(value)", 0, 1, 5,
+	strGeom += createList("unitMeasureEnergy", "convertPlot(value)", 0, 1,
 			vecUnitEnergyVal, vecUnitEnergyText, vecUnitEnergyCheck);
 	strGeom += "</td></tr><tr><td>";
 	strGeom += "<select id='geom' name='models' onchange='showFrame(value)'  class='selectmodels' size='10'></select>";
@@ -1194,18 +1193,18 @@ function createFreqGrp() {
 	strFreq += createRadio("vibration", "off", 'onClickVibrate(value)', 0, 1,
 			"", "off");
 	strFreq += "<BR>\n";
-	strFreq += createList("vecsamplitude", "setV(value)", 0, 1, 6,
+	strFreq += createList("vecsamplitude", "setV(value)", 0, 1,
 			vibAmplitudeValue, vibAmplitudeText, vibAmplitudeCheck)
 			+ " vib. amplitude";
 	strFreq += "<BR>\n";
 	strFreq += createCheck("vectors", "view vectors",
 			"setVCheckbox(this, this.value)", 0, 1, "vectors");
 	strFreq += "<BR>\n";
-	strFreq += createList("vecscale", "setV(value)", 0, 1, 8, vecscaleValue,
+	strFreq += createList("vecscale", "setV(value)", 0, 1, vecscaleValue,
 			vecscaleText, vecscaleCheck)
 			+ " vector scale";
 	strFreq += "<BR>\n";
-	strFreq += createList("sizevec", "setV(value)", 0, 1, 8, vecsizeValue,
+	strFreq += createList("sizevec", "setV(value)", 0, 1, vecsizeValue,
 			vecscaleText, vecscaleCheck)
 			+ " vector size";
 	strFreq += "<BR>\n";
@@ -1265,7 +1264,7 @@ function createElecpropGrp() {
 			'setV("script scripts/mulliken.spt")', 0);
 	strElec += "<br> Colour-scheme "
 		+ createList('chergeColorScheme', 'setColorMulliken(value)', 0, 0,
-				5, colSchemeValue, colSchemeName, colSchemeChk)
+				colSchemeValue, colSchemeName, colSchemeChk)
 				+ "&nbsp<br>";
 	strElec += "</td></tr>\n";
 	strElec += "<tr><td>\n";
@@ -1328,7 +1327,7 @@ function createotherpropGroup() {
 	strOther += createList(
 			'setzShadePower ',
 			'setV("set zShade; set zShadePower " + value + " ;") + setVCheckbox("z-shade","")',
-			0, 1, 4, shadeValue, shadeName, shadeChk)
+			0, 1, shadeValue, shadeName, shadeChk)
 			+ " Fog level";
 	strOther += "</td></tr>\n";
 	strOther += "<tr><td colspan='2'> Anti-aliasing"
@@ -1379,7 +1378,7 @@ function createotherpropGroup() {
 			+ "</td></tr>\n";
 	strOther += "<tr><td colspan='2'>";
 	strOther += "Font size ";
-	strOther += createList("fontSize", "setTextSize(value)", 0, 1, 9,
+	strOther += createList("fontSize", "setTextSize(value)", 0, 1,
 			textValue, textText, textCk);
 	strOther += "</td></tr>";
 	strOther += "<tr><td colspan='2'>"

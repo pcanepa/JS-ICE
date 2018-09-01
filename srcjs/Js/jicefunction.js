@@ -720,11 +720,14 @@ function setName() {
 
 var quantumEspresso = false;
 function onChangeSave(save) {
+	// see menu.js
 
 	if (save == "savePNG")
-		setV('set errorCallback "errCallback";write IMAGE ?');
+		setV('set errorCallback "errCallback";write PNG "jice.png"');
+	if (save == "savePNGJ")
+		setV('set errorCallback "errCallback";write PNGJ "jice.png"');
 	if (save == "saveXYZ")
-		setV('set errorCallback "errCallback";write COORDS XYZ ?.xyz');
+		setV('set errorCallback "errCallback";write COORDS XYZ jice.xyz');
 	if (save == "saveFrac")
 
 		saveFractionalCoordinate();
@@ -744,16 +747,16 @@ function onChangeSave(save) {
 		exportQuantum();
 	}
 	if (save == "savePOV")
-		setV('set errorCallback "errCallback"; write POVRAY ?.pov');
+		setV('set errorCallback "errCallback"; write POVRAY jice.pov');
 	if (save == "savepdb")
-		setV('set errorCallback "errCallback"; write PDB ?.pdb');
+		setV('set errorCallback "errCallback"; write PDB jice.pdb');
 	if (save == "saveVASP") {
 		// magnetic = false;
 		flagCryVasp = false;
 		exportVASP();
 	}
 	if (save == "saveState")
-		setV('set errorCallback "errCallback";write STATE ?.spt');
+		setV('set errorCallback "errCallback";write STATE jice.spt');
 	if (save == "saveGULP") {
 		flagGulp = true;
 		flagCryVasp = false;

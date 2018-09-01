@@ -184,9 +184,9 @@ function saveHtml(stringWeb) {
 	runJmolScript(stringWeb);
 }
 
-/// Example <title>kaolinite vibration modes</title><SCRIPT
-//LANGUAGE="Javascript">
+/// Example <title>kaolinite vibration modes</title>
 //tagName = title
+
 function createTag(tagName, tagOptions, tagCont, tagClosure) {
 	var newTag;
 	if (tagClosure) {

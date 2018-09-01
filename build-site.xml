@@ -61,6 +61,22 @@
   	  </sequential>
   	</for>
 
+	<!-- delete unnecessary jsmol files -->
+  	
+  	<echo> Deleting unnecessary JSmol files </echo>
+	<delete dir="site/jsmol/data" />
+	<delete dir="site/jsmol/flot" />
+  	<delete dir="site/jsmol/inchi" />
+  	<delete dir="site/jsmol/java" />
+  	<delete dir="site/jsmol/jcse" />
+  	<delete dir="site/jsmol/jquery" />
+	<delete dir="site/jsmol/jsme" />
+  	<delete dir="site/jsmol/klotho" />
+  	<delete>
+  	  <fileset dir="site/jsmol" includes="*.htm"/>
+  	</delete>
+
+  	
   	<!-- unzip SwingJS-site.zip 
   	
   	  we do this separately, as we want it done last 
@@ -91,10 +107,23 @@
 
  	-->
  	
+  	<copy todir="${site.dir}">
+      <fileset dir="${site.resource.dir}">
+      	<include name="**"/>
+  	</fileset>
+    </copy>
+
   	<echo> Copying ${site.resource.dir} files into ${site.dir} </echo>
   	<copy todir="${site.dir}">
       <fileset dir="${site.resource.dir}">
       	<include name="**"/>
+  	</fileset>
+    </copy>
+
+  	<echo> Copying srcjs/Js files into ${site.dir}/Js </echo>
+  	<copy todir="${site.dir}">
+      <fileset dir="srcjs">
+      	<include name="Js/**"/>
   	</fileset>
     </copy>
 

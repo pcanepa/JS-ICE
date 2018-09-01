@@ -117,8 +117,11 @@ function createRadio(name, text, onclick, disab, def, id, value) {
 	return s;
 }
 
-function createList(name, onclick, disab, size, optionN, optionValue,
+function createList(name, onclick, disab, size, optionValue,
 		optionText, optionCheck) {
+	if (optionValue.length != optionText.length)
+		alert("form.js#createList optionValue not same length as optionText: " + name);
+	var optionN = optionValue.length
 	var s = "<SELECT ";
 	s += "NAME='" + name + "' ";
 	s += "ID='" + name + "' ";
@@ -142,8 +145,11 @@ function createList(name, onclick, disab, size, optionN, optionValue,
 	return s;
 }
 
-function createListFunc(name, onclick, onkey, disab, size, optionN,
+function createListFunc(name, onclick, onkey, disab, size,
 		optionValue, optionText, optionCheck) {
+	if (optionValue.length != optionText.length)
+		alert("form.js#createListMenu optionValue not same length as optionText: " + name);
+	var optionN = optionValue.length
 	var s = "<SELECT ";
 	s += "NAME='" + name + "' ";
 	s += "ID='" + name + "' ";
@@ -313,8 +319,11 @@ function createLine(color, style) {
 	return s;
 }
 
-function createListmenu(name, onclick, disab, size, optionN, optionValue,
+function createListmenu(name, onclick, disab, size, optionValue,
 		optionText, optionCheck) {
+	if (optionValue.length != optionText.length)
+		alert("form.js#createListMenu optionValue not same length as optionText: " + name);
+	var optionN = optionValue.length
 	var s = "<SELECT ";
 	s += "NAME='" + name + "' ";
 	s += "ID='" + name + "' ";
