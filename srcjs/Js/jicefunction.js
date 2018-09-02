@@ -247,9 +247,13 @@ function extractInfoJmolString(whatToExtract) {
 }
 
 var Info = new Array();
-function extractAuxiliaryJmol() {
-	Info = [];
+function extractAuxiliaryJmol(path) {
 	Info = extractInfoJmol("auxiliaryInfo.models");
+	if (path) {
+		for (var i = Info.length; --i >= 0;)
+			if (!Info[i] || !Info[i].modelProperties || Info[i].modelProperties.PATH != path)
+				Info.splice(i, 1);		
+	}
 	return Info;
 }
 

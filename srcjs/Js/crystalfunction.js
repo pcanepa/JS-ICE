@@ -494,7 +494,6 @@ if (flagCryVasp) {
 	setV("echo");
 	counterFreq = 0;
 	setTitleEcho();
-	nullValues = countNullModel(Info);
 
 	for (i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
@@ -601,7 +600,7 @@ for ( var i = 0; i < Info.length; i++) {
 function loadAllFreq() {
 removeAll();
 
-var Info = extractAuxiliaryJmol()
+var Info = extractAuxiliaryJmol("Frequencies")
 //alert('length '+ Info.length)
 for ( var i = 0; i < Info.length; i++)
 	addOption(getbyID("vib"), i + " " + Info[i].name, i + 1);
@@ -626,7 +625,7 @@ case "off":
 
 //This is to load either IR or Raman modes
 function onClickModSelLoad(selectbox) {
-var Info = extractAuxiliaryJmol()
+var Info = extractAuxiliaryJmol("Frequencies")
 for ( var i = 0; i < document.modelsVib.modAct.length; i++) {
 	// if(Info[i].name != null){
 	if (document.modelsVib.modAct[i].checked)
@@ -702,18 +701,18 @@ function resetFreq() {
 }
 var maxR = 0;
 function setMaxMinPlot() {
-var localInfo = extractAuxiliaryJmol()
+var localInfo = extractAuxiliaryJmol("Frequencies")
 var loacalFreqCount = localInfo.length
 var irFrequency = new Array();
 
 try { 
 	for ( var i = 0; i < loacalFreqCount; i++) { // populate IR array
-		if (localInfo[i].name != null) {
+		if (localInfo[i].modelProperties && localInfo[i].modelProperties.Frequency) {
 			irFrequency[i] = roundoff(substringFreqToFloat(localInfo[i].modelProperties.Frequency), 0);
 		}
-		//alert(irFrequency)
-		maxR = maxValue(irFrequency);
 	}
+	//alert(irFrequency)
+	maxR = maxValue(irFrequency);
 } catch (err){
 		maxR = 3700
 }

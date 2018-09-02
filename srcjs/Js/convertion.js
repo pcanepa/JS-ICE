@@ -36,9 +36,14 @@ function substringEnergyToFloat(value) {
 
 function substringFreqToFloat(value) {
 	if (value != null) {
-		var grab = parseFloat(value.substring(0, value.indexOf('c') - 1))
-		.toPrecision(8);
-		grab = Math.round(grab * 100000000) / 100000000;
+		var grab = parseFloat(value.substring(0, value.indexOf('c') - 1));
+		// BH 2018 looking out for "F 300.2" in frequencies
+		if (isNaN(grab))
+			grab= parseFloat(value.substring(1, value.indexOf('c') - 1));
+		if (isNaN(grab))
+			return NaN;
+		else
+		grab = Math.round(grab.toPrecision(8) * 100000000) / 100000000;
 	}
 	return grab;
 }
