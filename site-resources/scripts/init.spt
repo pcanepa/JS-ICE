@@ -1,3 +1,5 @@
-set antialiasdisplay
+set antialiasDisplay
+set hiddenLinesDashed
+
 javascript(setName());
 javascript(makeDisable("filename"));
