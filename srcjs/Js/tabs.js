@@ -128,7 +128,7 @@ var grpDispDelayed = function(n, isClick) {
 function createMenuCell(i) {
 
 	var sTab = "<li id='menu'+ i +' "; // Space is mandatory between i and "
-	sTab += "onClick='grpDispDelayed(" + i + ",1)' onmouseenter='grpDispDelayed("+i+",0)' onmouseexit='grpDispDelayed("+i+",2)'"; // BH 2018
+	sTab += "onClick='grpDispDelayed(" + i + ",1)' onmouseover='grpDispDelayed("+i+",0)' onmouseout='grpDispDelayed("+i+",2)'"; // BH 2018
 	sTab += "class = 'menu' ";
 	sTab += ">";
 	sTab += "<a class = 'menu'>";
