@@ -502,17 +502,13 @@ function sortNumber(a, b) {
 }
 
 function maxValue(irInt) {
-	var nulli = 0;
-	nulli = countNullModel(Info);
-	var newInt = irInt.sort(sortNumber);
-	var maxInt = newInt[newInt.length - nulli - 1];
-	return maxInt;
+	// BH 2018
+	irInt.sort(sortNumber);
+	var n = 0;
+	while (irInt.length > 0 && isNaN(n = parseInt(irInt.pop()))){}
+	return (isNaN(n) ? 0 : n);
 }
 
 function minValue(irInt) {
-	var nulli = 0;
-	nulli = countNullModel(Info);
-	var newInt = irInt.reverse(sortNumber);
-	var minInt = newInt[newInt.length - nulli - 2];
-	return minInt;
+	return parseInt(irInt.sort(sortNumber)[0]);
 }

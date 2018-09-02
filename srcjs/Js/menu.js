@@ -800,7 +800,9 @@ function createCellGrp() {
 	strCell += createCheck('supercellForce', 'force supercell (P1)', '', '',
 			'', '')
 			+ "<br>\n";
-	strCell += createButton('set_pack', 'pack', 'setPackaging()', '') + " \n";
+	strCell += createButton('set_pack', 'pack', 'setPackaging("packed")', '') + " \n";
+	strCell += createButton('set_pack', 'centroid', 'setPackaging("centroid")', '') + " \n";
+	strCell += createButton('set_pack', 'unpack', 'setPackaging("")', '') + " \n";
 	strCell += createLine('blue', '');
 	strCell += "</td></tr>\n";
 	strCell += "<tr><td colspan='2'> \n";

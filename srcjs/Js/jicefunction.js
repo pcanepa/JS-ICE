@@ -30,6 +30,7 @@
 //Common functions to manipulate data of forms and objects
 
 runJmolScript = function(script) {
+	console.log(script);
 	jmolScript(script);	
 }
 
@@ -247,9 +248,13 @@ function extractInfoJmolString(whatToExtract) {
 }
 
 var Info = new Array();
-function extractAuxiliaryJmol() {
-	Info = [];
+function extractAuxiliaryJmol(path) {
 	Info = extractInfoJmol("auxiliaryInfo.models");
+	if (path) {
+		for (var i = Info.length; --i >= 0;)
+			if (!Info[i] || !Info[i].modelProperties || Info[i].modelProperties.PATH != path)
+				Info.splice(i, 1);		
+	}
 	return Info;
 }
 
@@ -1148,10 +1153,8 @@ var aCell, bCell, cCell, alpha, beta, gamma, typeSystem;
 function getUnitcell(i) {
 	// document.cellGroup.reset();
 	typeSystem = "";
+	i || (i = 1);
 	var StringUnitcell = "auxiliaryinfo.models[" + i + "].infoUnitCell";
-
-	if (i == null || i == "" || i == 0)
-		StringUnitcell = " auxiliaryInfo.models[1].infoUnitCell ";
 
 	var cellparam = extractInfoJmol(StringUnitcell);
 
@@ -1271,7 +1274,7 @@ function setCellDotted() {
 }
 
 //This gets values from textboxes using them to build supercells
-function setPackaging() {
+function setPackaging(packMode) {
 	var kindCell = null;
 	kindCell = getbyName("cella");
 	var checkboxSuper = checkBoxX("supercellForce");
@@ -1283,22 +1286,23 @@ function setPackaging() {
 			kindCellfinal = kindCell[i].value;
 	}
 
-	typePack = (kindCellfinal == "conventional") ? (' filter "conventional" ')
-			: (typePack = ' filter "primitive" ');
-
-	if (getValue("par_a") == "" || getValue("par_b") == ""
-		|| getValue("par_c") == "") {
-		errorMsg("Please, check values entered in the textboxes.");
-		return false;
-	}
+	typePack = packMode + " " + (kindCellfinal == "conventional" ? ' filter "conventional" '
+			: ' filter "primitive" ');
+	
+	// BH 2018
+	getValue("par_a") || setVbyID("par_a", 1);
+	getValue("par_b") || setVbyID("par_b", 1);
+	getValue("par_c") || setVbyID("par_c", 1);
+	
+	// BH 2018 adds save/restore orientation
 	if (checkboxSuper == "on") {
 		warningMsg("You decided to constrain your original supercell to form a supercell. \n The symmetry was reduced to P1.");
-		setV('load "" {1 1 1} SUPERCELL {' + getValue("par_a") + ' '
-				+ getValue("par_b") + ' ' + getValue("par_c") + '}' + typePack);
+		setV('save orientation o;load "" {1 1 1} SUPERCELL {' + getValue("par_a") + ' '
+				+ getValue("par_b") + ' ' + getValue("par_c") + '}' + typePack + ";restore orientation o;");
 		setV("set messageCallback 'superCellParams'; message SUPERCELL;");
 	} else {
-		setV('load "" {' + getValue("par_a") + ' ' + getValue("par_b") + ' '
-				+ getValue("par_c") + '}' + typePack);
+		setV('save orientation o;load "" {' + getValue("par_a") + ' ' + getValue("par_b") + ' '
+				+ getValue("par_c") + '}' + typePack + ";restore orientation o;");
 	}
 }
 
