@@ -2407,8 +2407,8 @@ function resetAll() {
 	document.otherpropGroup.reset();
 	document.editGroup.reset();
 	// document.HistoryGroup.reset();
-	// this disables antialias option
-	setV('antialiasDisplay = false;set hermiteLevel 0');
+	// this disables antialias option BH: NOT - or at least not generally. We need a switch for this
+	setV('antialiasDisplay = true;set hermiteLevel 0');
 	resetFreq();
 }
 
