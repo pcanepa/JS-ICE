@@ -116,9 +116,8 @@ function cosRadiant(value) {
 	return angle;
 }
 
-function roundNumber(value) {
-	var newval = Math.round(value * 10000000) / 10000000;
-	return newval;
+roundNumber = function(value) { //BH 2018 was 10000000
+	return Math.round(value * 10000) / 10000;
 }
 
 function roundoff(value, precision) {
