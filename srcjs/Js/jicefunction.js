@@ -30,11 +30,35 @@
 //Common functions to manipulate data of forms and objects
 
 runJmolScript = function(script) {
-	console.log(script);
+	debugSay(script);
 	jmolScript(script);	
 }
 
+debugSay = function(script) {
+	// BH 2018
+	var area = getbyID("debugarea");
+	if (script === null) {
+		script = "";
+	} else {
+		console.log(script);
+		if (checkID("debugMode")) {
+			area.style.display = "block";
+			script = area.value + script + "\n";
+		} else {
+			area.style.display = "none";
+			script = "";
+		}
+	}
+	area.value = script;
+	area.scrollTop = area.scrollHeight;
+}
+
+showCommands = function(d) {
+	getbyID("debugarea").style.display = (d.checked ? "block" : "none");
+}
+
 runJmolScriptAndWait = function(script) {
+	debugSay(script);
 	jmolScriptWait(script);	
 }
 
@@ -208,9 +232,6 @@ function messageMsg(msg) {
 	alert("MESSAGE: " + msg);
 }
 
-function errCallback(a, b, c, d) {
-	errorMsg(c);
-}
 
 /////////////////////////////// END MESSAGE , ERROR and WARNING
 
@@ -266,7 +287,7 @@ function extractAtomInfo() {
 
 //This function saves the current state of Jmol applet
 function saveState() {
-	setV('set errorCallback "errCallback";');
+	//setErrorCallback
 	setV("save ORIENTATION orienta; save STATE status;");
 	setV("set messageCallback 'saveMessageCallback'; message SAVED;");
 }
@@ -277,9 +298,16 @@ function saveStatejust() {
 }
 
 function loadStatejust() {
-	setV('set errorCallback "errCallback";');
+	//setErrorCallback
 	setV("restore ORIENTATION orienta; restore STATE status;");
 	// setV("set messageCallback 'saveMessageCallback'; message SAVED;")
+}
+
+//This function reloads the previously saved state after a positive
+//saveMessageCallback() == SAVED
+function restoreState() {
+	//setErrorCallback
+	setV('restore ORIENTATION orienta; restore STATE status;');
 }
 
 function saveMessageCallback(a, m) {
@@ -288,13 +316,13 @@ function saveMessageCallback(a, m) {
 	if (m.indexOf("SAVED") == 0) {
 		setV("echo;");
 		reloadFastModels();
-		reloadState();
+		restoreState();
 	}
 }
 
 //This just saves the orientation of the structure
 function saveOrientation() {
-	setV('set errorCallback "errCallback";');
+	//setErrorCallback
 	setV('save ORIENTATION oriente');
 	setV("set messageCallback 'saveOrientaMessageCallback'; message SAVEDORIENTA;");
 }
@@ -306,16 +334,9 @@ function saveOrientaMessageCallback(a, m) {
 	}
 }
 
-function reloadOrientation() {
-	setV('set errorCallback "errCallback";');
+function restoreOrientation_e() {
+	//setErrorCallback
 	setV('restore ORIENTATION oriente');
-}
-
-//This function reloads the previously saved state after a positive
-//saveMessageCallback() == SAVED
-function reloadState() {
-	setV('set errorCallback "errCallback";');
-	setV('restore ORIENTATION orienta; restore STATE status;');
 }
 
 function setNameModel(form) {
@@ -333,8 +354,8 @@ function setTitleEcho() {
 }
 
 function saveCurrentState() {
-	warningMsg("This option save only the state of the currently loaded system.");
-	setV('set errorCallback "errCallback";');
+	warningMsg("This option only the state temporarily. To save your work, use File...Export...image+state(PNGJ). The image created can be dragged back into Jmol or JSmol or sent to a colleague to reproduce the current state exactly as it appears in the image.");
+	//setErrorCallback
 	setV('save ORIENTATION orask; save STATE stask; save BOND bask');
 	setV("set messageCallback 'saveCurrentAsk'; message SAVEDASK; set echo top left;echo saving state...;refresh;");
 }
@@ -348,7 +369,7 @@ function saveCurrentAsk(a, m) {
 }
 
 function reloadCurrentState() {
-	setV('set errorCallback "errCallback";');
+	//setErrorCallback
 	setV('restore ORIENTATION orask; restore STATE stask; restore BOND bask;');
 	setV("set messageCallback 'reloadCurrentAsk'; message RELOADASK; set echo top left;echo reloading previosu state...;refresh;");
 }
@@ -2430,7 +2451,7 @@ function exitMenu() {
 
 function exitElecpropGrp() {
 	setV('script scripts/reload.spt');
-	reloadOrientation();
+	restoreOrientation_e();
 }
 
 //These remove all values from a list

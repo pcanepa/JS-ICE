@@ -93,7 +93,7 @@ function getMenus() {
 	// + createHistGrp();
 }
 
-function createMenus() {
+function createTabMenu() {
 
 	// strMenu = "<TABLE style='border-collapse: collapse;'><TR>";
 	var strMenu = "<ul class='menu' id='menu'>";

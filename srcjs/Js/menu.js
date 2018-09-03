@@ -167,7 +167,7 @@ function createFileGrp() { // Here the order is crucial
 			elSOptionArr, elSOptionText);
 	strFile += "<p ><img src='images/j-ice.png' alt='logo'/></p>";
 	strFile += "<p style='color:#f00; font-weight:bold'>New readers <br> CASTEP, VASP POSCAR, and XcrysDen</p>";
-	strFile += "<div style='margin-top:230px;'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
+	strFile += "<div style='margin-top:100px;'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
 	strFile += "<blockquote>\"J-ICE: a new Jmol interface for handling<br> and visualizing Crystallographic<br> and Electronics properties.<br>"
 	strFile += "P. Canepa, R.M. Hanson, P. Ugliengo, M. Alfredsson, <br>  J. Appl. Cryst. 44, 225 (2011). <a href='http://dx.doi.org/10.1107/S0021889810049411' target'blank'>[doi]</a> \"</blockquote> </p></div>";
 	
@@ -1162,24 +1162,24 @@ function createFreqGrp() {
 	// strFreq += createButton("reload", "Reload", "onClickReloadSymm()", 0);
 	strFreq += "<BR>\n";
 	strFreq += "vibration ";
-	strFreq += createRadio("vibration", "on", 'onClickVibrate(value)', 0, 0,
+	strFreq += createRadio("vibration", "on", 'onClickVibrate(value)', 0, 1,
 			"", "on");
-	strFreq += createRadio("vibration", "off", 'onClickVibrate(value)', 0, 1,
+	strFreq += createRadio("vibration", "off", 'onClickVibrate(value)', 0, 0,
 			"", "off");
 	strFreq += "<BR>\n";
 	strFreq += createList("vecsamplitude", "setV(value)", 0, 1,
-			vibAmplitudeValue, vibAmplitudeText)
+			vibAmplitudeValue, vibAmplitudeText,[0,1])
 			+ " vib. amplitude";
 	strFreq += "<BR>\n";
 	strFreq += createCheck("vectors", "view vectors",
 			"setVCheckbox(this, this.value)", 0, 1, "vectors");
 	strFreq += "<BR>\n";
 	strFreq += createList("vecscale", "setV(value)", 0, 1, vecscaleValue,
-			vecscaleText)
+			vecscaleText,[0,0,1])
 			+ " vector scale";
 	strFreq += "<BR>\n";
 	strFreq += createList("sizevec", "setV(value)", 0, 1, vecsizeValue,
-			vecscaleText)
+			vecscaleText,[0,0,0,1])
 			+ " vector size";
 	strFreq += "<BR>\n";
 	strFreq += "<table class='contents'> <tr><td>vector color</td> <td><script type='text/javascript'>jmolColorPickerBox('color vectors $COLOR$',[255,255,255])</script></td>";
@@ -1353,29 +1353,61 @@ function createotherpropGroup() {
 			textValue, textText);
 	strOther += "</td></tr>";
 	strOther += "<tr><td colspan='2'>"
-		+ createButton("removeText", "Remove messages", 'setV("echo")', 0);
-	strOther += createLine('blue', '');
+		+ createButton("removeText", "Remove Messages", 'setV("echo")', 0);
+	strOther += createLine('blue', '')
+		+ "</td></tr>\n";
 	strOther += "</td></tr></table></FORM>  \n";
 	return strOther;
 }
 
-///////////////////////////// create Hystory Grp var scriptColor = "'color iron
-//$COLOR$'";
-
-function createHistGrp() {
-	var strHist = "<FORM id='HistoryGroup' name='HistoryGroup' style='display:none'>";
-	strHist += "History<BR>\n";
-	strHist += "Work in progress<BR>\n";
-	strHist += "</form>";
-	return strHist;
+//BH 2018
+createDebugPanel = function() {
+	return "<div id='debugpanel'>"
+		+ createCheck("debugMode", "Show Commands", "showCommands(this)", 0,
+			0, "")
+		+ "&nbsp;" + createButton("removeText", "Clear", 'debugSay(null)', 0)
+		+ "<br>\n"
+		+ "<textarea id='debugarea' style='display:none;font-size:24 pt;width:350px;height:150px;font-family:monospace;overflow-y:auto'></textarea>" 
+		+ "</div>"
 }
 
-//////////////LOADING MENUS
-function loadTabs() {
-	document.write(createMenus());
+///////////////////////////// create Hystory Grp 
+
+//function createHistGrp() {
+//	var strHist = "<FORM id='HistoryGroup' name='HistoryGroup' style='display:none'>";
+//	strHist += "History<BR>\n";
+//	strHist += "Work in progress<BR>\n";
+//	strHist += "</form>";
+//	return strHist;
+//}
+
+//////////////LOADING TABS, MENUS, and BUTTONS
+function docWriteTabs() {
+	document.write(createTabMenu());
 }
 
-function loadMenus() {
+
+docWriteBottomFrame = function() {
+	document.write("<br> ");	
+	document.write(createText5('filename', 'Filename:', '108', '', '', "disab"));
+	document.write("<br>");
+	document.write(createButton1("reload", "Reload",
+			'setV("script ./scripts/reload.spt") + resetAll() + setName()', 0,
+			"specialbutton"));
+	document.write(createButton1("reset", "Reset",
+			'setV("script ./scripts/reset.spt")', 0, "specialbutton"));
+	document.write(createButton1("Console", "Console", 'setV("console")', 0,
+			"specialbutton"));
+	document.write(createButton("NewWindow", "New window", "newAppletWindow()", 0));
+	document.write(createButton("viewfile", "File content", "printFileContent()", 0));
+	document.write(createButton1("saveState", 'Save state', 'saveCurrentState()',
+			0, "savebutton"));
+	document.write(createButton1("restoreState", 'Restore state',
+			'reloadCurrentState()', 0, "savebutton"));
+	document.write(createButton("Feedback", 'Feedback', 'newAppletWindowFeed()', 0));
+}
+
+docWriteRightFrame = function() {
 	document.write(createFileGrp());
 	document.write(createAppearanceGrp());
 	document.write(createEditGroup());
@@ -1389,5 +1421,7 @@ function loadMenus() {
 	document.write(createFreqGrp());
 	document.write(createElecpropGrp());
 	document.write(createotherpropGroup());
-	// document.write(createHistGrp());
+	document.write(createDebugPanel());
+	loadSliders();
 }
+

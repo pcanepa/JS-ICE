@@ -740,6 +740,7 @@ function showTooltipFreq(x, y, contents, pos) {
 }
 
 function jmolLoadStructCallback() {
+	alert("calling plotgraph#jmolLoadStructCallback??")
 	setTimeout('doPlot()');
 }
 
