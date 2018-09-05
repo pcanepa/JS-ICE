@@ -24,15 +24,11 @@
 
 
 function onClickLoadMoldenStruct() {
-	//setErrorCallback
-	setMessageMode(MESSAGE_MODE_MOLDEN_DONE)
-	setV("set echo top left; echo loading...;refresh;load ?; message MOLDENDONE;");
+	runJmolScript("set echo top left; echo loading...;refresh;load ?");
 }
 
-moldenDoneMessageCallback = function(msg) {
-	if (msg.indexOf("MOLDENDONE") == 0) {
-		loadDone(loadModelsMolden);
-	}
+moldenDone = function(msg) {
+	loadDone(loadModelsMolden);
 }
 
 var counterFreq = 0;
@@ -60,7 +56,6 @@ function loadModelsMolden() {
 		}
 	}
 	disableFreqOpts();
-	// symmetryModeAdd();
 	setMaxMinPlot();
 	getSymInfo();
 	setName();

@@ -28,103 +28,105 @@
  */
 
 //Common variables 
-function defineMenu() {
-	var tl;
-	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "File"; // Name that will appear on the tab
-	tabMenu[tl].grp = "fileGroup"; // Name of the form that is displayed
-	// If atom picking is active or not (not used)
-	tabMenu[tl].link = "Import, Export files.";
 
-	//
-	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "App.";
-	tabMenu[tl].grp = "apparenceGroup";
-	tabMenu[tl].link = "Change atom, bond clours and dimensions.";
-
-	//
-	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "Edit";
-	tabMenu[tl].grp = "editGroup";
-	tabMenu[tl].link = "Change connectivity and remove atoms.";
-
-	// added the 11th 11 2010
-	// Last removed Sat Jul 5 08:52:31 AST 2014
-/*	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "Build";
-	tabMenu[tl].grp = "builGroup";
-	tabMenu[tl].link = "Modify and optimize structure.";*/
-
-	//
-	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "Meas.";
-	tabMenu[tl].grp = "measureGroup";
-	tabMenu[tl].link = "Measure bond distances, angles and torsionals.";
-
-	//
-	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "Orient.";
-	tabMenu[tl].grp = "orientGroup";
-	tabMenu[tl].link = "Change orientations and views.";
-
-	//
-	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "Cell";
-	tabMenu[tl].grp = "cellGroup";
-	tabMenu[tl].link = "Modify cell features and simmetry.";
-
-	//
-	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "Poly.";
-	tabMenu[tl].grp = "polyGroup";
-	tabMenu[tl].link = "Create polyhedra.";
-
-	//
-	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "IsoSur.";
-	tabMenu[tl].grp = "isoGroup";
-	tabMenu[tl].link = "Modify from CUBE files and create isosurface map.";
-
-	//
-	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "Geom.";
-	tabMenu[tl].grp = "geometryGroup";
-	tabMenu[tl].link = "Follow geometry optimizations.";
-	//
-	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "Freq.";
-	tabMenu[tl].grp = "freqGroup";
-	tabMenu[tl].link = "Animate IR/Raman frequencies and simulate spectra.";
-
-	//
-	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "E&M";
-	tabMenu[tl].grp = "elecGroup";
-	tabMenu[tl].link = "Superimpose Mulliken charges, spin, magnetic moment onto your structure.";
-
-	//
-	tl = tabMenu.length;
-	tabMenu[tl] = new menu();
-	tabMenu[tl].name = "Main";
-	tabMenu[tl].grp = "otherpropGroup";
-	tabMenu[tl].link = "Change background, light settings and other.";
-	/*
-	 * tl=tabMenu.length; tabMenu[tl]= new menu(); tabMenu[tl].name="History";
-	 * tabMenu[tl].grp="HistoryGroup";
-	 */
-}
+// see tabs.js 
+//function defineMenu() {
+//	var tl;
+//	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "File"; // Name that will appear on the tab
+//	tabMenu[tl].grp = "fileGroup"; // Name of the form that is displayed
+//	// If atom picking is active or not (not used)
+//	tabMenu[tl].link = "Import, Export files.";
+//
+//	//
+//	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "App.";
+//	tabMenu[tl].grp = "apparenceGroup";
+//	tabMenu[tl].link = "Change atom, bond clours and dimensions.";
+//
+//	//
+//	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "Edit";
+//	tabMenu[tl].grp = "editGroup";
+//	tabMenu[tl].link = "Change connectivity and remove atoms.";
+//
+//	// added the 11th 11 2010
+//	// Last removed Sat Jul 5 08:52:31 AST 2014
+///*	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "Build";
+//	tabMenu[tl].grp = "builGroup";
+//	tabMenu[tl].link = "Modify and optimize structure.";*/
+//
+//	//
+//	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "Meas.";
+//	tabMenu[tl].grp = "measureGroup";
+//	tabMenu[tl].link = "Measure bond distances, angles and torsionals.";
+//
+//	//
+//	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "Orient.";
+//	tabMenu[tl].grp = "orientGroup";
+//	tabMenu[tl].link = "Change orientations and views.";
+//
+//	//
+//	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "Cell";
+//	tabMenu[tl].grp = "cellGroup";
+//	tabMenu[tl].link = "Modify cell features and simmetry.";
+//
+//	//
+//	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "Poly.";
+//	tabMenu[tl].grp = "polyGroup";
+//	tabMenu[tl].link = "Create polyhedra.";
+//
+//	//
+//	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "IsoSur.";
+//	tabMenu[tl].grp = "isoGroup";
+//	tabMenu[tl].link = "Modify from CUBE files and create isosurface map.";
+//
+//	//
+//	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "Geom.";
+//	tabMenu[tl].grp = "geometryGroup";
+//	tabMenu[tl].link = "Follow geometry optimizations.";
+//	//
+//	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "Freq.";
+//	tabMenu[tl].grp = "freqGroup";
+//	tabMenu[tl].link = "Animate IR/Raman frequencies and simulate spectra.";
+//
+//	//
+//	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "E&M";
+//	tabMenu[tl].grp = "elecGroup";
+//	tabMenu[tl].link = "Superimpose Mulliken charges, spin, magnetic moment onto your structure.";
+//
+//	//
+//	tl = tabMenu.length;
+//	tabMenu[tl] = new menu();
+//	tabMenu[tl].name = "Main";
+//	tabMenu[tl].grp = "otherpropGroup";
+//	tabMenu[tl].link = "Change background, light settings and other.";
+//	/*
+//	 * tl=tabMenu.length; tabMenu[tl]= new menu(); tabMenu[tl].name="History";
+//	 * tabMenu[tl].grp="HistoryGroup";
+//	 */
+//}
 
 //////////////////////////create Grp functions (for each menu)
 ///////////////////////////// create File Grp
@@ -135,7 +137,7 @@ function createFileGrp() { // Here the order is crucial
 			"loadmaterial", "loadMolden", "loadpdb", "loadQuantum",
 			"loadSiesta", "loadShel", "loadVASPoutcar", "loadVasp", "loadWien",
 			"loadXcrysden", "loadCUBE", "loadJvxl", "loadstate");
-	var elOptionText = new Array("Load New FILE", "General (*.*)",
+	var elOptionText = new Array("Load New File", "General (*.*)",
 			"Reload current", "CIF (*.cif)", "XYZ (*.XYZ)",
 			"CASTEP (INPUT, OUTPUT)", "CRYSTAL (*.*)", "Dmol (*.*)",
 			"FHI-aims (*.in)", "GAUSSIAN0X (*.*)", "GROMACS (*.gro)",
@@ -144,12 +146,19 @@ function createFileGrp() { // Here the order is crucial
 			"ShelX (*.*)", "VASP (OUTCAR, POSCAR)", "VASP (*.xml)",
 			"WIEN2k (*.struct)", "Xcrysden (*.xtal)", "map (*.CUBE)",
 			"map (*.jvxl)", "Jmol state (*.spt,*.png)");
+
 	var strFile = "<form id='fileGroup' name='fileGroup' style='display:inline' class='contents'>\n";
 	strFile += "<h2>File manager</h2>\n";
-	strFile += "Load File<BR>\n";
+	strFile += "<table><tr><td>Load File<BR>\n";
 	strFile += createListmenu('Load File', 'onChangeLoad(value)', 0, 1,
 			elOptionArr, elOptionText);
-	strFile += "<BR><BR>\n";
+	strFile += "</td><td>model #" +
+		createText2("modelNo", "", 7, "")
+		+ "</td></tr><tr><td>\n";
+	strFile += "Sample Files<BR>\n";
+	strFile += createListmenu('Sample Files', 'onChangeLoadSample(value)', 0, 1,
+			sampleOptionArr);
+	strFile += "</td></tr></table><BR><BR>\n";
 	strFile += "Export/Save File<BR>\n";
 	// Save section
 	var elSOptionArr = new Array("default", "saveCASTEP", "saveCRYSTAL",
@@ -167,7 +176,7 @@ function createFileGrp() { // Here the order is crucial
 			elSOptionArr, elSOptionText);
 	strFile += "<p ><img src='images/j-ice.png' alt='logo'/></p>";
 	strFile += "<p style='color:#f00; font-weight:bold'>New readers <br> CASTEP, VASP POSCAR, and XcrysDen</p>";
-	strFile += "<div style='margin-top:100px;'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
+	strFile += "<div style='margin-top:50px;'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
 	strFile += "<blockquote>\"J-ICE: a new Jmol interface for handling<br> and visualizing Crystallographic<br> and Electronics properties.<br>"
 	strFile += "P. Canepa, R.M. Hanson, P. Ugliengo, M. Alfredsson, <br>  J. Appl. Cryst. 44, 225 (2011). <a href='http://dx.doi.org/10.1107/S0021889810049411' target'blank'>[doi]</a> \"</blockquote> </p></div>";
 	
@@ -871,7 +880,7 @@ function createPolyGrp() {
 	var polyEdgeName = new Array("select", "4, 6", "4 ", "6", "8", "10", "12");
 	var polyStyleName = new Array("select", "flat", "collapsed edges",
 			"no edges", "edges", "frontedges");
-	var polyStyleValue = new Array("NOEDGES", "flat edges", "collapsed",
+	var polyStyleValue = new Array("NOEDGES", "noedges", "collapsed",
 			"noedges", "edges", "frontedges");
 	var polyFaceName = new Array("0.0", "0.25", "0.5", "0.9", "1.2");
 	var strPoly = "<FORM id='polyGroup' name='polyGroup' style='display:none'>\n";
@@ -1363,15 +1372,20 @@ function createotherpropGroup() {
 //BH 2018
 createDebugPanel = function() {
 	return "<div id='debugpanel'>"
-		+ createCheck("debugMode", "Show Commands", "showCommands(this)", 0,
+		+ createCheck("debugMode", "Show Commands", "debugShowCommands(this.checked)", 0,
 			0, "")
-		+ "&nbsp;" + createButton("removeText", "Clear", 'debugSay(null)', 0)
+		+ "&nbsp;" + createButton("removeText", "Clear", 'debugShowCommands(true);debugSay(null)', 0)
+		+ "&nbsp;" + createButton("getHelp", "History", 'debugShowCommands(true);debugShowHistory()', 0)
+		+ "&nbsp;" + createButton("getHelp", "Scripting Help", 'setV("help")', 0)
 		+ "<br>\n"
-		+ "<textarea id='debugarea' style='display:none;font-size:24 pt;width:350px;height:150px;font-family:monospace;overflow-y:auto'></textarea>" 
-		+ "</div>"
+		+ "<div id='debugdiv' style='display:none'>"
+		+ "<textarea id='debugarea' style='font-size:12pt;width:350px;height:150px;font-family:monospace;overflow-y:auto'></textarea>" 
+		+ "<br><input type='text' style='font-size:12pt;width:350px' value='' placeHolder='type a command here' onKeydown='event.keyCode === 13&&$(this).select()&&setV(value)'/>" 
+		+ "</div></div>"
 }
 
-///////////////////////////// create Hystory Grp 
+
+///////////////////////////// create History Grp 
 
 //function createHistGrp() {
 //	var strHist = "<FORM id='HistoryGroup' name='HistoryGroup' style='display:none'>";

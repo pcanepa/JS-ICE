@@ -31,8 +31,6 @@ var newRamanInt = new Array();
 var newInt = new Array();
 var summedInt = new Array();
 var sortInt = new Array();
-//var indexFreq = new Array();
-var PI = Math.PI;
 
 function simSpectrum() {
 	var win = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=800,height=600,left=50";
@@ -356,11 +354,11 @@ function defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
 	// Gaussian Convolution
 	var cx = 4 * Math.LN2;
 	var ssa = sigma * sigma / cx;
-	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(PI));
+	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI));
 
 	// Lorentzian Convolution
 	var xgamma = sigma;
-	var ssc = xgamma * 0.5 / PI; // old ss1
+	var ssc = xgamma * 0.5 / Math.PI; // old ss1
 	var ssd = (xgamma * 0.5) ^ 2; // old ss2
 	var radvalue;
 	var summInt = new Array();

@@ -76,8 +76,7 @@ function applyTrans(x) {
 }
 
 function applyPack(x) {
-	packRange = parseFloat(x / 20.0).toPrecision(2);
-	setPackRange();
+	setPackRangeAndReload(parseFloat(x / 20.0).toPrecision(2));
 	getbyID("packMsg").innerHTML = packRange + " &#197";
 }
 

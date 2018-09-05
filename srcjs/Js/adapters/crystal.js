@@ -26,6 +26,7 @@
 /////////
 ////////////////SAVE INPUT
 /////////
+
 var titleCRYS = null;
 function titleCRYSTAL() {
 	titleCRYS = prompt("Type here the job title:", "");
@@ -176,51 +177,46 @@ function figureOutSpaceGroup() {
 	if (frameValue == null || frameValue == "" || flagCif)
 		framValue = 1;
 	prevFrame = frameValue;
-	setV('set errorCallback "errCallback";')
 	magnetic = confirm('It\'s the primitive cell ?')
 	// crystalPrev = confirm('Does the structure come from a previous CRYSTAL
 	// calcultion?')
-	setMessageMode(MESSAGE_MODE_CRYSTAL_SAVE_SPACEGROUP);
 	if (magnetic) { // This option is for quantum espresso
 		if (flagCryVasp) {
-			setV("load '' FILTER 'conv'; delete not cell=555; message SAVESPACE;");
+			runJmolScriptWait("load '' FILTER 'conv'; delete not cell=555;");
 		} else {
-			setV("load ''; delete not cell=555; message SAVESPACE;");
+			runJmolScriptWait("load ''; delete not cell=555;");
 		}
 	} else {
 		if (flagCryVasp) {
-			setV("load '' FILTER 'conv'; message SAVESPACE;");
+			runJmolScriptWait("load '' FILTER 'conv';");
 		} else {
-			setV("load ''; message SAVESPACE;");
+			runJmolScriptWait("load '';");
 		}
 	}
+	getSpaceGroup();
 }
 
 var interNumber = "";
-function crystalSaveSpacegroupCallback(msg) {
-	// important to do this to change from Java string to JavaScript string
-	if (msg.indexOf("SAVESPACE") == 0) {
-		var s = ""
-		var info = jmolEvaluate('script("show spacegroup")')
-		if (info.indexOf("x,") < 0) {
-			s = "no space group"
-		} else {
-			var S = info.split("\n")
-			for ( var i = 0; i < S.length; i++) {
-				var line = S[i].split(":")
-				if (line[0].indexOf("international table number") == 0)
-					s = parseInt(S[i]
-							.replace(/international table number:/, ""));
-			}
+getSpaceGroup = function() {
+	var s = ""
+	var info = jmolEvaluate('show("spacegroup")')
+	if (info.indexOf("x,") < 0) {
+		s = "no space group"
+	} else {
+		var S = info.split("\n")
+		for ( var i = 0; i < S.length; i++) {
+			var line = S[i].split(":")
+			if (line[0].indexOf("international table number") == 0)
+				s = parseInt(S[i]
+						.replace(/international table number:/, ""));
 		}
-		interNumber = parseInt(s);
-		getUnitcell(prevFrame);
-		findCellParameters()
 	}
+	interNumber = parseInt(s);
+	getUnitcell(prevFrame);
+	findCellParameters()
 }
 
 var stringCellParam;
-//cellDimString and ibravQ is for quantum espresso
 var cellDimString = null;
 var ibravQ = "";
 function findCellParameters() {
@@ -236,8 +232,8 @@ function findCellParameters() {
 				+ " \n celdm(2) =  " + roundNumber(bCell / aCell)
 				+ " \n celdm(3) =  " + roundNumber(cCell / aCell)
 				+ " \n celdm(4) =  " + cosRadiant(alpha) + " \n celdm(5) =  "
-				+ roundNumber(cosRadiant(beta)) + " \n celdm(6) =  "
-				+ roundNumber(cosRadiant(gamma)) + " \n\n";
+				+ (cosRadiant(beta)) + " \n celdm(6) =  "
+				+ (cosRadiant(gamma)) + " \n\n";
 		ibravQ = "14";
 		break;
 
@@ -248,7 +244,7 @@ function findCellParameters() {
 			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(aCell)
 					+ " \n celdm(2) =  " + roundNumber(bCell / aCell)
 					+ " \n celdm(3) =  " + roundNumber(cCell / aCell)
-					+ " \n celdm(4) =  " + roundNumber(cosRadiant(alpha))
+					+ " \n celdm(4) =  " + (cosRadiant(alpha))
 					+ " \n\n";
 			ibravQ = "12"; // Monoclinic base centered
 
@@ -299,17 +295,17 @@ function findCellParameters() {
 		stringCellParam = roundNumber(aCell) + ", " + roundNumber(alpha) + ", "
 				+ roundNumber(beta) + ", " + roundNumber(gamma);
 		cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-				+ " \n celdm(4) =  " + roundNumber(cosRadiant(alpha))
-				+ " \n celdm(5) = " + roundNumber(cosRadiant(beta))
-				+ " \n celdm(6) =  " + roundNumber(cosRadiant(gamma));
+				+ " \n celdm(4) =  " + (cosRadiant(alpha))
+				+ " \n celdm(5) = " + (cosRadiant(beta))
+				+ " \n celdm(6) =  " + (cosRadiant(gamma));
 		ibravQ = "5";
 		var question = confirm("Is a romboheadral lattice?")
 		if (question) {
 			stringCellParam = roundNumber(aCell) + ", " + roundNumber(cCell);
 			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(4) =  " + roundNumber(cosRadiant(alpha))
-					+ " \n celdm(5) = " + roundNumber(cosRadiant(beta))
-					+ " \n celdm(6) =  " + roundNumber(cosRadiant(gamma))
+					+ " \n celdm(4) =  " + (cosRadiant(alpha))
+					+ " \n celdm(5) = " + (cosRadiant(beta))
+					+ " \n celdm(6) =  " + (cosRadiant(gamma))
 					+ " \n\n";
 			ibravQ = "4";
 		}
@@ -358,7 +354,6 @@ if (flagCryVasp)
 	savCRYSTALSpace();
 
 if (!flagGulp) {
-	setV('set errorCallback "errCallback"');
 	setV("load '' filter 'primitive'");
 	loadStatejust();
 }
@@ -387,26 +382,20 @@ setV(script);
 ///////////////////////// LOAD & ON LOAD functions
 
 function onClickLoadStruc() {
-	setMessageCallback(MESSAGE_MODE_CRYSTAL_DONE)	
-	runJmolScript("set echo top left; echo loading...;refresh; load ? PACKED; message CRYDONE; echo;");
+	runJmolScript("set echo top left; echo loading...;refresh; load ? PACKED;");
+}
+
+crystalDone = function() {
+	loadDone(loadModelsCrystal);
 }
 
 function onClickReloadSymm() {
-	setMessageCallback(MESSAGE_MODE_CRYSTAL_DONE)	
-	runJmolScript(" set echo top left; echo reloading...;refresh; load;message CRYSYMMDONE; echo;");
-}
-
-crystalDoneMessageCallback = function(msg) {
-	if (msg.indexOf("CRYDONE") == 0) {
-		loadDone(loadModelsCrystal);
-	} else if (msg.indexOf("CRYSYMMDONE") == 0) {
-		loadDone(loadModelsCrystal);
-		if (!flagGauss) {
-			setName();
-		} else {
-			reloadGaussFreq();
-		}		
-	}
+	runJmolScriptWait(" set echo top left; echo reloading...;refresh; load;");
+	if (!flagGauss) {
+		setName();
+	} else {
+		reloadGaussFreq();
+	}		
 }
 
 var freqData = new Array;

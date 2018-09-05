@@ -33,21 +33,20 @@ function cubeLoad() {
 		} else {
 			var question = confirm("Is/are this/these CUBE file/s going to be superimposed on the current structure?");
 			if (question) {
-				setV('frame LAST; set errorCallback "errCallback";');
+				runJmolScriptWait('frame LAST; ');
 				var flag = true;
 				potentialProfile(true);
 			} else {
-				messageMsg("Then, load your structure file first.");
-				//setErrorCallback
-				setV('load ?; frame LAST; set defaultDirectory; set echo top left; echo loading... HOLD ON ;refresh;');
+				messageMsg("Then, load your structure file first.");				
+				runJmolScriptWait('set echo top left; echo loading... ;refresh;load ?; frame LAST');
 				var flag = true;
 				potentialProfile(true);
 			}
 		}
 	} else {
 		messageMsg("Just load the *.CUBE file");
-		//setErrorCallback
-		setV("load ?; set messageCallback 'saveIsoCallback'; message ISOSAVED;  set echo top left; echo loading... HOLD ON;refresh;");
+		setMessageMode(MESSAGE_MODE_SAVE_ISO)
+		runJmolScript("set echo top left; echo loading...;refresh;load ?; message ISOSAVED;");
 	}
 
 }
@@ -55,27 +54,24 @@ function cubeLoad() {
 function potentialProfile(flag) {
 	var potential = confirm("Do you want to overalap your potential / spin *.CUBE on it ?");
 	if (potential) {
+		setMessageMode(MESSAGE_MODE_SAVE_ISO)			
 		if (flag) {
 			messageMsg("Now load in sequence 1) the *.CUBE density file, 2) the *.CUBE potential / spin file.");
-			//setErrorCallback
-			setV('isosurface ?.CUBE  map ?.CUBE');
-			setV("set messageCallback 'isoValue'; message ISO;set echo top left; echo loading CUBE... HOLD ON;refresh;");
+			runJmolScript('set echo top left; echo loading CUBE...;refresh;isosurface ?.CUBE  map ?.CUBE; message ISO;');
 		} else {
-			messageMsg("Now load the *.CUBE potential file.");
-			//setErrorCallback
-			setV('isosurface "" map');
-			setV("set messageCallback 'isoValue'; message ISO;set echo top left; echo loading CUBE... HOLD ON;refresh;");
+			messageMsg("Now load the *.CUBE potential file.");			
+			runJmolScript('set echo top left; echo loading CUBE...;refresh;isosurface "" map ?.CUBE;message ISO;');
 		}
-		setV("set messageCallback 'savePotCallback'; message POTSAVED; set echo top left; echo loading CUBE... HOLD ON;refresh;");
-		setV("set messageCallback 'isoValue'; message ISO; set echo top left; echo loading CUBE... HOLD ON;refresh;"); // This
+//		saveIsoMessageCallback("POTSAVED");
+	//	saveIsoMessageCallback("ISO"); 
+		// This
 		// callback
 		// is to work
 		// out the color
 		// range of the
 		// surface
 	} else {
-		setV('isosurface ?.CUBE');
-		setV("set messageCallback 'isoValue'; message ISO; set echo top left; echo loading... HOLD ON;refresh;");
+		runJmolScriptWait('set echo top left; echo loading...;refresh;isosurface ?.CUBE; message ISO;');
 		sendSurfaceMessage();
 		saveIsoJVXL();
 	}
@@ -98,16 +94,14 @@ function duedMaps() {
 		if (spin) {
 			dueD_con = true;
 			dueD_planeMiller = true;
-			setV('isosurface ID "isosurface1" select ({0:47})  hkl {' + miller
+			runJmolScript('isosurface ID "isosurface1" select ({0:47})  hkl {' + miller
 					+ '} map color range 0.0 2.0 ?.CUBE');
 		} else {
 			messageMsg("Now load the *.CUBE potential / spin file.");
-			setV("isosurface HKL {" + miller + "} MAP ?.CUBE;");
+			runJmolScript("isosurface HKL {" + miller + "} MAP ?.CUBE;");
 		}
 	} else {
-
 		setPlanedued("");
-
 	}
 
 }
@@ -119,73 +113,55 @@ function sendSurfaceMessage() {
 }
 
 function saveIsoJVXL() {
-	messageMsg("Now, save your surface in a compact format *.JVXL");
-	//setErrorCallback
-	setV("write crystal_map.jvxl;");
-	// setV('set defaultDirectory; isosurface crystal_map.jvxl')
+	messageMsg("Now, save your surface in a compact format *.JVXL");	
+	runJmolScript("write crystal_map.jvxl;");
 }
 
-function saveIsoCallback(a, m) {
-	m = "" + m;
-	// important to do this to change from Java string to JavaScript string
-	if (m.indexOf("ISOSAVED") == 0) {
+function saveIsoMessageCallback(msg) {
+	if (msg.indexOf("ISOSAVED") == 0) {
 		var flag = false;
 		setV("echo");
 		potentialProfile(flag);
 	}
-}
-
-function savePotCallback(a, m) {
-	m = "" + m;
-	// important to do this to change from Java string to JavaScript string
-	if (m.indexOf("POTSAVED") == 0) {
+	if (msg.indexOf("POTSAVED") == 0) {
 		setV("echo");
 		sendSurfaceMessage();
 		saveIsoJVXL();
 	}
+	if (msg.indexOf("ISO") == 0) {
+		setV("echo");
+		getIsoInfo();
+	}
+
 }
 
 function setIsoClassic(value) {
 	setV("isosurface delete ALL");
-	//setErrorCallback
+	
+	setMessageMode(MESSAGE_MODE_SAVE_ISO)
 	if (value == 'load ""; isosurface VDW 2.0') {
 		var periodicSurf = confirm("Would you like to periodicize this surface ?");
-		if (periodicSurf == true) {
-			//setErrorCallback
-			setV('load ""; frame LAST; isosurface slab unitcell VDW');
-			setV("set messageCallback 'isoValue'; message ISO; set echo top left;echo creating ISOSURFACE... HOLD ON;");
+		if (periodicSurf == true) {			
+			runJmolScriptWait('set echo top left;echo creating ISOSURFACE...;refresh;load ""; frame LAST; isosurface slab unitcell VDW; message ISO;');
 			msSetPeriodicity();
 		} else {
-			setV(value
-					+ "; set messageCallback 'isoValue'; message ISO; ; set echo top left;echo creating ISOSURFACE... HOLD ON;");
+			runJmolScriptWait("set echo top left;echo creating ISOSURFACE...;refresh;" + value + "; message ISO;");
 		}
-	} else if (value == 'load ""; isosurface resolution 7 SOLVENT map MEP;') {
+	} else if (value == 'load ""; isosurface resolution 7 SOLVENT map MEP; message ISO;') {
 		var periodicSurf = confirm("Would you like to periodicize this surface ?");
 		if (periodicSurf == true) {
-			setV('load ""; frame LAST; isosurface slab unitcell resolution 7 SOLVENT map MEP;');
-			setV("set messageCallback 'isoValue'; message ISO; set echo top left;echo creating ISOSURFACE... HOLD ON;");
+			runJmolScriptWait('set echo top left;echo creating ISOSURFACE... ;refresh;load ""; frame LAST; isosurface slab unitcell resolution 7 SOLVENT map MEP; message ISO;');
 			msSetPeriodicity();
 		} else {
-			setV(value
-					+ "; set messageCallback 'isoValue'; message ISO; set echo top left; echo creating ISOSURFACE... HOLD ON; refresh;");
+			setV("set echo top left; echo creating ISOSURFACE...; refresh;" + value	+ ";message ISO;");
 		}
 	} else {
-		setV(value
-				+ "; set messageCallback 'isoValue'; message ISO; set echo top left; echo creating ISOSURFACE... HOLD ON; refresh;");
+		setV("set echo top left; echo creating ISOSURFACE...; refresh;" + value + "; message ISO;");
 	}
 }
 
 function msSetPeriodicity() {
 	messageMsg("Now set the periodicity with the menu below.");
-}
-
-function isoValue(a, m) {
-	m = "" + m;
-	// important to do this to change from Java string to JavaScript string
-	if (m.indexOf("ISO") == 0) {
-		setV("echo");
-		getIsoInfo();
-	}
 }
 
 // This extracts the maximum and minimum of the color range
@@ -222,7 +198,7 @@ function setIsoColorRange() {
 	var colorScheme = getValue("isoColorScheme");
 
 	if (colorScheme != "bw") {
-		setV('color $isosurface1 "' + colorScheme + '" range ' + min + ' '
+		runJmolScriptWait('color $isosurface1 "' + colorScheme + '" range ' + min + ' '
 				+ max);
 	} else {
 		warningMsg("Colour-scheme not available for CUBE files!");
@@ -231,9 +207,7 @@ function setIsoColorRange() {
 }
 
 function setColorMulliken(value) {
-	setV('set propertyColorScheme "' + value + '"');
-	// setV('set propertyColorScheme \"' + value + '\"');
-	setV('load "" PACKED; select *;font label 18; frame last; color {*} property partialCharge; label %5.3P');
+	runJmolScript('set propertyColorScheme "' + value + '";load "" PACKED; select *;font label 18; frame last; color {*} property partialCharge; label %5.3P');
 }
 
 function setIsoColorReverse() {
@@ -246,7 +220,7 @@ function setIsoColorReverse() {
 	var max = getValue("dataMax");
 	var colorScheme = getValue("isoColorScheme");
 
-	setV('color $isosurface1 reversecolor "' + colorScheme + '" range ' + min
+	runJmolScriptWait('color $isosurface1 reversecolor "' + colorScheme + '" range ' + min
 			+ ' ' + max);
 }
 
@@ -254,27 +228,27 @@ function pickIsoValue() {
 	var check = checkID("measureIso");
 	if (check) {
 		messageMsg("Value are shown by hovering on the surface. Values are in e- *bohr^-3. Make sure your isosurface is completely opaque.");
-		setV("set drawHover TRUE");
+		runJmolScriptWait("set drawHover TRUE");
 	} else {
-		setV("set drawHover OFF");
+		runJmolScriptWait("set drawHover OFF");
 	}
 }
 
 function removeStructure() {
 	var check = checkID("removeStr");
 	if (!check) {
-		setV("select *; hide selected");
+		runJmolScriptWait("select *; hide selected");
 	} else {
-		setV("display *");
+		runJmolScriptWait("display *");
 	}
 }
 
 function removeCellIso() {
 	var check = checkID("removeCellI");
 	if (!check) {
-		setV("unitcell OFF");
+		runJmolScriptWait("unitcell OFF");
 	} else {
-		setV("unitcell ON");
+		runJmolScriptWait("unitcell ON");
 	}
 }
 
@@ -292,7 +266,7 @@ function setIsoPack() {
 	// " " + getValue("iso_c") + " }; frame LAST");
 	// }
 	// reloadCurrentState();
-	setV('isosurface LATTICE {' + getValue("iso_a") + ' ' + getValue("iso_b")
+	runJmolScriptWait('isosurface LATTICE {' + getValue("iso_a") + ' ' + getValue("iso_b")
 			+ ' ' + getValue("iso_c") + '}');
 }
 
@@ -301,13 +275,12 @@ function loadMapJvxl() {
 
 	if (question) {
 		messageMsg("Then, load the input file first.");
-		setV('zap; set errorCallback "errCallback"; load ?; set defaultDirectory;');
-		setV("frame LAST");
+		runJmolScriptWait('zap;  load ?; set defaultDirectory;frame LAST');
 		messageMsg("Now load the isosurface *.jvxl file.");
-		setV('set errorCallback "errCallback"; isosurface ?.jvxl');
+		runJmolScript(' isosurface ?.jvxl');
 	} else {
 		messageMsg("Then, load the isosurface *.jvxl file.");
-		setV('zap; set errorCallback "errCallback"; zap; isosurface ?.jvxl');
+		runJmolScript('zap; isosurface ?.jvxl');
 	}
 }
 

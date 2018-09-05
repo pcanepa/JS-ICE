@@ -291,11 +291,11 @@ function symmetryQuantum() {
 				+ "  \n           celldm(3) =  "
 				+ roundNumber(cCell / aCell)
 				+ "  \n           celldm(4) =  "
-				+ roundNumber(cosRadiant(alpha))
+				+ (cosRadiant(alpha))
 				+ "  \n           celldm(5) =  "
-				+ roundNumber(cosRadiant(beta))
+				+ (cosRadiant(beta))
 				+ "  \n           celldm(6) =  "
-				+ roundNumber(cosRadiant(gamma));
+				+ (cosRadiant(gamma));
 			ibravQ = "14";
 		} else {
 			warningMsg("This procedure is not fully tested.");
@@ -315,9 +315,9 @@ function symmetryQuantum() {
 			+ "  \n            celldm(2) =  " + roundNumber(bCell / aCell)
 			+ "  \n            celldm(3) =  " + roundNumber(cCell / aCell)
 			+ "  \n            celldm(4) =  "
-			+ roundNumber(cosRadiant(alpha))
-			+ "  \n            celldm(5) =  " + roundNumber(cosRadiant(90))
-			+ "  \n            celldm(6) =  " + roundNumber(cosRadiant(90));
+			+ (cosRadiant(alpha))
+			+ "  \n            celldm(5) =  " + (cosRadiant(90))
+			+ "  \n            celldm(6) =  " + (cosRadiant(90));
 		ibravQ = "14";
 		break;
 	case "polymer":
@@ -330,9 +330,9 @@ function symmetryQuantum() {
 			+ roundNumber(fromAngstromtoBohr(aCell))
 			+ "  \n            celldm(2) =  " + roundNumber(bCell / aCell)
 			+ "  \n            celldm(3) =  " + roundNumber(bCell / aCell)
-			+ "  \n            celldm(4) =  " + roundNumber(cosRadiant(90))
-			+ "  \n            celldm(5) =  " + roundNumber(cosRadiant(90))
-			+ "  \n            celldm(6) =  " + roundNumber(cosRadiant(90));
+			+ "  \n            celldm(4) =  " + (cosRadiant(90))
+			+ "  \n            celldm(5) =  " + (cosRadiant(90))
+			+ "  \n            celldm(6) =  " + (cosRadiant(90));
 		ibravQ = "14";
 		break;
 	case "molecule":
@@ -348,9 +348,9 @@ function symmetryQuantum() {
 			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(4) =  "
-			+ roundNumber(cosRadiant(alpha))
-			+ "  \n            celldm(5) =  " + roundNumber(cosRadiant(90))
-			+ "  \n            celldm(6) =  " + roundNumber(cosRadiant(90));
+			+ (cosRadiant(alpha))
+			+ "  \n            celldm(5) =  " + (cosRadiant(90))
+			+ "  \n            celldm(6) =  " + (cosRadiant(90));
 		ibravQ = "14";
 		break;
 	}
@@ -359,24 +359,14 @@ function symmetryQuantum() {
 ///// QUANTUM ESPRESSO READER
 
 function onClickQuantum() {
-	setMessageMode(MESSAGE_MODE_QESPRESSO_DONE)
-	runJmolScript("set echo top left; echo loading...; refresh;load ? PACKED; message ESPRDONE;");
+	runJmolScript("set echo top left; echo loading...; refresh;load ? PACKED;");
 }
 
-qespressoDoneMessageCallback = function(msg) {
-	if (msg.indexOf("ESPRDONE") == 0) {
-		qespressoDone();
-	}
+espressoDone = function() {
+	loadDone(loadModelsEspresso)
 }
 
-qespressoDone = function() {
-	setV("echo");
-	loadQEspresso();
-	setName();
-	setTitleEcho();
-}
-
-function loadQEspresso() {
+function loadModelsEspresso() {
 
 	var counterFreq = 0;
 	extractAuxiliaryJmol();

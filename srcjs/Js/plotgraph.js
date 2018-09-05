@@ -24,15 +24,15 @@
 
 
 
-var appletPrintable = (navigator.appName != "Netscape"); // Sorry, I don't
-//know how to check
-//for this
-
-//This has changed
-function $() {
-	// document ready function
-	if (!appletPrintable)$("#appletdiv").addClass("noprint"); 
-}
+//var appletPrintable = (navigator.appName != "Netscape"); // Sorry, I don't
+////know how to check
+////for this
+//
+////This has changed
+//function $() {
+//	// document ready function
+//	if (!appletPrintable)$("#appletdiv").addClass("noprint"); 
+//}
 
 
 var itemEnergy
@@ -45,7 +45,7 @@ var previousPointFreq = null
 
 var theplot ; // global, mostly for testing.
 
-function plotEnergies( a, b, c, d){
+function plotEnergies(b, c, d){
 
 	// setImage()
 	var data = [];
@@ -326,7 +326,7 @@ function plotEnergies( a, b, c, d){
 }
 
 //This prin the graph of the gradient
-function plotGradient( a, b, c, d){
+function plotGradient(b, c, d){
 
 	// setImage()
 	var data = [];
@@ -392,7 +392,7 @@ function plotGradient( a, b, c, d){
 
 var nullValues;
 //This print the IR spectrum
-function plotFrequencies(a, b, c, d){
+function plotFrequencies(b, c, d){
 	var data = [];
 	var data2 =[];
 	var A = [];
@@ -577,7 +577,7 @@ function plotClickCallback(event, pos, itemEnergy) {
 	if (!itemEnergy)return
 	var model = itemEnergy.datapoint[2];
 	var label = itemEnergy.datapoint[3];
-	runJmolScriptAndWait('model '+ model);
+	runJmolScriptWait('model '+ model);
 	// This select the element from the list of the geometry models
 	// +1 keeps the right numeration of models
 	getbyID('geom').value = model + 1 ;
@@ -589,7 +589,7 @@ function plotClickCallbackForce(event, pos, itemForce) {
 	if (!itemForce)return
 	var model = itemForce.datapoint[2];
 	var label = itemForce.datapoint[3];
-	runJmolScriptAndWait('model '+model);
+	runJmolScriptWait('model '+model);
 	// This select the element from the list of the geometry models
 	// +1 keeps the right numeration of models
 	getbyID('geom').value = model + 1 ;
@@ -682,7 +682,7 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 	}else{
 		var script = ' model '+ ( model + 1 ) +  '; ' + vibrationProp ;  // 'set
 	}
-	runJmolScriptAndWait(script);
+	runJmolScriptWait(script);
 	onClickVibrate("on");
 	// This select the element from the list of the geometry models
 	// +1 keeps the right numeration of models

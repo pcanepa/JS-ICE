@@ -24,15 +24,11 @@
 
 //24th May 2011 P. Canepa
 function loadSiesta() {
-	//setErrorCallback
-	setMessageCallback(MESSAGE_MODE_SIESTA_DONE)
-	runJmolScript("set echo top left; echo loading...;refresh;load ?.fdf; message SIESTADONE; ");
+	runJmolScript("set echo top left; echo loading...;refresh;load ?.fdf");
 }
 
-siestaDoneMessageCallback = function(msg) {
-	if (msg.indexOf("SIESTADONE") == 0) {
-		loadDone(loadModelsSiesta);
-	}
+siestaDone = function(msg) {
+	loadDone(loadModelsSiesta);
 }
 
 var geomSiesta = new Array;

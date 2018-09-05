@@ -53,9 +53,9 @@ function setcoordinateGromacs() {
 	var numatomsGrom = " " + selectedFrame + ".length";
 	var coordinateGrom = selectedFrame
 			+ '.label("  %i%e %i %e %8.3[xyz] %8.4fy %8.4fz")';
-	var cellbox = +roundNumber(aCell) * roundNumber(cosRadiant(alpha)) + ' '
-			+ roundNumber(bCell) * roundNumber(cosRadiant(beta)) + ' '
-			+ roundNumber(cCell) * roundNumber(cosRadiant(gamma));
+	var cellbox = +roundNumber(aCell) * (cosRadiant(alpha)) + ' '
+			+ roundNumber(bCell) * (cosRadiant(beta)) + ' '
+			+ roundNumber(cCell) * (cosRadiant(gamma));
 	coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
 			+ 'var coordGrom = ' + coordinateGrom + ';'
 			+ 'var cellGrom = \" \n\t' + cellbox + '\"; '

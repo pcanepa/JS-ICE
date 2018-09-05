@@ -1,5 +1,20 @@
 // BH 2018
 
+getCallbackSettings = function() {
+	return  "set messageCallback 'myMessageCallback';" +
+			"set errorCallback 'myErrorCallback';" +
+			"set loadStructCallback 'myLoadStructCallback';" +
+			"set measureCallback 'myMeasurementCallback';" +
+			"set pickCallback 'myPickCallback';" +
+			"set minimizationCallback 'myMinimizationCallback';"
+}
+
+function myMeasuramentCallback(app, msg, type, state, value) {
+	// BH 2018
+	if (state == "measurePicked")
+		setMeasureText(msg);
+}
+
 LOADING_MODE_NONE = 0;
 LOADING_MODE_PLOT_ENERGIES = 1;
 LOADING_MODE_PLOT_GRADIENT = 2;
@@ -13,82 +28,81 @@ setLoadingMode = function(mode) {
 
 myLoadStructCallback = function(applet,b,c,d) {
 	switch(loadingMode) {
-	case LOADING_MODE_NONE:
-		break;
 	case LOADING_MODE_PLOT_ENERGIES:
-		plotEnergies();
+		plotEnergies(b,c,d);
 		setLoadingMode(LOADING_MODE_PLOT_GRADIENT);
 		break;
 	case LOADING_MODE_PLOT_GRADIENT:
-		plotGradient();
+		plotGradient(b,c,d);
 		break;
 	case LOADING_MODE_PLOT_FREQUENCIES:
-		plotFrequencies();
+		plotFrequencies(b,c,d);
 		break;
+	default:
+	case LOADING_MODE_NONE:
+		switch(messageMode) {
+		case MESSAGE_MODE_SAVE_ISO:
+			messageMode = MESSAGE_MODE_NONE;
+			saveIsoMessageCallback(lastIsoMsg);
+			break;
+		}
+
+		// run xxxDone() if it exists, otherwise just loadDone()
+		var type = jmolEvaluate("_fileType").toLowerCase();
+		postLoad(type);
+		if (window[type+"Done"])
+			window[type+"Done"]();
+		else
+			loadDone();
 	}
-}
-
-MESSAGE_MODE_NONE                    = 0;
-MESSAGE_MODE_CRYSTAL_DONE            = 1;
-MESSAGE_MODE_CRYSTAL_SAVE_SPACEGROUP = 2;
-MESSAGE_MODE_CASTEP_DONE             = 3;
-MESSAGE_MODE_DMOL_DONE               = 4;
-MESSAGE_MODE_GULP_DONE               = 5;
-MESSAGE_MODE_MOLDEN_DONE             = 6;
-MESSAGE_MODE_VASP_OUTCAR_DONE        = 7;
-MESSAGE_MODE_VASP_XML_DONE           = 8;
-MESSAGE_MODE_QESPRESSO_DONE          = 9;
-MESSAGE_MODE_GAUSSIAN_DONE           = 10;
-MESSAGE_MODE_GROMACS_DONE            = 11;
-
-messageMode = MESSAGE_MODE_NONE;
-
-setMessageMode = function(mode) {
-	messageMode = mode;
-}
-
-myMessageCallback = function (applet, msg) {
-	switch(mode) {
-	case MESSAGE_MODE_CRYSTAL_DONE:
-		crystalDoneMessageCallback(msg);
-		break;
-	case MESSAGE_MODE_CRYSTAL_SAVE_SPACEGROUP:
-		crystalSaveSpacegroupCallback(msg);
-		break;
-	case MESSAGE_MODE_CASTEP_DONE:
-		castepDoneMessageCallback(msg);
-		break;
-	case MESSAGE_MODE_DMOL_DONE:
-		dmolDoneMessageCallback(msg);
-		break;
-	case MESSAGE_MODE_GAUSSIAN_DONE:
-		gaussianDoneMessageCallback(msg);
-		break;
-	case MESSAGE_MODE_GROMACS_DONE:
-		gromacsDoneMessageCallback(msg);
-		break;
-	case MESSAGE_MODE_MOLDEN_DONE:
-		moldenDoneMessageCallback(msg);
-		break;
-	case MESSAGE_MODE_QESPRESSO_DONE:
-		qespressoDoneMessageCallback(msg);
-		break;			
-	case MESSAGE_MODE_VASP_OUTCAR_DONE:
-		vaspOutcarDoneMessageCallback(msg);
-		break;
-	case MESSAGE_MODE_VASP_XML_DONE:
-		vaspXmlDoneMessageCallback(msg);
-		break;
-	}
+	loadingMode = LOADING_MODE_NONE;
 }
 
 loadDone = function(fDone) {
 	setV("echo");
-	fDone();
+	fDone && fDone();
 	setName();
 	setTitleEcho();
+}
+
+MESSAGE_MODE_NONE                    = 0;
+MESSAGE_MODE_SAVE_ISO               = 101;
+
+messageMode = MESSAGE_MODE_NONE;
+lastIsoMsg = null;
+
+setMessageMode = function(mode) {
+	messageMode = mode;
+	switch(messageMode) {
+	case MESSAGE_MODE_SAVE_ISO:
+		lastIsoMsg = mode;
+		break;
+	}
+}
+
+myMessageCallback = function (applet, msg) {
 }
 
 myErrorCallback = function(applet, b, msg, d) {
 	errorMsg(msg);
 }
+
+fPick = null;
+
+setPickingCallbackFunction = function(f) {
+	fPick = f;
+}
+
+myPickCallback = function(applet, b, c, d) {
+	fPick && fPick(b,c,d);
+}
+
+fMinim = null;
+setMinimizationCallbackFunction = function(f) {
+	fMinim = f;
+}
+
+myMinimizationCallback = function(applet,b,c,d) {
+	fMinim && fMinim(b, c, d);
+}
+

@@ -25,15 +25,11 @@
 //3rd-Sept-2010 CANEPA
 
 function onClickLoadDmolStruc() {
-	//setErrorCallback
-	setMessageMode(MESSAGE_MODE_DMOL_DONE);
-	setV("set echo top left; echo loading...;refresh;load ?;message dmolDONE");
+	runJmolScript("set echo top left; echo loading...;refresh;load ?");
 }
 
-function dmolDoneMessageCallback(msg) {
-	if (msg.indexOf("dmolDONE") == 0) {
-		loadDone(loadModelsDmol);
-	}
+dmolDone = function() {
+	loadDone(loadModelsDmol);
 }
 
 var counterFreq = 0;

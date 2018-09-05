@@ -351,7 +351,7 @@ function showDiv(index) {
 			getbyID(arrayGeomgrp[i]).style.display = "none";
 		for ( var j = 0; j < freqArrGr.length; j++)
 			getbyID(freqArrGr[j]).style.display = "none";
-		saveOrientation();
+		saveOrientation_e();
 		exitIsosurface();
 		exitFreqGroup();
 		resetSymmetryView();

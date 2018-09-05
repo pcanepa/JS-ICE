@@ -130,14 +130,11 @@ function prepareCoordinateblockCastep() {
 // /// FUNCTION LOAD
 
 function onClickLoadCastep() {
-	setMessageMode(MESSAGE_MODE_CASTEP_DONE);
-	runJmolScript("set echo top left; echo loading...; refresh; load ?; message CASTEPDONE;");
+	runJmolScript("set echo top left; echo loading...; refresh; load ?");
 }
 
-castepDoneMessageCallback = function(msg) {
-	if (msg.indexOf("CASTEPDONE") == 0) {
-		loadDone(loadmodelsCastep);
-	}
+castepDone = function() {
+	loadDone(loadModelsCastep);
 }
 
 function loadModelsCastep() {

@@ -29,39 +29,6 @@
 ////////////////////////////////COMMON FUNCTIONS  
 //Common functions to manipulate data of forms and objects
 
-runJmolScript = function(script) {
-	debugSay(script);
-	jmolScript(script);	
-}
-
-debugSay = function(script) {
-	// BH 2018
-	var area = getbyID("debugarea");
-	if (script === null) {
-		script = "";
-	} else {
-		console.log(script);
-		if (checkID("debugMode")) {
-			area.style.display = "block";
-			script = area.value + script + "\n";
-		} else {
-			area.style.display = "none";
-			script = "";
-		}
-	}
-	area.value = script;
-	area.scrollTop = area.scrollHeight;
-}
-
-showCommands = function(d) {
-	getbyID("debugarea").style.display = (d.checked ? "block" : "none");
-}
-
-runJmolScriptAndWait = function(script) {
-	debugSay(script);
-	jmolScriptWait(script);	
-}
-
 function getbyID(id) {
 	return document.getElementById(id);
 }
@@ -287,56 +254,32 @@ function extractAtomInfo() {
 
 //This function saves the current state of Jmol applet
 function saveState() {
-	//setErrorCallback
-	setV("save ORIENTATION orienta; save STATE status;");
-	setV("set messageCallback 'saveMessageCallback'; message SAVED;");
+	runJmolScriptWait("save ORIENTATION orienta; save STATE status;");
+	reloadFastModels();
+	restoreState();
 }
 
 function saveStatejust() {
-	setV("save ORIENTATION orienta; save STATE status;");
-	// setV("set messageCallback 'saveMessageCallback'; message SAVED;")
+	runJmolScriptWait("save ORIENTATION orienta; save STATE status;");
 }
 
 function loadStatejust() {
-	//setErrorCallback
-	setV("restore ORIENTATION orienta; restore STATE status;");
-	// setV("set messageCallback 'saveMessageCallback'; message SAVED;")
+	runJmolScriptWait("restore ORIENTATION orienta; restore STATE status;");
 }
 
 //This function reloads the previously saved state after a positive
-//saveMessageCallback() == SAVED
 function restoreState() {
-	//setErrorCallback
-	setV('restore ORIENTATION orienta; restore STATE status;');
-}
-
-function saveMessageCallback(a, m) {
-	m = "" + m;
-	// important to do this to change from Java string to JavaScript string
-	if (m.indexOf("SAVED") == 0) {
-		setV("echo;");
-		reloadFastModels();
-		restoreState();
-	}
+	runJmolScriptWait('restore ORIENTATION orienta; restore STATE status;');
+	// BH 2018 note: we might need runJomlScript here -- it will block while loading
 }
 
 //This just saves the orientation of the structure
-function saveOrientation() {
-	//setErrorCallback
-	setV('save ORIENTATION oriente');
-	setV("set messageCallback 'saveOrientaMessageCallback'; message SAVEDORIENTA;");
-}
-
-function saveOrientaMessageCallback(a, m) {
-	m = "" + m;
-	// important to do this to change from Java string to JavaScript string
-	if (m.indexOf("SAVEDORIENTA") == 0) {
-	}
+function saveOrientation_e() {
+	runJmolScriptWait("save ORIENTATION oriente;");
 }
 
 function restoreOrientation_e() {
-	//setErrorCallback
-	setV('restore ORIENTATION oriente');
+	runJmolScriptWait('restore ORIENTATION oriente');
 }
 
 function setNameModel(form) {
@@ -344,42 +287,22 @@ function setNameModel(form) {
 		var stringa = "frame title";
 	if (form.checked == false)
 		var stringa = "frame title ''";
-	setV(stringa);
+	runJmolScriptWait(stringa);
 }
 
 function setTitleEcho() {
 	var titleFile = "";
 	titleFile = extractInfoJmolString("fileHeader");
-	setV('set echo top right; echo "' + titleFile + ' ";');
+	runJmolScriptWait('set echo top right; echo "' + titleFile + ' ";');
 }
 
 function saveCurrentState() {
 	warningMsg("This option only the state temporarily. To save your work, use File...Export...image+state(PNGJ). The image created can be dragged back into Jmol or JSmol or sent to a colleague to reproduce the current state exactly as it appears in the image.");
-	//setErrorCallback
-	setV('save ORIENTATION orask; save STATE stask; save BOND bask');
-	setV("set messageCallback 'saveCurrentAsk'; message SAVEDASK; set echo top left;echo saving state...;refresh;");
-}
-
-function saveCurrentAsk(a, m) {
-	m = "" + m;
-	// important to do this to change from Java string to JavaScript string
-	if (m.indexOf("SAVEDASK") == 0) {
-		setV("echo;");
-	}
+	runJmolScriptWait('save ORIENTATION orask; save STATE stask; save BOND bask');
 }
 
 function reloadCurrentState() {
-	//setErrorCallback
-	setV('restore ORIENTATION orask; restore STATE stask; restore BOND bask;');
-	setV("set messageCallback 'reloadCurrentAsk'; message RELOADASK; set echo top left;echo reloading previosu state...;refresh;");
-}
-
-function reloadCurrentAsk(a, m) {
-	m = "" + m;
-	// important to do this to change from Java string to JavaScript string
-	if (m.indexOf("RELOADASK") == 0) {
-		setV("echo;");
-	}
+	runJmolScriptWait('restore ORIENTATION orask; restore STATE stask; restore BOND bask;');
 }
 
 ////////////////////////////////END Jmol COMMON FUNCTIONS
@@ -479,281 +402,18 @@ function selectDesireModel(i) {
 /////////////////////////////// END SHOW
 
 ////////////////LOAD And SAVE functions
-//export list
-var flagCryVasp = true; // if flagCryVasp = true crystal output
-var flagGromos = false;
-var flagGulp = false;
-var flagOutcar = false;
-var flagGauss = false;
-var flagQuantum = false;
-var flagCif = false;
-var flagSiesta = false;
-var flagDmol = false;
-var flagMolde = false;
-var flagCast = false;
-function onChangeLoad(load) {
-	// This is to reset all function
-	resetAll();
 
-	switch (load) {
-	case "loadC":
-		setV('set errorCallback "errCallback";load ?; set defaultDirectory; script ../scripts/name.spt');
-		setName();
-		break;
-	case "loadShel":
-		setName();
-		typeSystem = "crystal";
-		flagCif = true;
-		getUnitcell();
-		break;
-	case "loadxyz":
-		setV('set errorCallback "errCallback";load ?.xyz; set defaultDirectory; script ../scripts/name.spt');
-		setName();
-		break;
-	case "loadcrystal":
-		flagCryVasp = true;
-		flagGulp = false;
-		flagQuantum = false;
-		flagGauss = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
-		onClickLoadStruc();
-		getUnitcell(1);
-		break;
-	case "loadCUBE":
-		cubeLoad();
-		break;
-	case "loadaimsfhi":
-		setV('set errorCallback "errCallback";load ?.in ; set defaultDirectory; script ../scripts/name.spt;');
-		setName();
-		flagCif = true;
-		typeSystem = "crystal";
-		getUnitcell();
-		break;
-	case "loadcastep":
-		setV('set errorCallback "errCallback"; load ?.cell ; set defaultDirectory');
-		setName();
-		flagCif = true;
-		typeSystem = "crystal";
-		getUnitcell();
-		break;
-	case "loadVasp":
-		typeSystem = "crystal";
-		flagCryVasp = false;
-		flagOutcar = false;
-		flagGauss = false;
-		flagQuantum = false;
-		flagGulp = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
-		onClickLoadVaspStruct();
-		setName();
-		getUnitcell();
-		break;
-	case "loadVASPoutcar":
-		typeSystem = "crystal";
-		flagGulp = false;
-		flagOutcar = true;
-		flagCryVasp = false;
-		flagQuantum = false;
-		flagGauss = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
-		onClickLoadOutcar();
-		setName();
-		getUnitcell(1);
-		break;
-	case "loadDmol":
-		flagGulp = false;
-		flagOutcar = false;
-		flagCryVasp = false;
-		flagQuantum = false;
-		flagGauss = false;
-		flagSiesta = false;
-		flagDmol = true;
-		flagCast = false;
-		onClickLoadDmolStruc();
-		setName();
-		getUnitcell(1);
-		break;
-	case "loadQuantum":
-		typeSystem = "crystal";
-		flagGulp = false;
-		flagOutcar = false;
-		flagCryVasp = false;
-		flagGauss = false;
-		flagQuantum = true;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
-		onClickQuantum();
-		setName();
-		getUnitcell(1);
-		break;
-	case "loadGulp":
-		flagGulp = true;
-		flagOutcar = false;
-		flagCryVasp = false;
-		flagGauss = false;
-		flagQuantum = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
-		onClickLoadGulpStruct();
-		setName();
-		getUnitcell(1);
-		break;
-	case "loadmaterial":
-		setV('set errorCallback "errCallback"; load ?; set defaultDirectory; script ../scripts/name.spt;');
-		setName();
-		getUnitcell(1);
-		break;
-	case "loadWien":
-		setV('set errorCallback "errCallback"; load ?.struct; set defaultDirectory; script ../scripts/name.spt;');
-		setName();
-		flagCif = true;
-		typeSystem = "crystal";
-		getUnitcell(1);
-		break;
-	case "loadcif":
-		setV('set errorCallback "errCallback"; load ?.cif PACKED; set defaultDirectory; script ../scripts/name.spt;');
-		setName();
-		flagCif = true;
-		typeSystem = "crystal";
-		getUnitcell(1);
-		break;
-
-	case "loadSiesta":
-		typeSystem = "crystal";
-		flagGulp = false;
-		flagOutcar = false;
-		flagCryVasp = false;
-		flagGauss = false;
-		flagQuantum = false;
-		flagSiesta = true;
-		flagDmol = false;
-		flagCast = false;
-		loadSiesta();
-		setName();
-		getUnitcell(1);
-		break;
-	case "loadpdb":
-		setV('set errorCallback "errCallback";load ?.pdb; set defaultDirectory ; script ../scripts/name.spt;');
-		setName();
-		flagCif = true;
-		setV('unitcell on');
-		typeSystem = "crystal";
-		getUnitcell(1);
-		break;
-	case "reload":
-		setName();
-		var reloadStr = "script ./scripts/reload.spt"
-			setV(reloadStr);
-		resetAll();
-		setName();
-		getUnitcell(1);
-		break;
-	case "loadJvxl":
-		loadMapJvxl();
-		// setV('set errorCallback "errCallback"; zap; isosurface ?.jvxl');
-		setName();
-		break;
-	case "loadstate":
-		setV('set errorCallback "errCallback"; zap; load ?.spt; set defaultDirectory; script ../scripts/name.spt;');
-		setName();
-		break;
-
-	case "loadgromacs":
-		setV('set errorCallback "errCallback";load ?.gro; set defaultDirectory; script ../scripts/name.spt;');
-		setName();
-		getUnitcell(1);
-		setV('unitcell on');
-		flagGromos = true;
-		break;
-	case "loadgauss":
-		flagCryVasp = false;
-		flagGromos = false;
-		flagGulp = false;
-		flagOutcar = false;
-		flagGauss = true;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
-		typeSystem = "molecule";
-		loadGaussian();
-		setName();
-		break;
-	case "loadMolden":
-		// WE USE SAME SETTINGS AS VASP
-		// IT WORKS
-		typeSystem = "molecule";
-		flagGulp = false;
-		flagOutcar = true;
-		flagCryVasp = false;
-		flagQuantum = false;
-		flagGauss = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
-		onClickLoadMoldenStruct();
-		break;
-	case "loadXcrysden":
-		setV('set errorCallback "errCallback"; load ?.xsf ; set defaultDirectory');
-		setName();
-		flagCif = true;
-		flagGulp = false;
-		flagOutcar = false;
-		flagCryVasp = false;
-		flagQuantum = false;
-		flagGauss = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
-		typeSystem = "crystal";
-		getUnitcell();
-		break;
-	case "loadOutcastep":
-		setName();
-		typeSystem = "crystal";
-		flagGulp = false;
-		flagOutcar = false;
-		flagCryVasp = false;
-		flagQuantum = false;
-		flagGauss = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = true;
-		onClickLoadCastep();
-		setName();
-		getUnitcell(1);
-		break;
-	}
-	document.fileGroup.reset();
-}
-
-function setName() {
-	setTextboxValue("filename", "Filename:");
-	var name = jmolGetPropertyAsJSON("filename");
-	name = "Filename: "
-		+ name
-		.substring(name.indexOf('\"') + 13,
-				name.lastIndexOf('}') - 1);
-	setTextboxValue("filename", name);
-}
 
 var quantumEspresso = false;
 function onChangeSave(save) {
 	// see menu.js
 
 	if (save == "savePNG")
-		setV('set errorCallback "errCallback";write PNG "jice.png"');
+		setV('write PNG "jice.png"');
 	if (save == "savePNGJ")
-		setV('set errorCallback "errCallback";write PNGJ "jice.png"');
+		setV('write PNGJ "jice.png"');
 	if (save == "saveXYZ")
-		setV('set errorCallback "errCallback";write COORDS XYZ jice.xyz');
+		setV('write COORDS XYZ jice.xyz');
 	if (save == "saveFrac")
 
 		saveFractionalCoordinate();
@@ -773,16 +433,16 @@ function onChangeSave(save) {
 		exportQuantum();
 	}
 	if (save == "savePOV")
-		setV('set errorCallback "errCallback"; write POVRAY jice.pov');
+		setV('write POVRAY jice.pov');
 	if (save == "savepdb")
-		setV('set errorCallback "errCallback"; write PDB jice.pdb');
+		setV('write PDB jice.pdb');
 	if (save == "saveVASP") {
 		// magnetic = false;
 		flagCryVasp = false;
 		exportVASP();
 	}
 	if (save == "saveState")
-		setV('set errorCallback "errCallback";write STATE jice.spt');
+		setV('write STATE jice.spt');
 	if (save == "saveGULP") {
 		flagGulp = true;
 		flagCryVasp = false;
@@ -969,181 +629,15 @@ function checkWhithin(radVal) {
 
 //Fix .AtomName
 function changeElement(value) {
-	setV('{selected}.element = "' + value + '";');
-	setV('{selected}.ionic = "' + value + '";');
-	setV('label "%e";font label 16;')
-	setV("draw off; set messageReList 'saveIsoCallback'; message LIST; ");
+	var script = '{selected}.element = "' + value + '";'
+	+'{selected}.ionic = "' + value + '";'
+	+'label "%e";font label 16;draw off';
+	runJmolScriptWait(script);
+	var flag = false;
+	setV("echo");
+	enterTab();
 	updateListElement(null);
 }
-
-function messageReList(a, m) {
-	m = "" + m;
-	// important to do this to change from Java string to JavaScript string
-	if (m.indexOf("LIST") == 0) {
-		var flag = false;
-		setV("echo");
-		enterTab();
-	}
-}
-/////////////// END EDIT FUNCTION
-
-//////////////POLYHEDRA FUNCT
-/////////////
-var polyString = "";
-function createPolyedra() {
-
-	var vertNo, from, to, distance, style, selected, face;
-	vertNo = getValue("polyEdge");
-	from = getValue("polybyElementList");
-	to = getValue("poly2byElementList");
-	style = getValue("polyVert");
-	face = getValue("polyFace");
-
-	setV("polyhedra DELETE");
-
-	// if( from == to){
-	// errorMsg("Use a different atom as Vertex");
-	// return false;
-	// }
-
-	distance = getValue("polyDistance");
-
-	if (distance == "") {
-		setV("polyhedra 4, 6" + " faceCenterOffset " + face + " " + style);
-		return;
-	}
-
-	/*
-	 * if(checkID("byselectionPoly")){ setV("polyhedra " + vertNo + " BOND { "+
-	 * selected +" } faceCenterOffset " + face + " " + style); }
-	 */
-
-	if (checkID("centralPoly")) {
-		setV("polyhedra BOND " + "{ " + from + " } faceCenterOffset " + face
-				+ " " + style);
-	} else {
-
-		if (checkID("bondPoly")) {
-			setV("polyhedra " + vertNo + " BOND faceCenterOffset " + face + " "
-					+ style);
-			// polyString = "polyhedra "+ vertNo + " BOND faceCenterOffset " +
-			// face + " " + style;
-		}
-		if (checkID("bondPoly1")) {
-			setV("polyhedra " + vertNo + " " + distance + " (" + from + ") to "
-					+ "(" + to + ")   faceCenterOffset " + face + " " + style);
-			// polyString = "polyhedra "+ vertNo + " " + distance + " (" +from +
-			// ") to " + "(" + to + ") faceCenterOffset " + face + " ";
-		}
-
-	}
-
-}
-
-function checkPolyValue(value) {
-	(value == "collapsed") ? (makeEnable("polyFace"))
-			: (makeDisable("polyFace"));
-}
-
-function setPolyString(value) {
-	polyString = "";
-	polyString = "polyhedra 4, 6" + "  faceCenterOffset " + face + " " + value;
-	setV(polyString);
-}
-
-function setPolybyPicking(element) {
-	setPicking(element);
-	checkBoxStatus(element, "polybyElementList");
-	checkBoxStatus(element, "poly2byElementList");
-}
-///// END POLYHEDRA FUNCT
-
-/////////
-///////////////////// MEASUREMENT FUNCTIONS
-
-var unitMeasure = "";
-function setMeasureUnit(value) {
-	unitMeasure = value;
-	setV("set measurements " + value);
-}
-
-function setMeasurement() {
-	setV("set measurements ON");
-}
-
-var mesCount = 0;
-function checkMeasure(value) {
-	var radiobutton = value;
-	var unit = getbyID('measureDist').value;
-	mesReset();
-	setV('set pickingStyle MEASURE ON;');
-	if (radiobutton == "distance") {
-		if (unit == 'select') {
-			measureHint('Select the desired measure unit.');
-			uncheckRadio("distance");
-			return false;
-		}
-		measureHint('Pick two atoms');
-		setV('set defaultDistanceLabel "%10.2VALUE %UNITS"');
-		setV('showSelections TRUE; select none;  label on ; set picking on; set picking LABEL; set picking SELECT atom; set picking DISTANCE;');
-		setV("measure ON; set measurements ON; set showMeasurements ON; set measurements ON; set measurementUnits "
-				+ unit
-				+ ";set picking MEASURE DISTANCE; set MeasureCallback 'measuramentCallback';");
-		setV('set measurements ' + unitMeasure + ';')
-		setV('label ON');
-
-	} else if (radiobutton == "angle") {
-		measureHint('Pick three atoms');
-		setV('set defaultAngleLabel "%10.2VALUE %UNITS"');
-		setV('showSelections TRUE; select none;  label on ; set picking on; set picking LABEL; set picking SELECT atom; set picking ANGLE;');
-		setV("measure ON; set measurements ON; set showMeasurements ON; set picking MEASURE ANGLE; set MeasureCallback 'measuramentCallback';");
-		setV('set measurements ' + unitMeasure + ';')
-		setV('label ON');
-
-	} else if (radiobutton == "torsional") {
-		measureHint('Pick four atoms');
-		setV('set defaultTorsionLabel "%10.2VALUE %UNITS"');
-		setV('showSelections TRUE; select none;  label on ; set picking on; set picking TORSION; set picking SELECT atom; set picking ANGLE;');
-		setV("measure ON; set measurements ON; set showMeasurements ON; set picking MEASURE TORSION; set MeasureCallback 'measuramentCallback';");
-		// setV('set measurements ' + unitMeasure + ';')
-		setV('label ON');
-
-	}
-
-}
-
-
-var measureHint = function(msg) {	
-	// BH 2018
-	document.measureGroup.textMeasure.value = msg + "...";
-}
-
-function measuramentCallback(app, msg, type, state, value) {
-	// BH 2018
-	if (state == "measurePicked")
-		setMeasureText(msg);
-}
-
-function setMeasureText(value) {
-	setV("show measurements");
-	var init = "\n";
-	// BH 2018
-	if (mesCount == 0)
-		document.measureGroup.textMeasure.value = init = '';
-	document.measureGroup.textMeasure.value += init + ++mesCount + " " + value;
-}
-
-function mesReset() {
-	mesCount = 0;
-	// setV ('showSelections TRUE; select none; halos on;')
-	getbyID("textMeasure").value = "";
-	setV('set pickingStyle MEASURE OFF; select *; label off; halos OFF; selectionHalos OFF; measure OFF; set measurements OFF; set showMeasurements OFF;  measure DELETE;');
-	// document.measureGroup.reset();
-}
-
-///////////END MEASURAMENT FUNCTIONS
-
-/////////// CELL FUNCTIONS
 
 function saveFrame() {
 	messageMsg("This is to save frame by frame your geometry optimization.");
@@ -1152,480 +646,9 @@ function saveFrame() {
 		setV('write frames {*} "fileName.jpg"');
 }
 
-//This saves fractional coordinates
-function saveFractionalCoordinate() {
-	warningMsg("Make sure you had selected the model you would like to export.");
+/////////// CELL FUNCTIONS
 
-	if (selectedFrame == null)
-		getUnitcell(1);
 
-	var x = "var cellp = [" + roundNumber(aCell) + ", " + roundNumber(bCell)
-	+ ", " + roundNumber(cCell) + ", " + roundNumber(alpha) + ", "
-	+ roundNumber(beta) + ", " + roundNumber(gamma) + "];"
-	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
-	+ selectedFrame + '.label("%a %16.9[fxyz]");'
-	+ 'var lista = [cellparam, xyzfrac];'
-	+ 'WRITE VAR lista "?.XYZfrac" ';
-	setV(x);
-}
-
-//This reads out cell parameters given astructure.
-var aCell, bCell, cCell, alpha, beta, gamma, typeSystem;
-function getUnitcell(i) {
-	// document.cellGroup.reset();
-	typeSystem = "";
-	i || (i = 1);
-	var StringUnitcell = "auxiliaryinfo.models[" + i + "].infoUnitCell";
-
-	var cellparam = extractInfoJmol(StringUnitcell);
-
-	aCell = roundNumber(cellparam[0]);
-	bCell = roundNumber(cellparam[1]);
-	cCell = roundNumber(cellparam[2]);
-	dimensionality = parseFloat(cellparam[15]);
-	volumeCell = roundNumber(cellparam[16]);
-
-	var bOvera = roundNumber(parseFloat(bCell / cCell));
-	var cOvera = roundNumber(parseFloat(cCell / aCell));
-
-	if (dimensionality == 1) {
-		bCell = 0.000;
-		cCell = 0.000;
-		makeEnable("par_a");
-		setVbyID("par_a", "");
-		makeDisable("par_b");
-		setVbyID("par_b", "1");
-		makeDisable("par_c");
-		setVbyID("par_c", "1");
-		setVbyID("bovera", "0");
-		setVbyID("covera", "0");
-		typeSystem = "polymer";
-	} else if (dimensionality == 2) {
-		cCell = 0.000;
-		typeSystem = "slab";
-		makeEnable("par_a");
-		setVbyID("par_a", "");
-		makeEnable("par_b");
-		setVbyID("par_b", "");
-		makeDisable("par_c");
-		setVbyID("par_c", "1");
-		setVbyID("bovera", bOvera);
-		setVbyID("covera", "0");
-	} else if (dimensionality == 3) {
-		typeSystem = "crystal";
-		alpha = cellparam[3];
-		beta = cellparam[4];
-		gamma = cellparam[5];
-		makeEnable("par_a");
-		setVbyID("par_a", "");
-		makeEnable("par_b");
-		setVbyID("par_b", "");
-		makeEnable("par_c");
-		setVbyID("par_c", "");
-		setVbyID("bovera", bOvera);
-		setVbyID("covera", cOvera);
-	} else if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
-		aCell = 0.00;
-		bCell = 0.00;
-		cCell = 0.00;
-		alpha = 0.00;
-		beta = 0.00;
-		gamma = 0.00;
-		typeSystem = "molecule";
-		setVbyID("bovera", "0");
-		setVbyID("covera", "0");
-	}
-	setVbyID("aCell", roundNumber(aCell));
-	setVbyID("bCell", roundNumber(bCell));
-	setVbyID("cCell", roundNumber(cCell));
-	setVbyID("alphaCell", roundNumber(alpha));
-	setVbyID("betaCell", roundNumber(beta));
-	setVbyID("gammaCell", roundNumber(gamma));
-	setVbyID("volumeCell", roundNumber(volumeCell));
-
-}
-
-function setUnitCell() {
-	getUnitcell(frameValue);
-	if (selectedFrame == null || selectedFrame == "" || frameValue == ""
-		|| frameValue == null) {
-		selectedFrame = "{1.1}";
-		frameNum = 1.1;
-		getUnitcell("1");
-	}
-}
-////END OPEN SAVE FUNCTIONS
-
-///////////////
-//////////////CELL AND ORIENTATION FUNCTION
-/////////////
-
-function setCellMeasure(value) {
-	typeSystem = "";
-	var StringUnitcell = "auxiliaryinfo.models[" + i + "].infoUnitCell";
-
-	if (i == null || i == "")
-		StringUnitcell = " auxiliaryInfo.models[1].infoUnitCell ";
-
-	var cellparam = extractInfoJmol(StringUnitcell);
-	aCell = cellparam[0];
-	bCell = cellparam[1];
-	cCell = cellparam[2];
-	if (value == "a") {
-		setVbyID("aCell", roundNumber(aCell));
-		setVbyID("bCell", roundNumber(bCell));
-		setVbyID("cCell", roundNumber(cCell));
-	} else {
-		aCell = aCell * 1.889725989;
-		bCell = bCell * 1.889725989;
-		cCell = cCell * 1.889725989;
-		setVbyID("aCell", roundNumber(aCell));
-		setVbyID("bCell", roundNumber(bCell));
-		setVbyID("cCell", roundNumber(cCell));
-	}
-
-}
-function setCellDotted() {
-	var cella = checkBoxX('cellDott');
-	if (cella == "on") {
-		setV("unitcell DOTTED ;");
-	} else {
-		setV("unitcell ON;");
-	}
-}
-
-//This gets values from textboxes using them to build supercells
-function setPackaging(packMode) {
-	var kindCell = null;
-	kindCell = getbyName("cella");
-	var checkboxSuper = checkBoxX("supercellForce");
-	var kindCellfinal = null;
-	var typePack = null;
-
-	for ( var i = 0; i < kindCell.length; i++) {
-		if (kindCell[i].checked)
-			kindCellfinal = kindCell[i].value;
-	}
-
-	typePack = packMode + " " + (kindCellfinal == "conventional" ? ' filter "conventional" '
-			: ' filter "primitive" ');
-	
-	// BH 2018
-	getValue("par_a") || setVbyID("par_a", 1);
-	getValue("par_b") || setVbyID("par_b", 1);
-	getValue("par_c") || setVbyID("par_c", 1);
-	
-	// BH 2018 adds save/restore orientation
-	if (checkboxSuper == "on") {
-		warningMsg("You decided to constrain your original supercell to form a supercell. \n The symmetry was reduced to P1.");
-		setV('save orientation o;load "" {1 1 1} SUPERCELL {' + getValue("par_a") + ' '
-				+ getValue("par_b") + ' ' + getValue("par_c") + '}' + typePack + ";restore orientation o;");
-		setV("set messageCallback 'superCellParams'; message SUPERCELL;");
-	} else {
-		setV('save orientation o;load "" {' + getValue("par_a") + ' ' + getValue("par_b") + ' '
-				+ getValue("par_c") + '}' + typePack + ";restore orientation o;");
-	}
-}
-
-function setPackRange() {
-
-	kindCell = getbyName("cella");
-	var kindCellfinal = null;
-	for ( var i = 0; i < kindCell.length; i++) {
-		if (kindCell[i].checked)
-			kindCellfinal = kindCell[i].value;
-	}
-	stringa = "load '' {1 1 1} RANGE " + packRange + " FILTER '"
-	+ kindCellfinal
-	+ "'; set messageCallback 'cellOperation'; message CELL;";
-	setV(stringa);
-}
-
-function checkPack() {
-	uncheckBox("superPack");
-	// This initialize the bar
-	getbyID("packMsg").innerHTML = 0 + " &#197";
-}
-
-function uncheckPack() {
-	uncheckBox("chPack");
-	getbyID("packDiv").style.display = "none";
-	kindCell = getbyName("cella");
-	var kindCellfinal = null;
-	for ( var i = 0; i < kindCell.length; i++) {
-		if (kindCell[i].checked)
-			kindCellfinal = kindCell[i].value;
-	}
-	setCellType(kindCellfinal);
-}
-
-function setCellType(value) {
-	var valueConv = checkBoxX("superPack");
-	var checkBoxchPack = checkBoxX("chPack");
-	var stringa = "load '' FILTER '" + value
-	+ "'; set messageCallback 'cellOperation'; message CELL;";
-	if (valueConv == "on" && checkBoxchPack == "off") {
-		stringa = "load '' FILTER '" + value
-		+ "'; set messageCallback 'cellOperation'; message CELL;";
-		(value == "primitive") ? (setV(stringa)) : (setV(stringa));
-	} else if (valueConv == "off" && checkBoxchPack == "on") {
-		stringa = "load '' {1 1 1} RANGE " + packRange + " FILTER '" + value
-		+ "'; set messageCallback 'cellOperation'; message CELL;";
-		(value == "primitive") ? (setV(stringa)) : (setV(stringa));
-	}
-}
-
-function setManualOrigin() {
-
-	var x = getValue("par_x");
-	var y = getValue("par_y");
-	var z = getValue("par_z");
-
-	if (x == "" || y == "" || z == "") {
-		errorMsg("Please, check values entered in the textboxes");
-		return false;
-	}
-
-	setV("unitcell { " + x + " " + y + " " + z
-			+ " }; set messageCallback 'cellOperation'; message CELL;");
-
-}
-
-//This controls the refined motion of the structure
-var motion = "";
-function setKindMotion(valueList) {
-	motion = valueList;
-	if (motion == "select")
-		errorMsg("Please select the motion");
-	return motion;
-}
-
-function setMotion(axis) {
-	var magnitudeMotion = getbyID("fineOrientMagn").value;
-
-	if (motion == "select" || motion == "") {
-		errorMsg("Please select the motion");
-		return false;
-	}
-
-	// /(motion == "translate" )? (makeDisable("-z") + makeDisable("z")) :
-	// (makeEnable("-z") + makeEnable("z"))
-
-	if (magnitudeMotion == "") {
-		errorMsg("Please, check value entered in the textbox");
-		return false;
-	}
-
-	var stringa = "Selected" + " " + axis + " " + magnitudeMotion;
-	if (motion == "translate" && (axis == "-x" || axis == "-y" || axis == "-z")) {
-		axis = axis.replace("-", "");
-		stringa = "Selected" + " " + axis + " -" + magnitudeMotion;
-	}
-
-	(!getbyID("moveByselection").checked) ? setV(motion + " " + axis + " "
-			+ magnitudeMotion) : setV(motion + stringa);
-
-}
-
-function setFashionAB(valueList) {
-
-	var radio = getbyName("abFashion");
-	for ( var i = 0; i < radio.length; i++) {
-		if (radio[i].checked == true)
-			var radioValue = radio[i].value;
-	}
-
-	var fashion = (radioValue == "on") ? 'OPAQUE' : 'TRANSLUCENT';
-
-	if (valueList != "select")
-		setV('color ' + valueList + ' ' + fashion);
-}
-
-function setUnitCellOrigin(value) {
-	setV("unitcell { " + value + " }");
-}
-
-function getSymInfo() {
-
-	// update all of the model-specific page items
-
-	SymInfo = {};
-	var s = "";
-	var info = jmolEvaluate('script("show spacegroup")');
-	if (info.indexOf("x,") < 0) {
-		s = "no space group";
-	} else {
-		var S = info.split("\n");
-		var hm = "?";
-		var itcnumber = "?";
-		var hallsym = "?";
-		var latticetype = "?";
-		var nop = 0;
-		var slist = "";
-		for ( var i = 0; i < S.length; i++) {
-			var line = S[i].split(":");
-			if (line[0].indexOf("Hermann-Mauguin symbol") == 0)
-				s += "<br>"
-					+ S[i]
-			.replace(
-					/Hermann\-Mauguin/,
-			"<a href=http://en.wikipedia.org/wiki/Hermann%E2%80%93Mauguin_notation target=_blank>Hermann-Mauguin</a>");
-			else if (line[0].indexOf("international table number") == 0)
-				s += "<br>"
-					+ S[i]
-			.replace(
-					/international table number/,
-			"<a href=http://it.iucr.org/ target=_blank id='prova'>international table</a> number");
-			else if (line[0].indexOf("lattice type") == 0)
-				s += "<br>"
-					+ S[i]
-			.replace(
-					/lattice type/,
-			"<a href=http://cst-www.nrl.navy.mil/bind/static/lattypes.html target=_blank>lattice type</a>");
-			else if (line[0].indexOf(" symmetry operation") >= 0)
-				nop = parseInt(line[0]);
-			else if (nop > 0 && line[0].indexOf(",") >= 0)
-				slist += "\n" + S[i];
-
-		}
-
-		s += "<br> Symmetry operators: " + nop;
-
-		var S = slist.split("\n");
-		var n = 0;
-		var i = -1;
-		while (++i < S.length && S[i].indexOf(",") < 0) {
-		}
-		s += "<br><select id='symselect' onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\" class='select'><option value=0>select a symmetry operation</option>";
-		for (; i < S.length; i++)
-			if (S[i].indexOf("x") >= 0) {
-				var sopt = S[i].split("|")[0].split("\t");
-				SymInfo[sopt[1]] = S[i].replace(/\t/, ": ").replace(/\t/, "|");
-				sopt = sopt[0] + ": " + sopt[2] + " (" + sopt[1] + ")";
-				s += "<option value='" + parseInt(sopt) + "'>" + sopt
-				+ "</option>";
-			}
-		s += "</select>";
-
-		var info = jmolEvaluate('{*}.label("#%i %a {%[fxyz]/1}")').split("\n");
-		var nPoints = info.length;
-		var nBase = jmolEvaluate('{symop=1555}.length');
-		s += "<br><select id='atomselect' onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\"  class='select'><option value=0>base atoms</option>";
-		s += "<option value='{0 0 0}'>{0 0 0}</option>";
-		s += "<option value='{1/2 1/2 1/2}'>{1/2 1/2 1/2}</option>";
-		for ( var i = 0; i < nPoints; i++)
-			s += "<option value=" + i + (i == 0 ? " selected" : "") + ">"
-			+ info[i] + "</option>";
-		s += "</select>";
-
-		s += "</br><input type=checkbox id=chkatoms onchange=getSelect() checked=true />superimpose atoms";
-		s += " opacity:<select id=selopacity onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\"  class='select'>"
-			+ "<option value=0.2 selected>20%</option>"
-			+ "<option value=0.4>40%</option>"
-			+ "<option value=0.6>60%</option>"
-			+ "<option value=1.0>100%</option>" + "</select>";
-
-	}
-	getbyID("syminfo").innerHTML = s;
-}
-
-function getSelect(symop) {
-	var d = getbyID("atomselect");
-	var atomi = d.selectedIndex;
-	var pt00 = d[d.selectedIndex].value;
-	var showatoms = (getbyID("chkatoms").checked || atomi == 0);
-	setV("display " + (showatoms ? "all" : "none"));
-	var d = getbyID("symselect");
-	var iop = parseInt(d[d.selectedIndex].value);
-	// if (!iop && !symop) symop = getbyID("txtop").value
-	if (!symop) {
-		if (!iop) {
-			setV("select *;color opaque;draw sym_* delete");
-			return
-
-		}
-		symop = d[d.selectedIndex].text.split("(")[1].split(")")[0];
-		// getbyID("txtop").value
-		// = symop
-	}
-	if (pt00.indexOf("{") < 0)
-		pt00 = "{atomindex=" + pt00 + "}";
-	var d = getbyID("selopacity");
-	var opacity = parseFloat(d[d.selectedIndex].value);
-	if (opacity < 0)
-		opacity = 1;
-	var script = "select *;color atoms translucent " + (1 - opacity);
-	script += ";draw symop \"" + symop + "\" " + pt00 + ";";
-	if (atomi == 0) {
-		script += ";select symop=1555 or symop=" + iop + "555;color opaque;";
-	} else if (atomi >= 3) {
-		script += ";pt1 = "
-			+ pt00
-			+ ";pt2 = all.symop(\""
-			+ symop
-			+ "\",pt1).uxyz.xyz;select within(0.2,pt1) or within(0.2, pt2);color opaque;";
-	}
-	secho = SymInfo[symop];
-	if (!secho) {
-		secho = jmolEvaluate("all.symop('" + symop + "',{0 0 0},'draw')")
-		.split("\n")[0];
-		if (secho.indexOf("//") == 0) {
-			secho = secho.substring(2);
-		} else {
-			secho = symop;
-		}
-	}
-	script = "set echo top right;echo " + secho + ";" + script;
-	setV(script);
-}
-function resetSymmetryView() {
-	setV('select *;color atoms opaque; echo; draw off');
-}
-
-function deleteSymmetry() {
-	getbyID("syminfo").removeChild;
-}
-
-function cellOperation(a, m) {
-	m = "" + m;
-	// important to do this to change from Java string to JavaScript string
-	if (m.indexOf("CELL") == 0) {
-		deleteSymmetry();
-		getSymInfo();
-		for ( var i = 0; i < 2; i++)
-			setUnitCell();
-	}
-}
-
-function superCellParams(a, m) {
-	m = "" + m;
-	// important to do this to change from Java string to JavaScript string
-	if (m.indexOf("SUPERCELL") == 0)
-		setUnitCell();
-}
-
-var kindCoord;
-var measureCoord = false;
-function viewCoord(value) {
-	kindCoord = value;
-	measureCoord = true;
-	setV("select *; label off");
-	messageMsg("Pick the atom your interested, please.");
-	setV('set defaultDistanceLabel "%10.7VALUE %UNITS"');
-	setV('showSelections TRUE; select none; set picking ON;set picking LABEL; set picking SELECT atom; halos on; set LABEL on; set PickCallback "showCoord"');
-}
-
-function showCoord(a, b, c, d, e, f) {
-	// setMeasureText(b);
-	if (measureCoord) {
-		if (kindCoord == "fractional") {
-			setV('Label "%a: %.2[fX] %.2[fY] %.2[fZ]"');
-		} else {
-			setV('Label "%a: %1.2[atomX] %1.2[atomY] %1.2[atomZ]"');
-		}
-	}
-}
-////////////END CELL and MOTION FUNCTIONS
 
 ////////////////////BUILD FUNCTIONS
 
@@ -1731,14 +754,15 @@ function selectElementZmatrix(form) {
 			} else if (counterClicZ == 2) {
 				messageMsg("Select the 3rd atom to form the torsional angle.");
 			}
-			setV("draw off; showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on; set PickCallback 'pickZmatrixCallback'");
+			setPickingCallbackFunction(pickZmatrixCallback)
+			runJmolScriptWait("draw off; showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on;");
 		}
 	}
 }
 
 var distanceZ, angleZ, torsionalZ
 var arrayAtomZ = new Array(3);
-function pickZmatrixCallback(a, b, c, d, e) {
+function pickZmatrixCallback(b, c, d, e) {
 	if (counterClicZ == 0) { // distance
 		var valuedist = prompt(
 				"Now enter the distance (in \305) from which you want to add the new atom. \n Seletion is done by symply clikking ont the desire atom",
@@ -1764,17 +788,8 @@ function pickZmatrixCallback(a, b, c, d, e) {
 				"Enter the torsional angle(in degrees) formed between the new atom, the 1st, the 2nd and the 3rd ones. \n Seletion is done by symply clikking ont the desire atoms",
 		"180.0");
 		torsionalZ = parseFloat(valuetorsion);
-		setV("set messageCallback 'elementZcallback'; message ELEMENTZ;")
 		arrayAtomZ[2] = parseInt(b.substring(b.indexOf('#') + 1,
 				b.indexOf('.') - 2));
-	}
-	counterClicZ++;
-}
-
-function elementZcallback(a, m) {
-	m = "" + m;
-	// important to do this to change from Java string to JavaScript string
-	if (m.indexOf("ELEMENTZ") == 0) {
 		messageMsg("distance: " + distanceZ + " from atom " + arrayAtomZ[0]
 		+ " angle: " + angleZ + " formed by atoms: new, "
 		+ arrayAtomZ[0] + ", " + arrayAtomZ[1] + "\n and torsional: "
@@ -1782,10 +797,11 @@ function elementZcallback(a, m) {
 		+ arrayAtomZ[1] + ", " + arrayAtomZ[2])
 		messageMsg("Now, select the desire element.");
 	}
+	counterClicZ++;
 }
 
 function addZatoms() {
-	setV('zAdd(\"' + getValue('addEleZ') + '\",' + distanceZ + ',{'
+	runJmolScriptWait('zAdd(\"' + getValue('addEleZ') + '\",' + distanceZ + ',{'
 			+ arrayAtomZ[0] + '}, ' + angleZ + ', {' + arrayAtomZ[1] + '},'
 			+ torsionalZ + ', {' + arrayAtomZ[2] + '})')
 }
@@ -1793,8 +809,6 @@ function addZatoms() {
 function createCrystalStr(form) {
 	if (form.checked) {
 		makeDisable("periodMole");
-		// messageMsg("Do you want to create a Crystal?");
-
 	} else {
 
 	}
@@ -2113,216 +1127,6 @@ function atomSelectedDisplay(atom) {
 	setV("select {atomno=" + atom + "}; halo on; label on");
 	displayMode = "display {atomno=" + atom + "}";
 	return displayMode;
-}
-
-function setPicking(form) {
-	if (form.checked == true) {
-		setV('showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom;halos on; ');
-		atomColor = "color atom";
-	}
-	if (form.checked == false)
-		setV('select none;');
-	return atomColor;
-}
-
-function setPickingDelete(form) {
-	setV('select none; halos off;');
-	setV("draw off; showSelections TRUE; select none; set picking off;");
-	setV('set PickCallback OFF');
-	var plane = checkBoxX('byplane');
-	var sphere = checkBoxX('bydistance');
-	if (form.checked) {
-		if (plane == 'on' || sphere == 'on') {
-			setV('set picking on; set picking LABEL; set picking SELECT atom; halos on; ');
-		} else {
-			setV('showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on;');
-			deleteMode = "delete selected";
-		}
-	}
-	if (!form.checked)
-		setV('select none; halos off; label off;');
-	return deleteMode;
-}
-
-function setPickingHide(form) {
-	setV('select none; halos off;');
-	setV("draw off; showSelections TRUE; select none; set picking off;");
-	setV('set PickCallback OFF');
-
-	var plane = checkBoxX('byplane');
-	var sphere = checkBoxX('bydistance');
-	if (form.checked) {
-		if (plane == 'on' || sphere == 'on') {
-			setV('showSelections TRUE; set picking on; set picking LABEL; set picking SELECT atom; halos on; ');
-		} else {
-			setV('showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on; ');
-		}
-		hideMode = " hide selected";
-	} else {
-		setV('select none; halos off; label off;');
-	}
-	return hideMode;
-}
-
-/*
- * display within(0,plane,@{plane({atomno=3}, {0 0 0}, {0 1/2 1/2})})
- * 
- * The parametric equation ax + by + cz + d = 0 is expressed as {a b c d}.
- * 
- * Planes based on draw and isosurface objects are first defined with an ID
- * indicated, for example:
- * 
- * draw plane1 (atomno=1) (atomno=2) (atomno=3)
- * 
- * After that, the reference $plane1 can be used anywhere a plane expression is
- * required. For instance,
- * 
- * select within(0,plane, $plane1)
- */
-
-var counterClick = false;
-var counterHide = 0;
-var selectedatomPlane = new Array(3);
-var sortquestion = null
-function setPlanehide(form) {
-	if (form == null)
-		sortquestion = true;
-
-	if (form.checked) {
-		messageMsg('Now select in sequence 3 atoms to define the plane.');
-		selectedatomPlane = [];
-		counterHide = 0;
-		counterClick = true;
-		for ( var i = 0; i < 3; i++) {
-			setV("draw off; showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on; set PickCallback 'pickPlanecallback'");
-		}
-
-		if (form != null)
-			uncheckBox(form);
-
-	} else {
-		setV('select none; halos off;');
-		setV("draw off; showSelections TRUE; select none; set picking off;");
-		setV("set picking OFF");
-	}
-}
-
-function setPlanedued(form) {
-	if (form == null)
-		sortquestion = true;
-
-	messageMsg('Now select in sequence 3 atoms to define the plane.');
-	selectedatomPlane = [];
-	counterHide = 0;
-	counterClick = true;
-	for ( var i = 0; i < 3; i++)
-		setV("draw off; showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on; set PickCallback 'pickPlane2dcallback'");
-
-}
-
-function pickPlane2dcallback(a, b, c, d, e) {
-	if (counterClick == true) {
-		selectedatomPlane[counterHide] = parseInt(b.substring(
-				b.indexOf('#') + 1, b.indexOf('.') - 2));
-		messageMsg('Atom selected: ' + selectedatomPlane[counterHide] + '.');
-
-		if (counterHide == '2') {
-			counterClick = false;
-			setV('draw on; draw plane1 (atomno=' + selectedatomPlane[0]
-			+ ') (atomno=' + selectedatomPlane[1] + ') (atomno='
-			+ selectedatomPlane[2] + ');');
-			// setV('select none; halos off;');
-			// setV("draw off; showSelections TRUE; select none; set picking
-			// off;");
-			setV("set picking OFF");
-			var spin = confirm("Now would you only like to slice the density? OK for yes, Cancel if you wish to map SPIN or potential on top.")
-			if (spin) {
-				dueD_con = true;
-				dueD_planeMiller = false;
-				setV('isosurface ID "isosurface1" select ({0:47}) PLANE $plane1 MAP color range 0.0 2.0 ?.CUBE');
-			} else {
-				messageMsg("Now load the *.CUBE potential / spin file.");
-				setV("isosurface PLANE $plane1 MAP ?.CUBE;");
-			}
-			setV("draw off;");
-			return true;
-		}
-
-		messageMsg('Select next atom.');
-		counterHide++;
-	}
-}
-
-function pickPlanecallback(a, b, c, d, e) {
-	if (counterClick == true) {
-		selectedatomPlane[counterHide] = parseInt(b.substring(
-				b.indexOf('#') + 1, b.indexOf('.') - 2));
-		messageMsg('Atom selected: ' + selectedatomPlane[counterHide] + '.');
-
-		if (counterHide == '2') {
-			counterClick = false;
-			setV('draw on; draw plane1 (atomno=' + selectedatomPlane[0]
-			+ ') (atomno=' + selectedatomPlane[1] + ') (atomno='
-			+ selectedatomPlane[2] + ');');
-			if (!sortquestion) {
-				var distance = prompt('Now enter the distance (in \305) within you want to select atoms. \n Positive values mean from the upper face on, negative ones the opposite.');
-				if (distance != null && distance != "") {
-					setV('select within(' + distance + ',plane, $plane1)');
-					hideMode = " hide selected";
-					deleteMode = " delete selected";
-					atomColor = "color atoms";
-					setV('set PickCallback OFF');
-					counterClick = false;
-					return true;
-				}
-			}
-			setV('select none; halos off;');
-			setV("draw off; showSelections TRUE; select none; set picking off;");
-			setV("set picking OFF");
-		}
-
-		messageMsg('Select next atom.');
-		counterHide++;
-	}
-}
-
-var selectHideForm = null;
-function setDistancehidehide(form) {
-	selectHideForm = form;
-	if (form.checked) {
-		messageMsg('Now select the central atom around which you want to select atoms.');
-		counterClick = true;
-		setV("showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on; set PickCallback 'pickDistancecallback'");
-		// messageMsg('If you don\'t want to remove/hide atoms in the plane,
-		// unselect them by using the option: select by picking.')
-	} else {
-		setV('select none; halos off;');
-	}
-}
-
-function pickDistancecallback(a, b, c, d, e) {
-	if (counterClick == true) {
-		var coordinate = b
-		.substring(b.indexOf('#') + 2, b.lastIndexOf('.') + 9);
-		messageMsg('Atom selected: ' + coordinate + '.');
-		var distance = prompt('Now enter the distance (in \305) within you want to select atoms.');
-		if (distance != null && distance != "") {
-			setV('select within(' + distance + ',{' + coordinate
-					+ ' }); draw sphere1 width ' + distance + '  { '
-					+ coordinate + '} translucent');
-			// messageMsg('If you don\'t want to remove/hide the atom used for
-			// the
-			// selection, unselect it by using the option: select by picking.')
-			hideMode = " hide selected";
-			deleteMode = " delete selected";
-			atomColor = "color atoms";
-			setV("set PickCallback 'pickDistancecallback' OFF");
-			counterClick = false;
-			uncheckBox(selectHideForm);
-			return true;
-		}
-	}
-
 }
 
 function selectAll() {

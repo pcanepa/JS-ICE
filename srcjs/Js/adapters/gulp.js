@@ -52,11 +52,8 @@ function exportGULP() {
 				+ 'final = final.replace("\n\n","\n");'
 				+ 'WRITE VAR final "?.gin" ';
 	}
-	setV(finalInputGulp);
-
-	// This is to terminate the space group research
-	setV('set errorCallback "errCallback"');
-	setV("load '' filter 'primitive'");
+	run(finalInputGulp);
+	runJmolScriptWait("load '' filter 'primitive'");
 	loadStatejust();
 
 }
@@ -188,20 +185,15 @@ function setPotentialgulp() {
 // ////////////GULP READER
 
 function onClickLoadGulpStruct() {
-	setMessageMode(MESSAGE_MODE_GULP_DONE)
-	setV("set echo top left; echo loading... ;refresh;load ?;message GULPDONE;");
+	runJmolScript("set echo top left; echo loading... ;refresh;load ?");
 }
 
-function gulpDoneMessageCallback(msg) {
-	if (msg.indexOf("GULPDONE") == 0) {
+function gulpDone() {
 		loadDone(loadModelsGulp);
-	}
 }
 
 function loadModelsGulp() {
-
 	runJmolScriptWait("script scripts/name.spt"); 
-
 	var counterFreq = 0;
 	extractAuxiliaryJmol();
 	cleanandReloadfrom();

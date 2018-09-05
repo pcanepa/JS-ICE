@@ -23,7 +23,10 @@
  */
 
 //////////////////////////////////////VALUE CONVERTION AND ROUNDOFF
-function substringEnergyToFloat(value) {
+
+var radiant = Math.PI / 180;
+
+	function substringEnergyToFloat(value) {
 	if (value != null) {
 		var grab = parseFloat(
 				value.substring(value.indexOf('=') + 1, value.indexOf('H') - 1))
@@ -83,7 +86,6 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 		beta = betaparam;
 	if (gammaparam != null)
 		gamma = gammaparam;
-	var radiant = Math.PI / 180;
 	// formula repeated from
 	// http://en.wikipedia.org/wiki/Fractional_coordinates
 	v = Math.sqrt(1
@@ -107,7 +109,6 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 }
 
 function cosRadiant(value) {
-	var radiant = Math.PI / 180;
 	if (value != null) {
 		var angle = parseFloat(value).toPrecision(7);
 		angle = Math.cos(value * radiant);

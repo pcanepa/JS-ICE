@@ -23,18 +23,15 @@
  */
 
 function onClickLoadVaspStruct() {
-	//setErrorCallback
 	setMessageMode(MESSAGE_MODE_VASP_XML_DONE);
 	runJmolScript("set echo top left; echo loading... ;refresh;load ?.xml; message VASPXMLDONE;");
 }
 
-vaspXmlMessageCallback = function(msg) {
-	if (msg.indexOf("VASPXMLDONE") == 0) {
-		loadDone(loadVASPModels);
-	}
+xmlvaspDone = function() {
+	loadDone(loadModelsVASP);
 }
 
-function loadVASPModels() {
+function loadModelsVASP() {
 	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
 	extractAuxiliaryJmol();
 	getUnitcell("1");
@@ -196,15 +193,11 @@ function exportVASP() {
 /////////// IMPORT OUTCAR
 
 function onClickLoadOutcar() {
-	setMessageMode(MESSAGE_MODE_VASP_OUTCAR_DONE)
-	runJmolScript("set echo top left; echo loading...; refresh;load ?; message VASPOUTCARDONE;");
+	runJmolScript("set echo top left; echo loading...; refresh;load ?");
 }
 
-vaspOutcarMessageCallback = function(msg) {
-	// important to do this to change from Java string to JavaScript string
-	if (msg.indexOf("VASPOUTCARDONE") == 0) {
-		loadDone(loadModelsOutcar);
-	}
+vaspoutcarDone = function() {
+	loadDone(loadModelsOutcar);
 }
 
 var counterFreq = 0;

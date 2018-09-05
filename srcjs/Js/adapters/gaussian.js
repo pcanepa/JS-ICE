@@ -23,14 +23,11 @@
  */
 
 function loadGaussian() {
-	setMessageMode(MESSAGE_MODE_GAUSSIAN_DONE)
-	setV("set echo top left; echo loading...;refresh;load ?;message GAUSSIANDONE; ");
+	setV("set echo top left; echo loading...;refresh;load ?");
 }
 
-gaussianDoneMessageCallback = function(msg) {
-	if (msg.indexOf("GAUSSIAN") == 0) {
-		loadDone(loadGaussianModels);
-	}
+gaussianDone = function() {
+	loadDone(loadModelsGaussian);
 }
 
 var geomGauss = new Array;
@@ -40,7 +37,7 @@ var freqGauss = new Array;
 var energyGauss = new Array;
 var counterGauss = 0;
 
-function loadGaussianModels() {
+function loadModelsGaussian() {
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
 	// Reset program and set filename if available
 	// This also extract the auxiliary info
