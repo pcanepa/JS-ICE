@@ -2,7 +2,7 @@ function saveFractionalCoordinate() {
 	warningMsg("Make sure you had selected the model you would like to export.");
 
 	if (selectedFrame == null)
-		getUnitcell(1);
+		getUnitcell("1");
 
 	var x = "var cellp = [" + roundNumber(aCell) + ", " + roundNumber(bCell)
 	+ ", " + roundNumber(cCell) + ", " + roundNumber(alpha) + ", "
@@ -37,38 +37,38 @@ function getUnitcell(i) {
 		bCell = 0.000;
 		cCell = 0.000;
 		makeEnable("par_a");
-		setVbyID("par_a", "");
+		setValue("par_a", "");
 		makeDisable("par_b");
-		setVbyID("par_b", "1");
+		setValue("par_b", "1");
 		makeDisable("par_c");
-		setVbyID("par_c", "1");
-		setVbyID("bovera", "0");
-		setVbyID("covera", "0");
+		setValue("par_c", "1");
+		setValue("bovera", "0");
+		setValue("covera", "0");
 		typeSystem = "polymer";
 	} else if (dimensionality == 2) {
 		cCell = 0.000;
 		typeSystem = "slab";
 		makeEnable("par_a");
-		setVbyID("par_a", "");
+		setValue("par_a", "");
 		makeEnable("par_b");
-		setVbyID("par_b", "");
+		setValue("par_b", "");
 		makeDisable("par_c");
-		setVbyID("par_c", "1");
-		setVbyID("bovera", bOvera);
-		setVbyID("covera", "0");
+		setValue("par_c", "1");
+		setValue("bovera", bOvera);
+		setValue("covera", "0");
 	} else if (dimensionality == 3) {
 		typeSystem = "crystal";
 		alpha = cellparam[3];
 		beta = cellparam[4];
 		gamma = cellparam[5];
 		makeEnable("par_a");
-		setVbyID("par_a", "");
+		setValue("par_a", "");
 		makeEnable("par_b");
-		setVbyID("par_b", "");
+		setValue("par_b", "");
 		makeEnable("par_c");
-		setVbyID("par_c", "");
-		setVbyID("bovera", bOvera);
-		setVbyID("covera", cOvera);
+		setValue("par_c", "");
+		setValue("bovera", bOvera);
+		setValue("covera", cOvera);
 	} else if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
 		aCell = 0.00;
 		bCell = 0.00;
@@ -77,16 +77,16 @@ function getUnitcell(i) {
 		beta = 0.00;
 		gamma = 0.00;
 		typeSystem = "molecule";
-		setVbyID("bovera", "0");
-		setVbyID("covera", "0");
+		setValue("bovera", "0");
+		setValue("covera", "0");
 	}
-	setVbyID("aCell", roundNumber(aCell));
-	setVbyID("bCell", roundNumber(bCell));
-	setVbyID("cCell", roundNumber(cCell));
-	setVbyID("alphaCell", roundNumber(alpha));
-	setVbyID("betaCell", roundNumber(beta));
-	setVbyID("gammaCell", roundNumber(gamma));
-	setVbyID("volumeCell", roundNumber(volumeCell));
+	setValue("aCell", roundNumber(aCell));
+	setValue("bCell", roundNumber(bCell));
+	setValue("cCell", roundNumber(cCell));
+	setValue("alphaCell", roundNumber(alpha));
+	setValue("betaCell", roundNumber(beta));
+	setValue("gammaCell", roundNumber(gamma));
+	setValue("volumeCell", roundNumber(volumeCell));
 
 }
 
@@ -117,16 +117,16 @@ function setCellMeasure(value) {
 	bCell = cellparam[1];
 	cCell = cellparam[2];
 	if (value == "a") {
-		setVbyID("aCell", roundNumber(aCell));
-		setVbyID("bCell", roundNumber(bCell));
-		setVbyID("cCell", roundNumber(cCell));
+		setValue("aCell", roundNumber(aCell));
+		setValue("bCell", roundNumber(bCell));
+		setValue("cCell", roundNumber(cCell));
 	} else {
 		aCell = aCell * 1.889725989;
 		bCell = bCell * 1.889725989;
 		cCell = cCell * 1.889725989;
-		setVbyID("aCell", roundNumber(aCell));
-		setVbyID("bCell", roundNumber(bCell));
-		setVbyID("cCell", roundNumber(cCell));
+		setValue("aCell", roundNumber(aCell));
+		setValue("bCell", roundNumber(bCell));
+		setValue("cCell", roundNumber(cCell));
 	}
 
 }
@@ -139,43 +139,52 @@ function setCellDotted() {
 	}
 }
 
+getCurrentPacking = function() {
+	// BH 2018
+	getValue("par_a") || setValue("par_a", 1);
+	getValue("par_b") || setValue("par_b", 1);
+	getValue("par_c") || setValue("par_c", 1);
+	return '{ ' + getValue("par_a") + ' ' + getValue("par_b") + ' ' + getValue("par_c") + '} ';
+}
+
+getCurrentUnitCell = function() {
+	return '[ ' + parseFloat(getValue('a_frac')) + ' '
+		+ parseFloat(getValue('b_frac')) + ' '
+		+ parseFloat(getValue('c_frac')) + ' '
+		+ parseFloat(getValue('alpha_frac')) + ' '
+		+ parseFloat(getValue('beta_frac')) + ' '
+		+ parseFloat(getValue('gamma_frac')) + ' ]'
+}
 //This gets values from textboxes using them to build supercells
 function setPackaging(packMode) {
-	var typePack = packMode + getKindCell(false);
-	
-	// BH 2018
-	getValue("par_a") || setVbyID("par_a", 1);
-	getValue("par_b") || setVbyID("par_b", 1);
-	getValue("par_c") || setVbyID("par_c", 1);
-	
+	var filter = getKindCell();
+	var cell = getCurrentPacking();
 	// BH 2018 adds save/restore orientation
+	runJmolScriptWait('save orientation o;');
 	var checkboxSuper = checkBoxX("supercellForce");
 	if (checkboxSuper == "on") {
 		warningMsg("You decided to constrain your original supercell to form a supercell. \n The symmetry was reduced to P1.");
-		runJmolScriptWait('save orientation o;load "" {1 1 1} SUPERCELL {' + getValue("par_a") + ' '
-				+ getValue("par_b") + ' ' + getValue("par_c") + '}' + typePack + ";restore orientation o;");
-		setUnitCell();
+		reload("{1 1 1} SUPERCELL " + cell + packMode, filter);
 	} else {
-		runJmolScriptWait('save orientation o;load "" {' + getValue("par_a") + ' ' + getValue("par_b") + ' '
-				+ getValue("par_c") + '}' + typePack + ";restore orientation o;");
+		reload(cell + packMode, filter);
 	}
+	runJmolScriptWait("restore orientation o;");
+	setUnitCell();
 }
 
 
-getKindCell = function(isRaw) {
+getKindCell = function() {
 	var kindCell = getbyName("cella");
 	var kindCellfinal = null;
-	for ( var i = 0; i < kindCell.length; i++) {
-		if (kindCell[i].checked) {
-			return (isRaw ? kindCell[i].value : " FILTER '" + kindCell[i].value + "';");
-		}
-	}
+	for ( var i = 0; i < kindCell.length; i++)
+		if (kindCell[i].checked)
+			return kindCell[i].value;
 	return "";
 }
 
 function setPackRangeAndReload(val) {
 	packRange = val;
-	runJmolScriptWait("load '' {1 1 1} RANGE " + val + getKindCell(false));
+	reload("{1 1 1} RANGE " + val, getKindCell());
 	cellOperation();
 }
 
@@ -188,20 +197,20 @@ function checkPack() {
 function uncheckPack() {
 	uncheckBox("chPack");
 	getbyID("packDiv").style.display = "none";
-	setCellType(getKindCell(true));
+	setCellType(getKindCell());
 }
 
 function setCellType(value) {
 	// BH 2018 Q: logic here?
 	var valueConv = checkBoxX("superPack");
 	var checkBoxchPack = checkBoxX("chPack");
-	var stringa = "load '' FILTER '" + value + "'";
 	if (valueConv == "on" && checkBoxchPack == "off") {
-		stringa = "load '' FILTER '" + value+ "'";	
+		reload(null, value);
 	} else if (valueConv == "off" && checkBoxchPack == "on") {
-		stringa = "load '' {1 1 1} RANGE " + packRange + " FILTER '" + value + "'";
+		reload("{1 1 1} RANGE " + packRange, value);
+	} else {
+		reload(null, value);
 	}
-	runJmolScriptWait(stringa);
 	cellOperation();
 }
 
@@ -271,6 +280,10 @@ function setFashionAB(valueList) {
 
 function setUnitCellOrigin(value) {
 	setV("unitcell { " + value + " }");
+	var aval = value.split(" ");
+	setValue("par_x", eval(aval[0]));
+	setValue("par_y", eval(aval[1]));
+	setValue("par_z", eval(aval[2]));
 }
 
 function getSymInfo() {
@@ -406,9 +419,6 @@ function getSelect(symop) {
 	script = "set echo top right;echo " + secho + ";" + script;
 	setV(script);
 }
-function resetSymmetryView() {
-	setV('select *;color atoms opaque; echo; draw off');
-}
 
 function deleteSymmetry() {
 	getbyID("syminfo").removeChild;
@@ -417,8 +427,7 @@ function deleteSymmetry() {
 cellOperation = function(){
 	deleteSymmetry();
 	getSymInfo();
-	for ( var i = 0; i < 2; i++)
-		setUnitCell();
+	setUnitCell();
 }
 
 var kindCoord;

@@ -65,9 +65,9 @@ function stopOptimize() {
 
 function resetOptimize() {
 	runJmolScriptWait('minimize STOP;');
-	setVbyID("optciteria", "0.001");
-	setVbyID("maxsteps", "100");
-	setVbyID("textUff", "");
+	setValue("optciteria", "0.001");
+	setValue("maxsteps", "100");
+	setValue("textUff", "");
 }
 
 function scriptUffCallback(b, step, d, e, f, g) {

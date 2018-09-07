@@ -129,10 +129,6 @@ function prepareCoordinateblockCastep() {
 
 // /// FUNCTION LOAD
 
-function onClickLoadCastep() {
-	runJmolScript("set echo top left; echo loading...; refresh; load ?");
-}
-
 castepDone = function() {
 	loadDone(loadModelsCastep);
 }

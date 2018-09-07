@@ -22,11 +22,6 @@
  *  02111-1307  USA.
  */
 
-
-function onClickLoadMoldenStruct() {
-	runJmolScript("set echo top left; echo loading...;refresh;load ?");
-}
-
 moldenDone = function(msg) {
 	loadDone(loadModelsMolden);
 }

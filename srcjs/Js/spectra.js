@@ -62,7 +62,7 @@ function simSpectrum() {
 			convoluzione = document.modelsVib.convol[i].value;
 	}
 
-	if (checkID("rescaleSpectra") == true) {
+	if (isChecked("rescaleSpectra") == true) {
 		rescale = true;
 
 	} else {
@@ -366,7 +366,7 @@ function defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
 	var rescale = null;
 
 	// alert(maxInt)
-	if (checkID("rescaleSpectra") == true) {
+	if (isChecked("rescaleSpectra") == true) {
 		rescale = true;
 
 	} else {

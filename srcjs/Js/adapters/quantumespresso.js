@@ -358,10 +358,6 @@ function symmetryQuantum() {
 
 ///// QUANTUM ESPRESSO READER
 
-function onClickQuantum() {
-	runJmolScript("set echo top left; echo loading...; refresh;load ? PACKED;");
-}
-
 espressoDone = function() {
 	loadDone(loadModelsEspresso)
 }

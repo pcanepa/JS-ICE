@@ -22,10 +22,6 @@
  *  02111-1307  USA.
  */
 
-function loadGaussian() {
-	setV("set echo top left; echo loading...;refresh;load ?");
-}
-
 gaussianDone = function() {
 	loadDone(loadModelsGaussian);
 }

@@ -1,4 +1,20 @@
 
+reload = function(packing, filter, more) {	
+	packing || (packing = "");
+	filter = (filter ? " FILTER '" + filter + "'" : "");
+	more || (more = "");
+	runJmolScriptWait("set echo top left; echo reloading...;refresh; load '' " + packing + filter + ";" + more + ";echo;");
+	runJmolScriptWait('frame all;frame title "@{_modelName}";frame FIRST;');
+	setName();
+	getUnitcell(1);
+}
+
+loadUser = function(packing, filter) {
+	packing || (packing = "");
+	filter = (filter ? " FILTER '" + filter + "'" : "");
+	runJmolScriptWait("set echo top left; echo reloading...;refresh; load ? " + packing + filter + ";");
+}
+
 //export list
 var flagCryVasp = true; // if flagCryVasp = true crystal output
 var flagGromos = false;
@@ -12,7 +28,58 @@ var flagDmol = false;
 var flagMolde = false;
 var flagCast = false;
 
-function preload(type) {
+function onChangeLoad(load) {
+	// This is to reset all function
+	resetAll();
+	switch (load) {
+	case "loadC":
+	case "loadaimsfhi":
+	case "loadOutcastep":
+	case "loadcastep":
+	case "loadDmol":
+	case "loadgauss":
+	case "loadgromacs":
+	case "loadGulp":
+	case "loadmaterial":
+	case "loadMolden":
+	case "loadpdb":
+	case "loadShel": //??
+	case "loadSiesta":
+	case "loadstate":
+	case "loadVasp":
+	case "loadVASPoutcar":
+	case "loadWien":
+	case "loadXcrysden":
+	case "loadxyz":
+		loadUser();
+		break;
+	case "loadcif":
+	case "loadcrystal":
+	case "loadQuantum":
+		loadUser("packed");
+		break;
+	case "reload":
+		reload();
+		break;
+	case "loadCUBE":
+		cubeLoad();
+		break;
+	case "loadJvxl":
+		loadMapJvxl();
+		break;
+	}
+	document.fileGroup.reset();
+}
+
+function postLoad(type) {
+	setFlags(type);
+	setName();
+	getUnitcell(1);
+	runJmolScriptWait('unitcell on');
+	document.fileGroup.reset();
+}
+
+setFlags = function(type) {
 	type = type.replace('load', '').toLowerCase();
 	switch (type) {
 	default:
@@ -177,105 +244,6 @@ function preload(type) {
 	}
 }
 
-function onChangeLoad(load) {
-	// This is to reset all function
-	resetAll();
-	preload(load);
-	switch (load) {
-	case "loadC":
-		runJmolScript('load ?; set defaultDirectory; script ../scripts/name.spt');
-		break;
-	case "loadShel": //??
-		runJmolScript('load ?; set defaultDirectory; script ../scripts/name.spt');
-		break;
-	case "loadxyz":
-		runJmolScript('load ?.xyz;script ../scripts/name.spt');
-		break;
-	case "loadcrystal":
-		onClickLoadStruc();
-		break;
-	case "loadCUBE":
-		cubeLoad();
-		break;
-	case "loadaimsfhi":
-		runJmolScript('load ?.in; script ../scripts/name.spt;');
-		break;
-	case "loadcastep":
-		setV('load ?.cell');
-		break;
-	case "loadVasp":
-		onClickLoadVaspStruct();
-		break;
-	case "loadVASPoutcar":
-		onClickLoadOutcar();
-		break;
-	case "loadDmol":
-		onClickLoadDmolStruc();
-		break;
-	case "loadQuantum":
-		onClickQuantum();
-		break;
-	case "loadGulp":
-		onClickLoadGulpStruct();
-		break;
-	case "loadmaterial":
-		setV('load ?; set defaultDirectory; script ../scripts/name.spt;');
-		break;
-	case "loadWien":
-		setV('load ?.struct; set defaultDirectory; script ../scripts/name.spt;');
-		break;
-	case "loadcif":
-		setV('load ?.cif PACKED; set defaultDirectory; script ../scripts/name.spt;');
-		break;
-	case "loadSiesta":
-		loadSiesta();
-		break;
-	case "loadpdb":
-		setV('load ?.pdb; set defaultDirectory ; script ../scripts/name.spt;');
-		break;
-	case "reload":
-		setName();
-		var reloadStr = "script ./scripts/reload.spt"
-			setV(reloadStr);
-		resetAll();
-		setName();
-		getUnitcell(1);
-		break;
-	case "loadJvxl":
-		loadMapJvxl();
-		break;
-	case "loadstate":
-		setV('zap; load ?.spt; set defaultDirectory; script ../scripts/name.spt;');
-		setName();
-		break;
-	case "loadgromacs":
-		setV('load ?.gro; set defaultDirectory; script ../scripts/name.spt;');
-		break;
-	case "loadgauss":
-		loadGaussian();
-		break;
-	case "loadMolden":
-		onClickLoadMoldenStruct();
-		break;
-	case "loadXcrysden":
-		setV('load ?.xsf ; set defaultDirectory');
-		break;
-	case "loadOutcastep":
-		setName();
-		onClickLoadCastep();
-		break;
-	}
-	document.fileGroup.reset();
-}
-
-function postLoad(type) {
-	preload(type);
-	setName();
-	getUnitcell();
-	runJmolScriptWait('unitcell on');
-	document.fileGroup.reset();
-}
-
 var sampleOptionArr = ["Load a Sample File", 
 	"MgO slab", 
 	"urea single-point calculation", 
@@ -316,12 +284,3 @@ function onChangeLoadSample(value) {
 }
 
 
-function setName() {
-	setTextboxValue("filename", "Filename:");
-	var name = jmolGetPropertyAsJSON("filename");
-	name = "Filename: "
-		+ name
-		.substring(name.indexOf('\"') + 13,
-				name.lastIndexOf('}') - 1);
-	setTextboxValue("filename", name);
-}

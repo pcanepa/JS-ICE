@@ -182,15 +182,15 @@ function figureOutSpaceGroup() {
 	// calcultion?')
 	if (magnetic) { // This option is for quantum espresso
 		if (flagCryVasp) {
-			runJmolScriptWait("load '' FILTER 'conv'; delete not cell=555;");
+			reload(null, "conv", "delete not cell=555;");
 		} else {
-			runJmolScriptWait("load ''; delete not cell=555;");
+			reload(null, null, "delete not cell=555;");
 		}
 	} else {
 		if (flagCryVasp) {
-			runJmolScriptWait("load '' FILTER 'conv';");
+			reload(null, "conv")
 		} else {
-			runJmolScriptWait("load '';");
+			reload()
 		}
 	}
 	getSpaceGroup();
@@ -354,7 +354,7 @@ if (flagCryVasp)
 	savCRYSTALSpace();
 
 if (!flagGulp) {
-	setV("load '' filter 'primitive'");
+	reload("primitive");
 	loadStatejust();
 }
 }
@@ -381,16 +381,12 @@ setV(script);
 /////////////////////////
 ///////////////////////// LOAD & ON LOAD functions
 
-function onClickLoadStruc() {
-	runJmolScript("set echo top left; echo loading...;refresh; load ? PACKED;");
-}
-
 crystalDone = function() {
 	loadDone(loadModelsCrystal);
 }
 
 function onClickReloadSymm() {
-	runJmolScriptWait(" set echo top left; echo reloading...;refresh; load;");
+	reload();
 	if (!flagGauss) {
 		setName();
 	} else {
@@ -510,18 +506,14 @@ function countNullModel(arrayX) {
 refresh = function() {
 	saveState();
 	setLoadingMode(LOADING_MODE_PLOT_ENERGIES);
-	runJmolScript("set echo top left; echo loading plots...;refresh;load;");
+	reload();
 	restoreState();
-}
-
-function enterTab() {
-	updateListElement();
 }
 
 refreshFreq = function() {
 	saveState();
 	setLoadingMode(LOADING_MODE_PLOT_FREQUENCIES);
-	runJmolScript('set echo top left; echo loading plot...;refresh;load;');
+	reload();
 }
 
 /////////////////////////////////// END LOAD
@@ -671,8 +663,8 @@ try {
 
 var max = maxR + 300;
 min = 0;
-setVbyID("nMax", max)
-setVbyID("nMin", min)
+setValue("nMax", max)
+setValue("nMin", min)
 }
 
 /////////////////////////////// END FREQUENCY

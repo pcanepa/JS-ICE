@@ -29,83 +29,8 @@
 ////////////////////////////////COMMON FUNCTIONS  
 //Common functions to manipulate data of forms and objects
 
-function getbyID(id) {
-	return document.getElementById(id);
-}
-
-function setVbyID(id, val) {
-	getbyID(id).value = val;
-}
-
 function getbyName(na) {
 	return document.getElementsByName(na);
-}
-
-function getValue(id) {
-	return getbyID(id).value;
-}
-
-function getValueSel(id) {
-	return getbyID(id)[getbyID(id).selectedIndex].value;
-}
-
-function checkID(id) {
-	return getbyID(id).checked;
-}
-
-function unCheckID(id) {
-	return getbyID(id).unchecked;
-}
-
-function checkBox(id) {
-	getbyID(id).checked = true;
-}
-
-function uncheckBox(id) {
-	getbyID(id).checked = false;
-}
-
-function resetByID(form) {
-	var element = "document." + form + ".reset";
-	return element;
-}
-
-//These functions are used to enabled and disabled an element
-function makeDisable(element) {
-	var x = getbyID(element);
-	x.disabled = true;
-}
-
-function makeEnable(element) {
-	var x = getbyID(element);
-	x.disabled = false;
-}
-
-function checkBoxStatus(form, element) {
-	if (form.checked == true)
-		makeDisable(element);
-	if (form.checked == false)
-		makeEnable(element);
-}
-
-function checkBoxX(form) {
-	var value = "";
-	var test = getbyID(form);
-	value = (test.checked) ? ("on") : ("off");
-	return value;
-}
-
-function setTextboxValue(nametextbox, valuetextbox) {
-	var tbox = getbyID(nametextbox);
-	tbox.value = "";
-	if (tbox)
-		tbox.value = valuetextbox;
-}
-
-function uncheckRadio(radio) {
-	var radioId = getbyName(radio);
-	for ( var i = 0; i < radioId.length; i++)
-		radioId[i].checked = false;
 }
 
 //this function sorts value given an array and removes duplicates too
@@ -132,35 +57,6 @@ function addOption(selectbox, text, value) {
 function cleanList(listname) {
 	for ( var i = (getbyID(listname).options.length - 1); i >= 0; i--)
 		getbyID(listname).remove(i);
-}
-
-function toggleDiv(form, me) {
-	if (form.checked == true)
-		getbyID(me).style.display = "inline";
-	if (form.checked == false)
-		getbyID(me).style.display = "none";
-}
-
-function toggleDivValue(value, me) {
-	if (value == true)
-		getbyID(me).style.display = "inline";
-	if (value == false)
-		getbyID(me).style.display = "none";
-}
-
-function untoggleDiv(form, me) {
-	if (form.checked == true)
-		getbyID(me).style.display = "none";
-	if (form.checked == false)
-		getbyID(me).style.display = "inline";
-}
-
-function toggleDivRadioTrans(value, me) {
-	if (value == "off") {
-		getbyID(me).style.display = "inline";
-	} else {
-		getbyID(me).style.display = "none";
-	}
 }
 
 Array.prototype.max = function() {
@@ -211,7 +107,6 @@ function setV(value) {
 	runJmolScript(value);
 }
 
-//This set the value on or off depending on the Checkbox status
 function setVTrueFalse(form, value) {
 	(form.checked == true) ? setV(value + " TRUE") : setV(value + " FALSE");
 }
@@ -635,8 +530,7 @@ function changeElement(value) {
 	runJmolScriptWait(script);
 	var flag = false;
 	setV("echo");
-	enterTab();
-	updateListElement(null);
+	updateListElement();
 }
 
 function saveFrame() {
@@ -710,9 +604,9 @@ function addNewatom() {
 			// alert(atomString)
 
 		}
-		setVbyID("x_frac", "");
-		setVbyID("y_frac", "");
-		setVbyID("z_frac", "");
+		setValue("x_frac", "");
+		setValue("y_frac", "");
+		setValue("z_frac", "");
 		getbyID("addAtomCrystal").style.display = "none";
 	}
 }
@@ -820,48 +714,48 @@ function checkIfThreeD(value) {
 	if (value == "crystal") {
 
 		makeEnable("periodMole");
-		setVbyID("a_frac", "");
-		setVbyID("b_frac", "");
-		setVbyID("c_frac", "");
+		setValue("a_frac", "");
+		setValue("b_frac", "");
+		setValue("c_frac", "");
 	} else if (value == "slab") {
 		makeDisable("periodMole");
 		makeCrystalSpaceGroup = "P-1"; // / set P-1 as symmetry for film and
 		// polymer
-		setVbyID("a_frac", "");
-		setVbyID("b_frac", "");
-		setVbyID("c_frac", "0");
+		setValue("a_frac", "");
+		setValue("b_frac", "");
+		setValue("c_frac", "0");
 		makeDisable("c_frac");
-		setVbyID("alpha_frac", "");
-		setVbyID("beta_frac", "");
-		setVbyID("gamma_frac", "90");
+		setValue("alpha_frac", "");
+		setValue("beta_frac", "");
+		setValue("gamma_frac", "90");
 		makeDisable("gamma_frac");
 	} else if (value == "polymer") {
 		makeDisable("periodMole");
 		makeCrystalSpaceGroup = "P-1"; // / set P-1 as symmetry for film and
 		// polymer
-		setVbyID("a_frac", "");
-		setVbyID("b_frac", "0");
+		setValue("a_frac", "");
+		setValue("b_frac", "0");
 		makeDisable("b_frac");
-		setVbyID("c_frac", "0");
+		setValue("c_frac", "0");
 		makeDisable("c_frac");
-		setVbyID("alpha_frac", "90");
+		setValue("alpha_frac", "90");
 		makeDisable("alpha_frac");
-		setVbyID("beta_frac", "90");
+		setValue("beta_frac", "90");
 		makeDisable("beta_frac");
-		setVbyID("gamma_frac", "90");
+		setValue("gamma_frac", "90");
 		makeDisable("gamma_frac");
 	} else if (value == "") {
-		setVbyID("a_frac", "");
+		setValue("a_frac", "");
 		makeDisable("a_frac");
-		setVbyID("b_frac", "");
+		setValue("b_frac", "");
 		makeDisable("b_frac");
-		setVbyID("c_frac", "");
+		setValue("c_frac", "");
 		makeDisable("c_frac");
-		setVbyID("alpha_frac", "");
+		setValue("alpha_frac", "");
 		makeDisable("alpha_frac");
-		setVbyID("beta_frac", "");
+		setValue("beta_frac", "");
 		makeDisable("beta_frac");
-		setVbyID("gamma_frac", "");
+		setValue("gamma_frac", "");
 		makeDisable("gamma_frac");
 	}
 }
@@ -882,12 +776,12 @@ function setCellParamSpaceGroup(spaceGroup) {
 	switch (true) {
 
 	case ((trimSpaceGroup <= 2)): // Triclinic lattices
-		setVbyID("a_frac", "");
-	setVbyID("b_frac", "");
-	setVbyID("c_frac", "");
-	setVbyID("alpha_frac", "");
-	setVbyID("beta_frac", "");
-	setVbyID("gamma_frac", "");
+		setValue("a_frac", "");
+	setValue("b_frac", "");
+	setValue("c_frac", "");
+	setValue("alpha_frac", "");
+	setValue("beta_frac", "");
+	setValue("gamma_frac", "");
 	makeEnable("a_frac");
 	makeEnable("b_frac");
 	makeEnable("c_frac");
@@ -899,12 +793,12 @@ function setCellParamSpaceGroup(spaceGroup) {
 
 	case ((trimSpaceGroup > 2) && (trimSpaceGroup <= 15)): // Monoclinic
 		// lattices
-		setVbyID("a_frac", "");
-	setVbyID("b_frac", "");
-	setVbyID("c_frac", "");
-	setVbyID("alpha_frac", "");
-	setVbyID("beta_frac", "90.000");
-	setVbyID("gamma_frac", "90.000");
+		setValue("a_frac", "");
+	setValue("b_frac", "");
+	setValue("c_frac", "");
+	setValue("alpha_frac", "");
+	setValue("beta_frac", "90.000");
+	setValue("gamma_frac", "90.000");
 	makeEnable("a_frac");
 	makeEnable("b_frac");
 	makeEnable("c_frac");
@@ -915,12 +809,12 @@ function setCellParamSpaceGroup(spaceGroup) {
 
 	case ((trimSpaceGroup > 15) && (trimSpaceGroup <= 74)): // Orthorhombic
 		// lattices
-		setVbyID("a_frac", "");
-	setVbyID("b_frac", "");
-	setVbyID("c_frac", "");
-	setVbyID("alpha_frac", "90.000");
-	setVbyID("beta_frac", "90.000");
-	setVbyID("gamma_frac", "90.000");
+		setValue("a_frac", "");
+	setValue("b_frac", "");
+	setValue("c_frac", "");
+	setValue("alpha_frac", "90.000");
+	setValue("beta_frac", "90.000");
+	setValue("gamma_frac", "90.000");
 	makeEnable("a_frac");
 	makeEnable("b_frac");
 	makeEnable("c_frac");
@@ -932,12 +826,12 @@ function setCellParamSpaceGroup(spaceGroup) {
 
 	case ((trimSpaceGroup > 74) && (trimSpaceGroup <= 142)): // Tetragonal
 		// lattices
-		setVbyID("a_frac", "");
-	setVbyID("b_frac", "");
-	setVbyID("c_frac", "");
-	setVbyID("alpha_frac", "90.000");
-	setVbyID("beta_frac", "90.000");
-	setVbyID("gamma_frac", "90.000");
+		setValue("a_frac", "");
+	setValue("b_frac", "");
+	setValue("c_frac", "");
+	setValue("alpha_frac", "90.000");
+	setValue("beta_frac", "90.000");
+	setValue("gamma_frac", "90.000");
 	makeEnable("a_frac");
 	makeEnable("b_frac");
 	makeEnable("c_frac");
@@ -949,12 +843,12 @@ function setCellParamSpaceGroup(spaceGroup) {
 
 	case ((trimSpaceGroup > 142) && (trimSpaceGroup <= 167)): // Trigonal
 		// lattices
-		setVbyID("a_frac", "");
-	setVbyID("b_frac", "");
-	setVbyID("c_frac", "");
-	setVbyID("alpha_frac", "");
-	setVbyID("beta_frac", "");
-	setVbyID("gamma_frac", "");
+		setValue("a_frac", "");
+	setValue("b_frac", "");
+	setValue("c_frac", "");
+	setValue("alpha_frac", "");
+	setValue("beta_frac", "");
+	setValue("gamma_frac", "");
 	makeEnable("a_frac");
 	makeEnable("b_frac");
 	makeEnable("c_frac");
@@ -966,28 +860,28 @@ function setCellParamSpaceGroup(spaceGroup) {
 
 	case ((trimSpaceGroup > 167) && (trimSpaceGroup <= 194)): // Hexagonal
 		// lattices
-		setVbyID("a_frac", "");
-	setVbyID("b_frac", "");
-	setVbyID("c_frac", "");
-	setVbyID("alpha_frac", "90.000");
-	setVbyID("beta_frac", "90.000");
-	setVbyID("gamma_frac", "120.000");
+		setValue("a_frac", "");
+	setValue("b_frac", "");
+	setValue("c_frac", "");
+	setValue("alpha_frac", "90.000");
+	setValue("beta_frac", "90.000");
+	setValue("gamma_frac", "120.000");
 	makeEnable("a_frac");
 	makeEnable("b_frac");
 	makeEnable("c_frac");
 	makeDisable("alpha_frac");
-	makeDiable("beta_frac");
+	makeDisable("beta_frac");
 	makeDisable("gamma_frac");
 
 	break;
 	case ((trimSpaceGroup > 194) && (trimSpaceGroup <= 230)): // Cubic
 		// lattices
-		setVbyID("a_frac", "");
-	setVbyID("b_frac", "");
-	setVbyID("c_frac", "");
-	setVbyID("alpha_frac", "90.000");
-	setVbyID("beta_frac", "90.000");
-	setVbyID("gamma_frac", "90.000");
+		setValue("a_frac", "");
+	setValue("b_frac", "");
+	setValue("c_frac", "");
+	setValue("alpha_frac", "90.000");
+	setValue("beta_frac", "90.000");
+	setValue("gamma_frac", "90.000");
 	makeEnable("a_frac");
 	makeEnable("b_frac");
 	makeEnable("c_frac");
@@ -1018,17 +912,9 @@ function createMolecularCrystal() {
 
 ///TODO SAVE state before creating crystal
 function getValueMakeCrystal() {
-	setV('load \'\' {1 1 1} spacegroup "' + makeCrystalSpaceGroup
-			+ '" unitcell [ ' + parseFloat(getValue('a_frac')) + ' '
-			+ parseFloat(getValue('b_frac')) + ' '
-			+ parseFloat(getValue('c_frac')) + ' '
-			+ parseFloat(getValue('alpha_frac')) + ' '
-			+ parseFloat(getValue('beta_frac')) + ' '
-			+ parseFloat(getValue('gamma_frac')) + ' ];unitcell ');
-	messageMsg("Now save you structure and reaload it!");
+	reload('{1 1 1} spacegroup "' + makeCrystalSpaceGroup
+			+ '" unitcell ' + getCurrentUnitCell() + ';');
 	getbyID("createmolecularCrystal").style.display = "none";
-	// setV("write COORDS SPT ?.spt; set defaultdirectory");
-	// setV("load ?");
 }
 
 function makeEnablePeriodicityMol() {
@@ -1038,26 +924,26 @@ function makeEnablePeriodicityMol() {
 	makeEnable("alpha_frac");
 	makeEnable("beta_frac");
 	makeEnable("gamma_frac");
-	setVbyID("a_frac", "");
-	setVbyID("b_frac", "");
-	setVbyID("c_frac", "");
-	setVbyID("alpha_frac", "");
-	setVbyID("beta_frac", "");
-	setVbyID("gamma_frac", "");
+	setValue("a_frac", "");
+	setValue("b_frac", "");
+	setValue("c_frac", "");
+	setValue("alpha_frac", "");
+	setValue("beta_frac", "");
+	setValue("gamma_frac", "");
 }
 
 function cleanCreateCrystal() {
-	setVbyID("a_frac", "");
+	setValue("a_frac", "");
 	makeDisable("a_frac");
-	setVbyID("b_frac", "");
+	setValue("b_frac", "");
 	makeDisable("b_frac");
-	setVbyID("c_frac", "");
+	setValue("c_frac", "");
 	makeDisable("c_frac");
-	setVbyID("alpha_frac", "");
+	setValue("alpha_frac", "");
 	makeDisable("alpha_frac");
-	setVbyID("beta_frac", "");
+	setValue("beta_frac", "");
 	makeDisable("beta_frac");
-	setVbyID("gamma_frac", "");
+	setValue("gamma_frac", "");
 	makeDisable("gamma_frac");
 	document.builGroup.reset();
 }
@@ -1071,53 +957,47 @@ var deleteMode = "";
 var hideMode = "";
 var displayMode = "";
 function elementSelected(element) {
-	// updateListElement();
-	setV("select all; halo off; label off");
-	setV("select " + element + "; halo on; label on; ");
+	selectElement(element);
 	atomColor = "color atom ";
 	return atomColor;
 }
 
 function elementSelectedDelete(element) {
-	setV("select all; halo off; label off");
-	setV("select " + element + "; halo on; label on");
+	selectElement(element);
 	deleteMode = "delete " + element;
 	return deleteMode;
 }
 
 function elementSelectedHide(element) {
-	setV("select all; halo off; label off");
-	setV("select " + element + "; halo on; label on");
+	selectElement(element);
 	hideMode = "hide " + element;
 	return hideMode;
 }
 
 function elementSelectedDisplay(element) {
-	// updateListAtomApp();
-	setV("select all; halo off; label off");
-	setV("select " + element + "; halo on; label on");
+	selectElement(element);
 	displayMode = "display " + element;
 	return displayMode;
 }
 
-function atomSelected(atom) {
-	// updateListAtomApp();
-	setV("select all; halo off; label off");
-	setV("select {atomno=" + atom + "}; halo on; label on");
+function selectElement(element) {
+	setV("select " + element + ";selectionhalos on");
+
+}
+function atomSelectedColor(atom) {
+	setV("select {atomno=" + atom + "};");
 	atomColor = "color atom ";
 	return atomColor;
 }
 
 function atomSelectedDelete(atom) {
-	setV("select all; halo off; label off");
-	setV("select {atomno=" + atom + "}; halo on; label on");
+	setV("select {atomno=" + atom + "};");
 	deleteMode = "delete {atomno=" + atom + "}";
 	return deleteMode;
 }
 
 function atomSelectedHide(atom) {
-	setV("select all; halo off; label off");
-	setV("select {atomno=" + atom + "}; halo on; label on");
+	setV("select {atomno=" + atom + "};");
 	hideMode = "hide {atomno=" + atom + "}";
 	return hideMode;
 }
@@ -1130,9 +1010,7 @@ function atomSelectedDisplay(atom) {
 }
 
 function selectAll() {
-	setV("select *; halos on; label on;");
-	atomColor = "draw off ;select *; color atom ";
-	return atomColor;
+	setV("select *;halos on;");
 }
 
 function selectAllDelete() {
@@ -1170,16 +1048,8 @@ function setAtomColor(rgbCodeStr, Colorscript) {
 	setV("draw off");
 }
 
-function setPolyColor(rgbCodeStr, Colorscript) {
-	var stringa = "color polyhedra";
-	var finalColor = " " + stringa + " " + rgbCodeStr + " ";
-	setV(finalColor);
-}
-
-function setIsoColor(rgbCodeStr, Colorscript) {
-	var stringa = "color isosurface";
-	var finalColor = " " + stringa + " " + rgbCodeStr + " ";
-	setV(finalColor);
+function setColorMulliken(value) {
+	runJmolScript('set propertyColorScheme "' + value + '";load "" PACKED; select *;font label 18; frame last; color {*} property partialCharge; label %5.3P');
 }
 
 //////////////////////END COLOR FUNCTION
@@ -1241,21 +1111,14 @@ function resetAll() {
 	resetFreq();
 }
 
-function exitIsosurface() {
-	setV('isosurface delete all');
-}
-
-function exitFreqGroup() {
-	setV('vibration off; vectors FALSE');
-}
-
-function exitMenu() {
-	setV('label off; select off');
-}
-
-function exitElecpropGrp() {
-	setV('script scripts/reload.spt');
-	restoreOrientation_e();
+function setName() {
+	setTextboxValue("filename", "Filename:");
+	var name = jmolGetPropertyAsJSON("filename");
+	name = "Filename: "
+		+ name
+		.substring(name.indexOf('\"') + 13,
+				name.lastIndexOf('}') - 1);
+	setTextboxValue("filename", name);
 }
 
 //These remove all values from a list
@@ -1266,7 +1129,7 @@ function removeAll() {
 	// cleanList("colourbyAtomList");
 	cleanList("polybyElementList");
 	cleanList("poly2byElementList");
-	setVbyID("fineOrientMagn", "5");
+	setValue("fineOrientMagn", "5");
 }
 
 function unLoadall() {
@@ -1342,6 +1205,11 @@ function onClickionic() {
 	radiiSlider.setValue(0);
 	bondSlider.setValue(30);
 	runJmolScript("spacefill IONIC; wireframe 0.15; draw off");
+}
+
+
+function onWireClick() {
+	runJmolScript("wireframe only;");
 }
 
 function onStickClick() {

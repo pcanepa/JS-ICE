@@ -199,7 +199,7 @@ function createAppearanceGrp() {
 		+ createListKey("colourbyElementList", "elementSelected(value)",
 				"elementSelected(value)", "", 1) + "\n";
 	// strApp += "&nbsp;by atom &nbsp;"
-	// + createList2('colourbyAtomList', 'atomSelected(value)', '', 1)
+	// + createList2('colourbyAtomList', 'atomSelectedColor(value)', '', 1)
 	// + "\n";
 	strApp += createCheck("byselection", "by picking &nbsp;",
 			'setPicking(this)', 0, 0, "set picking");
@@ -213,16 +213,16 @@ function createAppearanceGrp() {
 	strApp += createButton('select All', 'select All', 'selectAll()', '')
 	+ "\n";
 	strApp += createButton('unselect', 'unselect All',
-			'setV("select *; halos off; label off ; draw off")', '')
+			'setV("select *; halos off; selectionhalos off;draw off")', '')
 			+ "\n";
 	strApp += createButton('halooff', 'Halo/s off',
 			'setV("halos off; selectionhalos off; draw off" )', '')
 			+ "\n";
-	strApp += createButton('label All', 'Label All',
-			'setV("select *; label on; draw off")', '')
+	strApp += createButton('label on', 'Label On',
+			'setV("label on;label display; draw off")', '')
 			+ "\n";
-	strApp += createButton('label off', 'Label off',
-			'setV("select *; label off; draw off")', '')
+	strApp += createButton('label off', 'Label Off',
+			'setV("label hide; draw off")', '')
 			+ "\n";
 	strApp += createLine('blue', '');
 	strApp += "</td></tr><tr><td colspan='2'>\n";
@@ -273,12 +273,10 @@ function createAppearanceGrp() {
 	strApp += createButton('Stick & Ball', 'Stick & Ball', 'onClickBS()', '')
 	+ " \n";
 	strApp += createButton('Stick', 'Stick', 'onStickClick()', '') + " \n";
+	strApp += createButton('Wire', 'Wire', 'onClickWire()', '') + " \n";
 	strApp += createButton('Ball', 'Ball', 'onClickBall()', '') + "\n";
 	strApp += createButton('CPK', 'CPK', 'onClickCPK()', '') + " \n";
 	strApp += createButton('ionic', 'Ionic', 'onClickionic()', '') + "\n";
-	strApp += createCheck("wireframe", "wire",
-			"setVCheckbox(this, this.value)", 0, 1, "wireframe; draw off");
-
 	strApp += "</td></tr>";
 	strApp += "<tr><td >";
 	strApp += "wireframe";
@@ -400,7 +398,7 @@ function createEditGroup() {
 	strEdit += "</td></tr>";
 	strEdit += "<tr><td colspan='2'>\n";
 	strEdit += createButton('advanceEdit', '+',
-			'toggleDivValue(true,"advanceEditDiv")', '')
+			'toggleDivValue(true,"advanceEditDiv",this)', '')
 			+ " Advanced options <br>"
 			strEdit += "<div id='advanceEditDiv' style='display:none; margin-top:20px'>";
 	strEdit += "Connect by:\n";
@@ -710,16 +708,16 @@ function createOrientGrp() {
 	strOrient += createButton('select All', 'select All', 'selectAll()', '')
 	+ "\n";
 	strOrient += createButton('unselect', 'unselect All',
-			'setV("select *; halos off; label off")', '')
+			'setV("select *; halos off")', '')
 			+ "\n";
-	strOrient += createButton('halooff', 'Halo/s off',
+	strOrient += createButton('halooff', 'Halos off',
 			'setV("halos off; selectionhalos off" )', '')
 			+ "\n";
-	strOrient += createButton('label All', 'Label All',
-			'setV("select *; label on")', '')
+	strOrient += createButton('labelon', 'Labels on',
+			'setV("label on;label display")', '')
 			+ "\n";
-	strOrient += createButton('label off', 'Label off',
-			'setV("select *; label off")', '')
+	strOrient += createButton('labeloff', 'Hide Labels',
+			'setV("label hide")', '')
 			+ "\n";
 	strOrient += "</td></tr><td ><tr>\n";
 	strOrient += "<table >\n";
@@ -816,15 +814,15 @@ function createCellGrp() {
 	strCell += "</td></tr>\n";
 	strCell += "<tr><td colspan='2'> \n";
 	strCell += "Offset unitcell \n<br>";
-	strCell += "Common sets "
+	strCell += "Common offsets "
 		+ createListFunc('offsetCell', 'setUnitCellOrigin(value)',
 				'setTimeout("setUnitCellOrigin(value)",50)', 0, 1,
 				unitcellName, unitcellName) + "\n";
 	strCell += "<br>  \n"
 		strCell += createButton('advanceCelloffset', '+',
-				'toggleDivValue(true,"advanceCelloff")', '')
+				'toggleDivValue(true,"advanceCelloffDiv",this)', '')
 				+ " Advanced cell-offset options <br>"
-				strCell += "<div id='advanceCelloff' style='display:none; margin-top:20px'>"
+				strCell += "<div id='advanceCelloffDiv' style='display:none; margin-top:20px'>"
 					+ createCheck("manualCellset", "Manual set",
 							'checkBoxStatus(this, "offsetCell")', 0, 0, "manualCellset")
 							+ "\n";
@@ -847,21 +845,21 @@ function createCellGrp() {
 	strCell += createRadio("cellMeasure", "Bohr", 'setCellMeasure(value)', 0,
 			0, "", "b")
 			+ "\n <br>";
-	strCell += "<i>a</i> " + createText2("aCell", "", 7, "");
-	strCell += "<i>b</i> " + createText2("bCell", "", 7, "");
-	strCell += "<i>c</i> " + createText2("cCell", "", 7, "") + "<br><br>\n";
-	strCell += "<i>&#945;</i> " + createText2("alphaCell", "", 7, "");
-	strCell += "<i>&#946;</i> " + createText2("betaCell", "", 7, "");
-	strCell += "<i>&#947;</i> " + createText2("gammaCell", "", 7, "")
+	strCell += "<i>a</i> " + createText2("aCell", "", 7, 1);
+	strCell += "<i>b</i> " + createText2("bCell", "", 7, 1);
+	strCell += "<i>c</i> " + createText2("cCell", "", 7, 1) + "<br><br>\n";
+	strCell += "<i>&#945;</i> " + createText2("alphaCell", "", 7, 1);
+	strCell += "<i>&#946;</i> " + createText2("betaCell", "", 7, 1);
+	strCell += "<i>&#947;</i> " + createText2("gammaCell", "", 7, 1)
 	+ " degrees <br><br>\n";
-	strCell += "Voulme cell " + createText2("volumeCell", "", 10, "")
+	strCell += "Voulme cell " + createText2("volumeCell", "", 10, 1)
 	+ "  &#197<sup>3</sup><br><br>";
-	strCell += createButton('advanceCellval', '+',
-			'toggleDivValue(true,"advanceCellvalue")', '')
-			+ " Advanced cell options <br>"
-			strCell += "<div id='advanceCellvalue' style='display:none; margin-top:20px'>"
-				strCell += "<i>b/a</i> " + createText2("bovera", "", 8, "") + " ";
-	strCell += "<i>c/a</i> " + createText2("covera", "", 8, "");
+//	strCell += createButton('advanceCell', '+',
+//			'toggleDivValue(true,"advanceCellDiv",this)', '')
+//			+ " Advanced cell options <br>";
+	strCell += "<div id='advanceCellDiv' style='display:block; margin-top:20px'>"
+	strCell += "<i>b/a</i> " + createText2("bovera", "", 8, 1) + " ";
+	strCell += "<i>c/a</i> " + createText2("covera", "", 8, 1);
 	strCell += "</div>"
 		strCell += createLine('blue', '');
 	strCell += "</td></tr>\n";
@@ -932,8 +930,8 @@ function createPolyGrp() {
 	strPoly += "jmolColorPickerBox(Colorscript, '');";
 	strPoly += "</script> </td></tr>";
 	strPoly += "<tr><td colspan='2'>\n";
-	strPoly += createButton('advanceEdit', '+',
-			'toggleDivValue(true,"advancePolyDiv")', '')
+	strPoly += createButton('advancePoly', '+',
+			'toggleDivValue(true,"advancePolyDiv",this)', '')
 			+ " Advanced style options"
 			strPoly += "<div id='advancePolyDiv' style='display:none; margin-top:20px'>"
 				strPoly += "<br> &nbsp;b)"
@@ -969,16 +967,28 @@ function createPolyGrp() {
 
 ///introduce keypress onkeypress=\"setTimeout('
 function createIsoGrp() {
-	var isoName = new Array("no isosurface", "Van der Waals",
-			"solvent accessible", "molecular", "MEP", "geodesic VdW", "geodesic IONIC",
+	var isoName = new Array("delete isosurface",
+			"isosurface OFF",
+			"isosurface ON",
+			"Van der Waals", 
+			"periodic VdW",
+			"VdW+MEP",
+			"periodic VdW+MEP",
+			"solvent accessible", "molecular", "geodesic VdW", "geodesic IONIC",
 			"dots VdW", "dots IONIC");
-	var isoValue = new Array('load ""; isosurface OFF',
-			'load ""; isosurface VDW'/*BH Q: Why was this 2.0? 2.0'*/, 
-			'load ""; isosurface SASURFACE',
-			'load ""; isosurface MOLSURFACE resolution 0 molecular',
-			'load ""; isosurface resolution 7 SOLVENT map MEP',
-			'load ""; geoSurface VANDERWAALS', 'load ""; geoSurface IONIC',
-			'load "";  dots VANDERWAALS', 'load "";  dots IONIC');
+	var isoValue = new Array('isosurface DELETE',
+			'isosurface OFF',
+			'isosurface ON',
+			SURFACE_VDW, 
+			SURFACE_VDW_PERIODIC,
+			SURFACE_VDW_MEP,
+			SURFACE_VDW_MEP_PERIODIC,
+			'isosurface SASURFACE',
+			'isosurface MOLSURFACE resolution 0 molecular',
+			'geoSurface VANDERWAALS', 
+			'geoSurface IONIC',
+			'dots VANDERWAALS', 
+			'dots IONIC');
 	var colSchemeName = new Array("Rainbow (default)", "Black & White",
 			"Blue-White-Red", "Red-Green", "Green-Blue");
 	var colSchemeValue = new Array("roygb", "bw", "bwr", "low", "high");
@@ -1406,7 +1416,7 @@ docWriteBottomFrame = function() {
 	document.write(createText5('filename', 'Filename:', '108', '', '', "disab"));
 	document.write("<br>");
 	document.write(createButton1("reload", "Reload",
-			'setV("script ./scripts/reload.spt") + resetAll() + setName()', 0,
+			'onChangeLoad("reload")', 0,
 			"specialbutton"));
 	document.write(createButton1("reset", "Reset",
 			'setV("script ./scripts/reset.spt")', 0, "specialbutton"));

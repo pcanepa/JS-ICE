@@ -1,3 +1,10 @@
+
+function setPolyColor(rgbCodeStr, Colorscript) {
+	var stringa = "color polyhedra";
+	var finalColor = " " + stringa + " " + rgbCodeStr + " ";
+	setV(finalColor);
+}
+
 function createPolyedra() {
 
 	var vertNo, from, to, distance, style, selected, face;
@@ -23,19 +30,19 @@ function createPolyedra() {
 	}
 
 	/*
-	 * if(checkID("byselectionPoly")){ setV("polyhedra " + vertNo + " BOND { "+
+	 * if(isChecked("byselectionPoly")){ setV("polyhedra " + vertNo + " BOND { "+
 	 * selected +" } faceCenterOffset " + face + " " + style); }
 	 */
 
-	if (checkID("centralPoly")) {
+	if (isChecked("centralPoly")) {
 		setV("polyhedra BOND " + "{ " + from + " } " + face
 				+ " " + style);
 	} else {
 
-		if (checkID("bondPoly")) {
+		if (isChecked("bondPoly")) {
 			setV("polyhedra " + vertNo + " BOND " + face + " "
 					+ style);		}
-		if (checkID("bondPoly1")) {
+		if (isChecked("bondPoly1")) {
 			setV("polyhedra " + vertNo + " " + distance + " (" + from + ") to "
 					+ "(" + to + ") " + face + " " + style);
 		}

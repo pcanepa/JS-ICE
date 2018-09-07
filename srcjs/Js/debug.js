@@ -6,7 +6,7 @@ debugSay = function(script) {
 		script = "";
 	} else {
 		console.log(script);
-		if (checkID("debugMode")) {
+		if (isChecked("debugMode")) {
 			div.style.display = "block";
 			script = area.value + script + "\n";
 		} else {

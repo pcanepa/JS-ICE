@@ -135,29 +135,17 @@ function saveIsoMessageCallback(msg) {
 
 }
 
+SURFACE_VDW   			 = "isosurface delete; isosurface VDW"; // BH Q: Why was this VDW + 2.0 ?
+SURFACE_VDW_PERIODIC     = "isosurface delete; isosurface lattice VDW";
+SURFACE_VDW_MEP			 = "isosurface resolution 7 VDW map MEP"; // why SOLVENT, which is VDW + 1.2?
+SURFACE_VDW_MEP_PERIODIC = "isosurface lattice _CELL_ resolution 7 VDW map MEP";
+
 function setIsoClassic(value) {
-	setV("isosurface delete ALL");
-	
+	 if (value.indexOf("_CELL_") >= 0)
+		 value = value.replace("_CELL_", getCurrentCell()); 
+	setV("isosurface delete ALL");	
 	setMessageMode(MESSAGE_MODE_SAVE_ISO)
-	if (value == 'load ""; isosurface VDW 2.0') {
-		var periodicSurf = confirm("Would you like to periodicize this surface ?");
-		if (periodicSurf == true) {			
-			runJmolScriptWait('set echo top left;echo creating ISOSURFACE...;refresh;load ""; frame LAST; isosurface slab unitcell VDW; message ISO;');
-			msSetPeriodicity();
-		} else {
-			runJmolScriptWait("set echo top left;echo creating ISOSURFACE...;refresh;" + value + "; message ISO;");
-		}
-	} else if (value == 'load ""; isosurface resolution 7 SOLVENT map MEP; message ISO;') {
-		var periodicSurf = confirm("Would you like to periodicize this surface ?");
-		if (periodicSurf == true) {
-			runJmolScriptWait('set echo top left;echo creating ISOSURFACE... ;refresh;load ""; frame LAST; isosurface slab unitcell resolution 7 SOLVENT map MEP; message ISO;');
-			msSetPeriodicity();
-		} else {
-			setV("set echo top left; echo creating ISOSURFACE...; refresh;" + value	+ ";message ISO;");
-		}
-	} else {
-		setV("set echo top left; echo creating ISOSURFACE...; refresh;" + value + "; message ISO;");
-	}
+	runJmolScriptWait("set echo top left; echo creating ISOSURFACE...; refresh;" + value + "; message ISO;");
 }
 
 function msSetPeriodicity() {
@@ -177,14 +165,13 @@ function getIsoInfo() {
 	var dataMaximum = parseFloat(isoInfo.substring(
 			isoInfo.indexOf("dataMax") + 14, isoInfo.indexOf("dataMax") + 26)); // dataMaximum
 
-	setVbyID("dataMin", dataMinimum);
-	setVbyID("dataMax", dataMaximum);
+	setValue("dataMin", dataMinimum);
+	setValue("dataMax", dataMaximum);
 
 }
 
 function setIsoColorscheme() {
-	var colorScheme = getValue("isoColorScheme");
-	setV('color $isosurface1 "' + colorScheme + '"');
+	runJmolScriptWait('color $isosurface1 "' + getValue("isoColorScheme") + '"');
 }
 
 function setIsoColorRange() {
@@ -192,22 +179,19 @@ function setIsoColorRange() {
 		errorMsg("Please, check values entered in the textboxes");
 		return false;
 	}
-
 	var min = getValue("dataMin");
 	var max = getValue("dataMax");
 	var colorScheme = getValue("isoColorScheme");
-
 	if (colorScheme != "bw") {
 		runJmolScriptWait('color $isosurface1 "' + colorScheme + '" range ' + min + ' '
 				+ max);
 	} else {
 		warningMsg("Colour-scheme not available for CUBE files!");
-		// setV('color $isosurface1 "' + colorScheme + "'")
 	}
 }
 
-function setColorMulliken(value) {
-	runJmolScript('set propertyColorScheme "' + value + '";load "" PACKED; select *;font label 18; frame last; color {*} property partialCharge; label %5.3P');
+function setIsoColor(rgbCodeStr) {
+	runJmolScriptWait("color isosurface " + rgbCodeStr);
 }
 
 function setIsoColorReverse() {
@@ -225,7 +209,7 @@ function setIsoColorReverse() {
 }
 
 function pickIsoValue() {
-	var check = checkID("measureIso");
+	var check = isChecked("measureIso");
 	if (check) {
 		messageMsg("Value are shown by hovering on the surface. Values are in e- *bohr^-3. Make sure your isosurface is completely opaque.");
 		runJmolScriptWait("set drawHover TRUE");
@@ -235,7 +219,7 @@ function pickIsoValue() {
 }
 
 function removeStructure() {
-	var check = checkID("removeStr");
+	var check = isChecked("removeStr");
 	if (!check) {
 		runJmolScriptWait("select *; hide selected");
 	} else {
@@ -244,7 +228,7 @@ function removeStructure() {
 }
 
 function removeCellIso() {
-	var check = checkID("removeCellI");
+	var check = isChecked("removeCellI");
 	if (!check) {
 		runJmolScriptWait("unitcell OFF");
 	} else {
@@ -259,13 +243,6 @@ function setIsoPack() {
 		return false;
 	}
 
-	// var question = confirm("Do you want to replicate the structure too?");
-	// if(question){
-	// saveCurrentState();
-	// setV("load '' {" + getValue("iso_a") + " " + getValue("iso_b") +
-	// " " + getValue("iso_c") + " }; frame LAST");
-	// }
-	// reloadCurrentState();
 	runJmolScriptWait('isosurface LATTICE {' + getValue("iso_a") + ' ' + getValue("iso_b")
 			+ ' ' + getValue("iso_c") + '}');
 }

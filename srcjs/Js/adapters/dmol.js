@@ -24,10 +24,6 @@
 
 //3rd-Sept-2010 CANEPA
 
-function onClickLoadDmolStruc() {
-	runJmolScript("set echo top left; echo loading...;refresh;load ?");
-}
-
 dmolDone = function() {
 	loadDone(loadModelsDmol);
 }

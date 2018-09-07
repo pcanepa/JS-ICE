@@ -53,7 +53,7 @@ function exportGULP() {
 				+ 'WRITE VAR final "?.gin" ';
 	}
 	run(finalInputGulp);
-	runJmolScriptWait("load '' filter 'primitive'");
+	reload(null, "primitive");
 	loadStatejust();
 
 }
@@ -183,10 +183,6 @@ function setPotentialgulp() {
 }
 
 // ////////////GULP READER
-
-function onClickLoadGulpStruct() {
-	runJmolScript("set echo top left; echo loading... ;refresh;load ?");
-}
 
 function gulpDone() {
 		loadDone(loadModelsGulp);

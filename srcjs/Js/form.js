@@ -184,7 +184,7 @@ function createTextArea(name, text, rows, cols, disab) {
 	s += "ID='" + name + "' ";
 	s += "CLASS='text'";
 	if (disab) {
-		s += "DISABLED "
+		s += "readonly "
 	}
 	s += " ROWS=" + rows + " ";
 	s += " COLS=" + cols + " >";
@@ -200,7 +200,7 @@ function createText2(name, text, size, disab) {
 	s += "ID='" + name + "' ";
 	s += "CLASS='text'";
 	if (disab) {
-		s += "DISABLED "
+		s += "readonly "
 	}
 	s += "SIZE=" + size + "> ";
 	return s;
@@ -213,7 +213,7 @@ function createTextSpectrum(name, text, size, disab) {
 	s += "ID='" + name + "' ";
 	s += "style='background-color:6a86c4;'"
 	if (disab) {
-		s += "DISABLED ";
+		s += "readonly ";
 	}
 	s += "SIZE=" + size + "> ";
 	return s;
@@ -227,7 +227,7 @@ function createText3(name, text, value, onchange, disab) {
 	s += "CLASS='text'";
 	s += "onChange='" + onchange + "'";
 	if (disab) {
-		s += "DISABLED "
+		s += "readonly "
 	}
 	s += "> ";
 	return s;
@@ -242,7 +242,7 @@ function createText4(name, text, size, value, onchange, disab) {
 	s += "SIZE=" + size;
 	s += "onChange='" + onchange + "'";
 	if (disab) {
-		s += "DISABLED "
+		s += "readonly "
 	}
 	s += "> ";
 	return s;
@@ -257,7 +257,7 @@ function createText5(name, text, size, value, onchange, disab) {
 	s += "SIZE=" + size;
 	s += "onChange='" + onchange + "'";
 	if (disab) {
-		s += "DISABLED "
+		s += "readonly "
 	}
 	s += "> ";
 	return s;
@@ -276,5 +276,117 @@ function createLine(color, style) {
 	s += "COLOR='#D8E4F8' "
 	s += "STYLE='" + style + "' >";
 	return s;
+}
+
+
+function getbyID(id) {
+	return document.getElementById(id);
+}
+
+function getValue(id) {
+	return getbyID(id).value;
+}
+
+function setValue(id, val) {
+	getbyID(id).value = val;
+}
+
+function getValueSel(id) {
+	return getbyID(id)[getbyID(id).selectedIndex].value;
+}
+
+function isChecked(id) {
+	return getbyID(id).checked;
+}
+
+function checkBox(id) {
+	getbyID(id).checked = true;
+}
+
+function uncheckBox(id) {
+	getbyID(id).checked = false;
+}
+
+function resetValue(form) {
+	var element = "document." + form + ".reset";
+	return element;
+}
+
+function makeDisable(element) {
+	// BH 2018
+	var d = getbyID(element);
+	if (d.type == "text")
+		d.readOnly = true;
+	else
+		d.disabled = true;
+}
+
+function makeEnable(element) {
+	// BH 2018
+	var d = getbyID(element);
+	if (d.type == "text")
+		d.readOnly = false;
+	else
+		d.disabled = false;
+}
+
+
+function checkBoxStatus(form, element) {
+	if (form.checked == true)
+		makeDisable(element);
+	if (form.checked == false)
+		makeEnable(element);
+}
+
+function checkBoxX(form) {
+	var value = "";
+	var test = getbyID(form);
+	value = (test.checked) ? ("on") : ("off");
+	return value;
+}
+
+function setTextboxValue(nametextbox, valuetextbox) {
+	var tbox = getbyID(nametextbox);
+	tbox.value = "";
+	if (tbox)
+		tbox.value = valuetextbox;
+}
+
+function uncheckRadio(radio) {
+	var radioId = getbyName(radio);
+	for ( var i = 0; i < radioId.length; i++)
+		radioId[i].checked = false;
+}
+
+function toggleDiv(form, me) {
+	if (form.checked == true)
+		getbyID(me).style.display = "inline";
+	if (form.checked == false)
+		getbyID(me).style.display = "none";
+}
+
+function toggleDivValue(value, me,d) {
+	if (d.value == "+") {
+		d.value = "\u2212";
+		getbyID(me).style.display = "inline";
+	} else {
+		d.value = "+";
+		getbyID(me).style.display = "none";
+	}
+}
+
+function untoggleDiv(form, me) {
+	if (form.checked == true)
+		getbyID(me).style.display = "none";
+	if (form.checked == false)
+		getbyID(me).style.display = "inline";
+}
+
+function toggleDivRadioTrans(value, me) {
+	if (value == "off") {
+		getbyID(me).style.display = "inline";
+	} else {
+		getbyID(me).style.display = "none";
+	}
 }
 

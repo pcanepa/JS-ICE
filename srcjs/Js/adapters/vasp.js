@@ -22,11 +22,6 @@
  *  02111-1307  USA.
  */
 
-function onClickLoadVaspStruct() {
-	setMessageMode(MESSAGE_MODE_VASP_XML_DONE);
-	runJmolScript("set echo top left; echo loading... ;refresh;load ?.xml; message VASPXMLDONE;");
-}
-
 xmlvaspDone = function() {
 	loadDone(loadModelsVASP);
 }
@@ -191,10 +186,6 @@ function exportVASP() {
 /////// END EXPORT VASP
 
 /////////// IMPORT OUTCAR
-
-function onClickLoadOutcar() {
-	runJmolScript("set echo top left; echo loading...; refresh;load ?");
-}
 
 vaspoutcarDone = function() {
 	loadDone(loadModelsOutcar);

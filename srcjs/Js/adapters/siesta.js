@@ -23,9 +23,6 @@
  */
 
 //24th May 2011 P. Canepa
-function loadSiesta() {
-	runJmolScript("set echo top left; echo loading...;refresh;load ?.fdf");
-}
 
 siestaDone = function(msg) {
 	loadDone(loadModelsSiesta);

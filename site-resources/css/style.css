@@ -14,6 +14,14 @@ input.checkbox{
 	transform: scale(0.8) translate(6px,-3px);
 }
 
+input[type="text"]:disabled {
+    background: #000000;
+}
+
+input[type="text"]:enabled {
+    background: #dddddd;
+}
+
 .slider { 
 	width:200px; 
 	height:16px; 
