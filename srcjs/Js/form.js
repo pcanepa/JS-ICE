@@ -22,26 +22,52 @@
  *  02111-1307  USA.
  */
 
-function createButton(name, text, onclick, disab) {
-	var s = "<INPUT TYPE='BUTTON'";
-	s += "NAME='" + name + "' ";
-	s += "VALUE='" + text + "' ";
-	s += "ID='" + name + "' ";
-	s += "CLASS='button'";
-	if (disab) {
-		s += "DISABLED "
-	}
-	s += "OnClick='" + onclick + "'> ";
-	return s;
+function resetAll() {
+
+	setTextboxValue("filename", "Filename:");
+	setUnitCell();
+	document.fileGroup.reset();
+	document.showGroup.reset();
+	document.orientGroup.reset();
+	document.measureGroup.reset();
+	document.cellGroup.reset();
+	document.polyGroup.reset();
+	document.isoGroup.reset();
+	document.modelsGeom.reset();
+	document.modelsVib.reset();
+	document.elecGroup.reset();
+	document.otherpropGroup.reset();
+	document.editGroup.reset();
+	// document.HistoryGroup.reset();
+	// this disables antialias option BH: NOT - or at least not generally. We need a switch for this
+	runJmolScriptWait('antialiasDisplay = true;set hermiteLevel 0');
+	resetFreq();
+	resetOptimize();
+}
+
+function createSlider(name, label) {
+	var s = '<div tabIndex="1" class="slider" id="_Slider-div" style="float:left;width:150px;" >'
+		+ '<input class="slider-input" id="_Slider-input" name="_Slider-input" />'
+	    + '</div>'
+	    + (label || "") 
+	    + ' <span id="_Msg" class="msgSlider"></span>';
+	return s.replace(/_/g, name);
+	
+}
+
+function createButton(name, text, onclick, disab, style) {
+	return createButton1(name, text, onclick, disab, "button", style);
 }
 
 //This includes the class
-function createButton1(name, text, onclick, disab, style) {
+function createButton1(name, text, onclick, disab, myclass, style) {
 	var s = "<INPUT TYPE='BUTTON'";
 	s += "NAME='" + name + "' ";
 	s += "VALUE='" + text + "' ";
 	s += "ID='" + name + "' ";
-	s += "CLASS='" + style + "'";
+	if (style)
+		s += "style='" + style + "'";
+	s += "CLASS='" + myclass + "'";
 	if (disab) {
 		s += "DISABLED "
 	}
@@ -49,20 +75,6 @@ function createButton1(name, text, onclick, disab, style) {
 	return s;
 }
 
-//This includes the style
-function createButton2(name, text, onclick, disab, style) {
-	var s = "<INPUT TYPE='BUTTON'";
-	s += "NAME='" + name + "' ";
-	s += "VALUE='" + text + "' ";
-	s += "ID='" + name + "' ";
-	s += "style='" + style + "'";
-	s += "CLASS='button'";
-	if (disab) {
-		s += "DISABLED "
-	}
-	s += "OnClick='" + onclick + "'> ";
-	return s;
-}
 
 function createText(name, text, onclick, disab) {
 	var s = "<INPUT TYPE='TEXT'";
@@ -145,7 +157,7 @@ function createList(name, onclick, disab, size, optionValue, optionText, optionC
 		break;
 	}
 	s += "'>";
-	for ( var n = 0; n < optionN; n++) {
+	for (var n = 0; n < optionN; n++) {
 		s += "<OPTION VALUE='" + optionValue[n] + "'";
 		if (optionCheck[n] == 1) {
 			s += "checked";
@@ -184,7 +196,7 @@ function createTextArea(name, text, rows, cols, disab) {
 	s += "ID='" + name + "' ";
 	s += "CLASS='text'";
 	if (disab) {
-		s += "DISABLED "
+		s += "readonly "
 	}
 	s += " ROWS=" + rows + " ";
 	s += " COLS=" + cols + " >";
@@ -200,7 +212,7 @@ function createText2(name, text, size, disab) {
 	s += "ID='" + name + "' ";
 	s += "CLASS='text'";
 	if (disab) {
-		s += "DISABLED "
+		s += "readonly "
 	}
 	s += "SIZE=" + size + "> ";
 	return s;
@@ -213,7 +225,7 @@ function createTextSpectrum(name, text, size, disab) {
 	s += "ID='" + name + "' ";
 	s += "style='background-color:6a86c4;'"
 	if (disab) {
-		s += "DISABLED ";
+		s += "readonly ";
 	}
 	s += "SIZE=" + size + "> ";
 	return s;
@@ -227,7 +239,7 @@ function createText3(name, text, value, onchange, disab) {
 	s += "CLASS='text'";
 	s += "onChange='" + onchange + "'";
 	if (disab) {
-		s += "DISABLED "
+		s += "readonly "
 	}
 	s += "> ";
 	return s;
@@ -242,7 +254,7 @@ function createText4(name, text, size, value, onchange, disab) {
 	s += "SIZE=" + size;
 	s += "onChange='" + onchange + "'";
 	if (disab) {
-		s += "DISABLED "
+		s += "readonly "
 	}
 	s += "> ";
 	return s;
@@ -257,7 +269,7 @@ function createText5(name, text, size, value, onchange, disab) {
 	s += "SIZE=" + size;
 	s += "onChange='" + onchange + "'";
 	if (disab) {
-		s += "DISABLED "
+		s += "readonly "
 	}
 	s += "> ";
 	return s;
@@ -277,4 +289,143 @@ function createLine(color, style) {
 	s += "STYLE='" + style + "' >";
 	return s;
 }
+
+
+function getValue(id) {
+	return getbyID(id).value;
+}
+
+function setValue(id, val) {
+	getbyID(id).value = val;
+}
+
+function getValueSel(id) {
+	return getbyID(id)[getbyID(id).selectedIndex].value;
+}
+
+function isChecked(id) {
+	return getbyID(id).checked;
+}
+
+function checkBox(id) {
+	getbyID(id).checked = true;
+}
+
+function uncheckBox(id) {
+	getbyID(id).checked = false;
+}
+
+function resetValue(form) {
+	var element = "document." + form + ".reset";
+	return element;
+}
+
+function makeDisable(element) {
+	// BH 2018
+	var d = getbyID(element);
+	if (d.type == "text")
+		d.readOnly = true;
+	else
+		d.disabled = true;
+}
+
+function makeEnable(element) {
+	// BH 2018
+	var d = getbyID(element);
+	if (d.type == "text")
+		d.readOnly = false;
+	else
+		d.disabled = false;
+}
+
+
+function checkBoxStatus(form, element) {
+	if (form.checked == true)
+		makeDisable(element);
+	if (form.checked == false)
+		makeEnable(element);
+}
+
+function checkBoxX(form) {
+	var value = "";
+	var test = getbyID(form);
+	value = (test.checked) ? ("on") : ("off");
+	return value;
+}
+
+function setTextboxValue(nametextbox, valuetextbox) {
+	var tbox = getbyID(nametextbox);
+	tbox.value = "";
+	if (tbox)
+		tbox.value = valuetextbox;
+}
+
+function uncheckRadio(radio) {
+	var radioId = getbyName(radio);
+	for (var i = 0; i < radioId.length; i++)
+		radioId[i].checked = false;
+}
+
+function toggleDiv(form, me) {
+	if (form.checked == true)
+		getbyID(me).style.display = "inline";
+	if (form.checked == false)
+		getbyID(me).style.display = "none";
+}
+
+function toggleDivValue(value, me,d) {
+	if (d.value == "+") {
+		d.value = "\u2212";
+		getbyID(me).style.display = "inline";
+	} else {
+		d.value = "+";
+		getbyID(me).style.display = "none";
+	}
+}
+
+function untoggleDiv(form, me) {
+	if (form.checked == true)
+		getbyID(me).style.display = "none";
+	if (form.checked == false)
+		getbyID(me).style.display = "inline";
+}
+
+function toggleDivRadioTrans(value, me) {
+	if (value == "off") {
+		getbyID(me).style.display = "inline";
+	} else {
+		getbyID(me).style.display = "none";
+	}
+}
+
+function preselectMyItem(itemToSelect) {
+	// Get a reference to the drop-down
+	var myDropdownList = document.modelsGeom.models;
+
+	// Loop through all the items
+	for (iLoop = 0; iLoop < myDropdownList.options.length; iLoop++) {
+		if (myDropdownList.options[iLoop].value == itemToSelect) {
+			// Item is found. Set its selected property, and exit the loop
+			myDropdownList.options[iLoop].selected = true;
+			break;
+		}
+	}
+
+}
+
+//
+//function toggleFormObject(status, elements) {
+//
+//	if (status == "on") {
+//		for (var i = 0; i < elements.length; i++)
+//			makeEnable(elements[i]);
+//	}
+//	if (status == "off") {
+//		for (var i = 0; i < elements.length; i++)
+//			makeDisable(elements[i]);
+//	}
+//
+//}
+//
+
 
