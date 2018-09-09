@@ -1,3 +1,9 @@
+function enterFile() {
+	
+}
+
+function exitFile() {
+}
 
 
 // was "flagCif"
@@ -43,7 +49,7 @@ function cleanAndReloadForm() {
 	unLoadall();
 	resetAll();
 	cleanLists();
-	fillElementlist();
+	updateElementLists();
 	getUnitcell("1");
 	setFrameValues("1");
 	setTitleEcho();
@@ -298,6 +304,64 @@ function loadCube(mode, msg) {
 			+ (mode != LOAD_ISO_ONLY ? "isosurface  map ?.CUBE;" : "")
 			+ "message " + msg + ";");
 }
+
+
+var quantumEspresso = false;
+function onChangeSave(save) {
+	// see menu.js
+	switch (save) {
+	case "savePNG":
+		runJmolScript('write PNG "jice.png"');
+		break;
+	case "savePNGJ":
+		runJmoLScript('write PNGJ "jice.png"');
+		break;
+	case "saveXYZ":
+		runJmoLScript('write COORDS XYZ jice.xyz');
+		break;
+	case "saveFrac":
+		saveFractionalCoordinate();
+		break;
+	case "saveCRYSTAL":
+		//flagCrystal = true;
+		exportCRYSTAL();
+		break;
+	case "saveVASP":
+		//flagCrystal = false;
+		exportVASP();
+		break;
+	case "saveGROMACS":
+		exportGromacs();
+		break;
+	case "saveCASTEP":
+		exportCASTEP();
+		break;
+	case "saveQuantum":
+		quantumEspresso = true;
+		//flagCrystal = false;
+		exportQuantum();
+		break;
+	case "savePOV":
+		runJmoLScript('write POVRAY jice.pov');
+		break;
+	case "savepdb":
+		runJmoLScript('write PDB jice.pdb');
+		break;
+	case "saveState":
+		runJmoLScript('write STATE jice.spt');
+		break;
+	case "saveGULP":
+		flagGulp = true;
+		flagCrystal = false;
+		exportGULP();
+		break;
+	case "savefreqHtml":
+		newAppletWindowFreq();
+		break;
+	}
+	document.fileGroup.reset();
+}
+
 
 //refresh = function() {
 //saveState();

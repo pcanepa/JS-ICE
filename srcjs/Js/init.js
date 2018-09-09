@@ -16,6 +16,16 @@ Array.prototype.min = function() {
 	return min;
 }
 
+runJmolScript = function(script) {
+	debugSay(script);
+	jmolScript(script);	
+}
+
+runJmolScriptWait = function(script) {
+	debugSay(script);
+	jmolScriptWait(script);	
+}
+
 createApplet = function() {
 	Jmol.Info || (Jmol.Info = {});
 	Jmol.Info.serverUrl = "https://chemapps.stolaf.edu/jmol/jsmol/php/jmol.php"
@@ -26,11 +36,6 @@ createApplet = function() {
 			+ getCallbackSettings()
 			+ ";script scripts/reset.spt;"
 			);
-}
-
-resetPage = function() {
-	runJmolScript("script ./scripts/reset.spt");
-	grpDisp(MENU_FILE);
 }
 
 setAntialias = function(isON) {

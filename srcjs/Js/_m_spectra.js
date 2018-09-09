@@ -23,18 +23,6 @@
  */
 
 //This simulates the IR - Raman spectrum given an input 
-var intTot = [];
-var irFreq = [];
-var RamanFreq = [];
-var intTotNewboth = [];
-var newRamanInt = [];
-var newInt = [];
-var summedInt = [];
-var sortInt = [];
-
-var irData, ramanData, unknownData;
-
-var freqCount;
 
 function enterSpectra() {
 	if (!InfoFreq) {
@@ -48,10 +36,27 @@ function enterSpectra() {
 	}
 }
 
+function exitSpectra() {
+	runJmolScriptWait('vibration off; vectors off');
+}
+
+var intTot = [];
+var irFreq = [];
+var RamanFreq = [];
+var intTotNewboth = [];
+var newRamanInt = [];
+var newInt = [];
+var summedInt = [];
+var sortInt = [];
+
+var irData, ramanData, unknownData;
+
+var freqCount;
+
 function onClickModSpec() {
 	// all, ir, or raman radio buttons
 	if (!InfoFreq[2] || !InfoFreq[2].modelProperties.Frequency) {
-		errorMsg("No vibrations available")
+		//errorMsg("No vibrations available")
 		return;
 	}
 
@@ -561,10 +566,11 @@ function onClickVibrate(select) {
 	}	
 	switch (radioval) {
 	case "on":
-		runJmolScript("vibration on; vectors SCALE 15; vector 5; vibration SCALE 7;");
+		// TODO
+		runJmolScriptWait("vibration on; vectors SCALE 3; vector 5; vibration SCALE 1;");
 		break;
 	case "off":
-		runJmolScript("vibration off;");
+		runJmolScriptWait("vibration off;");
 		break;
 	}
 }

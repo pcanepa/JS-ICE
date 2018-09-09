@@ -1,3 +1,10 @@
+function enterOrient() {
+	
+}
+
+function exitOrient() {
+}
+
 function applySlab(x) {
 	getbyID('slabSliderMsg').innerHTML = x + "%" // display
 	runJmolScript("slab " + (100 - x) + ";")
@@ -22,7 +29,6 @@ function toggleSlab() {
 		depthSlider.setValue(0);
 	}
 }
-
 
 //This controls the refined motion of the structure
 var motion = "";

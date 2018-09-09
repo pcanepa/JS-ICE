@@ -22,10 +22,14 @@
  *  02111-1307  USA.
  */
 
-//////////////////////ISOSURFACE FUNCTIONS(LOAD AND PERIODICITY)
+function enterSurface() {
+	
+}
 
-//TODO: isosurface ?.CUBE  plane {0 1 0 1} contour 40   map ?.CUBE 
-
+function exitSurface() {
+	// BH 2018: Q: delete??? off?? How would we save the state?
+	//runJmolScriptWait('isosurface off');
+}
 
 function cubeLoad() {
 	// TODO BH 2018 this needs reworking

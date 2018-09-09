@@ -1,6 +1,26 @@
+function enterEdit() {
+	
+}
+
+function exitEdit() {
+	
+}
+
 var deleteMode = "";
 var hideMode = "";
 var displayMode = "";
+
+var firstTimeEdit = true;
+function enterEdit() {
+	// BH 2018: Disabled -- unexpected behavior should not be on tab entry
+//	if (firstTimeEdit) {
+//		radiiConnectSlider.setValue(50);
+//		runJmolScriptWait("set forceAutoBond ON; set bondMode AND");
+//	}
+//	getbyID("radiiConnectMsg").innerHTML = " " + 2.5 + " &#197";
+//	setTimeout("runJmolScriptWait(\"restore BONDS bondEdit\");", 400);
+//	firstTimeEdit = false;
+}
 
 
 function applyConnect(r) {
@@ -202,9 +222,7 @@ function changeElement(value) {
 	+'{selected}.ionic = "' + value + '";'
 	+'label "%e";font label 16;draw off';
 	runJmolScriptWait(script);
-	var flag = false;
-	runJmolScriptWait("echo");
-	updateListElement();
+	updateElementLists();
 }
 
 function elementSelectedDelete(element) {

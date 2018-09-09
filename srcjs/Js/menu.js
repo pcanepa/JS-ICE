@@ -513,10 +513,8 @@ function createMeasureGrp() {
 	strMeas += "</td></tr>";
 	strMeas += "<tr><td colspan='2'>";
 	strMeas += "View coordinates: ";
-	strMeas += createRadio("coord", "fractional", 'viewCoord(value)', '', 0,
-			"", "fractional");
-	strMeas += createRadio("coord", "cartesian", 'viewCoord(value)', '', 0, "",
-	"cartesian");
+	strMeas += createRadio("coord", "fractional", 'viewCoord(value)', '', 0, "", "fractional");
+	strMeas += createRadio("coord", "cartesian", 'viewCoord(value)', '', 0, "", "cartesian");
 	strMeas += createLine('blue', '');
 	strMeas += "</td></tr>";
 	strMeas += "<tr><td colspan='2'>";
@@ -1064,14 +1062,14 @@ function createGeometryGrp() {
 }
 
 function createFreqGrp() {
+	// TODO -- move this into _m_spectra.js
+	var vibAmplitudeValue = new Array("", "vibration Scale 1",
+			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7", "vibration Scale 10");
 	var vecscaleValue = new Array("", "vectors SCALE 1", "vectors SCALE 3",
 			"vectors SCALE 5", "vectors SCALE 7", "vectors SCALE 10",
 			"vectors SCALE 15", "vectors SCALE 19");
 	var vecsizeValue = new Array("", "vectors 1", "vectors  3", "vectors  5",
 			"vectors  7", "vectors 10", "vectors 15", "vectors  19");
-	var vibAmplitudeValue = new Array("", "vibration Scale 1",
-			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7",
-	"vibration Scale 10");
 	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
@@ -1183,7 +1181,7 @@ function createElecpropGrp() {
 	strElec += "</td></tr>\n";
 	strElec += "<tr><td>\n";
 	strElec += createLine('blue', '');
-	strElec += createButton("Removeall", "Remove", 'exitElecpropGrp()', 0);
+	strElec += createButton("Removeall", "Remove", 'removeCharges()', 0);
 	strElec += "</td></tr>\n";
 	strElec += "<tr><td>\n";
 	strElec += createLine('blue', '');

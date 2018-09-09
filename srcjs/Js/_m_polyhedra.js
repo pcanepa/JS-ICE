@@ -1,3 +1,8 @@
+function enterPolyhedra() {
+	
+}
+function exitPolyhedra() {
+}
 
 function setPolyColor(rgbCodeStr, Colorscript) {
 	var stringa = "color polyhedra";

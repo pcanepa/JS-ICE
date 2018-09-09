@@ -1,3 +1,10 @@
+function enterOther() {
+	setValuesOther();	
+}
+
+function exitOther() {
+}
+
 
 function setValuesOther() {
 // show lighting

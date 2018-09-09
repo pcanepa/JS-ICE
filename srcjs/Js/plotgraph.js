@@ -53,23 +53,23 @@ function resetGraphs() {
 	haveGraphOptimize = false;
 }
 function plotEnergies(){
-	if (haveGraphOptimize)
-		return;
+	var modelCount = Info.length;
+	if (haveGraphOptimize || modelCount < 3)
+		return false;
 	haveGraphOptimize = true;
 	var data = [];
 	var A = [];
 	var nplots = 1;
-	var modelCount = Info.length;
 	var stringa = Info[3].name;
 	var f = null;
 	var pattern = null;
 	if(flagCrystal){
 		if(stringa.search(/Energy/i) < 0)
-			return;
+			return false;
 		f = substringEnergyToFloat;
 	} else if (flagDmol){
 		if(stringa.search(/E/i) < 0) 
-			return;
+			return false;
 		f = substringEnergyToFloat;
 	} else if (flagOutcar){
 		pattern = new RegExp("G =", "i");

@@ -1,3 +1,19 @@
+function enterShow() {
+	if (firstTimeBond) {
+		bondSlider.setValue(20);
+		radiiSlider.setValue(22);
+		getbyID('radiiMsg').innerHTML = 20 + " %";
+		getbyID('bondMsg').innerHTML = 0.20 + " &#197";
+	}
+	firstTimeBond = false;
+}
+
+function exitShow() {
+}
+
+
+var firstTimeBond = true;
+
 
 function setcolorWhat(rgbCodeStr, Colorscript) {
 	runJmolScriptWait(colorWhat + " " + rgbCodeStr + ";draw off");

@@ -1,3 +1,32 @@
+function enterMeasure() {
+	
+}
+
+function exitMeasure() {
+	measureCoord = false;
+}
+
+var kindCoord;
+var measureCoord = false;
+function viewCoord(value) {
+	kindCoord = value;
+	measureCoord = true;
+	messageMsg("Pick the atom your interested, please.");
+	setPickingCallbackFunction(showCoord);
+	runJmolScriptWait("select *; label off" 
+			+'set defaultDistanceLabel "%10.7VALUE %UNITS"'
+			+'showSelections TRUE; select none; set picking ON;set picking LABEL; set picking SELECT atom; halos on; set LABEL on;');
+}
+
+function showCoord() {
+	if (measureCoord) {
+		if (kindCoord == "fractional") {
+			runJmolScriptWait('Label "%a: %.2[fX] %.2[fY] %.2[fZ]"');
+		} else {
+			runJmolScriptWait('Label "%a: %1.2[atomX] %1.2[atomY] %1.2[atomZ]"');
+		}
+	}
+}
 var unitMeasure = "";
 function setMeasureUnit(value) {
 	unitMeasure = value;

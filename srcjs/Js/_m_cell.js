@@ -1,3 +1,11 @@
+function enterCell() {
+	getUnitcell(frameValue);
+	getSymInfo();
+}
+
+function exitCell() {
+}
+
 function saveFractionalCoordinate() {
 	warningMsg("Make sure you had selected the model you would like to export.");
 
@@ -399,27 +407,4 @@ cellOperation = function(){
 	setUnitCell();
 }
 
-var kindCoord;
-var measureCoord = false;
-function viewCoord(value) {
-	kindCoord = value;
-	measureCoord = true;
-	messageMsg("Pick the atom your interested, please.");
-	setPickingCallbackFunction(showCoord);
-	runJmolScriptWait("select *; label off" 
-			+'set defaultDistanceLabel "%10.7VALUE %UNITS"'
-			+'showSelections TRUE; select none; set picking ON;set picking LABEL; set picking SELECT atom; halos on; set LABEL on;');
-}
 
-function showCoord(b, c, d, e, f) {
-	// ??? 
-	// setMeasureText(b);
-	if (measureCoord) {
-		if (kindCoord == "fractional") {
-			runJmolScriptWait('Label "%a: %.2[fX] %.2[fY] %.2[fZ]"');
-		} else {
-			runJmolScriptWait('Label "%a: %1.2[atomX] %1.2[atomY] %1.2[atomZ]"');
-		}
-	}
-}
-////////////END CELL and MOTION FUNCTIONS
