@@ -1,7 +1,7 @@
 <project name="JSmol" default="todist" basedir=".">
  
-   <property name="site.path" value="site/" />
-   <property name="dist.path" value="dist/" />
+   <property name="site.path" value="site" />
+   <property name="dist.path" value="dist" />
    <property name="file.zip" value="${dist.path}/J-ICE.zip" />	  	  	
 
 

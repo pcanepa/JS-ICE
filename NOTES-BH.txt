@@ -33,9 +33,14 @@ unused/          contains all unused files
 
 - added PNGJ image+state option
 
-- 
+- added "original" in file export 
+
+- changed console font to monospaced for "file contents" button
 
 - fixed OutputResized.html, which was missing !DOCTYPE and body and head style="height:100%" tags for HTML5
 
+- fixed checkboxes and radio size and alignment
 
-- working on spectrum.html
+- fixed error from sliders having same name for div as object
+
+- minor work on spectrum.html

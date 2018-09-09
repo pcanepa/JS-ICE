@@ -38,18 +38,13 @@ function minimizeStructure() {
 		return false;
 	} else if (!form.checked) {
 		counterUff = 0;
-		setV("set debugscript on ;set logLevel 5");
-		setV('set MinimizationCallback "scriptUffCallback"')
-		//setV('set  set MessageCallback "showmsg" ')
-		setV("set minimizationCriterion " + optCriterion + "; minimize STEPS "
+		setMinimizationCallbackFunction(scriptUffCallback);
+		runJmolScript("set debugscript on ;set logLevel 5;set minimizationCriterion " + optCriterion + "; minimize STEPS "
 				+ optSteps + "; set minimizationRefresh TRUE;  minimize;");
 	} else if (form.checked) {
-		//alert("is selected")
 		counterUff = 0;
-		setV("set debugscript on ;set logLevel 5");
-		setV('set MinimizationCallback "scriptUffCallback"')
-		//setV('set  set MessageCallback "showmsg" ')
-		setV("set minimizationCriterion " + optCriterion + "; minimize STEPS "
+		setMinimizationCallbackFunction(scriptUffCallback);
+		runJmolScript("set debugscript on ;set logLevel 5;set minimizationCriterion " + optCriterion + "; minimize STEPS "
 				+ optSteps
 				+ "; set minimizationRefresh TRUE;  minimize FIX {selected};");
 	}
@@ -65,17 +60,17 @@ function fixFragmentUff(form) {
 }
 
 function stopOptimize() {
-	setV('minimize STOP;');
+	runJmolScriptWait('minimize STOP;');
 }
 
 function resetOptimize() {
-	setV('minimize STOP;');
-	setVbyID("optciteria", "0.001");
-	setVbyID("maxsteps", "100");
-	setVbyID("textUff", "");
+	runJmolScriptWait('minimize STOP;');
+	setValue("optciteria", "0.001");
+	setValue("maxsteps", "100");
+	setValue("textUff", "");
 }
 
-function scriptUffCallback(a, b, step, d, e, f, g) {
+function scriptUffCallback(b, step, d, e, f, g) {
 	var text = ("s = " + counterUff + " E = " + parseFloat(d).toPrecision(10)
 			+ " kJ/mol, dE = " + parseFloat(e).toPrecision(6) + " kJ/mol")
 	getbyID("textUff").value = text

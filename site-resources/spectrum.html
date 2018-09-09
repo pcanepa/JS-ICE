@@ -1,146 +1,22 @@
 <!DOCTYPE html>
 <html style="height:100%">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <script src="J-Ice.js"></script>
 <script src="libraries/flot/jquery.js"></script>
-<script src="libraries/flot/jquery.flot3.js"></script>
-<script src="libraries/flot/jquery.flot.crosshair.js"></script>
-<script src="Js/form.js"></script>
-<script src="Js/spectra.js"></script>
+<script src="libraries/flot/jquery.flot2.js"></script>
+<!-- script src="libraries/flot/jquery.flot.crosshair.js"></script  -->
 <title>J ICE web-manipulator-Spectrum</title>
 <link href="css/style.css" rel="stylesheet" type="text/css">
 </head>
 <body style="height:100%">
 <script>
-  rangeSpectrum();
-  setVbyID("minValue", opener.document.getElementById("nMin").value);
-  setVbyID("maxValue", opener.document.getElementById("nMax").value);
-   
-   
-  </script>
+docWriteSpectrumHeader();
+$(function(){plotSpectrumHTML()})
+</script>
 
 <div id="scalespectrum" class="contents_spectrum"></div>
 <div id="plotSpectrum"
-	style="width: 800px; height: 600px; background-color: white; text-color: white;"></div>
-<script>
- 
-	
-
-  //these are gotten from the main frame
-   var Min = parseInt(opener.getValue("nMin"))
-   var Max = parseInt(opener.getValue("nMax"))
-   var intArray= opener.intTot;
-   var dataSpectrum = []; //olddata
-   var spectrum =[]; //old A
-  
-   var options ={
-      series:{
-      lines: { show: true, fill: false }
-      },
-      xaxis: { ticks: 10, tickDecimals: 0 },
-      yaxis: { ticks: 0,tickDecimals: 0 },
-      grid: { hoverable: true, autoHighlight: false},
-      //crosshair: { mode: "x" }
-      };
-      
-
-   
-   var numberPlots = 1; //old plot
-   var plot = null; 
-   $(function (){
-   dataSpectrum = [];
-   spectrum = [];
-   
-   option ={
-      series:{
-      lines: { show: true, fill: false }
-      },
-      xaxis: { min: Min, max : Max, ticks: 10, tickDecimals: 0 },
-      yaxis: { ticks: 0,tickDecimals: 0 },
-      grid: { hoverable: true, autoHighlight: false},
-      //crosshair: { mode: "x" }
-      };
-
-   var legends = $("#plotSpectrum .legendLabel");
-    legends.each(function () {
-       // fix the widths so they don't jump around
-        $(this).css('width', $(this).width());});
-
-  
-
-   for(var i=Min; i < Max ; i++){
-    spectrum.push([i,intArray[i]]);
-   }
-   //dataSpectrum.push(spectrum);
-   plot = $.plot($('#plotSpectrum'), [{label:"Spectrum", data:  spectrum }], options);
-
-   
-   var updateLegendTimeout = null;
-   var latestPosition = null;
- 
-    function updateLegend() {
-      
-        
-        var pos = latestPosition;
-       // var axes = plot.getAxes();
-       //if (pos.x < axes.xaxis.min || pos.x > axes.xaxis.max)
-            //return;
-
-
-         legends.text(pos.x.toFixed(2));
-        
-    }
-    
-    $("#plotSpectrum").bind("plothover",  function (event, pos, item) {
-        latestPosition = pos;
-        if (!updateLegendTimeout)
-            updateLegendTimeout = setTimeout(updateLegend, 50);
-    });
-
- });
-
-    
-
-  
-
- function replotSpectra(){
-   Min = parseInt(getValue("minValue"))
-   Max = parseInt(getValue("maxValue"))
-   
-   option ={
-      series:{
-      lines: { show: true, fill: false }
-      },
-      xaxis: { min: Min, max : Max, ticks: 10, tickDecimals: 0 },
-      yaxis: { ticks: 0,tickDecimals: 0 },
-      grid: { hoverable: true, autoHighlight: false},
-      //crosshair: { mode: "x" }
-      };
-   dataSpectrum = [];
-   spectrum = [];
-   //var freqArray = opener.freqTot;
-   var intArray= opener.intTot;
- for(var i=Min; i < Max ; i++){
-    spectrum.push([i,intArray[i]]);
- }
-
-	//dataSpectrum.push(spectrum);
-        plot = $.plot($('#plotSpectrum'),[{label:"Spectrum", data: spectrum }],  options);
- }
-
- 
-  function writeSpectum(){
-     Min = parseInt(getValue("minValue"));
-     Max = parseInt(getValue("maxValue"));
-     var intArray = opener.intTot;
-	 var script = 'var testo = "#########################################################\n\
-#J-ICE  spectrum #\n\
-#########################################################\n'
-				   for (var i = Min; i < Max ; i++)
-                   script += i + " " + intArray[i] + "\n"
-                   script += '"; write VAR testo "?.dat"'
-	window.opener.jmolScript(script);
-     }
- </script>
+	style="width: 800px; height: 400px; background-color: white; text-color: white;"></div>
 </body>
 </html>

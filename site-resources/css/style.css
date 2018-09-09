@@ -5,6 +5,21 @@
 
 input{
     border:none;
+    vertical-align: middle;
+}
+
+input.checkbox{
+    border:none;
+    vertical-align: middle;
+	transform: scale(0.8) translate(6px,-3px);
+}
+
+input[type="text"]:disabled {
+    background: #000000;
+}
+
+input[type="text"]:enabled {
+    background: #dddddd;
 }
 
 .slider { 

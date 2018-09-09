@@ -2,10 +2,10 @@
 <html style="height:100%">
 <head>
 <title>J ICE web-manipulator-Output Resized</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
 <script src="jsmol/JSmol.min.js"></script>
 <script src="jsmol/js/Jmol2.js"></script>
-<!--  script src="Js/jicefunction.js"></script> -->
 <script>
 	function refreshModelX() {
 
@@ -16,7 +16,7 @@
 			alert("The page that opened this pop-up window is not available.")
 			return ""
 		}
-		return opener.jmolGetPropertyAsString("stateInfo")//.replace(/initialize/,"initialize;zoomLarge = false")
+		return opener.jmolGetPropertyAsString("stateInfo");
 	}
 
 	jmolInitialize("jsmol");
