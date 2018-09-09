@@ -3,8 +3,14 @@
 V1.2
 June 17, 2010
 
+V1.2.1 -- BH 2018
+  -- allows JmolColorPickerBoxes[id]
+  -- removed IE6 reference to nonexistant id
+  -- adds _jmolColorPickerSetColor
+  -- removes eval(); uses self['funcname'] instead
+  
 requires
-   Jmol.js
+   Jmol.js or Jmol2.js
 
 Usage
 Where ever you want a popup color picker box include a script like
@@ -50,15 +56,15 @@ var jmolColorPickerStatus = {
     lastPicked: '', //last picked color...not used at present
     funcName: '', //where to pass to next after _jmolColorPickerPickedColor()
     passThrough: '' //name of the global variable or structure containing information to be passed
-    }
+}
 
-var jmolColorPickerBoxes=new Array();//array of _jmolColorBoxInfo
+var jmolColorPickerBoxes=[];//array of _jmolColorBoxInfo
 
 function _jmolColorBoxInfo(boxID, appletID, scriptStr){//used when using a predefined colorPickerBox
     this.boxID=boxID;
     this.appletID=appletID; //applet ID
     this.scriptStr=scriptStr; //script with $COLOR$ where the color should be placed.(((tentatively also a array to pass a function))).
-    }
+}
 
 function _jmolChangeClass(someObj,someClassName) {
     someObj.setAttribute("class",someClassName);
@@ -69,11 +75,14 @@ function _jmolChangeClass(someObj,someClassName) {
 
 // detect if browser supports data:URI   (IE6 & IE7 do not)
     var dataURIsupported = true;
+    
+(function() {    
     var testImg64 = new Image();
     testImg64.onload = testImg64.onerror = function() {
         if(this.width != 1 || this.height != 1) { dataURIsupported = false; }
     }
     testImg64.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+})();
 
 function _jmolMakeColorPicker(){
     JmolColorPickerDiv = document.getElementById("JmolColorPickerDiv");
@@ -150,18 +159,17 @@ function _jmolMakeColorPicker(){
 }
 
 // IE6 puts the SELECT control on top of the popup colorpicker DIV, so we trick that:
-var IEversion = 999;
-if (/MSIE (\d+\.\d+);/.test(navigator.userAgent)) { //test for MSIE x.x;
-    IEversion=new Number(RegExp.$1); // capture x.x portion and store as a number
-}
+//var IEversion = 999;
+//if (/MSIE (\d+\.\d+);/.test(navigator.userAgent)) { //test for MSIE x.x;
+//    IEversion=new Number(RegExp.$1); // capture x.x portion and store as a number
+//}
 
 function _jmolColorPickerPickedColor(colorStr){
     _jmolChangeClass(document.getElementById('JmolColorPickerDiv'), "JmolColorPicker_hid");
     if(colorStr!='cancel'){
-        var evalStr = ''+ jmolColorPickerStatus.funcName+'("'+colorStr+'",'+ jmolColorPickerStatus.passThrough+');';
-        eval(evalStr);
+        self[jmolColorPickerStatus.funcName](colorStr, jmolColorPickerStatus.passThrough);
     }
-    if (IEversion<7) { document.getElementById("StereoMode0").style.visibility='visible'; }
+//BH ??    if (IEversion<7) { document.getElementById("StereoMode0").style.visibility='visible'; }
 }
 
 function _jmolColorPickerHoverColor(colorStr){
@@ -180,7 +188,7 @@ function _jmolPopUpPicker(whereID, funcName, passThrough){
     var where = document.getElementById(whereID);
     where.appendChild(pickerDiv);
     _jmolChangeClass(pickerDiv,"JmolColorPicker_vis");
-    if (IEversion<7) { document.getElementById("StereoMode0").style.visibility='hidden'; }
+//?? BH    if (IEversion<7) { document.getElementById("StereoMode0").style.visibility='hidden'; }
 }
 
 
@@ -190,7 +198,8 @@ function jmolColorPickerBox(scriptStr, startColor, boxID, appletID){
     if (!boxID) boxID = 'colorBox'+boxNum;
     if (!startColor) startColor = [127,127,127];
     var presentColor = 'rgb('+startColor[0]+','+startColor[1]+','+startColor[2]+')';
-    jmolColorPickerBoxes[boxNum]= new _jmolColorBoxInfo(boxID, appletID, scriptStr);  
+    // BH 2018 addition to allow id to be used to retrieve a box
+    jmolColorPickerBoxes[boxNum] = jmolColorPickerBoxes[boxID] = new _jmolColorBoxInfo(boxID, appletID, scriptStr);  
     var boxDiv = document.createElement("div");
     boxDiv.setAttribute("id",boxID);
     content = document.createTextNode("building color box...");
@@ -216,19 +225,30 @@ function jmolColorPickerBox(scriptStr, startColor, boxID, appletID){
     scriptNode = scripts.item(scripts.length-1);
     parentNode = scriptNode.parentNode;
     parentNode.appendChild(boxDiv);
+    return boxNum;
 }
 
 
 function _jmolColorBoxUpdate(pickedColor, boxNum){
-    document.getElementById(jmolColorPickerBoxes[boxNum].boxID).style.background = pickedColor;
+	var picker = jmolColorPickerBoxes[boxNum];
+    document.getElementById(picker.boxID).style.background = pickedColor;
     _jmolChangeClass(document.getElementById('JmolColorPickerDiv'), "JmolColorPicker_hid");
-    var rgbCodes = pickedColor.replace(/rgb/i,'').replace('(','[').replace(')',']');
-    if (typeof(jmolColorPickerBoxes[boxNum].scriptStr) == "object"){
-        jmolColorPickerBoxes[boxNum].scriptStr[0](rgbCodes,jmolColorPickerBoxes[boxNum].scriptStr, jmolColorPickerBoxes[boxNum].appletID);
+    var rgbCodes = picker.getJmolColor();
+    if (typeof(picker.scriptStr) == "object"){
+        picker.scriptStr[0](rgbCodes,picker.scriptStr, picker.appletID);
     }else {
-    	var scriptStr = jmolColorPickerBoxes[boxNum].scriptStr.replace('$COLOR$', rgbCodes);
-    	runJmolScript(scriptStr,jmolColorPickerBoxes[boxNum].appletID);
+    	var scriptStr = picker.scriptStr.replace('$COLOR$', rgbCodes);
+    	runJmolScriptWait(scriptStr,picker.appletID);
     }
+}
+
+_jmolColorBoxInfo.prototype.setColor = function(cssRGB) {
+    document.getElementById(this.boxID).style.background = cssRGB;
+}
+
+_jmolColorBoxInfo.prototype.getJmolColor = function() {
+    var cssColor = document.getElementById(this.boxID).style.background;
+    return cssColor.replace(/rgb/i,'').replace('(','[').replace(')',']');
 }
 
 

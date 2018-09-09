@@ -33,7 +33,7 @@ reload = function(packing, filter, more) {
 	more || (more = "");
 	runJmolScriptWait("zap;set echo top left; echo reloading...;");
 	runJmolScriptWait("load '' " + packing + filter + ";" + more + ';echo;frame all;frame title "@{_modelName}";frame FIRST;');
-	setName();
+	setFileName();
 	getUnitcell(1);
 }
 
@@ -45,24 +45,13 @@ loadUser = function(packing, filter) {
 }
 
 
-function cleanAndReloadForm() {
-	unLoadall();
-	resetAll();
-	cleanLists();
-	updateElementLists();
-	getUnitcell("1");
-	setFrameValues("1");
-	setTitleEcho();
-}
-
-function unLoadall() {
-
+function setDefaultJmolSettings() {
 	runJmolScriptWait('select visible; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
 	radiiSlider.setValue(20);
 	bondSlider.setValue(15);
 	// radiiConnectSlider.setValue(20);
-	getbyID('radiiMsg').innerHTML = 20 + "%";
-	getbyID('bondMsg').innerHTML = 0.15 + " &#197";
+//	getbyID('radiiMsg').innerHTML = 20 + "%";
+//	getbyID('bondMsg').innerHTML = 0.15 + " &#197";
 
 	/*
 	 * getbyID('globalAtomicRadii').innerHTML = 20 ;
@@ -84,7 +73,7 @@ function unLoadall() {
 }
 
 function onChangeLoad(load) {
-	resetAll();
+//	formResetAll();
 	switch (load) {
 	case "loadC":
 	case "loadaimsfhi":
@@ -133,10 +122,22 @@ function postLoad(type) {
 	InfoFreq = null;
 	extractAuxiliaryJmol();
 	setFlags(type);
-	setName();
+	setFileName();
 	getUnitcell(1);
 	runJmolScriptWait('unitcell on');
+	cleanAndReloadForm();
+}
+
+function cleanAndReloadForm() {
+	// this method was called for castep, dmol, molden, quantumespresso, vasp loading	
+	setDefaultJmolSettings();
 	document.fileGroup.reset();
+//	formResetAll();
+	cleanLists();
+	updateElementLists();
+	getUnitcell("1");
+	setFrameValues("1");
+	setTitleEcho();
 }
 
 resetLoadFlags = function(isCrystal) {
@@ -360,6 +361,22 @@ function onChangeSave(save) {
 		break;
 	}
 	document.fileGroup.reset();
+}
+
+
+function printFileContent() {
+	runJmolScript("console; getProperty fileContents;");
+}
+
+
+function setTitleEcho() {
+	var titleFile = extractInfoJmolString("fileHeader").split("\n")[0];
+	runJmolScriptWait('set echo top right; echo "' + titleFile + ' ";');
+}
+
+
+function setFileName() {
+	setStatus(jmolEvaluate("_modelFile"));
 }
 
 

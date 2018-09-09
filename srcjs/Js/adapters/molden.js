@@ -28,7 +28,7 @@ moldenDone = function(msg) {
 
 var counterFreq = 0;
 function loadModelsMolden() {
-	cleanAndReloadForm();
+	//cleanAndReloadForm();
 	var counterMD = 0;
 	counterFreq = 0;
 	for (i = 0; i < Info.length; i++) {
@@ -52,5 +52,4 @@ function loadModelsMolden() {
 	}
 	disableFreqOpts();
 	getSymInfo();
-	setName();
 }

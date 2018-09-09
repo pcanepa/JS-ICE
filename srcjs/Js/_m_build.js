@@ -6,6 +6,32 @@ function exitBuild() {
 	// not implemented
 }
 
+function atomSelectedColor(atom) {
+	runJmolScriptWait("select {atomno=" + atom + "};");
+	colorWhat = "color atom ";
+	return colorWhat;
+}
+
+function atomSelectedDelete(atom) {
+	runJmolScriptWait("select {atomno=" + atom + "};");
+	deleteMode = "delete {atomno=" + atom + "}";
+	return deleteMode;
+}
+
+function atomSelectedHide(atom) {
+	runJmolScriptWait("select {atomno=" + atom + "};");
+	hideMode = "hide {atomno=" + atom + "}";
+	return hideMode;
+}
+
+
+function atomSelectedDisplay(atom) {
+	runJmolScriptWait("select all; halo off; label off");
+	runJmolScriptWait("select {atomno=" + atom + "}; halo on; label on");
+	displayMode = "display {atomno=" + atom + "}";
+	return displayMode;
+}
+
 function addAtomfrac() {
 	var value = checkBoxX("addNewFrac");
 	if (value == "on") {

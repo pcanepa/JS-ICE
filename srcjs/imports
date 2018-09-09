@@ -1,5 +1,4 @@
 Js/init.js
-Js/jicefunction.js
 Js/_m__tabs.js
 Js/_m_file.js
 Js/_m_cell.js
@@ -13,6 +12,7 @@ Js/_m_optimize.js
 Js/_m_spectra.js
 Js/_m_elec.js
 Js/_m_other.js
+Js/alert.js
 Js/callback.js
 Js/constant.js
 Js/conversion.js

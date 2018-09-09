@@ -14,9 +14,18 @@ function exitShow() {
 
 var firstTimeBond = true;
 
+var colorWhat = "";
 
-function setcolorWhat(rgbCodeStr, Colorscript) {
-	runJmolScriptWait(colorWhat + " " + rgbCodeStr + ";draw off");
+
+function setColorWhat(rgb, colorscript) {
+	var colorcmd = (colorscript[1] == "colorwhat" ? colorWhat : "color " + colorscript[1]);
+	runJmolScriptWait(colorcmd + " " + rgb);// BH?? should be elsewhere + ";draw off");
+}
+
+function elementSelected(element) {
+	selectElement(element);
+	colorWhat = "color atom ";
+	return colorWhat;
 }
 
 function applyTrans(t) {

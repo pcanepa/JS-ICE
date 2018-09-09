@@ -370,7 +370,7 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 		var script = ' model '+ ( model + 1 ) +  '; ' + vibrationProp;  // 'set
 	}
 	runJmolScriptWait(script);
-	onClickVibrate("on");
+	setVibrationOn(true);
 	// This select the element from the list of the geometry models
 	// +1 keeps the right numeration of models
 	if(counterFreq != 0 && flagCrystal){

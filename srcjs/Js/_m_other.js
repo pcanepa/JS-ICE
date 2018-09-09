@@ -51,4 +51,12 @@ function applyDiffusePercent(x) {
 	getbyID("DiffusePercentMsg").innerHTML = x + "%";
 }
 
+function setTextSize(value) {
+	runJmolScriptWait("select *; font label " + value + " ;");
+}
+
+function setFrameTitle(chkbox) {
+	runJmolScriptWait(chkbox.checked ? "frame title" : "frame title ''");
+}
+
 

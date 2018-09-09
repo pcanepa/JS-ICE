@@ -34,9 +34,8 @@ myLoadStructCallback = function(applet,b,c,d) {
 }
 
 loadDone = function(fDone) {
-	runJmolScriptWait("echo");
 	fDone && fDone();
-	setName();
+	setFileName();
 	setTitleEcho();
 }
 

@@ -78,6 +78,10 @@ var measureHint = function(msg) {
 	document.measureGroup.textMeasure.value = msg + "...";
 }
 
+function setMeasureSize(value) {
+	runJmolScriptWait("select *; font label " + value + " ; font measure " + value + " ; select none;");
+}
+
 function setMeasureText(value) {
 	runJmolScriptWait("show measurements");
 	var init = "\n";

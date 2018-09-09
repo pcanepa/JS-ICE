@@ -176,10 +176,6 @@ function setIsoColorRange() {
 	}
 }
 
-function setIsoColor(rgbCodeStr) {
-	runJmolScriptWait("color isosurface " + rgbCodeStr);
-}
-
 function setIsoColorReverse() {
 	if (getbyID("dataMin") == "" || getbyID("dataMax") == "") {
 		errorMsg("Please, check values entered in the textboxes");

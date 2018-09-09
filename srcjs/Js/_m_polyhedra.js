@@ -4,12 +4,6 @@ function enterPolyhedra() {
 function exitPolyhedra() {
 }
 
-function setPolyColor(rgbCodeStr, Colorscript) {
-	var stringa = "color polyhedra";
-	var finalColor = " " + stringa + " " + rgbCodeStr + " ";
-	runJmolScriptWait(finalColor);
-}
-
 function createPolyedra() {
 
 	var vertNo, from, to, distance, style, selected, face;

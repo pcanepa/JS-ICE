@@ -1,3 +1,5 @@
+// note that JmolColorPicker is customized -- BH 2018
+
 Array.prototype.max = function() {
 	var max = this[0];
 	var len = this.length;
@@ -45,13 +47,30 @@ setAntialias = function(isON) {
 	);
 }
 
+function setStatus(status) {
+	setTextboxValue("statusLine", status); 
+}
+		
+function warningMsg(msg) {
+	alert("WARNING: " + msg);
+}
+
+function errorMsg(msg) {
+	alert("ERROR: " + msg);
+	return false;
+}
+
+function messageMsg(msg) {
+	alert("MESSAGE: " + msg);
+}
+
 function docWriteTabs() {
 	document.write(createTabMenu());
 }
 
 function docWriteBottomFrame() {
 	document.write("<br> ");	
-	document.write(createText5('filename', 'Filename:', '108', '', '', "disab"));
+	document.write(createText5('statusLine', '', '108', '', '', "disab"));
 	document.write("<br>");
 	document.write(createButton1("reload", "Reload",
 			'onChangeLoad("reload")', 0,

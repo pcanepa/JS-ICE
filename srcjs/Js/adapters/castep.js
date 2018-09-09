@@ -111,7 +111,7 @@ castepDone = function() {
 function loadModelsCastep() {
 	var counterFreq = 0;
 	var counterMD = 0;
-	cleanAndReloadForm();
+	//cleanAndReloadForm();
 	getUnitcell("1");
 	setFrameValues("1");
 
@@ -143,7 +143,6 @@ function loadModelsCastep() {
 	disableFreqOpts();
 	symmetryModeAdd();
 	getSymInfo();
-	setName();
 }
 
 // ///////LOAD FUNCTIONS

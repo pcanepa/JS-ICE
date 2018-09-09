@@ -191,7 +191,6 @@ function gulpDone() {
 function loadModelsGulp() {
 	runJmolScriptWait("script scripts/name.spt"); 
 	var counterFreq = 0;
-	cleanAndReloadForm();
 	getUnitcell("1");
 	setFrameValues("1");
 	var counterMD = 0;
@@ -208,7 +207,6 @@ function loadModelsGulp() {
 
 	}
 	getSymInfo();
-	setName();
 
 }
 

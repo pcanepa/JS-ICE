@@ -22,6 +22,7 @@
  *  02111-1307  USA.
  */
 
+
 function updateElementLists(x) {
 	for (var i = (getbyID('colourbyElementList').options.length - 1); i >= 0; i--)
 		getbyID('colourbyElementList').remove(i);
@@ -58,9 +59,9 @@ function updateElementLists(x) {
 	}
 }
 
-function resetAll() {
+function formResetAll() {
 
-	setTextboxValue("filename", "Filename:");
+	setStatus("");
 	setUnitCell();
 	document.fileGroup.reset();
 	document.showGroup.reset();
@@ -433,6 +434,51 @@ function toggleDivRadioTrans(value, me) {
 		getbyID(me).style.display = "none";
 	}
 }
+
+function setJmolFromCheckbox(box, value) {
+	runJmolScriptWait(value + " " + !!box.checked);
+}
+
+function getbyID(id) {
+	return document.getElementById(id);
+}
+
+function getbyName(na) {
+	return document.getElementsByName(na);
+}
+
+function unique(a) {
+	//this function removes duplicates
+	var r = [];
+	var list = "";
+	for (var i = 0, n = a.length; i < n; i++) {
+		var item = a[i];
+		var key = ";" + item + ";";
+		if (list.indexOf(key) >= 0)
+			continue;
+		list += key;
+		r.push(item);
+	}
+	return r;
+}
+
+//This is meant to add new element to a list
+function addOption(selectbox, text, value) {
+	var optn = document.createElement("OPTION");
+	optn.text = text;
+	optn.value = value;
+	selectbox.options.add(optn);
+}
+
+function cleanList(listname) {
+	var d = getbyID(listname)
+	if (d)
+		for (var i = d.options.length; --i >= 0;)
+			d.remove(i);
+}
+
+
+
 
 function preselectMyItem(itemToSelect) {
 	// Get a reference to the drop-down

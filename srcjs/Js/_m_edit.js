@@ -227,56 +227,43 @@ function changeElement(value) {
 
 function elementSelectedDelete(element) {
 	selectElement(element);
-	deleteMode = "delete " + element;
+	deleteMode = "delete _" + element;
 	return deleteMode;
 }
 
 function elementSelectedHide(element) {
 	selectElement(element);
-	hideMode = "hide " + element;
+	hideMode = "hide _" + element;
 	return hideMode;
 }
 
-function elementSelectedDisplay(element) {
-	selectElement(element);
-	displayMode = "display " + element;
-	return displayMode;
-}
+//function elementSelectedDisplay(element) {
+//	selectElement(element);
+//	displayMode = "display _" + element;
+//	return displayMode;
+//}
 
 function selectElement(element) {
-	runJmolScriptWait("select " + element + ";selectionhalos on");
+	runJmolScriptWait("select _" + element + ";selectionhalos on");
 
 }
-function atomSelectedColor(atom) {
-	runJmolScriptWait("select {atomno=" + atom + "};");
-	colorWhat = "color atom ";
-	return colorWhat;
+
+function selectAll() {
+	runJmolScriptWait("select *;halos on;");
 }
 
-function atomSelectedDelete(atom) {
-	runJmolScriptWait("select {atomno=" + atom + "};");
-	deleteMode = "delete {atomno=" + atom + "}";
-	return deleteMode;
-}
-
-function atomSelectedHide(atom) {
-	runJmolScriptWait("select {atomno=" + atom + "};");
-	hideMode = "hide {atomno=" + atom + "}";
-	return hideMode;
-}
-
-function atomSelectedDisplay(atom) {
-	runJmolScriptWait("select all; halo off; label off");
-	runJmolScriptWait("select {atomno=" + atom + "}; halo on; label on");
-	displayMode = "display {atomno=" + atom + "}";
-	return displayMode;
-}
-
-function selectAllDelete() {
-	// BH: REALLY?
-	runJmolScriptWait("select *; halos on; label on;");
-	deleteMode = "select *; delete; select none ; halos off; draw off;";
-	return deleteMode;
-}
+//function selectAllDelete() {
+//	selectAll();
+//	// BH: REALLY?
+//	runJmolScriptWait("select *; halos on; label on;");
+//	deleteMode = "select *; delete; select none ; halos off; draw off;";
+//	return deleteMode;
+//}
+//
+//function selectAllHide() {
+//	runJmolScriptWait("select *; halos on; label on;");
+//	hideMode = "select *; hide selected; select none; halos off; draw off;";
+//	return hideMode;
+//}
 
 

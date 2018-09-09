@@ -559,21 +559,40 @@ function symmetryModeAdd() {
 	}
 }
 
-function onClickVibrate(select) {
-	for (var i = 0; i < document.modelsVib.vibration.length; i++) {
-		if (document.modelsVib.vibration[i].checked)
-			var radioval = document.modelsVib.vibration[i].value;
-	}	
-	switch (radioval) {
-	case "on":
-		// TODO
-		runJmolScriptWait("vibration on; vectors SCALE 3; vector 5; vibration SCALE 1;");
-		break;
-	case "off":
-		runJmolScriptWait("vibration off;");
-		break;
-	}
+function setVibrationOn(isON) {
+	if (isON)
+		checkboxID("vibration");
+	else
+		uncheckboxID("vibration");
+	updateJmolForFreqParams();
 }
+
+function onClickFreqParams() {
+	updateJmolForFreqParams();
+}
+
+function updateJmolForFreqParams() {
+	var c = jmolColorPickers[getbyID("vectorColorPicker")].getJmolColor();
+	var script = "vibration " + isChecked("vibration")
+					+ ";vectors " + isChecked("vectors")
+					+ ";" + getValueSel("vecsamplitude")
+					+ ";" + getValueSel("vecscale")
+					+ ";" + getValueSel("sizevec")
+					+ ";color vectors " + (isChecked("vibVectcolor") ? "none" :  c);
+	runJmolScriptWait("color vectors none")
+}
+
+//function onClickVibrate(select) {
+//	switch (radioval) {
+//	case "on":
+//		// TODO
+//		runJmolScriptWait("vibration on; vectors SCALE 3; vector 5; vibration SCALE 1;");
+//		break;
+//	case "off":
+//		runJmolScriptWait("vibration off;");
+//		break;
+//	}
+//}
 
 //This listens the action change the irep
 function onChangeListSym(irep) {
