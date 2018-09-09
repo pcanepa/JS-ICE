@@ -247,7 +247,7 @@ _jmolColorBoxInfo.prototype.setColor = function(cssRGB) {
 }
 
 _jmolColorBoxInfo.prototype.getJmolColor = function() {
-    var cssColor = document.getElementById(this.boxID).style.background;
+    var cssColor = document.getElementById(this.boxID).style.backgroundColor;
     return cssColor.replace(/rgb/i,'').replace('(','[').replace(')',']');
 }
 
