@@ -30,7 +30,7 @@ dmolDone = function() {
 
 var counterFreq = 0;
 function loadModelsDmol() {
-	cleanAndReloadForm();
+	//cleanAndReloadForm();
 	getUnitcell("1");
 	setFrameValues("1");
 	var counterMD = 0;
@@ -65,5 +65,4 @@ function loadModelsDmol() {
 	disableFreqOpts();
 	symmetryModeAdd();
 	getSymInfo();
-	setName();
 }

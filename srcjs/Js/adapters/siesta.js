@@ -63,7 +63,6 @@ function loadModelsSiesta() {
 }
 
 function initializeJiceSiesta() {
-	var name = jmolGetPropertyAsJSON("filename");
 	setFrameValues("1");
 	setTitleEcho();
 	cleanArraySiesta();

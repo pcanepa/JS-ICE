@@ -227,8 +227,7 @@ function loadModelsCrystal() {
 // were clicked via a complex sequence of callbacks
 // but that is not done now, because all this should be done from a loadStructCallback.
 function reloadFastModels() {
-	setName();
-	unLoadall();
+	setDefaultJmolSettings();
 	if (flagCryVasp) {
 		getUnitcell("1");
 		runJmolScriptWait("echo");
@@ -237,7 +236,6 @@ function reloadFastModels() {
 		enableFreqOpts();
 		symmetryModeAdd();
 		//getSymInfo();
-		setName();
 	}
 }
 

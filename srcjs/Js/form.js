@@ -22,9 +22,46 @@
  *  02111-1307  USA.
  */
 
-function resetAll() {
 
-	setTextboxValue("filename", "Filename:");
+function updateElementLists(x) {
+	for (var i = (getbyID('colourbyElementList').options.length - 1); i >= 0; i--)
+		getbyID('colourbyElementList').remove(i);
+	for (var i = (getbyID('polybyElementList').options.length - 1); i >= 0; i--)
+		getbyID('polybyElementList').remove(i);
+	for (var i = (getbyID("poly2byElementList").options.length - 1); i >= 0; i--)
+		getbyID("poly2byElementList").remove(i);
+	for (var i = (getbyID("byElementAtomMotion").options.length - 1); i >= 0; i--)
+		getbyID("byElementAtomMotion").remove(i);
+	for (var i = (getbyID("deletebyElementList").options.length - 1); i >= 0; i--)
+		getbyID("deletebyElementList").remove(i);
+	for (var i = (getbyID("connectbyElementList").options.length - 1); i >= 0; i--)
+		getbyID("connectbyElementList").remove(i);
+	for (var i = (getbyID("connectbyElementListone").options.length - 1); i >= 0; i--)
+		getbyID("connectbyElementListone").remove(i);
+	
+	var sortedElement = getElementList(["select"]);
+
+	for (var i = 0; i < sortedElement.length; i++) {
+		addOption(getbyID('colourbyElementList'), sortedElement[i],
+				sortedElement[i]);
+		addOption(getbyID('polybyElementList'), sortedElement[i],
+				sortedElement[i]);
+		addOption(getbyID("poly2byElementList"), sortedElement[i],
+				sortedElement[i]);
+		addOption(getbyID("byElementAtomMotion"), sortedElement[i],
+				sortedElement[i]);
+		addOption(getbyID("deletebyElementList"), sortedElement[i],
+				sortedElement[i]);
+		addOption(getbyID("connectbyElementList"), sortedElement[i],
+				sortedElement[i]);
+		addOption(getbyID("connectbyElementListone"), sortedElement[i],
+				sortedElement[i]);
+	}
+}
+
+function formResetAll() {
+
+	setStatus("");
 	setUnitCell();
 	document.fileGroup.reset();
 	document.showGroup.reset();
@@ -397,6 +434,51 @@ function toggleDivRadioTrans(value, me) {
 		getbyID(me).style.display = "none";
 	}
 }
+
+function setJmolFromCheckbox(box, value) {
+	runJmolScriptWait(value + " " + !!box.checked);
+}
+
+function getbyID(id) {
+	return document.getElementById(id);
+}
+
+function getbyName(na) {
+	return document.getElementsByName(na);
+}
+
+function unique(a) {
+	//this function removes duplicates
+	var r = [];
+	var list = "";
+	for (var i = 0, n = a.length; i < n; i++) {
+		var item = a[i];
+		var key = ";" + item + ";";
+		if (list.indexOf(key) >= 0)
+			continue;
+		list += key;
+		r.push(item);
+	}
+	return r;
+}
+
+//This is meant to add new element to a list
+function addOption(selectbox, text, value) {
+	var optn = document.createElement("OPTION");
+	optn.text = text;
+	optn.value = value;
+	selectbox.options.add(optn);
+}
+
+function cleanList(listname) {
+	var d = getbyID(listname)
+	if (d)
+		for (var i = d.options.length; --i >= 0;)
+			d.remove(i);
+}
+
+
+
 
 function preselectMyItem(itemToSelect) {
 	// Get a reference to the drop-down

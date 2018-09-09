@@ -1,3 +1,5 @@
+// note that JmolColorPicker is customized -- BH 2018
+
 Array.prototype.max = function() {
 	var max = this[0];
 	var len = this.length;
@@ -16,6 +18,16 @@ Array.prototype.min = function() {
 	return min;
 }
 
+runJmolScript = function(script) {
+	debugSay(script);
+	jmolScript(script);	
+}
+
+runJmolScriptWait = function(script) {
+	debugSay(script);
+	jmolScriptWait(script);	
+}
+
 createApplet = function() {
 	Jmol.Info || (Jmol.Info = {});
 	Jmol.Info.serverUrl = "https://chemapps.stolaf.edu/jmol/jsmol/php/jmol.php"
@@ -28,16 +40,28 @@ createApplet = function() {
 			);
 }
 
-resetPage = function() {
-	runJmolScript("script ./scripts/reset.spt");
-	grpDisp(MENU_FILE);
-}
-
 setAntialias = function(isON) {
 	runJmolScriptWait(isOn? 
 			"antialiasDisplay = true;set hermiteLevel 5"
 			: "antialiasDisplay = false;set hermiteLevel 0"
 	);
+}
+
+function setStatus(status) {
+	setTextboxValue("statusLine", status); 
+}
+		
+function warningMsg(msg) {
+	alert("WARNING: " + msg);
+}
+
+function errorMsg(msg) {
+	alert("ERROR: " + msg);
+	return false;
+}
+
+function messageMsg(msg) {
+	alert("MESSAGE: " + msg);
 }
 
 function docWriteTabs() {
@@ -46,7 +70,7 @@ function docWriteTabs() {
 
 function docWriteBottomFrame() {
 	document.write("<br> ");	
-	document.write(createText5('filename', 'Filename:', '108', '', '', "disab"));
+	document.write(createText5('statusLine', '', '108', '', '', "disab"));
 	document.write("<br>");
 	document.write(createButton1("reload", "Reload",
 			'onChangeLoad("reload")', 0,

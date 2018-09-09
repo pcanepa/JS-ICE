@@ -29,8 +29,7 @@ xmlvaspDone = function() {
 function loadModelsVASP() {
 	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
 	getUnitcell("1");
-	var name = jmolGetPropertyAsJSON("filename");
-	cleanAndReloadForm();
+	//cleanAndReloadForm();
 	setTitleEcho();
 
 	for (var i = 0; i < Info.length; i++) {
@@ -158,7 +157,7 @@ vaspoutcarDone = function() {
 
 var counterFreq = 0;
 function loadModelsOutcar() {
-	cleanAndReloadForm();
+	//cleanAndReloadForm();
 	getUnitcell("1");
 	setFrameValues("1");
 	var counterMD = 0;
@@ -191,7 +190,6 @@ function loadModelsOutcar() {
 	}
 	disableFreqOpts();
 	getSymInfo();
-	setName();
 }
 
 /////////LOAD FUNCTIONS

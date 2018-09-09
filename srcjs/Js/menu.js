@@ -32,8 +32,8 @@ createDebugPanel = function() {
 		+ "&nbsp;" + createButton("getHelp", "Scripting Help", 'runJmolScriptWait("help")', 0)
 		+ "<br>\n"
 		+ "<div id='debugdiv' style='display:none'>"
-		+ "<textarea id='debugarea' style='font-size:12pt;width:350px;height:150px;font-family:monospace;overflow-y:auto'></textarea>" 
-		+ "<br><input type='text' style='font-size:12pt;width:350px' value='' placeHolder='type a command here' onKeydown='event.keyCode === 13&&$(this).select()&&runJmolScriptWait(value)'/>" 
+		+ "<input type='text' style='font-size:12pt;width:350px' value='' placeHolder='type a command here' onKeydown='event.keyCode === 13&&$(this).select()&&runJmolScriptWait(value)'/>" 
+		+ "<br><textarea id='debugarea' style='font-size:12pt;width:350px;height:150px;font-family:monospace;overflow-y:auto'></textarea>" 
 		+ "</div></div>"
 }
 
@@ -167,16 +167,15 @@ function createShowGrp() {
 	strShow += "Atom/s & bond/s style</td></tr> \n";
 	strShow += "<tr><td > \n";
 	strShow += "Atom/s colour: "
-		+ createButton("colorWhat", "Default colour",
-				'runJmolScriptWait("select *; color Jmol; draw off")', 0);
-	strShow += "</td><td align='left'><script type='text/javascript'>\n";
-	strShow += "var colorScript = [setcolorWhat, 'colorWhat'];";
-	strShow += 'jmolColorPickerBox(colorScript, "");';
+		+ createButton("colorAtoms", "Default colour",
+				'runJmolScriptWait("select *; color Jmol;")', 0);
+	strShow += "</td><td align='left'><script>\n";
+	strShow += 'jmolColorPickerBox([setColorWhat,"atoms"], "","atomColorPicker");';
 	strShow += "</script> </td></tr>";
 	strShow += "<tr><td>Bond colour: "
 		+ createButton("bondcolor", "Default colour",
 				'runJmolScriptWait(" color bonds Jmol")', 0);
-	strShow += "</td><td align='left'> <script type='text/javascript'> jmolColorPickerBox('select *; color bond $COLOR$',[255,255,255])</script></td>";
+	strShow += "</td><td align='left'> <script> jmolColorPickerBox([setColorWhat, 'bonds'],[255,255,255],'bondColorPicker')</script></td>";
 	strShow += "</td></tr>";
 	strShow += "<tr><td colspan='2'> Atom/s & bond/s finish \n";
 	strShow += createRadio(
@@ -241,10 +240,10 @@ function createShowGrp() {
 	strShow += "</td></tr><tr><td>H-bond colour: "
 		+ createButton("bondcolor", "Default colour",
 				'runJmolScriptWait("color HBONDS none")', 0) + "</td><td>\n";
-	strShow += "<script type='text/javascript' align='left'>jmolColorPickerBox('color HBONDS $COLOR$',[255,255,255])</script>";
+	strShow += "<script align='left'>jmolColorPickerBox([setColorWhat,'hbonds'],[255,255,255],'hbondColorPicker')</script>";
 	strShow += "</td></tr><tr><td colspan='2'> \n";
 	strShow += "View / Hide Hydrogen/s "
-		+ createCheck("hydrogenView", "", "setVCheckbox(this, this.value)",
+		+ createCheck("hydrogenView", "", "setJmolFromCheckbox(this, this.value)",
 				0, 1, "set showHydrogens") + "\n";
 	strShow += "</td></tr></table> \n";
 	strShow += createLine('blue', '');
@@ -283,7 +282,7 @@ function createEditGrp() {
 				'setPlanehide(this)', 0, 0, "");
 	strEdit += "</td></tr><tr><td colspan='2'>\n";
 	strEdit += createButton('edit_selectAll', 'select All',
-			'selectAllDelete()  + selectAllHide()', '')
+			'selectAll()', '')
 			+ "\n";
 	strEdit += createButton('unselect', 'unselect All',
 			'runJmolScriptWait("select *; halos off; label off")', '')
@@ -506,17 +505,15 @@ function createMeasureGrp() {
 	strMeas += "<tr><td>Measure colour: "
 		+ createButton("colorMeasure", "Default colour",
 				'runJmolScriptWait("color measures none")', 0) + "</td><td >\n";
-	strMeas += "<script type='text/javascript' align='left'>jmolColorPickerBox('color measures $COLOR$',[255,255,255])</script>";
+	strMeas += "<script align='left'>jmolColorPickerBox([setColorWhat, 'measures'],[255,255,255],'measureColorPicker')</script>";
 	strMeas += "</td></tr>";
 	strMeas += "<tr><td colspan='2'>";
 	strMeas += createLine('blue', '');
 	strMeas += "</td></tr>";
 	strMeas += "<tr><td colspan='2'>";
 	strMeas += "View coordinates: ";
-	strMeas += createRadio("coord", "fractional", 'viewCoord(value)', '', 0,
-			"", "fractional");
-	strMeas += createRadio("coord", "cartesian", 'viewCoord(value)', '', 0, "",
-	"cartesian");
+	strMeas += createRadio("coord", "fractional", 'viewCoord(value)', '', 0, "", "fractional");
+	strMeas += createRadio("coord", "cartesian", 'viewCoord(value)', '', 0, "", "cartesian");
 	strMeas += createLine('blue', '');
 	strMeas += "</td></tr>";
 	strMeas += "<tr><td colspan='2'>";
@@ -675,9 +672,9 @@ function createCellGrp() {
 	strCell += "<table class='contents'><tr><td><h2>Cell properties</h2></td></tr>\n";
 	strCell += "<tr><td colspan='2'>"
 		+ createCheck("cell", "View Cell",
-				"setVCheckbox(this, this.value)", 0, 1, "unitcell");
+				"setJmolFromCheckbox(this, this.value)", 0, 1, "unitcell");
 	strCell += createCheck("axes", "View axes",
-			"setVCheckbox(this, this.value)", 0, 1, "set showAxes");
+			"setJmolFromCheckbox(this, this.value)", 0, 1, "set showAxes");
 	strCell += "</td></tr><tr><td> Cell style:  \n";
 	strCell += "size "
 		+ createListFunc('offsetCell',
@@ -688,7 +685,7 @@ function createCellGrp() {
 		+ createCheck("cellDott", "dotted, ", "setCellDotted()", 0, 0,
 		"DOTTED") + "  color ";
 	strCell += "</td><td align='left'>\n";
-	strCell += "<script type='text/javascript' align='left'>jmolColorPickerBox('set unitCellColor \"$COLOR$\"',[000,000,000])</script>";
+	strCell += "<script align='left'>jmolColorPickerBox([setColorWhat, 'unitCell'],[0,0,0],'unitcellColorPicker')</script>";
 	strCell += "</td></tr>\n";
 	// strCell += createLine('blue', '');
 	strCell += "<tr><td colspan='2'>Set cell:  \n";
@@ -839,9 +836,8 @@ function createPolyGrp() {
 	strPoly += "</td></tr><tr><td > &nbsp;a) colour polyhedra\n";
 	strPoly += createButton("polyColor", "Default colour",
 			'runJmolScriptWait("set defaultColors Jmol")', 0);
-	strPoly += "</td><td align='left'><script type='text/javascript'>\n";
-	strPoly += "var Colorscript = [setPolyColor, 'color'];";
-	strPoly += "jmolColorPickerBox(Colorscript, '');";
+	strPoly += "</td><td align='left'><script>\n";
+	strPoly += "jmolColorPickerBox([setColorWhat,'polyhedra'],'','polyColorPicker');";
 	strPoly += "</script> </td></tr>";
 	strPoly += "<tr><td colspan='2'>\n";
 	strPoly += createButton('advancePoly', '+',
@@ -969,9 +965,8 @@ function createIsoGrp() {
 	strIso += "</td></tr>\n";
 	strIso += "<tr><td>\n";
 	strIso += "Color Isosurface:\n";
-	strIso += "</td><td><script type='text/javascript'>\n";
-	strIso += "var Colorscript = [setIsoColor, 'color'];";
-	strIso += "jmolColorPickerBox(Colorscript, '');";
+	strIso += "</td><td><script>\n";
+	strIso += "jmolColorPickerBox([setColorWhat,'isosurface'], '','surfaceColorPicker');";
 	strIso += "</script>";
 	strIso += "</td></tr>";
 	strIso += "<tr><td>\n";
@@ -1064,14 +1059,14 @@ function createGeometryGrp() {
 }
 
 function createFreqGrp() {
+	// TODO -- move this into _m_spectra.js
+	var vibAmplitudeValue = new Array("", "vibration Scale 1",
+			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7", "vibration Scale 10");
 	var vecscaleValue = new Array("", "vectors SCALE 1", "vectors SCALE 3",
 			"vectors SCALE 5", "vectors SCALE 7", "vectors SCALE 10",
 			"vectors SCALE 15", "vectors SCALE 19");
 	var vecsizeValue = new Array("", "vectors 1", "vectors  3", "vectors  5",
 			"vectors  7", "vectors 10", "vectors 15", "vectors  19");
-	var vibAmplitudeValue = new Array("", "vibration Scale 1",
-			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7",
-	"vibration Scale 10");
 	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
@@ -1090,30 +1085,30 @@ function createFreqGrp() {
 	strFreq += "</select> ";
 	strFreq += "<BR>\n";
 	strFreq += "vibration ";
-	strFreq += createRadio("vibration", "on", 'onClickVibrate(value)', 0, 1,
+	strFreq += createRadio("vibration", "on", 'onClickFreqParams()', 0, 1,
 			"", "on");
-	strFreq += createRadio("vibration", "off", 'onClickVibrate(value)', 0, 0,
+	strFreq += createRadio("vibration", "off", 'onClickFreqParams()', 0, 0,
 			"", "off");
 	strFreq += "<BR>\n";
-	strFreq += createList("vecsamplitude", "runJmolScriptWait(value)", 0, 1,
+	strFreq += createList("vecsamplitude", "onClickFreqParams()", 0, 1,
 			vibAmplitudeValue, vibAmplitudeText,[0,1])
 			+ " vib. amplitude";
 	strFreq += "<BR>\n";
 	strFreq += createCheck("vectors", "view vectors",
-			"setVCheckbox(this, this.value)", 0, 1, "vectors");
+			"setJmolFromCheckbox(this, this.value)", 0, 1, "vectors");
 	strFreq += "<BR>\n";
-	strFreq += createList("vecscale", "runJmolScriptWait(value)", 0, 1, vecscaleValue,
+	strFreq += createList("vecscale", "onClickFreqParams()", 0, 1, vecscaleValue,
 			vecscaleText,[0,0,1])
 			+ " vector scale";
 	strFreq += "<BR>\n";
-	strFreq += createList("sizevec", "runJmolScriptWait(value)", 0, 1, vecsizeValue,
+	strFreq += createList("sizevec", "onClickFreqParams()", 0, 1, vecsizeValue,
 			vecscaleText,[0,0,0,1])
 			+ " vector size";
 	strFreq += "<BR>\n";
-	strFreq += "<table class='contents'> <tr><td>vector color</td> <td><script type='text/javascript'>jmolColorPickerBox('color vectors $COLOR$',[255,255,255])</script></td>";
+	strFreq += "<table class='contents'> <tr><td>vector color</td> <td><script>jmolColorPickerBox([setColorWhat,'vectors'],[255,255,255],'vectorColorPicker')</script></td>";
 	strFreq += "</tr><tr><td>"
 		+ createButton("vibVectcolor", "Default color",
-				'runJmolScriptWait("color vectors none")', 0) + "</td></tr></table>";
+				'onClickFreqParams()', 0) + "</td></tr></table>";
 	strFreq += "</td><td valign='top'><div id='freqdiv' style='display:none'>\n";
 	strFreq += createDiv("graphfreqdiv",
 	"width:200;height:200;background-color:#EFEFEF; margin-left:5px; display:none")
@@ -1183,7 +1178,7 @@ function createElecpropGrp() {
 	strElec += "</td></tr>\n";
 	strElec += "<tr><td>\n";
 	strElec += createLine('blue', '');
-	strElec += createButton("Removeall", "Remove", 'exitElecpropGrp()', 0);
+	strElec += createButton("Removeall", "Remove", 'removeCharges()', 0);
 	strElec += "</td></tr>\n";
 	strElec += "<tr><td>\n";
 	strElec += createLine('blue', '');
@@ -1203,25 +1198,25 @@ function createMainGrp() {
 	strOther += "<table class='contents'><tr><td> \n";
 	strOther += "<h2>Other properties</h2></td></tr>\n";
 	strOther += "<tr><td>Background colour:</td>\n";
-	strOther += "<td align='left'><script type='text/javascript'>jmolColorPickerBox('set background $COLOR$',[255,255,255])</script></td></tr> \n";
+	strOther += "<td align='left'><script>jmolColorPickerBox([setColorWhat,'background'],[255,255,255],'backgroundColorPicker')</script></td></tr> \n";
 	strOther += "<tr><td>"
 		+ createLine('blue', '')
 		+ createCheck(
 				"perspective",
 				"Perspective",
-				'setVCheckbox(this, this.value)+toggleDiv(this,"perspectiveDiv")',
+				'setJmolFromCheckbox(this, this.value)+toggleDiv(this,"perspectiveDiv")',
 				0, 0, "set perspectiveDepth");
 	strOther += "</td></tr><tr><td>"
 	strOther += "<div id='perspectiveDiv' style='display:none; margin-top:20px'>";
 	strOther += createSlider("cameraDepth");
 	strOther += "</div></td></tr>\n";
 	strOther += "<tr><td>"
-		+ createCheck("z-shade", "Z-Fog", "setVCheckbox(this, this.value)",
+		+ createCheck("z-shade", "Z-Fog", "setJmolFromCheckbox(this, this.value)",
 				0, 0, "set zShade");
 	strOther += " ";
 	strOther += createList(
 			'setzShadePower ',
-			'runJmolScriptWait("set zShade; set zShadePower " + value + " ;") + setVCheckbox("z-shade","")',
+			'runJmolScriptWait("set zShade; set zShadePower " + value + " ;") + setJmolFromCheckbox("z-shade","")',
 			0, 1, shadeValue, shadeName)
 			+ " Fog level";
 	strOther += "</td></tr>\n";
@@ -1259,11 +1254,11 @@ function createMainGrp() {
 	+ createLine('blue', '') + "</td></tr>\n";
 	strOther += "<tr><td colspan='2'>";
 	strOther += "Label controls <br>"
-		strOther += createCheck("frameName", "Name model", "setNameModel(this)", 0,
+		strOther += createCheck("frameName", "Name model", "setFrameTitle(this)", 0,
 				1, "frame title")
 				+ " ";
 	strOther += createCheck("jmollogo", "Jmol Logo",
-			"setVCheckbox(this, this.value)", 0, 1, "set showFrank")
+			"setJmolFromCheckbox(this, this.value)", 0, 1, "set showFrank")
 			+ "</td></tr>\n";
 	strOther += "<tr><td colspan='2'>";
 	strOther += "Font size ";
