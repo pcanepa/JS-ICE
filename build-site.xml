@@ -66,23 +66,10 @@
 
  	-->
  	
-  	<copy todir="${site.dir}">
-      <fileset dir="${site.resource.dir}">
-      	<include name="**"/>
-  	</fileset>
-    </copy>
-
   	<echo> Copying ${site.resource.dir} files into ${site.dir} </echo>
   	<copy todir="${site.dir}">
       <fileset dir="${site.resource.dir}">
       	<include name="**"/>
-  	</fileset>
-    </copy>
-
-  	<echo> Copying srcjs/Js files into ${site.dir}/Js </echo>
-  	<copy todir="${site.dir}">
-      <fileset dir="srcjs">
-      	<include name="Js/**"/>
   	</fileset>
     </copy>
 
