@@ -124,7 +124,7 @@ var hideArrays = function(menu) {
 	for (var i = 0; i < arrayGeomObjects.length; i++)
 		getbyID(arrayGeomObjects[i]).style.display = (menu == MENU_OPTIMIZE ? "block" : "none");
 	for (var j = 0; j < arrayFreqObjects.length; j++)
-		getbyID(arrayFreqObjects[j]).style.display = (menu = MENU_SPECTRA ? "block" : "none");
+		getbyID(arrayFreqObjects[j]).style.display = (menu == MENU_SPECTRA ? "block" : "none");
 }
 
 var enterTab = function() {
