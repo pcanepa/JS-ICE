@@ -43,88 +43,63 @@
  %ENDBLOCK SPECIES_POT
  */
 
-var cellCastep = null;
 var positionCastep = null;
 
 function exportCASTEP() {
-	warningMsg("Make sure you had selected the model you would like to export.");
-
+	warningMsg("Make sure you have selected the model you would like to export.");
 	setUnitCell();
-	fromfractionaltoCartesian();
-	saveStatejust();
+	saveStateAndOrientation_a();
+	var lattice = fromfractionaltoCartesian();
 	setVacuum();
-
 	switch (typeSystem) {
 	case "slab":
-		setV(selectedFrame + '.z = for(i;' + selectedFrame + '; i.z/'
+		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
 				+ roundNumber(cCell) + ')');
 		break;
 	case "polymer":
-		setV(selectedFrame + '.z = for(i;' + selectedFrame + '; i.z/'
+		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
 				+ roundNumber(cCell) + ')');
-		setV(selectedFrame + '.y = for(i;' + selectedFrame + '; i.y/'
+		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/'
 				+ roundNumber(bCell) + ')');
 		break;
 	case "molecule":
-		setV(selectedFrame + '.z = for(i;' + selectedFrame + '; i.z/'
+		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
 				+ roundNumber(cCell) + ')');
-		setV(selectedFrame + '.y = for(i;' + selectedFrame + '; i.y/'
+		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/'
 				+ roundNumber(bCell) + ')');
-		setV(selectedFrame + '.x = for(i;' + selectedFrame + '; i.x/'
+		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/'
 				+ roundNumber(aCell) + ')');
 		break;
 	}
 
-	prepareLatticeblockcastep();
+	prepareLatticeblockcastep(lattice);
 	prepareCoordinateblockCastep();
+	restoreStateAndOrientation_a();
 
-	var finalInputCastep = "var final = [latticeCastep, positionCastep];"
-			+ 'final = final.replace("\n\n","\n");'
+	var finalInputCastep = 'var final = [latticeCastep, positionCastep].replace("\n\n","\n");'
 			+ 'WRITE VAR final "?.cell"';
-	setV(finalInputCastep);
-	loadStatejust();
+	runJmolScript(finalInputCastep);
 }
 
-function prepareLatticeblockcastep() {
-	cellCastep = "var latticeHeader = '\%block LATTICE_CART';"
-			+ "var latticeOne = ["
-			+ xx
-			+ ", "
-			+ xy
-			+ ", "
-			+ xz
-			+ "];"
-			+ "var latticeOne = latticeOne.join(' ');"
-			+ "var latticeTwo = ["
-			+ yx
-			+ ", "
-			+ yy
-			+ ", "
-			+ yz
-			+ "];"
-			+ "var latticeTwo = latticeTwo.join(' ');"
-			+ "var latticeThree = ["
-			+ zx
-			+ ", "
-			+ zy
-			+ ", "
-			+ zz
-			+ "];"
-			+ "var latticeThree = latticeThree.join(' ');"
+function prepareLatticeblockcastep(lattice) {
+	var cellCastep = "var latticeHeader = '\%block LATTICE_CART';"
+			+ "var latticeOne = [" + lattice[0] +"].join(' ');"
+			+ "var latticeTwo = [" + lattice[1] + "].join(' ');"
+			+ "var latticeThree = [" + lattice[2] + "].join(' ');"
 			+ "var latticeClose = '\%endblock LATTICE_CART';"
 			+ "latticeCastep = [latticeHeader, latticeOne, latticeTwo,latticeThree, latticeClose];"
-	setV(cellCastep);
+	runJmolScriptWait(cellCastep);
 }
 
 // /Frac coordinates
 function prepareCoordinateblockCastep() {
 	positionCastep = "var positionHeader = '\%block POSITIONS_FRAC';"
-			+ 'var xyzCoord = ' + selectedFrame + '.label("%e %16.9[fxyz]");'
+			+ 'var xyzCoord = ' + frameSelection + '.label("%e %16.9[fxyz]");'
 			+ 'xyzCoord = xyzCoord.replace("\n\n","\n");'
 			+ "var positionClose = '\%endblock POSITIONS_FRAC';"
 			+ "positionCastep = [positionHeader, xyzCoord, positionClose];"
 			+ 'positionCastep = positionCastep.replace("\n\n","\n");'
-	setV(positionCastep);
+	runJmolScriptWait(positionCastep);
 }
 
 // /// FUNCTION LOAD
@@ -136,21 +111,19 @@ castepDone = function() {
 function loadModelsCastep() {
 	var counterFreq = 0;
 	var counterMD = 0;
-	extractAuxiliaryJmol();
-	cleanandReloadfrom();
+	cleanAndReloadForm();
 	getUnitcell("1");
-	selectDesireModel("1");
+	setFrameValues("1");
 
 	for (i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
 			var line = Info[i].name;
 			// alert(line)
 			if (line.search(/Energy =/i) != -1) {
-				addOption(getbyID("geom"), i + " " + line, i + 1);
+				addOption(getbyID('geom'), i + " " + line, i + 1);
 				geomData[i] = line;
 				counterFreq++;
 			} else if (line.search(/cm-1/i) != -1) {
-				alert("here")
 				freqData[i - counterFreq] = line;
 				counterMD++;
 			}
@@ -158,17 +131,17 @@ function loadModelsCastep() {
 	}
 
 	if (freqData != null) {
+		var vib = getbyID('vib');
 		for (i = 1; i < freqData.length; i++) {
 			if (freqData[i] != null)
 				var data = parseFloat(freqData[i].substring(0, freqData[i]
 						.indexOf("c") - 1));
-			addOption(getbyID("vib"), i + " A " + data + " cm^-1", i
+			addOption(vib, i + " A " + data + " cm^-1", i
 					+ counterFreq + 1);
 		}
 	}
 	disableFreqOpts();
 	symmetryModeAdd();
-	setMaxMinPlot();
 	getSymInfo();
 	setName();
 }
@@ -176,9 +149,9 @@ function loadModelsCastep() {
 // ///////LOAD FUNCTIONS
 
 function disableFreqOpts() {
-	for ( var i = 0; i < document.modelsVib.modAct.length; i++)
+	for (var i = 0; i < document.modelsVib.modAct.length; i++)
 		document.modelsVib.modAct[i].disabled = true;
-	for ( var i = 0; i < document.modelsVib.kindspectra.length; i++)
+	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
 		document.modelsVib.kindspectra[i].disabled = true;
 
 	// getbyID("modAct").enable = false;
@@ -188,9 +161,9 @@ function disableFreqOpts() {
 }
 
 function enableFreqOpts() {
-	for ( var i = 0; i < document.modelsVib.modAct.length; i++)
+	for (var i = 0; i < document.modelsVib.modAct.length; i++)
 		document.modelsVib.modAct[i].disabled = false;
-	for ( var i = 0; i < document.modelsVib.kindspectra.length; i++)
+	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
 		document.modelsVib.kindspectra[i].disabled = false;
 
 }

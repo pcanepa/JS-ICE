@@ -88,7 +88,7 @@ function exportQuantum() {
 
 	var finalInputQ = "var final = [control, system, electron, ions, cell, atomsp, posQ, kpo];"
 		+ 'final = final.replace("\n\n"," ");' + 'WRITE VAR final "?.inp" ';
-	setV(finalInputQ);
+	runJmolScriptWait(finalInputQ);
 }
 
 function prepareControlblock() {
@@ -112,7 +112,7 @@ function prepareControlblock() {
 		+ '\'";'
 		+ "var controlClose = '\/';"
 		+ ' control = [controlHeader,controlTitle,controlJob,controlRestart,controlOutdir,controlWcfdir,controlPsddir,controlPrefix,controlClose];';
-	setV(controlQ);
+	runJmolScriptWait(controlQ);
 	// IMPORTANT THE LAST VARIABLE MUST NOT BE CALL SUCH AS var xxxx
 }
 
@@ -143,8 +143,7 @@ function prepareSystemblock() {
 	 * parseInt((stringElec / 2) + (stringElec / 2 * 0.20)); }
 	 */
 	symmetryQuantum();
-	var eleMents = howManytype();
-	var eleMentlength = eleMents.length
+	var elements = getElementList();
 
 	systemQ = "var systemHeader = '\&SYSTEM';"
 		+ 'var systemIbrav = "           ibrav = '
@@ -158,7 +157,7 @@ function prepareSystemblock() {
 		+ numberAtom
 		+ '";'
 		+ 'var systemNty = "           ntyp = '
-		+ eleMents.length
+		+ elements.length
 		+ '";'
 		+ 'var systemCut = "           ecutwfc = 40";'
 		+ 'var systemToc = "           tot_charge = 0.000000";'
@@ -171,7 +170,7 @@ function prepareSystemblock() {
 		// insulator
 		+ "var systemClose= '\/';"
 		+ ' system = [systemHeader, systemIbrav, systemCelld, systemNat,systemNty,systemCut,systemToc,systemOcc , systemClose];';
-	setV(systemQ);
+	runJmolScriptWait(systemQ);
 
 }
 
@@ -181,7 +180,7 @@ function prepareElectronblock() {
 		+ 'var electronBeta = "           mixing_beta = \'  \'";'
 		+ "var electronClose= '\/';"
 		+ ' electron = [electronHeader, electronBeta, electronClose];';
-	setV(electronQ);
+	runJmolScriptWait(electronQ);
 }
 
 //ask what algorithm to use window?
@@ -190,7 +189,7 @@ function prepareIonsblock() {
 	ionsQ = "var ionHeader = '\&IONS';"
 		+ 'var ionDyn = "           ion_dynamics= \'  \'";'
 		+ "var ionClose= '\/';" + 'ions = [ionHeader, ionDyn, ionClose];';
-	setV(ionsQ);
+	runJmolScriptWait(ionsQ);
 
 }
 
@@ -200,42 +199,21 @@ function prepareCellblock() {
 		+ "var cellClose= '\/';"
 		+ 'cell = [cellHeader, cellDyn, cellClose];'
 		+ 'cell = cell.replace("\n\n"," ");';
-	setV(cellQ);
+	runJmolScriptWait(cellQ);
 }
 
-function howManytype() {
-	var ele = jmolGetPropertyAsArray("atomInfo");
-	var newElement = new Array();
+//ATOMIC_SPECIES Pb 207.20000 Pb.pbe-d-van.UPF O 15.99400 O.pbe-van_ak.UPF
 
-	for ( var i = 0; i < ele.length; i++)
-		newElement[i] = ele[i].sym; // Return symbol
-
-	var sortedElement = unique(newElement);
-	// alert(sortedElement);
-	return sortedElement
-}
-/*
- * ATOMIC_SPECIES Pb 207.20000 Pb.pbe-d-van.UPF O 15.99400 O.pbe-van_ak.UPF
- */
 
 //To BE COMPLETED
 function prepareSpecieblock() {
-	var element = new Array();
-	var newElement = new Array();
+	setUnitCell();
 	var scriptEl = "";
 	var stringList = "";
+	var sortedElement = getElementList();
 
-	setUnitCell();
-	element = jmolGetPropertyAsArray("atomInfo");
-	for ( var i = 0; i < element.length; i++)
-		newElement[i] = element[i].sym; // Return symbol
-
-	var sortedElement = unique(newElement);
-	// alert(sortedElement);
-
-	for ( var i = 0; i < sortedElement.length; i++) {
+	for (var i = 0; i < sortedElement.length; i++) {
 		var elemento = sortedElement[i];
-		elemento = elemento.replace("\n\n", " ");
 		var numeroAtom = jmolEvaluate('{' + frameNum + ' and _' + elemento
 				+ '}[0].label("%l")'); //tobe changed in atomic mass
 		scriptEl = "'" + elemento + " " + eleSymbMass[parseInt(numeroAtom)]
@@ -256,17 +234,17 @@ function prepareSpecieblock() {
 	+ stringList + '];' + 'atomsList = atomsList.replace("\n", " ");'
 	// + 'atomList = atomList.join(" ");'
 	+ 'atomsp =  [atomsHeader,atomsList];';
-	setV(atomspQ);
+	runJmolScriptWait(atomspQ);
 }
 
 function preparePostionblock() {
 
 	setUnitCell();
 	atompositionQ = "var posHeader = 'ATOMIC_POSITIONS crystal';"
-		+ 'var posCoord = ' + selectedFrame + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
+		+ 'var posCoord = ' + frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
 		// %16.9[fxyz]\");'
 		+ 'posQ = [posHeader,posCoord];';
-	setV(atompositionQ);
+	runJmolScriptWait(atompositionQ);
 
 }
 
@@ -275,7 +253,7 @@ function prepareKpoint() {
 		+ "var kpointHeader = 'K_POINTS automatic';"
 		+ "var kpointgr = ' X X X 0 0 0';"
 		+ 'kpo = [kpointWh, kpointHeader, kpointgr];';
-	setV(kpointQ);
+	runJmolScriptWait(kpointQ);
 }
 
 function symmetryQuantum() {
@@ -301,14 +279,14 @@ function symmetryQuantum() {
 			warningMsg("This procedure is not fully tested.");
 			// magnetic = confirm("Does this structure have magnetic properties?
 			// \n Cancel for NO.")
-			flagCryVasp = false;
+			flagCrystal = false;
 			quantumEspresso = true;
 			figureOutSpaceGroup();
 		}
 		break;
 	case "slab":
 		setVacuum();
-		setV(selectedFrame + '.z = for(i;' + selectedFrame + '; i.z/' + cCell
+		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + cCell
 				+ ')');
 		cellDimString = "            celldm(1) = "
 			+ roundNumber(fromAngstromtoBohr(aCell))
@@ -322,9 +300,9 @@ function symmetryQuantum() {
 		break;
 	case "polymer":
 		setVacuum();
-		setV(selectedFrame + '.z = for(i;' + selectedFrame + '; i.z/' + cCell
+		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + cCell
 				+ ')');
-		setV(selectedFrame + '.y = for(i;' + selectedFrame + '; i.y/' + bCell
+		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + bCell
 				+ ')');
 		cellDimString = "            celldm(1) = "
 			+ roundNumber(fromAngstromtoBohr(aCell))
@@ -337,11 +315,11 @@ function symmetryQuantum() {
 		break;
 	case "molecule":
 		setVacuum();
-		setV(selectedFrame + '.z = for(i;' + selectedFrame + '; i.z/' + cCell
+		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + cCell
 				+ ')');
-		setV(selectedFrame + '.y = for(i;' + selectedFrame + '; i.y/' + bCell
+		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + bCell
 				+ ')');
-		setV(selectedFrame + '.x = for(i;' + selectedFrame + '; i.x/' + aCell
+		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/' + aCell
 				+ ')');
 		cellDimString = "            celldm(1) = "
 			+ roundNumber(fromAngstromtoBohr(aCell))
@@ -363,15 +341,13 @@ espressoDone = function() {
 }
 
 function loadModelsEspresso() {
-
 	var counterFreq = 0;
-	extractAuxiliaryJmol();
-	cleanandReloadfrom();
+	cleanAndReloadForm();
 	getUnitcell("1");
-	selectDesireModel("1");
+	setFrameValues("1");
 	var counterMD = 0;
 
-	flagQuantum = true;
+	flagQuantumEspresso = true;
 	flagOutcar = false;
 
 	for (i = 0; i < Info.length; i++) {
@@ -379,7 +355,7 @@ function loadModelsEspresso() {
 
 		if (i == 0) {
 			line = "Initial";
-			addOption(getbyID("geom"), i + " " + line, i + 1);
+			addOption(getbyID('geom'), i + " " + line, i + 1);
 			geomData[0] = Info[0].name;
 		}
 
@@ -389,14 +365,14 @@ function loadModelsEspresso() {
 			// alert(line)
 			if (line.search(/E =/i) != -1) {
 				// alert("geometry")
-				addOption(getbyID("geom"), i + 1 + " " + line, i + 1);
+				addOption(getbyID('geom'), i + 1 + " " + line, i + 1);
 				geomData[i + 1] = Info[i].name;
 
 				counterFreq++;
 			} /*
 			 * else if (line.search(/cm/i) != -1) { // alert("vibration")
 			 * freqData[i - counterFreq] = Info[i].name; counterMD++; } else
-			 * if (line.search(/Temp/i) != -1) { addOption(getbyID("geom"),
+			 * if (line.search(/Temp/i) != -1) { addOption(getbyID('geom'),
 			 * (i - counterMD) + " " + Info[i].name, i + 1); }
 			 */
 		}
@@ -405,12 +381,9 @@ function loadModelsEspresso() {
 	 * if (freqData != null) { for (i = 1; i < freqData.length; i++) { if
 	 * (freqData[i] != null) var data =
 	 * parseFloat(freqData[i].substring(0,freqData[i].indexOf("c") - 1));
-	 * addOption(getbyID("vib"), i + " A " + data + " cm^-1", i + counterFreq +
+	 * addOption(getbyID('vib'), i + " A " + data + " cm^-1", i + counterFreq +
 	 * 1 ); } }
 	 */
-	// disableFreqOpts();
-	// symmetryModeAdd();
-	// setMaxMinPlot();
 	getSymInfo();
 	// setName();
 

@@ -17,10 +17,14 @@
 		
 		bars: is3D
 
+
+  modified for Jmol by Bob Hanson ("bh", below)
+
 	*/
 
 
 (function($) {
+  $.browser || ($.browser={});
     function Plot(target_, data_, options_) {
         // data is on the form:
         //   [ series1, series2 ... ]
@@ -1900,6 +1904,10 @@
             if (typeof s == "number")
                 s = series[s];
 
+            if (point == -1) {
+              for (var i = s.data.length; --i >= 0;) { unhighlight(s, i) } // [[bh]] -- unhighlight(0,-1)
+              return
+            }
             if (typeof point == "number")
                 point = s.data[point];
 

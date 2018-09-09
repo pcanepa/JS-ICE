@@ -22,26 +22,52 @@
  *  02111-1307  USA.
  */
 
-function createButton(name, text, onclick, disab) {
-	var s = "<INPUT TYPE='BUTTON'";
-	s += "NAME='" + name + "' ";
-	s += "VALUE='" + text + "' ";
-	s += "ID='" + name + "' ";
-	s += "CLASS='button'";
-	if (disab) {
-		s += "DISABLED "
-	}
-	s += "OnClick='" + onclick + "'> ";
-	return s;
+function resetAll() {
+
+	setTextboxValue("filename", "Filename:");
+	setUnitCell();
+	document.fileGroup.reset();
+	document.showGroup.reset();
+	document.orientGroup.reset();
+	document.measureGroup.reset();
+	document.cellGroup.reset();
+	document.polyGroup.reset();
+	document.isoGroup.reset();
+	document.modelsGeom.reset();
+	document.modelsVib.reset();
+	document.elecGroup.reset();
+	document.otherpropGroup.reset();
+	document.editGroup.reset();
+	// document.HistoryGroup.reset();
+	// this disables antialias option BH: NOT - or at least not generally. We need a switch for this
+	runJmolScriptWait('antialiasDisplay = true;set hermiteLevel 0');
+	resetFreq();
+	resetOptimize();
+}
+
+function createSlider(name, label) {
+	var s = '<div tabIndex="1" class="slider" id="_Slider-div" style="float:left;width:150px;" >'
+		+ '<input class="slider-input" id="_Slider-input" name="_Slider-input" />'
+	    + '</div>'
+	    + (label || "") 
+	    + ' <span id="_Msg" class="msgSlider"></span>';
+	return s.replace(/_/g, name);
+	
+}
+
+function createButton(name, text, onclick, disab, style) {
+	return createButton1(name, text, onclick, disab, "button", style);
 }
 
 //This includes the class
-function createButton1(name, text, onclick, disab, style) {
+function createButton1(name, text, onclick, disab, myclass, style) {
 	var s = "<INPUT TYPE='BUTTON'";
 	s += "NAME='" + name + "' ";
 	s += "VALUE='" + text + "' ";
 	s += "ID='" + name + "' ";
-	s += "CLASS='" + style + "'";
+	if (style)
+		s += "style='" + style + "'";
+	s += "CLASS='" + myclass + "'";
 	if (disab) {
 		s += "DISABLED "
 	}
@@ -49,20 +75,6 @@ function createButton1(name, text, onclick, disab, style) {
 	return s;
 }
 
-//This includes the style
-function createButton2(name, text, onclick, disab, style) {
-	var s = "<INPUT TYPE='BUTTON'";
-	s += "NAME='" + name + "' ";
-	s += "VALUE='" + text + "' ";
-	s += "ID='" + name + "' ";
-	s += "style='" + style + "'";
-	s += "CLASS='button'";
-	if (disab) {
-		s += "DISABLED "
-	}
-	s += "OnClick='" + onclick + "'> ";
-	return s;
-}
 
 function createText(name, text, onclick, disab) {
 	var s = "<INPUT TYPE='TEXT'";
@@ -145,7 +157,7 @@ function createList(name, onclick, disab, size, optionValue, optionText, optionC
 		break;
 	}
 	s += "'>";
-	for ( var n = 0; n < optionN; n++) {
+	for (var n = 0; n < optionN; n++) {
 		s += "<OPTION VALUE='" + optionValue[n] + "'";
 		if (optionCheck[n] == 1) {
 			s += "checked";
@@ -279,10 +291,6 @@ function createLine(color, style) {
 }
 
 
-function getbyID(id) {
-	return document.getElementById(id);
-}
-
 function getValue(id) {
 	return getbyID(id).value;
 }
@@ -354,7 +362,7 @@ function setTextboxValue(nametextbox, valuetextbox) {
 
 function uncheckRadio(radio) {
 	var radioId = getbyName(radio);
-	for ( var i = 0; i < radioId.length; i++)
+	for (var i = 0; i < radioId.length; i++)
 		radioId[i].checked = false;
 }
 
@@ -389,4 +397,35 @@ function toggleDivRadioTrans(value, me) {
 		getbyID(me).style.display = "none";
 	}
 }
+
+function preselectMyItem(itemToSelect) {
+	// Get a reference to the drop-down
+	var myDropdownList = document.modelsGeom.models;
+
+	// Loop through all the items
+	for (iLoop = 0; iLoop < myDropdownList.options.length; iLoop++) {
+		if (myDropdownList.options[iLoop].value == itemToSelect) {
+			// Item is found. Set its selected property, and exit the loop
+			myDropdownList.options[iLoop].selected = true;
+			break;
+		}
+	}
+
+}
+
+//
+//function toggleFormObject(status, elements) {
+//
+//	if (status == "on") {
+//		for (var i = 0; i < elements.length; i++)
+//			makeEnable(elements[i]);
+//	}
+//	if (status == "off") {
+//		for (var i = 0; i < elements.length; i++)
+//			makeDisable(elements[i]);
+//	}
+//
+//}
+//
+
 

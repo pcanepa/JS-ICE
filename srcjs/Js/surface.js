@@ -23,57 +23,45 @@
  */
 
 //////////////////////ISOSURFACE FUNCTIONS(LOAD AND PERIODICITY)
+
+//TODO: isosurface ?.CUBE  plane {0 1 0 1} contour 40   map ?.CUBE 
+
+
 function cubeLoad() {
-	setV("isosurface delete all");
+	// TODO BH 2018 this needs reworking
+	runJmolScriptWait("isosurface delete all");
 	var answer = confirm("Is your CUBE periodic?");
-	if (answer) {
-		var dued = confirm("Do you want to extract a 2D map out of this CUBE? \n Press Ok for 2D, Cancel for 3D");
-		if (dued) {
-			duedMaps();
-		} else {
-			var question = confirm("Is/are this/these CUBE file/s going to be superimposed on the current structure?");
-			if (question) {
-				runJmolScriptWait('frame LAST; ');
-				var flag = true;
-				potentialProfile(true);
-			} else {
-				messageMsg("Then, load your structure file first.");				
-				runJmolScriptWait('set echo top left; echo loading... ;refresh;load ?; frame LAST');
-				var flag = true;
-				potentialProfile(true);
-			}
-		}
-	} else {
+	// BH 2018: Why this logic? Couldn't we map a nonperiodic 
+	// if it is periodic, then we need to se the lattice here
+	// what is so special about periodic here?
+	if (!answer) {
 		messageMsg("Just load the *.CUBE file");
-		setMessageMode(MESSAGE_MODE_SAVE_ISO)
-		runJmolScript("set echo top left; echo loading...;refresh;load ?; message ISOSAVED;");
+		loadCube(LOAD_ISO_ONLY, "ISOSAVED");
+		return;
+	}
+	var dued = confirm("Do you want to extract a 2D map out of this CUBE? \n Press Ok for 2D, Cancel for 3D");
+	if (dued) {
+		duedMaps();
+	} else {
+		potentialProfile(true);
 	}
 
 }
 
-function potentialProfile(flag) {
-	var potential = confirm("Do you want to overalap your potential / spin *.CUBE on it ?");
-	if (potential) {
-		setMessageMode(MESSAGE_MODE_SAVE_ISO)			
-		if (flag) {
-			messageMsg("Now load in sequence 1) the *.CUBE density file, 2) the *.CUBE potential / spin file.");
-			runJmolScript('set echo top left; echo loading CUBE...;refresh;isosurface ?.CUBE  map ?.CUBE; message ISO;');
-		} else {
-			messageMsg("Now load the *.CUBE potential file.");			
-			runJmolScript('set echo top left; echo loading CUBE...;refresh;isosurface "" map ?.CUBE;message ISO;');
-		}
-//		saveIsoMessageCallback("POTSAVED");
-	//	saveIsoMessageCallback("ISO"); 
-		// This
-		// callback
-		// is to work
-		// out the color
-		// range of the
-		// surface
-	} else {
-		runJmolScriptWait('set echo top left; echo loading...;refresh;isosurface ?.CUBE; message ISO;');
+function potentialProfile() {
+	var haveIso = !!jmolEvaluate("isosurface list").trim();
+	var withMap = (prompt("Do you want to map surface data with potential or spin *.CUBE data?", "yes") == "yes");
+	var mapOnly = haveIso && (prompt("Do you want to use the current surface?", "yes") == "yes");
+	if (!withMap) {
+		loadCube(LOAD_ISO_ONLY, "ISO");
 		sendSurfaceMessage();
 		saveIsoJVXL();
+	} else if (mapOnly) {
+		messageMsg("Now load the potential or spin CUBE file.");			
+		loadCube(LOAD_ISO_MAP_ONLY, "ISO");
+	} else {
+		messageMsg("Now load in sequence (1) the *.CUBE density file, and (2) the *.CUBE potential / spin file.");
+		loadCube(LOAD_ISO_WITH_MAP, "ISO");
 	}
 }
 
@@ -120,16 +108,16 @@ function saveIsoJVXL() {
 function saveIsoMessageCallback(msg) {
 	if (msg.indexOf("ISOSAVED") == 0) {
 		var flag = false;
-		setV("echo");
+		runJmolScriptWait("echo");
 		potentialProfile(flag);
 	}
 	if (msg.indexOf("POTSAVED") == 0) {
-		setV("echo");
+		runJmolScriptWait("echo");
 		sendSurfaceMessage();
 		saveIsoJVXL();
 	}
 	if (msg.indexOf("ISO") == 0) {
-		setV("echo");
+		runJmolScriptWait("echo");
 		getIsoInfo();
 	}
 
@@ -143,31 +131,25 @@ SURFACE_VDW_MEP_PERIODIC = "isosurface lattice _CELL_ resolution 7 VDW map MEP";
 function setIsoClassic(value) {
 	 if (value.indexOf("_CELL_") >= 0)
 		 value = value.replace("_CELL_", getCurrentCell()); 
-	setV("isosurface delete ALL");	
+	runJmolScriptWait("isosurface delete ALL");	
 	setMessageMode(MESSAGE_MODE_SAVE_ISO)
 	runJmolScriptWait("set echo top left; echo creating ISOSURFACE...; refresh;" + value + "; message ISO;");
 }
 
-function msSetPeriodicity() {
-	messageMsg("Now set the periodicity with the menu below.");
-}
+// BH not called
+//function msSetPeriodicity() {
+//	messageMsg("Now set the periodicity with the menu below.");
+//}
 
 // This extracts the maximum and minimum of the color range
 function getIsoInfo() {
 	var isoInfo = jmolGetPropertyAsString("shapeinfo.isosurface[1].jvxlinfo");
-	// if (!isoInfo) {
-	// alert ("No value available")
-	// return;
-	// }
-	titleCRYS;
 	var dataMinimum = parseFloat(isoInfo.substring(
 			isoInfo.indexOf("data") + 14, isoInfo.indexOf("data") + 26)); // dataMinimum
 	var dataMaximum = parseFloat(isoInfo.substring(
 			isoInfo.indexOf("dataMax") + 14, isoInfo.indexOf("dataMax") + 26)); // dataMaximum
-
 	setValue("dataMin", dataMinimum);
 	setValue("dataMax", dataMaximum);
-
 }
 
 function setIsoColorscheme() {

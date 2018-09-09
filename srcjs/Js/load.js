@@ -1,10 +1,32 @@
 
+
+// was "flagCif"
+// used only in crystal, gulp, and quantumespresso 
+// in symmetry.js#figureOutSpaceGroup() 
+// to set the frame to the first frame 
+var flagCif = false; 
+
+var flagCrystal = false; 
+var flagGromos = false;
+var flagGulp = false;
+var flagOutcar = false;
+var flagGaussian = false;
+var flagQuantumEspresso = false;
+var flagSiesta = false;
+var flagDmol = false;
+var flagMolden = false;
+var flagCastep = false;
+
+var freqData = [];
+var geomData = [];
+var counterFreq = 0;
+
 reload = function(packing, filter, more) {	
 	packing || (packing = "");
 	filter = (filter ? " FILTER '" + filter + "'" : "");
 	more || (more = "");
-	runJmolScriptWait("set echo top left; echo reloading...;refresh; load '' " + packing + filter + ";" + more + ";echo;");
-	runJmolScriptWait('frame all;frame title "@{_modelName}";frame FIRST;');
+	runJmolScriptWait("zap;set echo top left; echo reloading...;");
+	runJmolScriptWait("load '' " + packing + filter + ";" + more + ';echo;frame all;frame title "@{_modelName}";frame FIRST;');
 	setName();
 	getUnitcell(1);
 }
@@ -12,24 +34,50 @@ reload = function(packing, filter, more) {
 loadUser = function(packing, filter) {
 	packing || (packing = "");
 	filter = (filter ? " FILTER '" + filter + "'" : "");
-	runJmolScriptWait("set echo top left; echo reloading...;refresh; load ? " + packing + filter + ";");
+	runJmolScriptWait("zap;");
+	runJmolScript("load ? " + packing + filter + ";");
 }
 
-//export list
-var flagCryVasp = true; // if flagCryVasp = true crystal output
-var flagGromos = false;
-var flagGulp = false;
-var flagOutcar = false;
-var flagGauss = false;
-var flagQuantum = false;
-var flagCif = false;
-var flagSiesta = false;
-var flagDmol = false;
-var flagMolde = false;
-var flagCast = false;
+
+function cleanAndReloadForm() {
+	unLoadall();
+	resetAll();
+	cleanLists();
+	fillElementlist();
+	getUnitcell("1");
+	setFrameValues("1");
+	setTitleEcho();
+}
+
+function unLoadall() {
+
+	runJmolScriptWait('select visible; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
+	radiiSlider.setValue(20);
+	bondSlider.setValue(15);
+	// radiiConnectSlider.setValue(20);
+	getbyID('radiiMsg').innerHTML = 20 + "%";
+	getbyID('bondMsg').innerHTML = 0.15 + " &#197";
+
+	/*
+	 * getbyID('globalAtomicRadii').innerHTML = 20 ;
+	 * getbyID('sliderGlobalAtomicRadii').style.left=20+'px';
+	 * getbyID('globalBondWidths').innerHTML = 0.20;
+	 * getbyID('sliderGlobalBondWidths').style.left=20+'px';
+	 * getbyID('sepcLight').innerHTML = 22 + " % ";
+	 * getbyID('sliderSepcLight').style.left=20+'px';
+	 * getbyID('Ambient').innerHTML = 45 + " % ";
+	 * getbyID('sliderAmbient').style.left=45+'px'; getbyID('Diffuse').innerHTML =
+	 * 45 + " % "; getbyID('sliderDiffuse').style.left=45+'px';
+	 * getbyID('sliderPerspective').style.left= 66+'px';
+	 * getbyID('sliderGlobalBond').style.left= 20 + 'px';
+	 * getbyID('globalBondCon').innerHTML = 2 + " ";
+	 */
+
+	// getbyID("packrange").innerHTML = 0 + " &#197"
+	// getbyID('Perspective').innerHTML = 3;
+}
 
 function onChangeLoad(load) {
-	// This is to reset all function
 	resetAll();
 	switch (load) {
 	case "loadC":
@@ -72,6 +120,12 @@ function onChangeLoad(load) {
 }
 
 function postLoad(type) {
+	freqData = [];
+	geomData = [];
+	resetGraphs();
+	counterFreq = 0;
+	InfoFreq = null;
+	extractAuxiliaryJmol();
 	setFlags(type);
 	setName();
 	getUnitcell(1);
@@ -79,7 +133,25 @@ function postLoad(type) {
 	document.fileGroup.reset();
 }
 
+resetLoadFlags = function(isCrystal) {
+	if (isCrystal)
+		typeSystem = "crystal";
+	flagCrystal = 
+	flagGromos = 
+	flagGulp = 
+	flagOutcar = 
+	flagGaussian = 
+	flagQuantumEspresso = 
+	flagCif = 
+	flagSiesta = 
+	flagDmol = 
+	flagMolden =
+	flagCastep = false;
+}
+
 setFlags = function(type) {
+	
+	// BH TODO: missing xmlvasp?
 	type = type.replace('load', '').toLowerCase();
 	switch (type) {
 	default:
@@ -87,159 +159,88 @@ setFlags = function(type) {
 		break;
 	case "shelx":
 	case "shel":
-		typeSystem = "crystal";
+		resetLoadFlags(true); // BH 2018 added -- Q: Why no clearing of flags?
 		flagCif = true;
 		break;
 	case "crystal":
-		flagCryVasp = true;
-		flagGulp = false;
-		flagQuantum = false;
-		flagGauss = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
+		resetLoadFlags();
+		flagCrystal = true;
 		break;
 	case "cube":
 		break;
 	case "aims":
 	case "aimsfhi":
+		resetLoadFlags(true);
 		flagCif = true;
-		typeSystem = "crystal";
 		break;
 	case "castep":
+		resetLoadFlags(true);
 		flagCif = true;
-		typeSystem = "crystal";
 		break;
 	case "vasp":
-		typeSystem = "crystal";
-		flagCryVasp = false;
-		flagOutcar = false;
-		flagGauss = false;
-		flagQuantum = false;
-		flagGulp = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
+		resetLoadFlags(true);
 		break;
 	case "vaspoutcar":
-		typeSystem = "crystal";
-		flagGulp = false;
+		resetLoadFlags(true);
 		flagOutcar = true;
-		flagCryVasp = false;
-		flagQuantum = false;
-		flagGauss = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
 		break;
 	case "dmol":
-		flagGulp = false;
-		flagOutcar = false;
-		flagCryVasp = false;
-		flagQuantum = false;
-		flagGauss = false;
-		flagSiesta = false;
+		resetLoadFlags();
 		flagDmol = true;
-		flagCast = false;
 		break;
 	case "espresso":
 	case "quantum":
-		typeSystem = "crystal";
-		flagGulp = false;
-		flagOutcar = false;
-		flagCryVasp = false;
-		flagGauss = false;
-		flagQuantum = true;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
+		resetLoadFlags(true);
+		flagQuantumEspresso = true;
 		break;
 	case "gulp":
+		resetLoadFlags();
 		flagGulp = true;
-		flagOutcar = false;
-		flagCryVasp = false;
-		flagGauss = false;
-		flagQuantum = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
 		break;
 	case "material":
+		resetLoadFlags(); // BH Added
 		break;
 	case "wien":
+		resetLoadFlags(true); // BH Added
 		flagCif = true;
-		typeSystem = "crystal";
 		break;
 	case "cif":
+		resetLoadFlags(true); // BH Added
 		flagCif = true;
-		typeSystem = "crystal";
 		break;
 	case "siesta":
-		typeSystem = "crystal";
-		flagGulp = false;
-		flagOutcar = false;
-		flagCryVasp = false;
-		flagGauss = false;
-		flagQuantum = false;
+		resetLoadFlags(true); // BH Added
 		flagSiesta = true;
-		flagDmol = false;
-		flagCast = false;
 		break;
 	case "pdb":
+		resetLoadFlags(true); // BH Added
 		flagCif = true;
-		typeSystem = "crystal";
 		break;
 	case "gromacs":
+		resetLoadFlags(); // BH Added
 		flagGromos = true;
 		break;
 	case "gaussian":
 	case "gauss":
-		flagCryVasp = false;
-		flagGromos = false;
-		flagGulp = false;
-		flagOutcar = false;
-		flagGauss = true;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
+		resetLoadFlags(); // BH Added
+		flagGaussian = true;
 		typeSystem = "molecule";
 		break;
 	case "molden":
 		// WE USE SAME SETTINGS AS VASP
 		// IT WORKS
+		resetLoadFlags(); // BH Added
 		typeSystem = "molecule";
-		flagGulp = false;
 		flagOutcar = true;
-		flagCryVasp = false;
-		flagQuantum = false;
-		flagGauss = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
 		break;
 	case "crysden":
+		resetLoadFlags(true); // BH Added
 		flagCif = true;
-		flagGulp = false;
-		flagOutcar = false;
-		flagCryVasp = false;
-		flagQuantum = false;
-		flagGauss = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = false;
-		typeSystem = "crystal";
 		break;
 	case "castep":
 	case "outcastep":
-		typeSystem = "crystal";
-		flagGulp = false;
-		flagOutcar = false;
-		flagCryVasp = false;
-		flagQuantum = false;
-		flagGauss = false;
-		flagSiesta = false;
-		flagDmol = false;
-		flagCast = true;
+		resetLoadFlags(true); // BH Added
+		flagCastep = true;
 		break;
 	}
 }
@@ -279,8 +280,35 @@ function onChangeLoadSample(value) {
 		fname = "output/vib-freq/nh3_pbe_631gdp_freq.out";
 		break;
 	}
-	if (fname)
+	if (fname) {
+		runJmolScriptWait("zap;set echo top left; echo loading " + fname +"...");
 		runJmolScript("load '" + fname + "' " + getValue("modelNo") + " packed");
+	}
 }
 
+var LOAD_ISO_ONLY     = 0;
+var LOAD_ISO_MAP_ONLY = 1;
+var LOAD_ISO_WITH_MAP = 2;
+
+function loadCube(mode, msg) {
+	// this should work in JavaScript, because the script will wait for the ? processing to complete
+	setMessageMode(MESSAGE_MODE_SAVE_ISO);	
+	runJmolScript('set echo top left; echo loading CUBE...'
+			+ (mode != LOAD_ISO_MAP_ONLY ? "isosurface ?.CUBE;" : "")
+			+ (mode != LOAD_ISO_ONLY ? "isosurface  map ?.CUBE;" : "")
+			+ "message " + msg + ";");
+}
+
+//refresh = function() {
+//saveState();
+//setLoadingMode(LOADING_MODE_PLOT_ENERGIES);
+//reload();
+//restoreState();
+//}
+//
+//refreshFreq = function() {
+//saveState();
+//setLoadingMode(LOADING_MODE_PLOT_FREQUENCIES);
+//reload();
+//}
 

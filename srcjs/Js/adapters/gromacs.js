@@ -26,32 +26,31 @@ var coordinateGromacs = null;
 
 function exportGromacs() {
 	warningMsg("Make sure you had selected the model you would like to export.");
-	settitleGroomacs();
+	setTitleGromacs();
 	setUnitCell();
-	// setVacuum();
-	// if(!flagGromos)
-	trasnfromcartTocartnm();
-
-	setcoordinateGromacs();
-
+	runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/10);'
+		+ frameSelection + '.y = for(i;' + frameSelection + '; i.y/10);'
+		+ frameSelection + '.x = for(i;' + frameSelection + '; i.x/10);');
+	setCoordinatesGromacs();
+	runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z*10);'
+			+ frameSelection + '.y = for(i;' + frameSelection + '; i.y*10);'
+			+ frameSelection + '.x = for(i;' + frameSelection + '; i.x*10);');
 	var finalInputGromacs = "var final = [titleg,coordinate];"
 			+ 'final = final.replace("\n\n","");' + 'WRITE VAR final "?.gro" ';
-	setV(finalInputGromacs);
-	// if(!flagGromos)
-	trasnscartfromnmToCart();
+	runJmolScriptWait(finalInputGromacs);
 }
 
-function settitleGroomacs() {
+function setTitleGromacs() {
 	var titleGromacs = prompt("Type here the job title:", "");
 	(titleGromacs == "") ? (titleGromacs = 'Input prepared with J-ICE ')
 			: (titleGromacs = 'Input prepared with J-ICE ' + titleGromacs);
 	titleGromacs = 'titleg = \"' + titleGromacs + '\"; ';
-	setV(titleGromacs);
+	runJmolScriptWait(titleGromacs);
 }
 
-function setcoordinateGromacs() {
-	var numatomsGrom = " " + selectedFrame + ".length";
-	var coordinateGrom = selectedFrame
+function setCoordinatesGromacs() {
+	var numatomsGrom = " " + frameSelection + ".length";
+	var coordinateGrom = frameSelection
 			+ '.label("  %i%e %i %e %8.3[xyz] %8.4fy %8.4fz")';
 	var cellbox = +roundNumber(aCell) * (cosRadiant(alpha)) + ' '
 			+ roundNumber(bCell) * (cosRadiant(beta)) + ' '
@@ -60,5 +59,5 @@ function setcoordinateGromacs() {
 			+ 'var coordGrom = ' + coordinateGrom + ';'
 			+ 'var cellGrom = \" \n\t' + cellbox + '\"; '
 			+ 'coordinate = [numatomGrom,coordGrom,cellGrom];';
-	setV(coordinateGromacs);
+	runJmolScriptWait(coordinateGromacs);
 }

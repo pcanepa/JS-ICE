@@ -1,11 +1,11 @@
 var unitMeasure = "";
 function setMeasureUnit(value) {
 	unitMeasure = value;
-	setV("set measurements " + value);
+	runJmolScriptWait("set measurements " + value);
 }
 
 function setMeasurement() {
-	setV("set measurements ON");
+	runJmolScriptWait("set measurements ON");
 }
 
 var mesCount = 0;
@@ -50,7 +50,7 @@ var measureHint = function(msg) {
 }
 
 function setMeasureText(value) {
-	setV("show measurements");
+	runJmolScriptWait("show measurements");
 	var init = "\n";
 	// BH 2018
 	if (mesCount == 0)

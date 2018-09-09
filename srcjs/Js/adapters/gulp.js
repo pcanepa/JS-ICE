@@ -54,7 +54,7 @@ function exportGULP() {
 	}
 	run(finalInputGulp);
 	reload(null, "primitive");
-	loadStatejust();
+	restoreStateAndOrientation_a();
 
 }
 
@@ -67,7 +67,7 @@ function setTitlegulp() {
 			+ 'var titleheader = \"title \"; ' + 'var title = \"'
 			+ titleGulpinput + '\"; ' + 'var titleend = \"end \";'
 			+ 'titlegulp = [optiongulp, titleheader, title, titleend];';
-	setV(titleGulp);
+	runJmolScriptWait(titleGulp);
 
 }
 
@@ -116,7 +116,7 @@ function setCellgulp() {
 	cellGulp = 'var cellheader = \"' + cellHeadergulp + '\";'
 			+ 'var cellparameter = \"' + stringCellparamgulp + '\";'
 			+ 'cellgulp = [cellheader, cellparameter];';
-	setV(cellGulp);
+	runJmolScriptWait(cellGulp);
 }
 
 function setCoordinategulp() {
@@ -126,11 +126,11 @@ function setCoordinategulp() {
 	setCoorgulp();
 	flagShelgulp = confirm("Is the inter-atomic potential a core/shel one? \n Cancel stands for NO core/shel potential.");
 	if (sortofCoordinateGulp && typeSystem == 'crystal') {
-		coordinateString = selectedFrame + '.label("%e core %16.9[fxyz]")';
-		coordinateShel = selectedFrame + '.label("%e shel %16.9[fxyz]")';
+		coordinateString = frameSelection + '.label("%e core %16.9[fxyz]")';
+		coordinateShel = frameSelection + '.label("%e shel %16.9[fxyz]")';
 	} else {
-		coordinateString = selectedFrame + '.label("%e core %16.9[xyz]")';
-		coordinateShel = selectedFrame + '.label("%e shel %16.9[xyz]")';
+		coordinateString = frameSelection + '.label("%e core %16.9[xyz]")';
+		coordinateShel = frameSelection + '.label("%e shel %16.9[xyz]")';
 	}
 	if (flagShelgulp) {
 		coordinateGulp = 'var coordtype = \"' + sortofCoordinateGulp + '\";'
@@ -142,7 +142,7 @@ function setCoordinategulp() {
 				+ 'var coordcore = ' + coordinateString + ';'
 				+ 'coordgulp = [coordtype, coordcore];';
 	}
-	setV(coordinateGulp);
+	runJmolScriptWait(coordinateGulp);
 }
 
 var sortofCoordinateGulp = null;
@@ -164,7 +164,7 @@ function setSpacegroupgulp() {
 	spacegroupGulp = 'var spaceheader = \"spacegroup\";'
 			+ 'var spacegroup = \"' + interNumber + '\";'// TBC
 			+ 'spacegulp = [spaceheader, spacegroup];';
-	setV(spacegroupGulp);
+	runJmolScriptWait(spacegroupGulp);
 }
 
 function setPotentialgulp() {
@@ -178,7 +178,7 @@ function setPotentialgulp() {
 				+ 'var restpot = \"#here the user should enter the inter-atomic potential setting\";'
 				+ 'restgulp = [species, restpot];';
 	}
-	setV(restGulp);
+	runJmolScriptWait(restGulp);
 
 }
 
@@ -191,10 +191,9 @@ function gulpDone() {
 function loadModelsGulp() {
 	runJmolScriptWait("script scripts/name.spt"); 
 	var counterFreq = 0;
-	extractAuxiliaryJmol();
-	cleanandReloadfrom();
+	cleanAndReloadForm();
 	getUnitcell("1");
-	selectDesireModel("1");
+	setFrameValues("1");
 	var counterMD = 0;
 	counterFreq = 0;
 	for (i = 0; i < Info.length; i++) {
@@ -203,14 +202,11 @@ function loadModelsGulp() {
 			line = "Intial";
 		}
 
-		addOption(getbyID("geom"), i + " " + line, i + 1);
+		addOption(getbyID('geom'), i + " " + line, i + 1);
 		geomData[i] = line;
 		counterFreq++;
 
 	}
-	// disableFreqOpts();
-	// symmetryModeAdd();
-	// setMaxMinPlot();
 	getSymInfo();
 	setName();
 

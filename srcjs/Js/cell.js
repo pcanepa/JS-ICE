@@ -1,17 +1,17 @@
 function saveFractionalCoordinate() {
 	warningMsg("Make sure you had selected the model you would like to export.");
 
-	if (selectedFrame == null)
+	if (frameSelection == null)
 		getUnitcell("1");
 
 	var x = "var cellp = [" + roundNumber(aCell) + ", " + roundNumber(bCell)
 	+ ", " + roundNumber(cCell) + ", " + roundNumber(alpha) + ", "
 	+ roundNumber(beta) + ", " + roundNumber(gamma) + "];"
 	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
-	+ selectedFrame + '.label("%a %16.9[fxyz]");'
+	+ frameSelection + '.label("%a %16.9[fxyz]");'
 	+ 'var lista = [cellparam, xyzfrac];'
 	+ 'WRITE VAR lista "?.XYZfrac" ';
-	setV(x);
+	runJmolScriptWait(x);
 }
 
 //This reads out cell parameters given astructure.
@@ -92,9 +92,9 @@ function getUnitcell(i) {
 
 function setUnitCell() {
 	getUnitcell(frameValue);
-	if (selectedFrame == null || selectedFrame == "" || frameValue == ""
+	if (frameSelection == null || frameSelection == "" || frameValue == ""
 		|| frameValue == null) {
-		selectedFrame = "{1.1}";
+		frameSelection = "{1.1}";
 		frameNum = 1.1;
 		getUnitcell("1");
 	}
@@ -133,9 +133,9 @@ function setCellMeasure(value) {
 function setCellDotted() {
 	var cella = checkBoxX('cellDott');
 	if (cella == "on") {
-		setV("unitcell DOTTED ;");
+		runJmolScriptWait("unitcell DOTTED ;");
 	} else {
-		setV("unitcell ON;");
+		runJmolScriptWait("unitcell ON;");
 	}
 }
 
@@ -176,7 +176,7 @@ function setPackaging(packMode) {
 getKindCell = function() {
 	var kindCell = getbyName("cella");
 	var kindCellfinal = null;
-	for ( var i = 0; i < kindCell.length; i++)
+	for (var i = 0; i < kindCell.length; i++)
 		if (kindCell[i].checked)
 			return kindCell[i].value;
 	return "";
@@ -214,6 +214,11 @@ function setCellType(value) {
 	cellOperation();
 }
 
+function applyPack(range) {
+	setPackRangeAndReload(parseFloat(range).toPrecision(2));
+	getbyID("packMsg").innerHTML = packRange + " &#197";
+}
+
 function setManualOrigin() {
 
 	var x = getValue("par_x");
@@ -228,46 +233,10 @@ function setManualOrigin() {
 	cellOperation();
 }
 
-//This controls the refined motion of the structure
-var motion = "";
-function setKindMotion(valueList) {
-	motion = valueList;
-	if (motion == "select")
-		errorMsg("Please select the motion");
-	return motion;
-}
-
-function setMotion(axis) {
-	var magnitudeMotion = getbyID("fineOrientMagn").value;
-
-	if (motion == "select" || motion == "") {
-		errorMsg("Please select the motion");
-		return false;
-	}
-
-	// /(motion == "translate" )? (makeDisable("-z") + makeDisable("z")) :
-	// (makeEnable("-z") + makeEnable("z"))
-
-	if (magnitudeMotion == "") {
-		errorMsg("Please, check value entered in the textbox");
-		return false;
-	}
-
-	var stringa = "Selected" + " " + axis + " " + magnitudeMotion;
-	if (motion == "translate" && (axis == "-x" || axis == "-y" || axis == "-z")) {
-		axis = axis.replace("-", "");
-		stringa = "Selected" + " " + axis + " -" + magnitudeMotion;
-	}
-
-	(!getbyID("moveByselection").checked) ? setV(motion + " " + axis + " "
-			+ magnitudeMotion) : setV(motion + stringa);
-
-}
-
 function setFashionAB(valueList) {
 
 	var radio = getbyName("abFashion");
-	for ( var i = 0; i < radio.length; i++) {
+	for (var i = 0; i < radio.length; i++) {
 		if (radio[i].checked == true)
 			var radioValue = radio[i].value;
 	}
@@ -275,11 +244,11 @@ function setFashionAB(valueList) {
 	var fashion = (radioValue == "on") ? 'OPAQUE' : 'TRANSLUCENT';
 
 	if (valueList != "select")
-		setV('color ' + valueList + ' ' + fashion);
+		runJmolScriptWait('color ' + valueList + ' ' + fashion);
 }
 
 function setUnitCellOrigin(value) {
-	setV("unitcell { " + value + " }");
+	runJmolScriptWait("unitcell { " + value + " }");
 	var aval = value.split(" ");
 	setValue("par_x", eval(aval[0]));
 	setValue("par_y", eval(aval[1]));
@@ -303,7 +272,7 @@ function getSymInfo() {
 		var latticetype = "?";
 		var nop = 0;
 		var slist = "";
-		for ( var i = 0; i < S.length; i++) {
+		for (var i = 0; i < S.length; i++) {
 			var line = S[i].split(":");
 			if (line[0].indexOf("Hermann-Mauguin symbol") == 0)
 				s += "<br>"
@@ -354,7 +323,7 @@ function getSymInfo() {
 		s += "<br><select id='atomselect' onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\"  class='select'><option value=0>base atoms</option>";
 		s += "<option value='{0 0 0}'>{0 0 0}</option>";
 		s += "<option value='{1/2 1/2 1/2}'>{1/2 1/2 1/2}</option>";
-		for ( var i = 0; i < nPoints; i++)
+		for (var i = 0; i < nPoints; i++)
 			s += "<option value=" + i + (i == 0 ? " selected" : "") + ">"
 			+ info[i] + "</option>";
 		s += "</select>";
@@ -375,13 +344,13 @@ function getSelect(symop) {
 	var atomi = d.selectedIndex;
 	var pt00 = d[d.selectedIndex].value;
 	var showatoms = (getbyID("chkatoms").checked || atomi == 0);
-	setV("display " + (showatoms ? "all" : "none"));
+	runJmolScriptWait("display " + (showatoms ? "all" : "none"));
 	var d = getbyID("symselect");
 	var iop = parseInt(d[d.selectedIndex].value);
 	// if (!iop && !symop) symop = getbyID("txtop").value
 	if (!symop) {
 		if (!iop) {
-			setV("select *;color opaque;draw sym_* delete");
+			runJmolScriptWait("select *;color opaque;draw sym_* delete");
 			return
 
 		}
@@ -417,7 +386,7 @@ function getSelect(symop) {
 		}
 	}
 	script = "set echo top right;echo " + secho + ";" + script;
-	setV(script);
+	runJmolScriptWait(script);
 }
 
 function deleteSymmetry() {
@@ -447,9 +416,9 @@ function showCoord(b, c, d, e, f) {
 	// setMeasureText(b);
 	if (measureCoord) {
 		if (kindCoord == "fractional") {
-			setV('Label "%a: %.2[fX] %.2[fY] %.2[fZ]"');
+			runJmolScriptWait('Label "%a: %.2[fX] %.2[fY] %.2[fZ]"');
 		} else {
-			setV('Label "%a: %1.2[atomX] %1.2[atomY] %1.2[atomZ]"');
+			runJmolScriptWait('Label "%a: %1.2[atomX] %1.2[atomY] %1.2[atomZ]"');
 		}
 	}
 }

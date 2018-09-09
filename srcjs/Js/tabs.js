@@ -48,13 +48,13 @@ MENU_SURFACE  = 7;
 MENU_OPTIMIZE = 8;
 MENU_SPECTRA  = 9;
 MENU_EM       =10;
-MENU_MAIN     =11;
+MENU_OTHER    =11;
 
 //Common variables
 function defineMenu() {
 	addTab("File", "fileGroup", "Import, Export files.");
 	addTab("Cell", "cellGroup", "Modify cell features and symmetry.");
-	addTab("Show", "apparenceGroup",
+	addTab("Show", "showGroup",
 	"Change atom, bond colours, and dimensions.");
 	addTab("Edit", "editGroup", "Change connectivity and remove atoms.");
 	//addTab("Build", "builGroup", "Modify and optimize structure.");
@@ -66,41 +66,46 @@ function defineMenu() {
 	addTab("Optimize", "geometryGroup", "Geometry optimizations.");
 	addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
 	addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
-	addTab("Main", "otherpropGroup",
+	addTab("Other", "otherpropGroup",
 	"Change background, light settings and other.");
 }
 
 var tabTimeouts = [];
 var tabDelayMS = 1000;
 
-var grpDispDelayed = function(n, isClick) {
+var TAB_OVER  = 0;
+var TAB_CLICK = 1;
+var TAB_OUT   = 2;
+
+function grpDisp(n) {
+	grpDispDelayed(n, TAB_CLICK);
+}
+
+var grpDispDelayed = function(n, mode) {
 	for (var i = tabTimeouts.length; --i >= 0;) {
 		if (tabTimeouts[i])
 			clearTimeout(tabTimeouts[i]);
 		tabTimeouts = [];
 	}	
-	switch(isClick) {
-	case 1:
-		grpDisp(n);	
-		break;
-	case 2:
-		return;
-	default:
+	switch(mode) {
+	case TAB_OVER:
 		tabTimeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},tabDelayMS);
+		break;
+	case TAB_CLICK:
+		for (var i = 0; i < tabMenu.length; i++) {
+			getbyID(tabMenu[i].grp).style.display = "none";
+			tabMenu[i].disp = 0;
+		}
+		getbyID(tabMenu[n].grp).style.display = "inline";
+		tabMenu[n].disp = 1;
+		showMenu(n);
+		break;
+	case TAB_OUT:
+		break;
 	}
 }
 
-function grpDisp(i) {
-	for ( var j = 0; j < tabMenu.length; j++) {
-		getbyID(tabMenu[j].grp).style.display = "none";
-		tabMenu[j].disp = 0;
-	}
-	getbyID(tabMenu[i].grp).style.display = "inline";
-	tabMenu[i].disp = 1;
-	showMenu(i);
-}
-
-var arrayGeomgrp = new Array(
+var arrayGeomObjects = new Array(
 		"appletdiv", 
 		"graphdiv", 
 		"plottitle",
@@ -109,18 +114,17 @@ var arrayGeomgrp = new Array(
 		"graphdiv1", 
 		"plottitle1", 
 		"plotarea1");
-var freqArrGr = new Array(
+var arrayFreqObjects = new Array(
 		"freqdiv", 
 		"graphfreqdiv", 
 		"plottitlefreq",
 		"plotareafreq");
 
-var hideArrays = function(freqDisplay) {
-	freqDisplay || (freqDisplay = "none");
-	for ( var i = 0; i < arrayGeomgrp.length; i++)
-		getbyID(arrayGeomgrp[i]).style.display = "none";
-	for ( var j = 0; j < freqArrGr.length; j++)
-		getbyID(freqArrGr[j]).style.display = freqDisplay;
+var hideArrays = function(menu) {
+	for (var i = 0; i < arrayGeomObjects.length; i++)
+		getbyID(arrayGeomObjects[i]).style.display = (menu == MENU_OPTIMIZE ? "block" : "none");
+	for (var j = 0; j < arrayFreqObjects.length; j++)
+		getbyID(arrayFreqObjects[j]).style.display = (menu = MENU_SPECTRA ? "block" : "none");
 }
 
 var enterTab = function() {
@@ -136,8 +140,7 @@ var showMenu = function(index) {
 	resetSymmetryView();
 	switch (index) {
 	case MENU_FILE:
-		hideArrays();
-		exitFreqGroup();
+		enterTab();
 		break;
 	case MENU_CELL:
 		enterTab();
@@ -145,12 +148,11 @@ var showMenu = function(index) {
 		getSymInfo();
 		break;
 	case MENU_SHOW:
-		enterShow();
 		enterTab();
+		enterShow();
 		break;
 	case MENU_EDIT:
 		enterEdit();
-		enterTab();
 		break;
 	case MENU_MEASURE:
 		enterTab();
@@ -167,22 +169,25 @@ var showMenu = function(index) {
 		hideArrays();
 		break;
 	case MENU_OPTIMIZE:
-		hideArrays();
+		hideArrays(MENU_OPTIMIZE);
 		exitIsosurface();
 		exitFreqGroup();
-		// if(flagCryVasp)
+		enterOptimize();
+		plotEnergies();	
+		// if(flagCrystal)
 //		refresh();
 		break;
 	case MENU_SPECTRA:
-		hideArrays("block");
+		hideArrays(MENU_SPECTRA);
 		exitIsosurface();
+		enterSpectra();
 //		refreshFreq();
 		break;
 //	case ???:
 //		resetviewTab();
-//		for ( var i = 0; i < arrayGeomgrp.length; i++)
+//		for (var i = 0; i < arrayGeomgrp.length; i++)
 //			getbyID(arrayGeomgrp[i]).style.display = "none";
-//		for ( var j = 0; j < freqArrGr.length; j++)
+//		for (var j = 0; j < freqArrGr.length; j++)
 //			getbyID(freqArrGr[j]).style.display = "none";
 //		exitIsosurface();
 //		exitFreqGroup();
@@ -196,9 +201,9 @@ var showMenu = function(index) {
 //		exitFreqGroup();
 //		resetSymmetryView();
 		break;
-	case MENU_MAIN:
+	case MENU_OTHER:
 		enterTab();
-		enterMain();
+		setValuesOther();
 		break;
 	}
 
@@ -231,18 +236,9 @@ function getButtons() {
 							+ createButton("Feedback", 'Feedback', 'newAppletWindowFeed()');
 }
 
-function getMenus() {
-	return createFileGrp() + createAppearanceGrp() + createEditGroup()
-	+ createBuildGroup() + createMeasureGroup() + createOrientGrp()
-	+ createCellGrp() + createPolyGrp() + createIsoGrp()
-	+ createGeometryGrp() + createFreqGrp() + createElecpropGrp()
-	+ createotherpropGroup();
-	// + createHistGrp();
-}
-
 function createTabMenu() {
 	var strMenu = "<ul class='menu' id='menu'>";
-	for ( var menuIndex = 0; menuIndex < tabMenu.length; menuIndex++) {
+	for (var menuIndex = 0; menuIndex < tabMenu.length; menuIndex++) {
 		strMenu += createMenuCell(menuIndex);
 	}
 	strMenu += "</ul>";
@@ -252,7 +248,7 @@ function createTabMenu() {
 function createMenuCell(i) {
 
 	var sTab = "<li id='menu'+ i +' "; // Space is mandatory between i and "
-	sTab += "onClick='grpDispDelayed(" + i + ",1)' onmouseover='grpDispDelayed("+i+",0)' onmouseout='grpDispDelayed("+i+",2)'"; // BH 2018
+	sTab += "onClick='grpDispDelayed(" + i + ",TAB_CLICK)' onmouseover='grpDispDelayed("+i+",TAB_OVER)' onmouseout='grpDispDelayed("+i+",TAB_OUT)'"; // BH 2018
 	sTab += "class = 'menu' ";
 	sTab += ">";
 	sTab += "<a class = 'menu'>";
@@ -278,7 +274,7 @@ function toggleSlab() {
 }
 
 function resetSymmetryView() {
-	setV('select *;color atoms opaque; echo; draw off');
+	runJmolScriptWait('select *;color atoms opaque; echo; draw off');
 }
 
 var firstTimeBond = true;
@@ -292,47 +288,39 @@ function enterShow() {
 	firstTimeBond = false;
 }
 
-function enterMain() {
-	light1Slider.setValue(50);
-	light2Slider.setValue(50);
-	light3Slider.setValue(50);
-	getbyID("light1Msg").innerHTML = 40 + " %";
-	getbyID("light2Msg").innerHTML = 40 + " %";
-	getbyID("light3Msg").innerHTML = 40 + " %";
-
-}
-
-var firstTime = true;
+var firstTimeEdit = true;
 function enterEdit() {
-	if (firstTime) {
-		radiiConnect.setValue(50);
-		setV("set forceAutoBond ON; set bondMode AND");
-	}
-	getbyID("radiiConnectMsg").innerHTML = " " + 2.5 + " &#197";
-	setTimeout("setV(\"restore BONDS bondEdit\");", 400);
-	firstTime = false;
+	// BH 2018: Disabled -- unexpected behavior should not be on tab entry
+//	if (firstTimeEdit) {
+//		radiiConnectSlider.setValue(50);
+//		runJmolScriptWait("set forceAutoBond ON; set bondMode AND");
+//	}
+//	getbyID("radiiConnectMsg").innerHTML = " " + 2.5 + " &#197";
+//	setTimeout("runJmolScriptWait(\"restore BONDS bondEdit\");", 400);
+//	firstTimeEdit = false;
 }
 
 function resetviewTab() {
-	setV('select all; label off; halos off');
-	setV('showSelections FALSE; select none; set picking OFF; halos off; set LABEL off;');
+	// BH 2018: Why labels off? How would we save this?
+	runJmolScriptWait('select all;set selectionHalos off;halos off;set picking OFF; halos off;');
 	measureCoord = false;
 }
 
 function exitIsosurface() {
-	setV('isosurface delete all');
+	// BH 2018: Q: delete??? off?? How would we save the state?
+	//runJmolScriptWait('isosurface off');
 }
 
 function exitFreqGroup() {
-	setV('vibration off; vectors off');
+	runJmolScriptWait('vibration off; vectors off');
 }
 
 //function exitMenu() {
-//	setV('label off; select off');
+//	runJmolScriptWait('label off; select off');
 //}
 
 function exitElecpropGrp() {
-//	setV('script scripts/reload.spt');
+//	runJmolScriptWait('script scripts/reload.spt');
 //	restoreOrientation_e();
 }
 

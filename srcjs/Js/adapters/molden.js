@@ -28,8 +28,7 @@ moldenDone = function(msg) {
 
 var counterFreq = 0;
 function loadModelsMolden() {
-	extractAuxiliaryJmol();
-	cleanandReloadfrom();
+	cleanAndReloadForm();
 	var counterMD = 0;
 	counterFreq = 0;
 	for (i = 0; i < Info.length; i++) {
@@ -43,15 +42,15 @@ function loadModelsMolden() {
 	}
 
 	if (freqData != null) {
+		var vib = getbyID('vib');
 		for (i = 1; i < freqData.length; i++) {
 			var data = parseFloat(freqData[i].substring(0, freqData[i]
 					.indexOf("c") - 1));
-			addOption(getbyID("vib"), i + " A " + data + " cm^-1", i
+			addOption(vib, i + " A " + data + " cm^-1", i
 					+ counterFreq + 1);
 		}
 	}
 	disableFreqOpts();
-	setMaxMinPlot();
 	getSymInfo();
 	setName();
 }

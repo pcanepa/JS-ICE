@@ -30,10 +30,9 @@ dmolDone = function() {
 
 var counterFreq = 0;
 function loadModelsDmol() {
-	extractAuxiliaryJmol();
-	cleanandReloadfrom();
+	cleanAndReloadForm();
 	getUnitcell("1");
-	selectDesireModel("1");
+	setFrameValues("1");
 	var counterMD = 0;
 	counterFreq = 0;
 	for (i = 0; i < Info.length; i++) {
@@ -42,7 +41,7 @@ function loadModelsDmol() {
 			// alert(line)
 			if (line.search(/E =/i) != -1) {
 				// alert("geometry")
-				addOption(getbyID("geom"), i + " " + line, i + 1);
+				addOption(getbyID('geom'), i + " " + line, i + 1);
 				geomData[i] = line;
 				counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
@@ -53,18 +52,18 @@ function loadModelsDmol() {
 	}
 
 	if (freqData != null) {
+		var vib = getbyID('vib');
 		for (i = 1; i < freqData.length; i++) {
 			if (freqData[i] != null)
 				var data = parseFloat(freqData[i].substring(0, freqData[i]
 						.indexOf("c") - 1));
-			addOption(getbyID("vib"), i + " A " + data + " cm^-1", i
+			addOption(vib, i + " A " + data + " cm^-1", i
 					+ counterFreq + 1);
 		}
 	}
 	// These are in the vaspfunctions.js
 	disableFreqOpts();
 	symmetryModeAdd();
-	setMaxMinPlot();
 	getSymInfo();
 	setName();
 }

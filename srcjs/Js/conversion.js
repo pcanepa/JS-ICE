@@ -22,11 +22,14 @@
  *  02111-1307  USA.
  */
 
-//////////////////////////////////////VALUE CONVERTION AND ROUNDOFF
+//////////////////////////////////////VALUE conversion AND ROUNDOFF
+
+var finalGeomUnit = ""
+var unitGeomEnergy = "";
 
 var radiant = Math.PI / 180;
 
-	function substringEnergyToFloat(value) {
+function substringEnergyToFloat(value) {
 	if (value != null) {
 		var grab = parseFloat(
 				value.substring(value.indexOf('=') + 1, value.indexOf('H') - 1))
@@ -69,45 +72,6 @@ function substringIntFreqToFloat(value) {
 	return grab;
 }
 
-/////////////////////////////// LATTICE PARAMETERS AND COORDIANTE CONVERTION
-//From fractional to Cartesian
-var xx, xy, xz, yx, yy, yz, zx, zy, zz;
-function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
-		betaparam, gammaparam) {
-	if (aparam != null)
-		aCell = aparam;
-	if (bparam != null)
-		bCell = bparam;
-	if (cparam != null)
-		cCell = cparam;
-	if (alphaparam != null)
-		alpha = alphaparam;
-	if (betaparam != null)
-		beta = betaparam;
-	if (gammaparam != null)
-		gamma = gammaparam;
-	// formula repeated from
-	// http://en.wikipedia.org/wiki/Fractional_coordinates
-	v = Math.sqrt(1
-			- (Math.cos(alpha * radiant) * Math.cos(alpha * radiant))
-			- (Math.cos(beta * radiant) * Math.cos(beta * radiant))
-			- (Math.cos(gamma * radiant) * Math.cos(gamma * radiant))
-			+ 2
-			* (Math.cos(alpha * radiant) * Math.cos(beta * radiant) * Math
-					.cos(gamma * radiant)));
-	xx = aCell * Math.sin(beta * radiant);
-	xy = parseFloat(0.000);
-	xz = aCell * Math.cos(beta * radiant);
-	yx = bCell
-	* (((Math.cos(gamma * radiant)) - ((Math.cos(beta * radiant)) * (Math
-			.cos(alpha * radiant)))) / Math.sin(beta * radiant));
-	yy = bCell * (v / Math.sin(beta * radiant));
-	yz = bCell * Math.cos(alpha * radiant);
-	zx = parseFloat(0.000);
-	zy = parseFloat(0.000);
-	zz = cCell;
-}
-
 function cosRadiant(value) {
 	if (value != null) {
 		var angle = parseFloat(value).toPrecision(7);
@@ -139,108 +103,33 @@ function roundoff(value, precision) {
 	return result;
 }
 
-function setVacuum() {
-	// This if the file come from crystal output
-
-	switch (typeSystem) {
-	case "slab":
-		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
-		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
-				: (messageMsg("Vacuum set to: " + vaccum + " \305."));
-
-		var zMaxCoord = parseFloat(jmolEvaluate(selectedFrame + '.fz.max'));
-		vaccum = parseFloat(vaccum);
-		newcCell = (zMaxCoord * 2) + vaccum;
-		var factor = roundNumber(zMaxCoord + vaccum);
-		if (fractionalCoord == true) {
-			setV(selectedFrame + '.z = for(i;' + selectedFrame + '; ( i.z +'
-					+ factor + ') /' + newcell + ')');
-			alert("here i'm")
-		} else {
-			setV(selectedFrame + '.z = for(i;' + selectedFrame + '; i.z +'
-					+ factor + ')');
-		}
-		fromfractionaltoCartesian(null, null, newcCell, null, 90, 90);
-		break;
-	case "polymer":
-		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
-		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
-				: (messageMsg("Vacuum set to: " + vaccum + "  \305."));
-
-		var zMaxCoord = parseFloat(jmolEvaluate(selectedFrame + '.fz.max'));
-		vaccum = parseFloat(vaccum);
-		newcCell = (zMaxCoord * 2) + vaccum;
-		var factor = roundNumber(zMaxCoord + vaccum);
-		setV(selectedFrame + '.z = for(i;' + selectedFrame + '; i.z +' + factor
-				+ ')');
-		setV(selectedFrame + '.y = for(i;' + selectedFrame + '; i.y +' + factor
-				+ ')');
-		fromfractionaltoCartesian(null, newcCell, newcCell, 90, 90, 90);
-		break;
-	case "molecule":
-		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
-		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
-				: (messageMsg("Vacuum set to: " + vaccum + " \305."));
-
-		var zMaxCoord = parseFloat(jmolEvaluate(selectedFrame + '.fz.max'));
-		vaccum = parseFloat(vaccum);
-		newcCell = (zMaxCoord * 2) + vaccum;
-		var factor = roundNumber(zMaxCoord + vaccum);
-		setV(selectedFrame + '.z = for(i;' + selectedFrame + '; i.z +' + factor
-				+ ')');
-		setV(selectedFrame + '.y = for(i;' + selectedFrame + '; i.y +' + factor
-				+ ')');
-		setV(selectedFrame + '.x = for(i;' + selectedFrame + '; i.x +' + factor
-				+ ')');
-		fromfractionaltoCartesian(newcCell, newcCell, newcCell, 90, 90, 90);
-		break;
-
-	}
-
-}
-
-function trasnfromcartTocartnm() {
-	setV(selectedFrame + '.z = for(i;' + selectedFrame + '; i.z/10)');
-	setV(selectedFrame + '.y = for(i;' + selectedFrame + '; i.y/10)');
-	setV(selectedFrame + '.x = for(i;' + selectedFrame + '; i.x/10)');
-}
-
-function trasnscartfromnmToCart() {
-	setV(selectedFrame + '.z = for(i;' + selectedFrame + '; i.z*10)');
-	setV(selectedFrame + '.y = for(i;' + selectedFrame + '; i.y*10)');
-	setV(selectedFrame + '.x = for(i;' + selectedFrame + '; i.x*10)');
-
-}
-
-/////////////////////////////////END LATTICE PARAMETERS AND COORDIANTE
-//CONVERTION
 
 ////////////////////////////////ENERGY CONV
-var finalGeomUnit = ""
-	function convertPlot(value) {
+
+function convertPlot(value) {
 	var unitEnergy = value;
 
 	// ////var vecUnitEnergyVal = new Array ("h", "e", "r", "kj", "kc");
-	setConvertionParam();
+	setconversionParam();
 	switch (unitEnergy) {
 
 	case "h": // Hartree
 		finalGeomUnit = " Hartree";
-		if (flagQuantum) {
+		if (flagQuantumEspresso) {
 			convertGeomData(fromRydbergtohartree);
-		} else if (!flagCryVasp || flagOutcar || flagGulp) {
+		} else if (!flagCrystal || flagOutcar || flagGulp) {
 			convertGeomData(fromevToHartree);
-		} else if (flagCryVasp || flagDmol) {
+		} else if (flagCrystal || flagDmol) {
 			convertGeomData(fromHartreetoHartree);
 		}
 		break;
 	case "e": // eV
 		finalGeomUnit = " eV";
-		if (flagCryVasp || flagDmol) {
+		if (flagCrystal || flagDmol) {
 			convertGeomData(fromHartreetoEv);
-		} else if (flagQuantum) {
+		} else if (flagQuantumEspresso) {
 			convertGeomData(fromRydbergtoEv);
-		} else if (!flagCryVasp || flagOutcar || flagGulp) {
+		} else if (!flagCrystal || flagOutcar || flagGulp) {
 			convertGeomData(fromevtoev);
 		}
 
@@ -248,11 +137,11 @@ var finalGeomUnit = ""
 
 	case "r": // Rydberg
 		finalGeomUnit = " Ry";
-		if (flagCryVasp || flagDmol) {
+		if (flagCrystal || flagDmol) {
 			convertGeomData(fromHartreetoRydberg);
-		} else if (!flagCryVasp || flagOutcar || flagGulp) {
+		} else if (!flagCrystal || flagOutcar || flagGulp) {
 			convertGeomData(fromevTorydberg);
-		} else if (flagQuantum) {
+		} else if (flagQuantumEspresso) {
 			convertGeomData(fromRydbergTorydberg);
 		}
 		break;
@@ -260,11 +149,11 @@ var finalGeomUnit = ""
 	case "kj": // Kj/mol
 		finalGeomUnit = " kJ/mol"
 
-			if (flagCryVasp || flagDmol) {
+			if (flagCrystal || flagDmol) {
 				convertGeomData(fromHartreetokJ);
-			} else if (!flagCryVasp || flagOutcar || flagGulp) {
+			} else if (!flagCrystal || flagOutcar || flagGulp) {
 				convertGeomData(fromevTokJ);
-			} else if (flagQuantum) {
+			} else if (flagQuantumEspresso) {
 				convertGeomData(fromRydbergToKj);
 			}
 		break;
@@ -272,56 +161,45 @@ var finalGeomUnit = ""
 	case "kc": // Kcal*mol
 		finalGeomUnit = " kcal/mol"
 			
-			if (flagCryVasp || flagDmol) {
+			if (flagCrystal || flagDmol) {
 				convertGeomData(fromHartreetokcalmol);
-			} else if (!flagCryVasp || flagOutcar || flagGulp) {
+			} else if (!flagCrystal || flagOutcar || flagGulp) {
 				convertGeomData(fromevtokcalmol);
-			} else if (flagQuantum) {
+			} else if (flagQuantumEspresso) {
 				convertGeomData(fromRytokcalmol);
 			}
 		break;
 	}
 }
 
-/*
- * var flagCryVasp = true; // if flagCryVasp = true crystal output var
- * flagGromos = false; var flagGulp = false; var flagOutcar = false; var
- * flagGauss= false; var flagQuantum = false; var flagCif = false;
- */
-
-var unitGeomEnergy = "";
-function setConvertionParam() {
-	if (flagCryVasp || flagDmol) {
+function setconversionParam() {
+	if (flagCrystal || flagDmol) {
 		unitGeomEnergy = "H"; // Hartree
-	} else if ((!flagCryVasp && !flagQuantum) || (flagOutcar && !flagQuantum)) {
+	} else if ((!flagCrystal && !flagQuantumEspresso) || (flagOutcar && !flagQuantumEspresso)) {
 		unitGeomEnergy = "e"; // VASP
 	} else if (flagGulp) {
 		unitGeomEnergy = "k";
-	} else if (flagQuantum || !flagOutcar) {
+	} else if (flagQuantumEspresso || !flagOutcar) {
 		unitGeomEnergy = "R";
 	}
-
 }
 
-function convertGeomData(functionName) {
+function convertGeomData(f) {
 	// The required value is the end of the string Energy = -123.456 Hartree.
-	// Hartree
-	if (getbyID("geom") != null)
-		cleanList("geom");
+	var geom = getbyID('geom');
+	if (geom != null)
+		cleanList('geom');
 
-	var arraynewUnit = new Array();
+	var arraynewUnit = [];
 
 	var n = 0;
-	if (flagQuantum)
+	if (flagQuantumEspresso)
 		n = 1;
-	for ( var i = n; i < geomData.length; i++) {
-
-		arraynewUnit[i] = functionName(geomData[i].substring(geomData[i]
-		.indexOf('=') + 1, geomData[i].indexOf(unitGeomEnergy) - 1));
-		// /alert(arraynewUnit[i])
-		addOption(getbyID("geom"), i + " E = " + arraynewUnit[i]
-		+ finalGeomUnit, i + 1);
-
+	for (var i = n; i < geomData.length; i++) {
+		var data = geomData[i];
+		arraynewUnit[i] = f(data.substring(data.indexOf('=') + 1, 
+				data.indexOf(unitGeomEnergy) - 1));
+		addOption(geom, i + " E = " + arraynewUnit[i] + finalGeomUnit, i + 1);
 	}
 
 }
@@ -481,4 +359,4 @@ function fromAngstromtoBohr(value) {
 	return grab;
 }
 
-/////////////////////////////////END ENERGY CONVERTION
+/////////////////////////////////END ENERGY conversion

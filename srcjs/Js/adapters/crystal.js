@@ -28,6 +28,7 @@
 /////////
 
 var titleCRYS = null;
+
 function titleCRYSTAL() {
 	titleCRYS = prompt("Type here the job title:", "");
 	(titleCRYS == "" || titleCRYS == null) ? (titleCRYS = ' .d12 prepared with J-ICE ')
@@ -38,12 +39,12 @@ var numAtomCRYSTAL = null;
 var fractionalCRYSTAL = null;
 function atomCRYSTAL() {
 	if (typeSystem == "molecule")
-		fractionalCRYSTAL = selectedFrame + '.label("%l %16.9[xyz]")';
-	setV("print " + fractionalCRYSTAL)
+		fractionalCRYSTAL = frameSelection + '.label("%l %16.9[xyz]")';
+	runJmolScriptWait("print " + fractionalCRYSTAL)
 	// alert(typeSystem);
 
-	numAtomCRYSTAL = selectedFrame + ".length";
-	fractionalCRYSTAL = selectedFrame + '.label("%l %16.9[fxyz]")';
+	numAtomCRYSTAL = frameSelection + ".length";
+	fractionalCRYSTAL = frameSelection + '.label("%l %16.9[fxyz]")';
 	// alert(typeSystem);
 }
 
@@ -51,10 +52,8 @@ var systemCRYSTAL = null;
 var keywordCRYSTAL = null;
 var symmetryCRYSTAL = null;
 function exportCRYSTAL() {
-	// alert("CRYSTAL")
 	var endCRYSTAL = "TEST', 'END";
 	var script = "";
-
 	warningMsg("Make sure you had selected the model you would like to export.")
 	titleCRYSTAL();
 	setUnitCell();
@@ -165,215 +164,22 @@ function exportCRYSTAL() {
 		break;
 	}// end switch
 	script = script.replace("\n\n", "\n");
-	setV(script);
-}
-
-//prevSelectedframe needs because of the conventional
-var prevSelectedframe = null;
-var prevFrame = null;
-function figureOutSpaceGroup() {
-	saveStatejust();
-	prevSelectedframe = selectedFrame;
-	if (frameValue == null || frameValue == "" || flagCif)
-		framValue = 1;
-	prevFrame = frameValue;
-	magnetic = confirm('It\'s the primitive cell ?')
-	// crystalPrev = confirm('Does the structure come from a previous CRYSTAL
-	// calcultion?')
-	if (magnetic) { // This option is for quantum espresso
-		if (flagCryVasp) {
-			reload(null, "conv", "delete not cell=555;");
-		} else {
-			reload(null, null, "delete not cell=555;");
-		}
-	} else {
-		if (flagCryVasp) {
-			reload(null, "conv")
-		} else {
-			reload()
-		}
-	}
-	getSpaceGroup();
-}
-
-var interNumber = "";
-getSpaceGroup = function() {
-	var s = ""
-	var info = jmolEvaluate('show("spacegroup")')
-	if (info.indexOf("x,") < 0) {
-		s = "no space group"
-	} else {
-		var S = info.split("\n")
-		for ( var i = 0; i < S.length; i++) {
-			var line = S[i].split(":")
-			if (line[0].indexOf("international table number") == 0)
-				s = parseInt(S[i]
-						.replace(/international table number:/, ""));
-		}
-	}
-	interNumber = parseInt(s);
-	getUnitcell(prevFrame);
-	findCellParameters()
-}
-
-var stringCellParam;
-var cellDimString = null;
-var ibravQ = "";
-function findCellParameters() {
-	// /from crystal manual http://www.crystal.unito.it/Manuals/crystal09.pdf
-	switch (true) {
-
-	case ((interNumber <= 2)): // Triclinic lattices
-
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(bCell) + ", "
-				+ roundNumber(cCell) + ", " + roundNumber(alpha) + ", "
-				+ roundNumber(beta) + ", " + roundNumber(gamma);
-		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(aCell)
-				+ " \n celdm(2) =  " + roundNumber(bCell / aCell)
-				+ " \n celdm(3) =  " + roundNumber(cCell / aCell)
-				+ " \n celdm(4) =  " + cosRadiant(alpha) + " \n celdm(5) =  "
-				+ (cosRadiant(beta)) + " \n celdm(6) =  "
-				+ (cosRadiant(gamma)) + " \n\n";
-		ibravQ = "14";
-		break;
-
-	case ((interNumber > 2) && (interNumber <= 15)): // Monoclinic lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(bCell) + ", "
-				+ roundNumber(cCell) + ", " + roundNumber(alpha);
-		if (!flagCryVasp && quantumEspresso) {
-			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(2) =  " + roundNumber(bCell / aCell)
-					+ " \n celdm(3) =  " + roundNumber(cCell / aCell)
-					+ " \n celdm(4) =  " + (cosRadiant(alpha))
-					+ " \n\n";
-			ibravQ = "12"; // Monoclinic base centered
-
-			var question = confirm("Is this a Monoclinic base centered lattice?")
-			if (question)
-				ibravQ = "13";
-		}
-		break;
-
-	case ((interNumber > 15) && (interNumber <= 74)): // Orthorhombic lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(bCell) + ", "
-				+ roundNumber(cCell);
-		if (!flagCryVasp && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(2) =  " + roundNumber(bCell / aCell)
-					+ " \n celdm(3) =  " + roundNumber(cCell / aCell) + " \n\n";
-			ibravQ = "8";
-
-			var question = confirm("Is this a Orthorhombic base-centered lattice?")
-			if (question) {
-				ibravQ = "9";
-			} else {
-				var questionfcc = confirm("Is this a Orthorhombic face-centered (fcc) lattice?");
-				if (questionfcc) {
-					ibravQ = "10";
-				} else {
-					ibravQ = "11";// Orthorhombic body-centered
-				}
-			}
-
-		}
-		break;
-
-	case ((interNumber > 74) && (interNumber <= 142)): // Tetragonal lattices
-
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(cCell);
-		if (!flagCryVasp && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(3) =  " + roundNumber(cCell / aCell) + " \n\n";
-			ibravQ = "6";
-			var question = confirm("Is this a Tetragonal I body centered (bct) lattice?");
-			if (question)
-				ibravQ = "7";
-		}
-		break;
-
-	case ((interNumber > 142) && (interNumber <= 167)): // Trigonal lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(alpha) + ", "
-				+ roundNumber(beta) + ", " + roundNumber(gamma);
-		cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-				+ " \n celdm(4) =  " + (cosRadiant(alpha))
-				+ " \n celdm(5) = " + (cosRadiant(beta))
-				+ " \n celdm(6) =  " + (cosRadiant(gamma));
-		ibravQ = "5";
-		var question = confirm("Is a romboheadral lattice?")
-		if (question) {
-			stringCellParam = roundNumber(aCell) + ", " + roundNumber(cCell);
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(4) =  " + (cosRadiant(alpha))
-					+ " \n celdm(5) = " + (cosRadiant(beta))
-					+ " \n celdm(6) =  " + (cosRadiant(gamma))
-					+ " \n\n";
-			ibravQ = "4";
-		}
-		break;
-
-	case ((interNumber > 167) && (interNumber <= 194)): // Hexagonal lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(cCell);
-		if (!flagCryVasp && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(3) = " + roundNumber(cCell / aCell) + " \n\n";
-			ibravQ = "4";
-		}
-		break;
-	titleCRYS == ""
-case ((interNumber > 194) && (interNumber <= 230)): // Cubic lattices
-	stringCellParam = roundNumber(aCell);
-	if (!flagCryVasp && quantumEspresso) {
-		cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell);
-		// alert("I am here");
-		ibravQ = "1";
-		var question = confirm("Is a face centered cubic lattice?")
-		if (question) {
-			var questionBase = confirm("Is a body centered cubic lattice?")
-			if (questionBase) {
-				ibravQ = "3";
-			} else {
-				ibravQ = "2";
-			}
-		}
-
-	}
-	break;
-
-default:
-	errorMsg("SpaceGroup not found in range.");
-	return false;
-	break;
-
-}// end switch
-
-stringCellparamgulp = roundNumber(aCell) + ' ' + roundNumber(bCell) + ' '
-		+ roundNumber(cCell) + ' ' + roundNumber(alpha) + ' '
-		+ roundNumber(beta) + ' ' + roundNumber(gamma);
-//	alert(stringCellparamgulp)
-if (flagCryVasp)
-	savCRYSTALSpace();
-
-if (!flagGulp) {
-	reload("primitive");
-	loadStatejust();
-}
+	runJmolScriptWait(script);
 }
 
 function savCRYSTALSpace() {
-var endCRYSTAL = "TEST', 'END";
-//	alert(aCell + " " + bCell);
-script = "var cellp = [" + stringCellParam + "];"
-		+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
-		+ titleCRYS + "', " + systemCRYSTAL + ", " + keywordCRYSTAL + ", "
-		+ interNumber + "];" + 'crystalArr = crystalArr.replace("\n\n"," ");'
-		+ "var crystalRestArr = [" + numAtomCRYSTAL + ", " + fractionalCRYSTAL
-		+ ", '" + endCRYSTAL + "'];"
-		+ 'crystalRestArr = crystalRestArr.replace("\n\n"," ");'
-		+ 'var finalArr = [crystalArr, cellparam , crystalRestArr];'
-		+ 'finalArr = finalArr.replace("\n\n","\n");'
-		+ 'WRITE VAR finalArr "?.d12"';
-setV(script);
-
+	var endCRYSTAL = "TEST', 'END";
+	var script = "var cellp = [" + stringCellParam + "];"
+			+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
+			+ titleCRYS + "', " + systemCRYSTAL + ", " + keywordCRYSTAL + ", "
+			+ interNumber + "];" + 'crystalArr = crystalArr.replace("\n\n"," ");'
+			+ "var crystalRestArr = [" + numAtomCRYSTAL + ", " + fractionalCRYSTAL
+			+ ", '" + endCRYSTAL + "'];"
+			+ 'crystalRestArr = crystalRestArr.replace("\n\n"," ");'
+			+ 'var finalArr = [crystalArr, cellparam , crystalRestArr];'
+			+ 'finalArr = finalArr.replace("\n\n","\n");'
+			+ 'WRITE VAR finalArr "?.d12"';
+	runJmolScript(script);
 }
 
 ////////////////////////END SAVE INPUT
@@ -385,27 +191,9 @@ crystalDone = function() {
 	loadDone(loadModelsCrystal);
 }
 
-function onClickReloadSymm() {
-	reload();
-	if (!flagGauss) {
-		setName();
-	} else {
-		reloadGaussFreq();
-	}		
-}
-
-var freqData = new Array;
-var geomData = new Array;
-//This is called each time a new file is loaded
-function loadModelsCrystal() {	
-	extractAuxiliaryJmol();
-	if (getbyID("sym") != null)
-		cleanList("sym");
-	if (getbyID("geom") != null)
-		cleanList("geom");
-	getUnitcell("1");
-	setV("echo");
-	counterFreq = 0;	
+function setGeomAndFreqData() {
+	counterFreq = 0;
+	var vib = getbyID('vib');
 	for (i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
 			var line = Info[i].name;
@@ -413,274 +201,43 @@ function loadModelsCrystal() {
 				if (i > 0 && i < Info.length)
 					var previous = substringEnergyToFloat(Info[i - 1].name);
 				if (Info[i].name != null) {
-					addOption(getbyID("geom"), i + " " + Info[i].name, i + 1);
+					addOption(getbyID('geom'), i + " " + Info[i].name, i + 1);
 					geomData[i] = Info[i].name;
 					counterFreq++;
 				}
 			} else if (line.search(/cm/i) != -1) {
-				addOption(getbyID("vib"), (i + counterFreq +1) + " " + Info[i].name, i + 1);
+				addOption(vib, (i + counterFreq +1) + " " + Info[i].name, i + 1);
 				if (line.search(/LO/) == -1)
 					freqData[i - counterFreq] = Info[i].name;
 			}
 	
 		}
-		setMaxMinPlot();
-		setTitleEcho();
-	}
+	} 
 }
 
-var counterFreq = 0;
+//This is called each time a new file is loaded
+function loadModelsCrystal() {	
+	getUnitcell("1");
+	runJmolScriptWait("echo");
+	setGeomAndFreqData();
+	setTitleEcho();
+}
+
+// this method was called when the Geometry Optimize and Spectra tabs
+// were clicked via a complex sequence of callbacks
+// but that is not done now, because all this should be done from a loadStructCallback.
 function reloadFastModels() {
-	extractAuxiliaryJmol();
 	setName();
 	unLoadall();
 	if (flagCryVasp) {
-		if (getbyID("sym") != null)
-			cleanList("sym");
-		if (getbyID("geom") != null)
-			cleanList("geom");
-		if (getbyID("vib") != null)
-			cleanList("vib");
 		getUnitcell("1");
-		setV("echo");
-		counterFreq = 0;
+		runJmolScriptWait("echo");
 		setTitleEcho();
-	
-		for (i = 0; i < Info.length; i++) {
-			if (Info[i].name != null) {
-				var line = Info[i].name;
-	
-				if (line.search(/Energy/i) != -1) { // Energy
-					if (i > 0 && i < Info.length)
-						var previous = substringEnergyToFloat(Info[i - 1].name);
-					if (Info[i].name != null) {
-						addOption(getbyID("geom"), i + " " + Info[i].name, i + 1);
-						geomData[i] = Info[i].name;
-						counterFreq++;
-					}
-				} else if (line.search(/cm/i) != -1) {
-					// onLoadparam();
-					// last changed Thu Jul 3 2014
-					 addOption(getbyID("vib"), (i - counterFreq) +1 + " "
-					 + Info[i].name, i + 1);
-					if (line.search(/LO/) == -1)
-						freqData[i - counterFreq] = Info[i].name;
-				}
-			}
-		}
-	
+		setGeomAndFreqData();
 		enableFreqOpts();
 		symmetryModeAdd();
-		setMaxMinPlot();
 		//getSymInfo();
 		setName();
 	}
 }
-
-function cleanandReloadfrom() {
-	unLoadall();
-	resetAll();
-	removeAll();
-	fillElementlist();
-	
-	if (getbyID("sym") != null)
-		cleanList("sym");
-	if (getbyID("geom") != null)
-		cleanList("geom");
-	if (getbyID("vib") != null)
-		cleanList("vib");
-	getUnitcell("1");
-	selectDesireModel("1");
-	setTitleEcho();
-}
-
-function countNullModel(arrayX) {
-	var valueNullelement = 0;
-	for ( var i = 0; i < arrayX.length; i++) {
-		if (arrayX[i].name == null || arrayX[i].name == "")
-			valueNullelement = valueNullelement + 1;
-	}
-	return valueNullelement;
-}
-
-refresh = function() {
-	saveState();
-	setLoadingMode(LOADING_MODE_PLOT_ENERGIES);
-	reload();
-	restoreState();
-}
-
-refreshFreq = function() {
-	saveState();
-	setLoadingMode(LOADING_MODE_PLOT_FREQUENCIES);
-	reload();
-}
-
-/////////////////////////////////// END LOAD
-
-/////////////////////////
-/////////////////////////////// FREQUENCY
-
-//This works out the symmetry classification on the frequency modes
-function symmetryModeAdd() {
-
-if (Info[3].modelProperties) {
-	var symm = new Array();
-	for ( var i = 1; i < Info.length; i++)
-		if (Info[i].name != null)
-			symm[i] = Info[i].modelProperties.vibrationalSymmetry;
-
-	var sortedSymm = unique(symm);
-}
-
-for ( var i = 0; i < Info.length; i++) {
-	if (Info[i].modelProperties) {
-		if (sortedSymm[i] != null)
-			addOption(getbyID("sym"), sortedSymm[i], sortedSymm[i])
-	}
-}
-}
-
-function loadAllFreq() {
-removeAll();
-
-var Info = extractAuxiliaryJmol("Frequencies")
-//alert('length '+ Info.length)
-for ( var i = 0; i < Info.length; i++)
-	addOption(getbyID("vib"), i + " " + Info[i].name, i + 1);
-
-}
-
-function onClickVibrate(select) {
-for ( var i = 0; i < document.modelsVib.vibration.length; i++) {
-	if (document.modelsVib.vibration[i].checked)
-		var radioval = document.modelsVib.vibration[i].value;
-}
-
-switch (radioval) {
-case "on":
-	runJmolScript("vibration on; vectors SCALE 15; vector 5; vibration SCALE 7;");
-	break;
-case "off":
-	runJmolScript("vibration off;");
-	break;
-}
-}
-
-//This is to load either IR or Raman modes
-function onClickModSelLoad(selectbox) {
-var Info = extractAuxiliaryJmol("Frequencies")
-for ( var i = 0; i < document.modelsVib.modAct.length; i++) {
-	// if(Info[i].name != null){
-	if (document.modelsVib.modAct[i].checked)
-		var rad_val = document.modelsVib.modAct[i].value;
-	// }
-}
-
-if (!Info[2].modelProperties.Frequency) {
-	errorMsg("No vibrations available")
-	return;
-}
-
-removeAll();
-resetFreq();
-
-switch (rad_val) {
-case "all":
-	for ( var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null)
-			addOption(getbyID("vib"), i + " " + Info[i].name, i + 1);
-	}
-	cleanList("sym");
-	symmetryModeAdd();
-	break;
-
-case "ir":
-	for ( var i = 1; i < Info.length; i++) {
-		if (Info[i].modelProperties.Frequency != null) {
-			if (Info[i].modelProperties.IRactivity == "A") {
-				addOption(getbyID("vib"), i + " " + Info[i].name, i + 1);
-			}
-		}
-	}
-	cleanList("sym");
-	symmetryModeAdd();
-	break;
-
-case "raman":
-	for ( var i = 1; i < Info.length; i++) {
-		if (Info[i].modelProperties.Frequency != null) {
-			if (Info[i].modelProperties.Ramanactivity == "A") {
-				addOption(getbyID("vib"), i + " " + Info[i].name, i + 1);
-			}
-		}
-	}
-	cleanList("sym");
-	symmetryModeAdd();
-	break;
-}
-}
-
-//This listens the action change the irep
-function onChangeListDesSymm(irep) {
-resetFreq();
-removeAll()
-var sym = Info;
-if (!flagGauss) {
-	for ( var i = 1; i < sym.length; i++) {
-		if (Info[i].modelProperties.vibrationalSymmetry != null) {
-			var value = sym[i].modelProperties.vibrationalSymmetry;
-			if (irep == value)
-				addOption(Jmol.outgetbyID("vib"), i + " " + sym[i].name, i + 1);
-		}
-	}
-} else {
-	changeIrepGauss(irep);
-}
-}
-
-//This resets the frequency state
-function resetFreq() {
-	setV("vibration off; vectors on");
-}
-var maxR = 0;
-function setMaxMinPlot() {
-var localInfo = extractAuxiliaryJmol("Frequencies")
-var loacalFreqCount = localInfo.length
-var irFrequency = new Array();
-
-try { 
-	for ( var i = 0; i < loacalFreqCount; i++) { // populate IR array
-		if (localInfo[i].modelProperties && localInfo[i].modelProperties.Frequency) {
-			irFrequency[i] = roundoff(substringFreqToFloat(localInfo[i].modelProperties.Frequency), 0);
-		}
-	}
-	//alert(irFrequency)
-	maxR = maxValue(irFrequency);
-} catch (err){
-		maxR = 3700
-}
-
-var max = maxR + 300;
-min = 0;
-setValue("nMax", max)
-setValue("nMin", min)
-}
-
-/////////////////////////////// END FREQUENCY
-
-function toogleFormObject(status, elements) {
-
-	if (status == "on") {
-		for ( var i = 0; i < elements.length; i++)
-			makeEnable(elements[i]);
-	}
-	if (status == "off") {
-		for ( var i = 0; i < elements.length; i++)
-			makeDisable(elements[i]);
-	}
-
-}
-
-
 

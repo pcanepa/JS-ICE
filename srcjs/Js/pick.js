@@ -1,11 +1,11 @@
 function setPicking(form) {
 	if (form.checked) {
 		runJmolScriptWait('showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom;halos on; ');
-		atomColor = "color atom";
+		colorWhat = "color atom";
 	} else {
 		runJmolScriptWait('select none;');
 	}
-	return atomColor;
+	return colorWhat;
 }
 
 function setPickingDelete(form) {
@@ -129,7 +129,7 @@ function pickPlanecallback(b, c, d, e) {
 					runJmolScriptWait('select within(' + distance + ',plane, $plane1)');
 					hideMode = " hide selected";
 					deleteMode = " delete selected";
-					atomColor = "color atoms";
+					colorWhat = "color atoms";
 					runJmolScriptWait('set PickCallback OFF');
 					counterClick = false;
 					return true;
@@ -160,7 +160,8 @@ function pickPlane2dcallback(b, c, d, e) {
 			if (spin) {
 				dueD_con = true;
 				dueD_planeMiller = false;
-				runJmolScript('draw off;isosurface ID "isosurface1" select ({0:47}) PLANE $plane1 MAP color range 0.0 2.0 "?.CUBE";set pickCallback ""');
+				// TODO BH 2018: What is this select ({0:47})?
+				runJmolScript('draw off;isosurface PLANE $plane1 MAP color range 0.0 2.0 "?.CUBE";set pickCallback ""');
 			} else {
 				messageMsg("Now load the *.CUBE potential / spin file.");
 				runJmolScript("draw off;isosurface PLANE $plane1 MAP '?.CUBE';set pickCallback ''");
@@ -187,7 +188,7 @@ function pickDistancecallback(b, c, d, e) {
 			// selection, unselect it by using the option: select by picking.')
 			hideMode = " hide selected";
 			deleteMode = " delete selected";
-			atomColor = "color atoms";
+			colorWhat = "color atoms";
 			counterClick = false;
 			uncheckBox(selectHideForm);
 			return true;

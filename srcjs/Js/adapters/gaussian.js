@@ -37,15 +37,16 @@ function loadModelsGaussian() {
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
 	// Reset program and set filename if available
 	// This also extract the auxiliary info
-	intizializeJiceGauss();
-
+	initializeJiceGauss();
+	var geom = getbyID('geom');
+	var vib = getbyID('vib');
 	for (i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
 			var line = Info[i].name;
 			// alert(line)
 			if (line.search(/E/i) != -1) {
 				// alert("geometry")
-				addOption(getbyID("geom"), i + " " + Info[i].name, i + 1);
+				addOption(geom, i + " " + Info[i].name, i + 1);
 				geomGauss[i] = Info[i].name;
 				if (Info[i].modelProperties.Energy != null
 						|| Info[i].modelProperties.Energy != "")
@@ -54,7 +55,7 @@ function loadModelsGaussian() {
 				counterGauss++;
 			} else if (line.search(/cm/i) != -1) {
 				// alert("vibration")
-				addOption(getbyID("vib"), i + " " + Info[i].name + " ("
+				addOption(vib, i + " " + Info[i].name + " ("
 						+ Info[i].modelProperties.IRIntensity + ")", i);
 				freqGauss[i - counterGauss] = Info[i].modelProperties.Frequency;
 				freqSymmGauss[i - counterGauss] = Info[i].modelProperties.FrequencyLabel;
@@ -62,26 +63,13 @@ function loadModelsGaussian() {
 			}
 		}
 	}
-
-	setMaxMinPlot();
 	symmetryModeAddGauss();
-
 }
 
-function intizializeJiceGauss() {
-	info = [];
-	extractAuxiliaryJmol();
-	var name = jmolGetPropertyAsJSON("filename");
+function initializeJiceGauss() {
 	setTitleEcho();
-	selectDesireModel("1");
-
+	setFrameValues("1");
 	cleanArrayGauss();
-	if (getbyID("sym") != null)
-		cleanList("sym");
-	if (getbyID("geom") != null)
-		cleanList("geom");
-	if (getbyID("vib") != null)
-		cleanList("vib");
 	disableFreqOpts();
 }
 
@@ -93,32 +81,25 @@ function cleanArrayGauss() {
 }
 
 function symmetryModeAddGauss() {
+	var sym = getbyID('sym');
 	sortedSymm = new Array;
 	sortedSymm = [];
 	sortedSymm = unique(freqSymmGauss);
 	//alert(sortedSymm)
-	for ( var i = 0; i < freqSymmGauss.length; i++) {
+	for (var i = 0; i < freqSymmGauss.length; i++) {
 		if (sortedSymm[i] != null)
-			addOption(getbyID("sym"), freqSymmGauss[i], freqSymmGauss[i])
+			addOption(sym, freqSymmGauss[i], freqSymmGauss[i])
 	}
 }
 
 function changeIrepGauss(irep) {
-	for ( var i = 0; i < freqGauss.length; i++) {
+	var vib = getbyID('vib');
+	for (var i = 0; i < freqGauss.length; i++) {
 		var value = freqSymmGauss[i];
 		if (irep == value)
-			addOption(getbyID("vib"), i + " " + freqSymmGauss[i] + " "
+			addOption(vib, i + " " + freqSymmGauss[i] + " "
 					+ freqGauss[i] + " (" + freqIntensGauss[i] + ")", i
 					+ counterGauss + 1);
 	}
 }
 
-function reloadGaussFreq() {
-	if (getbyID("vib") != null)
-		cleanList("vib");
-	for ( var i = 0; i < freqGauss.length; i++)
-		addOption(getbyID("vib"), i + " " + freqSymmGauss[i] + " "
-				+ freqGauss[i] + " (" + freqIntensGauss[i] + ")", i
-				+ counterGauss + 1);
-
-}
