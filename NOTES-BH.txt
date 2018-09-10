@@ -1,4 +1,14 @@
+BUILDING THE SITE:
+
+run build-site-01-jsmol.xml to unzip libjs/jsmol.zip into site/.
+run build-site-02-jice.xml to create j-ice.js and transfer necessary file into site/.
+
+You only have to run build-site-01-jsmol.xml if there is a new jsmol.zip file.
+
+2018.09.10 -- new jsmol.zip fixes problem with checkboxes in menu items
+
 Notes - Bob Hanson 2018.09.01
+
 
 - created branch hanson1
 - created directories:
@@ -18,7 +28,7 @@ site-resources/ contains all non-J-ice resources, including:
  	 scripts/
  	 *.html
  	 
-srcjs/          contains files to concatenate into J-Ice.js (by build-site.xml)
+srcjs/          contains files to concatenate into J-Ice.js (by build-site-jice.xml)
  
  	Js/         includes Js/adapters, which contains all program-specific file loading and saving code
  	
@@ -27,6 +37,7 @@ srcjs/          contains files to concatenate into J-Ice.js (by build-site.xml)
 tools/           contains ant-contrib.jar and closure_compiler.jar
 
 unused/          contains all unused files 
+
 
 2018.09.09
 

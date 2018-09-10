@@ -1,32 +1,39 @@
 function enterOrient() {
-	
+	slabSlider.setValue(100 - jmolEvaluate("slab"));
+	depthSlider.setValue(100 - jmolEvaluate("depth"));
+	if (jmolEvaluate("slabEnabled") == "true")
+		checkBox("slabToggle");
+	else
+		uncheckBox("slabToggle");
 }
 
 function exitOrient() {
 }
 
 function applySlab(x) {
-	getbyID('slabSliderMsg').innerHTML = x + "%" // display
-	runJmolScript("slab " + (100 - x) + ";")
+	getbyID('slabMsg').innerHTML = x + "%" // display
+	runJmolScriptWait("slab " + (100 - x) + ";")
 }
 
 function applyDepth(x) { // alternative displays:
-	getbyID('depthSliderMsg').innerHTML = (100 - x) + "%" // 100%
-	runJmolScript("depth " + (100 - x) + ";")
+	getbyID('depthMsg').innerHTML = (100 - x) + "%" // 100%
+	runJmolScriptWait("depth " + (100 - x) + ";")
 }
 
 function toggleSlab() {
 	var ctl = getbyID("slabToggle")
 	if (ctl.checked) {
-		runJmolScriptWait("spin off; slab on; slab 80;");
-		slabSlider.setValue(20);
-		applySlab(defaultFront);
-		depthSlider.setValue(defaultBack);
-		applyDepth(defaultBack);
+		runJmolScriptWait("slab on;");
+//		applySlab(slabSlider.getValue());
+//		applyDepth(depthSlider.getValue());
+//		slabSlider.setValue(20);
+//		applySlab(defaultFront);
+//		depthSlider.setValue(defaultBack);
+//		applyDepth(defaultBack);
 	} else {
 		runJmolScriptWait("slab off; ")
-		slabSlider.setValue(0);
-		depthSlider.setValue(0);
+//		slabSlider.setValue(0);
+//		depthSlider.setValue(0);
 	}
 }
 
