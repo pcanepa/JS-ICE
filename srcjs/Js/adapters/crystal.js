@@ -234,7 +234,6 @@ function reloadFastModels() {
 		setTitleEcho();
 		setGeomAndFreqData();
 		enableFreqOpts();
-		symmetryModeAdd();
 		//getSymInfo();
 	}
 }

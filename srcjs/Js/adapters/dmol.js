@@ -63,6 +63,5 @@ function loadModelsDmol() {
 	}
 	// These are in the vaspfunctions.js
 	disableFreqOpts();
-	symmetryModeAdd();
 	getSymInfo();
 }

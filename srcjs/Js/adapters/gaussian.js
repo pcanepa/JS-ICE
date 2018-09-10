@@ -63,7 +63,6 @@ function loadModelsGaussian() {
 			}
 		}
 	}
-	symmetryModeAddGauss();
 }
 
 function initializeJiceGauss() {
@@ -80,12 +79,10 @@ function cleanArrayGauss() {
 	counterGauss = 0;
 }
 
-function symmetryModeAddGauss() {
+function symmetryModeAdd_gaussian() {
+	// this method is called using self["symmetryModeAdd_" + type]
 	var sym = getbyID('sym');
-	sortedSymm = new Array;
-	sortedSymm = [];
-	sortedSymm = unique(freqSymmGauss);
-	//alert(sortedSymm)
+	var sortedSymm = unique(freqSymmGauss);
 	for (var i = 0; i < freqSymmGauss.length; i++) {
 		if (sortedSymm[i] != null)
 			addOption(sym, freqSymmGauss[i], freqSymmGauss[i])
