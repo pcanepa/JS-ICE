@@ -157,7 +157,6 @@ resetLoadFlags = function(isCrystal) {
 }
 
 setFlags = function(type) {
-	
 	// BH TODO: missing xmlvasp?
 	type = type.replace('load', '').toLowerCase();
 	switch (type) {
@@ -250,6 +249,7 @@ setFlags = function(type) {
 		flagCastep = true;
 		break;
 	}
+	symmetryModeAdd_type = self["symmetryModeAdd_" + type];
 }
 
 var sampleOptionArr = ["Load a Sample File", 

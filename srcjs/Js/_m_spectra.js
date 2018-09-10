@@ -53,6 +53,13 @@ var irData, ramanData, unknownData;
 
 var freqCount;
 
+
+function onClickSelectVib(value) {
+	showFrame(value);	
+	updateJmolForFreqParams();
+}
+
+
 function onClickModSpec() {
 	// all, ir, or raman radio buttons
 	if (!InfoFreq[2] || !InfoFreq[2].modelProperties.Frequency) {
@@ -61,7 +68,8 @@ function onClickModSpec() {
 	}
 
 	cleanLists();
-	resetFreq();		
+	resetFreq();
+	symmetryModeAdd();
 	var rad_val;
 	for (var i = 0; i < document.modelsVib.modSpec.length; i++) {
 		if (document.modelsVib.modSpec[i].checked) {
@@ -69,8 +77,6 @@ function onClickModSpec() {
 			break;
 		}
 	}	
-	cleanList('sym');
-	symmetryModeAdd();
 	var vib = getbyID('vib');			
 	switch (rad_val) {
 	case "all":
@@ -79,8 +85,7 @@ function onClickModSpec() {
 				addOption(vib, i + " " + InfoFreq[i].name, i + 1);
 			}
 		}
-		break;
-	
+		break;	
 	case "ir":
 		for (var i = 0; i < InfoFreq.length; i++) {
 			if (InfoFreq[i].modelProperties.Frequency != null) {
@@ -89,10 +94,7 @@ function onClickModSpec() {
 				}
 			}
 		}
-		cleanList('sym');
-		symmetryModeAdd();
-		break;
-	
+		break;	
 	case "raman":
 		for (var i = 0; i < InfoFreq.length; i++) {
 			if (InfoFreq[i].modelProperties.Frequency != null) {
@@ -101,8 +103,6 @@ function onClickModSpec() {
 				}
 			}
 		}
-		cleanList("sym");
-		symmetryModeAdd();
 		break;
 	}
 	plotFrequencies(true);
@@ -516,7 +516,7 @@ function defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
  * i =0 ; i < Info.length; i++){ vecorFreq[i] = Info[i].name; vecorChk[i] = 0
  * if(i == 0) vecorChk[i] = 1 counter++ }
  * 
- * var s = " Shift spectrum "; s+= createList("Frequencies", "", 0, 1, counter ,
+ * var s = " Shift spectrum "; s+= createSelect("Frequencies", "", 0, 1, counter ,
  * vecorFreq, vecorFreq, vecorChk) + "" s+=
  * createText2("rescaleSpectra","0.00","5","") + " cm<sup>-1</sup>"; s+=
  * createButton("rescaleSpectraButton","Shift","","") document.write(s); }
@@ -543,27 +543,27 @@ function minValue(irInt) {
 function symmetryModeAdd() {
 	cleanList('sym');
 	if (Info[3].modelProperties) {
+		if (symmetryModeAdd_type)
+			return symmetryModeAdd_type();
 		var symm = [];
 		for (var i = 1; i < Info.length; i++)
 			if (Info[i].name != null)
 				symm[i] = Info[i].modelProperties.vibrationalSymmetry;
 	
 		var sortedSymm = unique(symm);
-	}
-	
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].modelProperties) {
+		for (var i = 0; i < sortedSymm.length; i++) {
 			if (sortedSymm[i] != null)
-				addOption(getbyID("sym"), sortedSymm[i], sortedSymm[i])
+				addOption(getbyID('sym'), sortedSymm[i], sortedSymm[i])
 		}
 	}
+	
 }
 
 function setVibrationOn(isON) {
 	if (isON)
-		checkboxID("vibration");
+		checkBox("radVibrationOn");
 	else
-		uncheckboxID("vibration");
+		checkBox("radVibrationOff");
 	updateJmolForFreqParams();
 }
 
@@ -572,14 +572,15 @@ function onClickFreqParams() {
 }
 
 function updateJmolForFreqParams() {
-	var c = jmolColorPickers[getbyID("vectorColorPicker")].getJmolColor();
-	var script = "vibration " + isChecked("vibration")
-					+ ";vectors " + isChecked("vectors")
+	var c = jmolColorPickerBoxes["vectorColorPicker"].getJmolColor();
+	var script = "vibration " + isChecked("radVibrationOn")
 					+ ";" + getValueSel("vecsamplitude")
 					+ ";" + getValueSel("vecscale")
 					+ ";" + getValueSel("sizevec")
-					+ ";color vectors " + (isChecked("vibVectcolor") ? "none" :  c);
-	runJmolScriptWait("color vectors none")
+					+ ";color vectors " + (isChecked("vibVectcolor") ? "none" :  c)
+					+ ";vectors " + isChecked("vectors")				
+					;
+	runJmolScriptWait(script)
 }
 
 //function onClickVibrate(select) {
@@ -605,7 +606,7 @@ function onChangeListSym(irep) {
 			if (Info[i].modelProperties.vibrationalSymmetry != null) {
 				var value = Info[i].modelProperties.vibrationalSymmetry;
 				if (irep == value)
-					addOption(getbyID('sym'), i + " " + Info[i].name, i + 1);
+					addOption(getbyID('vib'), i + " " + Info[i].name, i + 1);
 			}
 		}
 	}
@@ -613,7 +614,8 @@ function onChangeListSym(irep) {
 
 //This resets the frequency state
 function resetFreq() {
-	runJmolScriptWait("vibration off; vectors on");
+	checkBox("radVibrationOff");
+	uncheckBox("vectors");
 }
 
 var maxR = 0;

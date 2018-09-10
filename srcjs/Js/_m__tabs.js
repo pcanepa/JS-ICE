@@ -79,11 +79,11 @@ var thisMenu = -1;
 
 var showMenu = function(menu) {
 	if (thisMenu >= 0)
-		window["exit" + menuNames[menu]]();
+		self["exit" + menuNames[menu]]();
 	thisMenu = menu;
 	exitTab();
 	hideArrays(menu);
-	window["enter" + menuNames[menu]]();
+	self["enter" + menuNames[menu]]();
 }
 
 

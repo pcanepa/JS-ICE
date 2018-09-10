@@ -141,7 +141,6 @@ function loadModelsCastep() {
 		}
 	}
 	disableFreqOpts();
-	symmetryModeAdd();
 	getSymInfo();
 }
 
