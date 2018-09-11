@@ -1,5 +1,5 @@
 function enterMeasure() {
-	
+
 }
 
 function exitMeasure() {
@@ -13,9 +13,9 @@ function viewCoord(value) {
 	measureCoord = true;
 	messageMsg("Pick the atom your interested, please.");
 	setPickingCallbackFunction(showCoord);
-	runJmolScriptWait("select *; label off" 
-			+'set defaultDistanceLabel "%10.7VALUE %UNITS"'
-			+'showSelections TRUE; select none; set picking ON;set picking LABEL; set picking SELECT atom; halos on; set LABEL on;');
+	runJmolScriptWait("select *; label off"
+			+ 'set defaultDistanceLabel "%10.7VALUE %UNITS"'
+			+ 'showSelections TRUE; select none; set picking ON;set picking LABEL; set picking SELECT atom; halos on; set LABEL on;');
 }
 
 function showCoord() {
@@ -42,7 +42,7 @@ function checkMeasure(value) {
 	var radiobutton = value;
 	var unit = getbyID('measureDist').value;
 	mesReset();
-	runJmolScriptWait('set pickingStyle MEASURE ON;');
+	runJmolScriptWait('set pickingStyle MEASURE ON; set MeasureCallback "measuramentCallback";');
 	if (radiobutton == "distance") {
 		if (unit == 'select') {
 			measureHint('Select the desired measure unit.');
@@ -51,35 +51,35 @@ function checkMeasure(value) {
 		}
 		measureHint('Pick two atoms');
 		runJmolScriptWait('set defaultDistanceLabel "%10.2VALUE %UNITS";'
-		+ 'showSelections TRUE; select none;  label on ; set picking on; set picking LABEL; set picking SELECT atom; set picking DISTANCE;'
-		+ "measure ON; set measurements ON; set showMeasurements ON; set measurements ON; set measurementUnits "
-				+ unit
-				+ ";set picking MEASURE DISTANCE;" +
-				  "set measurements ' + unitMeasure + ';"
-				+ 'label ON;');
+				+ 'showSelections TRUE; select none;  label on ; set picking on; set picking LABEL; set picking SELECT atom; set picking DISTANCE;'
+				+ "measure ON; set measurements ON; set showMeasurements ON; set measurements ON; set measurementUnits "
+				+ unit + ";set picking MEASURE DISTANCE;" + "set measurements "
+				+ unit + ";" + 'label ON;');
 
 	} else if (radiobutton == "angle") {
 		measureHint('Pick three atoms');
 		runJmolScriptWait('set defaultAngleLabel "%10.2VALUE %UNITS";'
-		+'showSelections TRUE; select none;  label on ; set picking on; set picking LABEL; set picking SELECT atom; set picking ANGLE;'
-		+"measure ON; set measurements ON; set showMeasurements ON; set picking MEASURE ANGLE;"
-		+'set measurements ' + unitMeasure + ';label ON');
+				+ 'showSelections TRUE; select none;  label on ; set picking on; set picking LABEL; set picking SELECT atom; set picking ANGLE;'
+				+ "measure ON; set measurements ON; set showMeasurements ON; set picking MEASURE ANGLE;"
+				+ 'set measurements ' + unitMeasure + ';label ON');
 	} else if (radiobutton == "torsional") {
 		measureHint('Pick four atoms');
 		runJmolScriptWait('set defaultTorsionLabel "%10.2VALUE %UNITS";'
-				+'showSelections TRUE; select none;  label on ; set picking on; set picking TORSION; set picking SELECT atom; set picking ANGLE;'
-				+'measure ON; set measurements ON; set showMeasurements ON; set picking MEASURE TORSION;label ON');
+				+ 'showSelections TRUE; select none;  label on ; set picking on; set picking TORSION; set picking SELECT atom; set picking ANGLE;'
+				+ 'measure ON; set measurements ON; set showMeasurements ON; set picking MEASURE TORSION;label ON');
 	}
+	setMeasureText()
 
 }
 
-var measureHint = function(msg) {	
+var measureHint = function(msg) {
 	// BH 2018
 	document.measureGroup.textMeasure.value = msg + "...";
 }
 
 function setMeasureSize(value) {
-	runJmolScriptWait("select *; font label " + value + " ; font measure " + value + " ; select none;");
+	runJmolScriptWait("select *; font label " + value + " ; font measure "
+			+ value + " ; select none;");
 }
 
 function setMeasureText(value) {
@@ -95,4 +95,8 @@ function mesReset() {
 	mesCount = 0;
 	getbyID("textMeasure").value = "";
 	runJmolScriptWait('set pickingStyle MEASURE OFF; select *; label off; halos OFF; selectionHalos OFF; measure OFF; set measurements OFF; set showMeasurements OFF;  measure DELETE;');
+}
+
+function measuramentCallback(a, b, c, d, e) {
+	setMeasureText(b);
 }
