@@ -3,8 +3,18 @@ function enterEdit() {
 }
 
 function exitEdit() {
-	
 }
+
+function showPickPlaneCallback() {
+	var distance = prompt('Enter the distance (in \305) within you want to select atoms. \n Positive values mean from the upper face on, negative ones the opposite.', '1');
+	if (distance != null && distance != "") {
+		runJmolScriptWait('select within(' + distance + ',plane,$plane1)');
+//		hideMode = " hide selected";
+//		deleteMode = " delete selected";
+//		colorWhat = "color atoms";
+	}
+}
+
 
 var deleteMode = "";
 var hideMode = "";

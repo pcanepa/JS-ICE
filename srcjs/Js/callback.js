@@ -40,7 +40,7 @@ loadDone = function(fDone) {
 }
 
 MESSAGE_MODE_NONE                   = 0;
-MESSAGE_MODE_SAVE_ISO               = 101;
+//MESSAGE_MODE_SAVE_ISO               = 101;
 
 var messageMode = MESSAGE_MODE_NONE;
 
@@ -49,9 +49,10 @@ setMessageMode = function(mode) {
 }
 
 myMessageCallback = function (applet, msg) {	
-	switch(mode) {
-	case MESSAGE_MODE_SAVE_ISO:
-		saveIsoMessageCallback(msg);
+	switch(messageMode) {
+	default:
+//	case MESSAGE_MODE_SAVE_ISO:
+//		saveIsoMessageCallback(msg);
 		break;
 	}
 	messageMode = MESSAGE_MODE_NONE;
@@ -61,7 +62,7 @@ myErrorCallback = function(applet, b, msg, d) {
 	errorMsg(msg);
 }
 
-fPick = null;
+var fPick = null;
 
 setPickingCallbackFunction = function(f) {
 	fPick = f;

@@ -74,7 +74,7 @@ function createFileGrp() { // Here the order is crucial
 			"loadaimsfhi", "loadgauss", "loadgromacs", "loadGulp",
 			"loadmaterial", "loadMolden", "loadpdb", "loadQuantum",
 			"loadSiesta", "loadShel", "loadVASPoutcar", "loadVasp", "loadWien",
-			"loadXcrysden", "loadCUBE", "loadJvxl", "loadstate");
+			"loadXcrysden", "loadstate");
 	var elOptionText = new Array("Load New File", "General (*.*)",
 			"Reload current", "CIF (*.cif)", "XYZ (*.XYZ)",
 			"CASTEP (INPUT, OUTPUT)", "CRYSTAL (*.*)", "Dmol (*.*)",
@@ -82,12 +82,11 @@ function createFileGrp() { // Here the order is crucial
 			"GULP (*.gout)", "Material Studio (*.*)", "Molden, QEfreq (*.*)",
 			"PDB (*.pdb)", "QuantumESPRESSO (*.*)", "Siesta (*,*)",
 			"ShelX (*.*)", "VASP (OUTCAR, POSCAR)", "VASP (*.xml)",
-			"WIEN2k (*.struct)", "Xcrysden (*.xtal)", "map (*.CUBE)",
-			"map (*.jvxl)", "Jmol state (*.spt,*.png)");
+			"WIEN2k (*.struct)", "Xcrysden (*.xtal)", "Jmol state (*.spt,*.png)");
 
 	var strFile = "<form autocomplete='nope'  id='fileGroup' name='fileGroup' style='display:inline' class='contents'>\n";
 	strFile += "<h2>File manager</h2>\n";
-	strFile += "<table><tr><td>Load File<BR>\n";
+	strFile += "<table><tr><td>Load File<br><br>Drag-drop a file into JSmol or use the menu below.<br><br>\n";
 	strFile += createSelectmenu('Load File', 'onChangeLoad(value)', 0, 1,
 			elOptionArr, elOptionText);
 	strFile += "</td><td><div style=display:none>model #" +
@@ -142,10 +141,10 @@ function createShowGrp() {
 			'setPicking(this)', 0, 0, "set picking");
 
 	strShow += createCheck("bydistance", "within a sphere (&#197); &nbsp;",
-			'setDistancehidehide(this)', 0, 0, "");
+			'setDistanceHide(this)', 0, 0, "");
 	strShow += "</td></tr><tr><td colspan='2'>\n";
 	strShow += createCheck("byplane", "within a plane &nbsp;",
-			'setPlanehide(this)', 0, 0, "");
+			'onClickPickPlane(this,showPickPlaneCallback)', 0, 0, "");
 	strShow += "</td></tr><tr><td colspan='2'>\n";
 	strShow += createButton('show_selectAll', 'select All', 'selectAll()', '')
 	+ "\n";
@@ -275,10 +274,10 @@ function createEditGrp() {
 			'setPickingDelete(this) + setPickingHide(this)', 0, 0, "");
 	;
 	strEdit += createCheck("bydistance", "within a sphere (&#197); &nbsp;",
-			'setDistancehidehide(this)', 0, 0, "");
+			'setDistanceHide(this)', 0, 0, "");
 	strEdit += "</td></tr><tr><td colspan='2'>\n"
 		strEdit += createCheck("byplane", "within a plane &nbsp;",
-				'setPlanehide(this)', 0, 0, "");
+				'onClickPickPlane(this,editPickPlaneCallback)', 0, 0, "");
 	strEdit += "</td></tr><tr><td colspan='2'>\n";
 	strEdit += createButton('edit_selectAll', 'select All',
 			'selectAll()', '')
@@ -453,9 +452,9 @@ function createEditGrp() {
 //	strBuild += createCheck("byselection", "by picking &nbsp;",
 //			'setPicking(this)', 0, 0, "set picking");
 //	strBuild += createCheck("bydistance", "within a sphere (&#197) &nbsp;",
-//			'setDistancehidehide(this)', 0, 0, "");
+//			'setDistanceHide(this)', 0, 0, "");
 //	strBuild += createCheck("byplane", " within a plane &nbsp;",
-//			'setPlanehide(this)', 0, 0, "");
+//			'onClickPickPlane(this,buildPickPlaneCallback)', 0, 0, "");
 //	strBuild += "</div>";
 //	strBuild += "</td></tr><tr><td>\n";
 //	strBuild += "<br> Structural optimization criterion: <br>";
@@ -873,28 +872,33 @@ function createPolyGrp() {
 }
 
 function createIsoGrp() {
-	var isoName = new Array("delete isosurface",
+	var isoName = new Array("select a surface type",
+			"from CUBE or JVXL file",
 			"isosurface OFF",
 			"isosurface ON",
 			"Van der Waals", 
 			"periodic VdW",
-			"VdW+MEP",
-			"periodic VdW+MEP",
-			"solvent accessible", "molecular", "geodesic VdW", "geodesic IONIC",
-			"dots VdW", "dots IONIC");
-	var isoValue = new Array('isosurface DELETE',
+			"solvent accessible", 
+			"molecular"
+			// BH: TODO: Note that these do not allow mapping
+//			,"geodesic VdW", "geodesic IONIC", "dots VdW", "dots IONIC"
+			);
+	var isoValue = new Array('',
+			'isosurface "?"',
 			'isosurface OFF',
 			'isosurface ON',
 			SURFACE_VDW, 
 			SURFACE_VDW_PERIODIC,
-			SURFACE_VDW_MEP,
-			SURFACE_VDW_MEP_PERIODIC,
+//			SURFACE_VDW_MEP,
+//			SURFACE_VDW_MEP_PERIODIC,
 			'isosurface SASURFACE',
-			'isosurface MOLSURFACE resolution 0 molecular',
-			'geoSurface VANDERWAALS', 
-			'geoSurface IONIC',
-			'dots VANDERWAALS', 
-			'dots IONIC');
+			'isosurface MOLSURFACE resolution 0 molecular'
+//			,
+//			'geoSurface VANDERWAALS', 
+//			'geoSurface IONIC',
+//			'dots VANDERWAALS', 
+//			'dots IONIC'
+			);
 	var colSchemeName = new Array("Rainbow (default)", "Black & White",
 			"Blue-White-Red", "Red-Green", "Green-Blue");
 	var colSchemeValue = new Array("roygb", "bw", "bwr", "low", "high");
@@ -909,16 +913,17 @@ function createIsoGrp() {
 	strIso += "<h2>IsoSurface</h2>\n";
 	strIso += "</td></tr>\n";
 	strIso += "<tr><td colspan='2'>\n";
-	strIso += "Molecular (classic) isoSurfaces: \n <br>";
-	strIso += createSelect('isoCommon', 'setIsoClassic(this.value)', 0, 0,
+	//strIso += "Molecular (classic) isoSurfaces: \n <br>";
+	strIso += createSelect('createIso', 'onClickCreateIso(this.value)', 0, 0,
 			isoValue, isoName)
 			+ "&nbsp;";
-	strIso += createButton('removeIso', 'remove iso', 'runJmolScriptWait("isosurface OFF")',
-	'');
+	strIso += createButton('removeIso', 'remove iso', 'runJmolScriptWait("isosurface OFF")','');
 	strIso += createLine('blue', '');
-	strIso += "</td></tr>\n";
-	strIso += "<tr><td colspan='2'>\n";
-	strIso += "Color map settings<br>\n ";
+	strIso += "</td></tr><tr><td colspan='2'>\n";
+	strIso += createButton('mapMEP', 'map charges', 'onClickMapMEP()','');
+	strIso += createButton('mapCube', 'map from CUBE file', 'onClickMapCube()','');
+	strIso += createButton('mapPlane', 'map plane', 'onClickPickPlane(null, surfacePickPlaneCallback)','');
+	strIso += "<br>Color map settings<br>\n ";
 	strIso += "<img src='images/band.png'><br><br>";
 	strIso += "- " + createText2("dataMin", "", "12", 0) + " + "
 	+ createText2("dataMax", "", "12", 0) + " e- *bohr^-3<br>";

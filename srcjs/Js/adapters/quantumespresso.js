@@ -76,7 +76,7 @@ var kpointQ = null;
 
 //Main block
 function exportQuantum() {
-	warningMsg("Make sure you had selected the model you would like to export.");
+	warningMsg("Make sure you have selected the model you would like to export.");
 	prepareControlblock();
 	prepareSystemblock();
 	prepareElectronblock();

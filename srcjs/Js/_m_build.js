@@ -3,7 +3,10 @@ function enterBuild() {
 }
 
 function exitBuild() {
-	// not implemented
+}
+
+function buildPickPlaneCallback() {
+ // TODO	
 }
 
 function atomSelectedColor(atom) {
