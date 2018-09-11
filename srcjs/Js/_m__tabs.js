@@ -68,7 +68,7 @@ function defineMenu() {
 	/* 4 */ addTab("Measure", "measureGroup", "Measure bond distances, angles, and torsionals.");
 	/* 5 */ addTab("Orient", "orientGroup", "Change orientation and views.");
 	/* 6 */ addTab("Poly", "polyGroup", "Create polyhedra.");
-	/* 7 */ addTab("Surf.", "isoGroup", "Modify and create isosurface maps.");
+	/* 7 */ addTab("Surface", "isoGroup", "Modify and create isosurface maps.");
 	/* 8 */ addTab("Optimize", "geometryGroup", "Geometry optimizations.");
 	/* 9 */ addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
 	/* 10 */ addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
@@ -88,7 +88,8 @@ var showMenu = function(menu) {
 
 
 var exitTab = function() {
-	runJmolScriptWait('select *;color atoms opaque; echo; draw off;set selectionHalos off;halos off;set picking identify;');
+	cancelPicking();
+	runJmolScriptWait('select *;color atoms opaque; echo; draw off;set selectionHalos off;halos off;');
 }
 
 

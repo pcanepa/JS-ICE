@@ -66,114 +66,86 @@ function setPickingHide(form) {
 
 var counterClick = false;
 var counterHide = 0;
-var selectedatomPlane = new Array(3);
-var sortquestion = null
-function setPlanehide(form) {
-	if (form == null)
-		sortquestion = true;
+var selectedAtoms = [];
+var sortquestion = null;
+var selectCheckbox = null;
+var menuCallback = null;
 
-	if (form.checked) {
-		messageMsg('Now select in sequence 3 atoms to define the plane.');
-		selectedatomPlane = [];
-		counterHide = 0;
-		counterClick = true;
-		setPickingCallbackFunction(pickPlanecallback);
-		runJmolScriptWait("draw off; showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on;");
-		if (form != null)
-			uncheckBox(form);
+function onClickPickPlane(checkbox, callback) {
+	menuCallback = callback;
+	selectCheckbox = checkbox;
+	if (checkbox.checked) {
+		selectPlane();
 	} else {
 		runJmolScriptWait('select none; halos off;draw off; showSelections TRUE; select none; set picking off;');
 	}
 }
 
-function setPlanedued(form) {
-	if (form == null)
-		sortquestion = true;
-	messageMsg('Now select in sequence 3 atoms to define the plane.');
-	selectedatomPlane = [];
-	counterHide = 0;
-	counterClick = true;
-	setPickingCallbackFunction(pickPlane2dcallback);
-	runJmolScriptWait("draw off; showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on;");
+function selectPlane() {
+	var miller = prompt("In order to extract a 2D map from a 3D file you need to select a plane. \n" +
+			" If you want to select a Miller plane, enter the plane's Miller indices here. \n" +
+			" If you want to pick three atoms to define the plane, clear the indices.").trim();
+	if (miller === null)
+		return;
+	if (miller) {
+		runJmolScriptWait('draw delete; draw plane1 HKL {' + miller + '};draw off;');
+		menuCallback && menuCallback();
+		return true;			
+	} else {
+		runJmolScriptWait("draw off; showSelections TRUE; select none; set picking on; set picking SELECT atom; halos on;");
+		messageMsg('Select in sequence three atoms to define the plane.');
+		startPicking();
+	}
 }
 
-var selectHideForm = null;
-function setDistancehidehide(form) {
-	selectHideForm = form;
-	if (form.checked) {
-		messageMsg('Now select the central atom around which you want to select atoms.');
+function startPicking() {
+	selectedAtoms = [];
+	counterHide = 0;
+	counterClick = true;
+	setPickingCallbackFunction(pickPlaneCallback);
+}
+
+function cancelPicking() {
+	setPickingCallbackFunction(null);
+	counterClick = false;
+	runJmolScriptWait('select none; halos off;'
+			+"draw off; showSelections TRUE; select none; set picking OFF;");
+	if (selectCheckbox)
+		uncheckBox(selectCheckbox);
+}
+
+function setDistanceHide(checkbox) {
+	selectCheckbox = checkbox;
+	if (checkbox.checked) {
+		setStatus('Select the central atom around which you want to select atoms.');
 		counterClick = true;
-		setPickingCallbackFunction(pickDistancecallback);
-		runJmolScriptWait("showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on;");
-		// messageMsg('If you don\'t want to remove/hide atoms in the plane,
-		// unselect them by using the option: select by picking.')
+		setPickingCallbackFunction(pickDistanceCallback);
+		runJmolScriptWait("showSelections TRUE; select none; set picking on; set picking SELECT atom; halos on;");
 	} else {
 		runJmolScriptWait('select none; halos off;');
 	}
 }
 
-function pickPlanecallback(b, c, d, e) {
-	if (counterClick == true) {
-		selectedatomPlane[counterHide] = parseInt(b.substring(
+function pickPlaneCallback(b, c, d, e) {
+	console.log(arguments);
+	if (counterClick) {
+		selectedAtoms[counterHide] = parseInt(b.substring(
 				b.indexOf('#') + 1, b.indexOf('.') - 2));
-		messageMsg('Atom selected: ' + selectedatomPlane[counterHide] + '.');
-
-		if (counterHide == '2') {
+		setStatus('Atom selected: ' + selectedAtoms[counterHide] + '.');
+		if (++counterHide == 3) {
 			counterClick = false;
-			runJmolScriptWait('draw on; draw plane1 (atomno=' + selectedatomPlane[0]
-			+ ') (atomno=' + selectedatomPlane[1] + ') (atomno='
-			+ selectedatomPlane[2] + ');');
-			if (!sortquestion) {
-				var distance = prompt('Now enter the distance (in \305) within you want to select atoms. \n Positive values mean from the upper face on, negative ones the opposite.');
-				if (distance != null && distance != "") {
-					runJmolScriptWait('select within(' + distance + ',plane, $plane1)');
-					hideMode = " hide selected";
-					deleteMode = " delete selected";
-					colorWhat = "color atoms";
-					runJmolScriptWait('set PickCallback OFF');
-					counterClick = false;
-					return true;
-				}
-			}
-			runJmolScriptWait('select none; halos off;'
-					+"draw off; showSelections TRUE; select none; set picking off;"
-					+"set picking OFF");
+			cancelPicking();
+			runJmolScriptWait('draw delete; draw plane1 (atomno=' + selectedAtoms[0]
+				+ ') (atomno=' + selectedAtoms[1] + ') (atomno='
+				+ selectedAtoms[2] + ');draw off;');
+			menuCallback && menuCallback();
+			return true;			
 		}
-
-		messageMsg('Select next atom.');
-		counterHide++;
+		setStatus('Select next atom.');
 	}
 }
 
-function pickPlane2dcallback(b, c, d, e) {
-	if (counterClick == true) {
-		selectedatomPlane[counterHide] = parseInt(b.substring(
-				b.indexOf('#') + 1, b.indexOf('.') - 2));
-		messageMsg('Atom selected: ' + selectedatomPlane[counterHide] + '.');
-
-		if (counterHide == '2') {
-			counterClick = false;
-			runJmolScriptWait('draw on; draw plane1 (atomno=' + selectedatomPlane[0]
-			+ ') (atomno=' + selectedatomPlane[1] + ') (atomno='
-			+ selectedatomPlane[2] + ');set picking OFF');
-			var spin = confirm("Now would you only like to slice the density? OK for yes, Cancel if you wish to map SPIN or potential on top.")
-			if (spin) {
-				dueD_con = true;
-				dueD_planeMiller = false;
-				// TODO BH 2018: What is this select ({0:47})?
-				runJmolScript('draw off;isosurface PLANE $plane1 MAP color range 0.0 2.0 "?.CUBE";set pickCallback ""');
-			} else {
-				messageMsg("Now load the *.CUBE potential / spin file.");
-				runJmolScript("draw off;isosurface PLANE $plane1 MAP '?.CUBE';set pickCallback ''");
-			}
-			return true;
-		}
-		messageMsg('Select next atom.');
-		counterHide++;
-	}
-}
-
-function pickDistancecallback(b, c, d, e) {
+function pickDistanceCallback(b, c, d, e) {
 	if (counterClick == true) {
 		var coordinate = b
 		.substring(b.indexOf('#') + 2, b.lastIndexOf('.') + 9);
@@ -189,8 +161,7 @@ function pickDistancecallback(b, c, d, e) {
 			hideMode = " hide selected";
 			deleteMode = " delete selected";
 			colorWhat = "color atoms";
-			counterClick = false;
-			uncheckBox(selectHideForm);
+			cancelPicking();
 			return true;
 		}
 	}

@@ -1,5 +1,15 @@
 // note that JmolColorPicker is customized -- BH 2018
 
+function doClickSaveCurrentState() {
+	warningMsg("This option only saves the state temporarily. To save your work, use File...Export...image+state(PNGJ). The image created can be dragged back into Jmol or JSmol or sent to a colleague to reproduce the current state exactly as it appears in the image.");
+	runJmolScriptWait('save ORIENTATION orask; save STATE stask; save BOND bask');
+}
+
+function doClickReloadCurrentState() {
+	runJmolScriptWait('restore ORIENTATION orask; restore STATE stask; restore BOND bask;');
+}
+
+
 Array.prototype.max = function() {
 	var max = this[0];
 	var len = this.length;
@@ -61,7 +71,7 @@ function errorMsg(msg) {
 }
 
 function messageMsg(msg) {
-	alert("MESSAGE: " + msg);
+	alert(msg);
 }
 
 function docWriteTabs() {
@@ -81,10 +91,10 @@ function docWriteBottomFrame() {
 			"specialbutton"));
 	document.write(createButton("NewWindow", "New window", "newAppletWindow()", 0));
 	document.write(createButton("viewfile", "File content", "printFileContent()", 0));
-	document.write(createButton1("saveState", 'Save state', 'saveCurrentState()',
+	document.write(createButton1("saveState", 'Save state', 'doClickSaveCurrentState()',
 			0, "savebutton"));
 	document.write(createButton1("restoreState", 'Restore state',
-			'reloadCurrentState()', 0, "savebutton"));
+			'doClickReloadCurrentState()', 0, "restorebutton"));
 	document.write(createButton("Feedback", 'Feedback', 'newAppletWindowFeed()', 0));
 }
 
