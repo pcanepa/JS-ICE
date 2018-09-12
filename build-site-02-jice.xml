@@ -73,7 +73,7 @@
   	</fileset>
     </copy>
 
-  	<echo> Creating ${site.dir}.J-Ice.js</echo>
+  	<echo> Creating ${site.dir}/J-Ice.js</echo>
   	<loadfile srcFile="srcjs/imports" property="imports"/>  	
   	<echo file="${site.dir}/J-Ice.js"></echo>
     <for param="line" list="${imports}" delimiter="${line.separator}">

@@ -86,7 +86,7 @@ function createFileGrp() { // Here the order is crucial
 
 	var strFile = "<form autocomplete='nope'  id='fileGroup' name='fileGroup' style='display:inline' class='contents'>\n";
 	strFile += "<h2>File manager</h2>\n";
-	strFile += "<table><tr><td>Load File<br><br>Drag-drop a file into JSmol or use the menu below.<br><br>\n";
+	strFile += "<table><tr><td>Drag-drop a file into JSmol or use the menu below.<br>\n";
 	strFile += createSelectmenu('Load File', 'onChangeLoad(value)', 0, 1,
 			elOptionArr, elOptionText);
 	strFile += "</td><td><div style=display:none>model #" +
@@ -1007,11 +1007,11 @@ function createGeometryGrp() {
 	"kcal*mol-1");
 	var strGeom = "<form autocomplete='nope'  id='geometryGroup' name='modelsGeom' style='display:none'>";
 	strGeom += "<table class='contents'><tr><td>";
-	strGeom += "<h2>Geometry optimiziation</h2>\n";
+	strGeom += "<h2>Geometry optimization</h2>\n";
 	strGeom += "</td></tr>"
 		strGeom += "<tr><td>\n";
 	strGeom += createButton("<<", "<<",
-			'runJmolScriptWait("model FIRST");  preselectMyItem("0")', 0)
+			'runJmolScriptWait("model FIRST");  selectListItem(document.modelsGeom.models, "0")', 0)
 			+ "\n";
 	strGeom += createButton(">", ">", 'runJmolScriptWait("animation ON")'/* + selectFrame'*/, 0) + "\n";
 	// BH: note that "selectFrame()" does not exist in the Java, either
