@@ -23,7 +23,7 @@
  */
 
 function enterSurface() {
-	
+	selectListItem(document.isoGroup.createIso, '');
 }
 
 function exitSurface() {
@@ -36,26 +36,30 @@ SURFACE_VDW_PERIODIC     = "isosurface lattice _CELL_ VDW";
 //SURFACE_VDW_MEP_PERIODIC = "isosurface lattice _CELL_ resolution 7 VDW map MEP";
 
 function onClickCreateIso(value) {
+	if (!value)
+		return;
 	if (value.indexOf("?") >= 0)
-		messageMsg("Select or drag-drop your density cube or JVXL file onto the 'xxxx' button.");
-	createSurface(value);
+		messageMsg("Select or drag-drop your density cube or JVXL file onto the 'browse' button, then press the 'load' button.");
+	createSurface(value, true);
 }
 
+var canMapIsosurface = function() {
+	if (jmolEvaluate("isosurface list").trim())
+		return true;	
+	messageMsg("First create an isosurface.")
+	return false;
+}
 function onClickMapCube() {
-	if (!jmolEvaluate("isosurface list").trim()) {
-		messageMsg("First create an isosurface.")
+	if (!canMapIsosurface())
 		return;
-	}
-	messageMsg("Select or drag-drop your potential cube file onto the 'xxxx' button.");
-	createSurface("isosurface map '?'");	
+	messageMsg("Select or drag-drop your potential cube file onto the 'browse' button, then press the 'load' button.");
+	createSurface("isosurface map '?'", false);	
 }
 
 function onClickMapMEP() {
-	if (!jmolEvaluate("isosurface list").trim()) {
-		messageMsg("First create an isosurface.")
+	if (!canMapIsosurface())
 		return;
-	}
-	runJmolScriptWait("isosurface map mep;isosurface cache;")
+	createSurface("isosurface map mep;isosurface cache;", false)
 }
 
 function onClickMapPlane() {
@@ -63,17 +67,16 @@ function onClickMapPlane() {
 }
 
 function surfacePickPlaneCallback() {
-	createSurface('isosurface PLANE $plane1 MAP color range 0.0 2.0 "?";');
+	createSurface('isosurface PLANE $plane1 MAP color range 0.0 2.0 "?";', true);
 }
 
-function createSurface(cmd) {
+var createSurface = function(cmd, doClear) {
 	if (cmd.indexOf("_CELL_") >= 0)
 		cmd = cmd.replace("_CELL_", getCurrentCell()); 
 //	setMessageMode(MESSAGE_MODE_SAVE_ISO)
-	runJmolScript("isosurface delete;set echo top left; echo creating ISOSURFACE...; refresh;" + cmd + '; echo;javascript getIsoInfo()');
+	runJmolScript((doClear ? "isosurface delete;" : "") 
+			+ "set echo top left; echo creating ISOSURFACE...; refresh;" + cmd + '; echo;javascript getIsoInfo()');
 }
-
-// function change
 
 //function sendSurfaceMessage() {
 //	warningMsg("If the surface doesn't look like what you were expected, go to the menu' voice Isosur. for more options.");
@@ -88,10 +91,10 @@ function getIsoInfo() {
 	if (!jmolEvaluate("isosurface list").trim())
 		return;
 	
-	// Extract the maximum and minimum of the color range
-	
 	// generate JVXL equivalent immediately
-	runJmolScriptWait("iososurface cache");
+//	runJmolScriptWait("isosurface cache");
+	
+	// Extract the maximum and minimum of the color range
 	
 	var isoInfo = jmolGetPropertyAsString("shapeinfo.isosurface[1].jvxlinfo");
 	var dataMinimum = parseFloat(isoInfo.substring(

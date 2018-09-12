@@ -138,7 +138,7 @@ function selectElementZmatrix(form) {
 				messageMsg("Select the 3rd atom to form the torsional angle.");
 			}
 			setPickingCallbackFunction(pickZmatrixCallback)
-			runJmolScriptWait("draw off; showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on;");
+			runJmolScriptWait("draw off; showSelections TRUE; select none; halos on;");
 		}
 	}
 }

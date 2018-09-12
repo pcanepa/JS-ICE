@@ -66,7 +66,11 @@ function warningMsg(msg) {
 }
 
 function errorMsg(msg) {
-	alert("ERROR: " + msg);
+	if (msg.indexOf("#CANCELED#") < 0) {
+		alert("ERROR: " + msg);
+	} else {
+		runJmolScript("echo");
+	}
 	return false;
 }
 
