@@ -54,7 +54,7 @@ var symmetryCRYSTAL = null;
 function exportCRYSTAL() {
 	var endCRYSTAL = "TEST', 'END";
 	var script = "";
-	warningMsg("Make sure you had selected the model you would like to export.")
+	warningMsg("Make sure you have selected the model you would like to export.")
 	titleCRYSTAL();
 	setUnitCell();
 	atomCRYSTAL();

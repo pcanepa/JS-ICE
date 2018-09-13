@@ -3,8 +3,18 @@ function enterEdit() {
 }
 
 function exitEdit() {
-	
 }
+
+function showPickPlaneCallback() {
+	var distance = prompt('Enter the distance (in \305) within you want to select atoms. \n Positive values mean from the upper face on, negative ones the opposite.', '1');
+	if (distance != null && distance != "") {
+		runJmolScriptWait('select within(' + distance + ',plane,$plane1)');
+//		hideMode = " hide selected";
+//		deleteMode = " delete selected";
+//		colorWhat = "color atoms";
+	}
+}
+
 
 var deleteMode = "";
 var hideMode = "";
@@ -183,7 +193,7 @@ function checkBondStatus(radval) {
 	if (radbondVal == "selection") {
 		for (var i = 0; i < document.editGroup.range.length; i++)
 			document.editGroup.range[i].disabled = true;
-		runJmolScriptWait('showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on;');
+		runJmolScriptWait('showSelections TRUE; select none; set picking identify; halos on;');
 		getbyID("connectbyElementList").disabled = true;
 		getbyID("connectbyElementListone").disabled = true;
 	} else {

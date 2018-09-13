@@ -104,12 +104,13 @@ function onChangeLoad(load) {
 	case "reload":
 		reload();
 		break;
-	case "loadCUBE":
-		cubeLoad();
-		break;
-	case "loadJvxl":
-		loadMapJvxl();
-		break;
+// BH 2018 moved to surface
+//	case "loadCUBE":
+//		cubeLoad();
+//		break;
+//	case "loadJvxl":
+//		loadMapJvxl();
+//		break;
 	}
 	document.fileGroup.reset();
 }
@@ -293,19 +294,19 @@ function onChangeLoadSample(value) {
 	}
 }
 
-var LOAD_ISO_ONLY     = 0;
-var LOAD_ISO_MAP_ONLY = 1;
-var LOAD_ISO_WITH_MAP = 2;
-
-function loadCube(mode, msg) {
-	// this should work in JavaScript, because the script will wait for the ? processing to complete
-	setMessageMode(MESSAGE_MODE_SAVE_ISO);	
-	runJmolScript('set echo top left; echo loading CUBE...'
-			+ (mode != LOAD_ISO_MAP_ONLY ? "isosurface ?.CUBE;" : "")
-			+ (mode != LOAD_ISO_ONLY ? "isosurface  map ?.CUBE;" : "")
-			+ "message " + msg + ";");
-}
-
+//var LOAD_ISO_ONLY     = 0;
+//var LOAD_ISO_MAP_ONLY = 1;
+//var LOAD_ISO_WITH_MAP = 2;
+//
+//function loadCube(mode, msg) {
+//	// this should work in JavaScript, because the script will wait for the ? processing to complete
+//	setMessageMode(MESSAGE_MODE_SAVE_ISO);	
+//	runJmolScript('set echo top left; echo loading CUBE...'
+//			+ (mode != LOAD_ISO_MAP_ONLY ? "isosurface ?.CUBE;" : "")
+//			+ (mode != LOAD_ISO_ONLY ? "isosurface  map ?.CUBE;" : "")
+//			+ "message " + msg + ";");
+//}
+//
 
 var quantumEspresso = false;
 function onChangeSave(save) {
@@ -378,6 +379,16 @@ function setTitleEcho() {
 function setFileName() {
 	setStatus(jmolEvaluate("_modelFile"));
 }
+
+function saveStateAndOrientation_a() {
+	// used in castep, gulp, and vasp output methods, and in symmetry#figureOutSpacegroup
+	runJmolScriptWait("save ORIENTATION orienta; save STATE status;");
+}
+
+function restoreStateAndOrientation_a() {
+	runJmolScriptWait("restore ORIENTATION orienta; restore STATE status;");
+}
+
 
 
 //refresh = function() {

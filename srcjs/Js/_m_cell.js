@@ -7,7 +7,7 @@ function exitCell() {
 }
 
 function saveFractionalCoordinate() {
-	warningMsg("Make sure you had selected the model you would like to export.");
+	warningMsg("Make sure you have selected the model you would like to export.");
 
 	if (frameSelection == null)
 		getUnitcell("1");

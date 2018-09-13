@@ -86,7 +86,7 @@ function exportVASP() {
 
 	var lattice = fromfractionaltoCartesian();
 
-	warningMsg("Make sure you had selected the model you would like to export.");
+	warningMsg("Make sure you have selected the model you would like to export.");
 	vaspFile = prompt("Type here the job title:", "");
 	(vaspFile == "") ? (vaspFile = 'POSCAR prepared with J-ICE whose atoms are: ')
 			: (vaspFile = 'POSCAR prepared with J-ICE ' + vaspFile

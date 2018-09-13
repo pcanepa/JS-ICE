@@ -32,7 +32,8 @@ var flagShelgulp = null;
 var stringCellparamgulp;
 
 function exportGULP() {
-	warningMsg("Make sure you had selected the model you would like to export.");
+	warningMsg("Make sure you have selected the model you would like to export.");
+	saveStateAndOrientation_a();
 	if (typeSystem != "crystal")
 		setUnitCell();
 	setTitlegulp();
@@ -41,7 +42,6 @@ function exportGULP() {
 	setCoordinategulp();
 	if (typeSystem == "crystal")
 		setSpacegroupgulp();
-
 	setPotentialgulp();
 	if (typeSystem == "crystal") {
 		var finalInputGulp = "var final = [titlegulp,cellgulp,coordgulp,spacegulp,restgulp];"
@@ -53,7 +53,6 @@ function exportGULP() {
 				+ 'WRITE VAR final "?.gin" ';
 	}
 	run(finalInputGulp);
-	reload(null, "primitive");
 	restoreStateAndOrientation_a();
 
 }

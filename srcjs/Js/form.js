@@ -480,15 +480,12 @@ function cleanList(listname) {
 
 
 
-function preselectMyItem(itemToSelect) {
-	// Get a reference to the drop-down
-	var myDropdownList = document.modelsGeom.models;
-
+function selectListItem(list, itemToSelect) {
 	// Loop through all the items
-	for (iLoop = 0; iLoop < myDropdownList.options.length; iLoop++) {
-		if (myDropdownList.options[iLoop].value == itemToSelect) {
+	for (var i = 0; i < list.options.length; i++) {
+		if (list.options[i].value == itemToSelect) {
 			// Item is found. Set its selected property, and exit the loop
-			myDropdownList.options[iLoop].selected = true;
+			list.options[i].selected = true;
 			break;
 		}
 	}
