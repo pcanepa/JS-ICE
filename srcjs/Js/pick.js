@@ -133,7 +133,7 @@ function pickPlaneCallback() {
 			return false;
 		}
 		cancelPicking();
-		runJmolScriptWait('draw delete; draw plane1 @{pickedlist[1]} @{pickedlist[2]} @{pickedlist[3]}; 		');
+		runJmolScriptWait('draw delete; draw plane1 PLANE @pickedlist;draw off');
 		menuCallback && menuCallback();
 		return true;			
 	}
