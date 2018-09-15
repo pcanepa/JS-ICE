@@ -142,7 +142,8 @@ function exportVASP() {
 		+ '");' // imp
 		+ 'var lista = [titleLin, scaleFact, vaspCellX, vaspCellY, vaspCellZ, listLabel, listAtom, cartString, xyzCoord];' // misses
 		// listInpcar
-		+ 'WRITE VAR lista "POSCAR" ';
+		+ 'var cleaned  = lista.replace("[","");'
+		+ 'WRITE VAR cleaned "POSCAR.vasp" ';
 	runJmolScriptWait(stringVasp);
 	restoreStateAndOrientation_a();
 }
