@@ -112,13 +112,9 @@ function createFileGrp() { // Here the order is crucial
 	strFile += createSelectmenu('Export File', 'onChangeSave(value)', 0, 1,
 			elSOptionArr, elSOptionText);
 	strFile += "<p ><img src='images/j-ice.png' alt='logo'/></p>";
-	strFile += "<p style='color:#f00; font-weight:bold'>New readers <br> CASTEP, VASP POSCAR, and XcrysDen</p>";
 	strFile += "<div style='margin-top:50px;'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
 	strFile += "<blockquote>\"J-ICE: a new Jmol interface for handling<br> and visualizing Crystallographic<br> and Electronics properties.<br>"
 	strFile += "P. Canepa, R.M. Hanson, P. Ugliengo, M. Alfredsson, <br>  J. Appl. Cryst. 44, 225 (2011). <a href='http://dx.doi.org/10.1107/S0021889810049411' target'blank'>[doi]</a> \"</blockquote> </p></div>";
-	
-	strFile += "<div style='margin-top:10px;'><b style='color:#f00'>JAVA compatibility:</b><br>User who installed the last Java Virtual Machine (JVM 8.0) ";
-	strFile += "<br>please follow these instructions to execute J-ICE. <a href='https://www.java.com/en/download/faq/exception_sitelist.xml' target='blank'>here</a></div>"
 	strFile += "</form>\n";
 	return strFile;
 }
