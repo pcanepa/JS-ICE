@@ -7,22 +7,13 @@ function figureOutSpaceGroup() {
 	if (frameValue == null || frameValue == "" || flagCif)
 		frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
 	prevFrame = frameValue;
-	magnetic = confirm('It\'s the primitive cell ?')
+	var magnetic = confirm('It\'s the primitive cell ?')
 	// crystalPrev = confirm('Does the structure come from a previous CRYSTAL
-	// calcultion?')
-	if (magnetic) { // This option is for quantum espresso
-		if (flagCrystal) {
-			reload(null, "conv", "delete not cell=555;");
-		} else {
-			reload(null, null, "delete not cell=555;");
-		}
-	} else {
-		if (flagCrystal) {
-			reload(null, "conv")
-		} else {
-			reload()
-		}
-	}
+	// calculation?')
+	reload(null, 
+			flagCrystal ? "conv" : null, 
+			magnetic ? "delete not cell=555;" : null
+	);
 	getSpaceGroup();
 }
 

@@ -22,9 +22,46 @@
  *  02111-1307  USA.
  */
 
-function resetAll() {
 
-	setTextboxValue("filename", "Filename:");
+function updateElementLists(x) {
+	for (var i = (getbyID('colourbyElementList').options.length - 1); i >= 0; i--)
+		getbyID('colourbyElementList').remove(i);
+	for (var i = (getbyID('polybyElementList').options.length - 1); i >= 0; i--)
+		getbyID('polybyElementList').remove(i);
+	for (var i = (getbyID("poly2byElementList").options.length - 1); i >= 0; i--)
+		getbyID("poly2byElementList").remove(i);
+	for (var i = (getbyID("byElementAtomMotion").options.length - 1); i >= 0; i--)
+		getbyID("byElementAtomMotion").remove(i);
+	for (var i = (getbyID("deletebyElementList").options.length - 1); i >= 0; i--)
+		getbyID("deletebyElementList").remove(i);
+	for (var i = (getbyID("connectbyElementList").options.length - 1); i >= 0; i--)
+		getbyID("connectbyElementList").remove(i);
+	for (var i = (getbyID("connectbyElementListone").options.length - 1); i >= 0; i--)
+		getbyID("connectbyElementListone").remove(i);
+	
+	var sortedElement = getElementList(["select"]);
+
+	for (var i = 0; i < sortedElement.length; i++) {
+		addOption(getbyID('colourbyElementList'), sortedElement[i],
+				sortedElement[i]);
+		addOption(getbyID('polybyElementList'), sortedElement[i],
+				sortedElement[i]);
+		addOption(getbyID("poly2byElementList"), sortedElement[i],
+				sortedElement[i]);
+		addOption(getbyID("byElementAtomMotion"), sortedElement[i],
+				sortedElement[i]);
+		addOption(getbyID("deletebyElementList"), sortedElement[i],
+				sortedElement[i]);
+		addOption(getbyID("connectbyElementList"), sortedElement[i],
+				sortedElement[i]);
+		addOption(getbyID("connectbyElementListone"), sortedElement[i],
+				sortedElement[i]);
+	}
+}
+
+function formResetAll() {
+
+	setStatus("");
 	setUnitCell();
 	document.fileGroup.reset();
 	document.showGroup.reset();
@@ -129,11 +166,11 @@ function createRadio(name, text, onclick, disab, def, id, value) {
 	return s;
 }
 
-function createList(name, onclick, disab, size, optionValue, optionText, optionCheck, type, onkey) {
+function createSelect(name, onclick, disab, size, optionValue, optionText, optionCheck, type, onkey) {
 	optionText || (optionText = optionValue);
 	optionCheck || (optionCheck = [1]);
 	if (optionValue.length != optionText.length)
-		alert("form.js#createList optionValue not same length as optionText: " + name);
+		alert("form.js#createSelect optionValue not same length as optionText: " + name);
 	var optionN = optionValue.length
 	var s = "<SELECT ";
 	s += "NAME='" + name + "' ";
@@ -160,7 +197,7 @@ function createList(name, onclick, disab, size, optionValue, optionText, optionC
 	for (var n = 0; n < optionN; n++) {
 		s += "<OPTION VALUE='" + optionValue[n] + "'";
 		if (optionCheck[n] == 1) {
-			s += "checked";
+			s += " selected";
 		}
 		s += ">";
 		s += optionText[n];
@@ -170,24 +207,24 @@ function createList(name, onclick, disab, size, optionValue, optionText, optionC
 	return s;
 }
 
-function createListFunc(name, onclick, onkey, disab, size, optionValue, optionText, optionCheck) {
-	return createList(name, onclick, disab, size, optionValue, optionText, optionCheck, "func", onkey);
+function createSelectFunc(name, onclick, onkey, disab, size, optionValue, optionText, optionCheck) {
+	return createSelect(name, onclick, disab, size, optionValue, optionText, optionCheck, "func", onkey);
 }
 
-function createListmenu(name, onclick, disab, size, optionValue, optionText, optionCheck) {
-	return createList(name, onclick, disab, size, optionValue, optionText, optionCheck, "menu");
+function createSelectmenu(name, onclick, disab, size, optionValue, optionText, optionCheck) {
+	return createSelect(name, onclick, disab, size, optionValue, optionText, optionCheck, "menu");
 }
 
-function createList2(name, onclick, disab, size) {
-	return createList(name, onclick, disab, size, []);
+function createSelect2(name, onclick, disab, size) {
+	return createSelect(name, onclick, disab, size, []);
 }
 
-function createListKey(name, onclick, onkey, disab, size) {
-	return createList(name, onclick, disab, size, [], [], [], "key", onkey)
+function createSelectKey(name, onclick, onkey, disab, size) {
+	return createSelect(name, onclick, disab, size, [], [], [], "key", onkey)
 }
 
-function createListElement(name, onclick, onkey, disab, size, ) {
-	return createList(name, onclick, disab, size, [], [], [], "elem", onkey)
+function createSelectElement(name, onclick, onkey, disab, size, ) {
+	return createSelect(name, onclick, disab, size, [], [], [], "elem", onkey)
 }
 
 function createTextArea(name, text, rows, cols, disab) {
@@ -398,15 +435,57 @@ function toggleDivRadioTrans(value, me) {
 	}
 }
 
-function preselectMyItem(itemToSelect) {
-	// Get a reference to the drop-down
-	var myDropdownList = document.modelsGeom.models;
+function setJmolFromCheckbox(box, value) {
+	runJmolScriptWait(value + " " + !!box.checked);
+}
 
+function getbyID(id) {
+	return document.getElementById(id);
+}
+
+function getbyName(na) {
+	return document.getElementsByName(na);
+}
+
+function unique(a) {
+	//this function removes duplicates
+	var r = [];
+	var list = "";
+	for (var i = 0, n = a.length; i < n; i++) {
+		var item = a[i];
+		var key = ";" + item + ";";
+		if (list.indexOf(key) >= 0)
+			continue;
+		list += key;
+		r.push(item);
+	}
+	return r;
+}
+
+//This is meant to add new element to a list
+function addOption(selectbox, text, value) {
+	var optn = document.createElement("OPTION");
+	optn.text = text;
+	optn.value = value;
+	selectbox.options.add(optn);
+}
+
+function cleanList(listname) {
+	var d = getbyID(listname)
+	if (d)
+		for (var i = d.options.length; --i >= 0;)
+			d.remove(i);
+}
+
+
+
+
+function selectListItem(list, itemToSelect) {
 	// Loop through all the items
-	for (iLoop = 0; iLoop < myDropdownList.options.length; iLoop++) {
-		if (myDropdownList.options[iLoop].value == itemToSelect) {
+	for (var i = 0; i < list.options.length; i++) {
+		if (list.options[i].value == itemToSelect) {
 			// Item is found. Set its selected property, and exit the loop
-			myDropdownList.options[iLoop].selected = true;
+			list.options[i].selected = true;
 			break;
 		}
 	}

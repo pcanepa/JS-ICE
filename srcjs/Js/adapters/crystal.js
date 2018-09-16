@@ -54,7 +54,7 @@ var symmetryCRYSTAL = null;
 function exportCRYSTAL() {
 	var endCRYSTAL = "TEST', 'END";
 	var script = "";
-	warningMsg("Make sure you had selected the model you would like to export.")
+	warningMsg("Make sure you have selected the model you would like to export.")
 	titleCRYSTAL();
 	setUnitCell();
 	atomCRYSTAL();
@@ -227,17 +227,14 @@ function loadModelsCrystal() {
 // were clicked via a complex sequence of callbacks
 // but that is not done now, because all this should be done from a loadStructCallback.
 function reloadFastModels() {
-	setName();
-	unLoadall();
+	setDefaultJmolSettings();
 	if (flagCryVasp) {
 		getUnitcell("1");
 		runJmolScriptWait("echo");
 		setTitleEcho();
 		setGeomAndFreqData();
 		enableFreqOpts();
-		symmetryModeAdd();
 		//getSymInfo();
-		setName();
 	}
 }
 

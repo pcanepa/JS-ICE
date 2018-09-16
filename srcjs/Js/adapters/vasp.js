@@ -29,8 +29,7 @@ xmlvaspDone = function() {
 function loadModelsVASP() {
 	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
 	getUnitcell("1");
-	var name = jmolGetPropertyAsJSON("filename");
-	cleanAndReloadForm();
+	//cleanAndReloadForm();
 	setTitleEcho();
 
 	for (var i = 0; i < Info.length; i++) {
@@ -87,7 +86,7 @@ function exportVASP() {
 
 	var lattice = fromfractionaltoCartesian();
 
-	warningMsg("Make sure you had selected the model you would like to export.");
+	warningMsg("Make sure you have selected the model you would like to export.");
 	vaspFile = prompt("Type here the job title:", "");
 	(vaspFile == "") ? (vaspFile = 'POSCAR prepared with J-ICE whose atoms are: ')
 			: (vaspFile = 'POSCAR prepared with J-ICE ' + vaspFile
@@ -143,7 +142,8 @@ function exportVASP() {
 		+ '");' // imp
 		+ 'var lista = [titleLin, scaleFact, vaspCellX, vaspCellY, vaspCellZ, listLabel, listAtom, cartString, xyzCoord];' // misses
 		// listInpcar
-		+ 'WRITE VAR lista "POSCAR" ';
+		+ 'var cleaned  = lista.replace("[","");'
+		+ 'WRITE VAR cleaned "POSCAR.vasp" ';
 	runJmolScriptWait(stringVasp);
 	restoreStateAndOrientation_a();
 }
@@ -158,7 +158,7 @@ vaspoutcarDone = function() {
 
 var counterFreq = 0;
 function loadModelsOutcar() {
-	cleanAndReloadForm();
+	//cleanAndReloadForm();
 	getUnitcell("1");
 	setFrameValues("1");
 	var counterMD = 0;
@@ -191,7 +191,6 @@ function loadModelsOutcar() {
 	}
 	disableFreqOpts();
 	getSymInfo();
-	setName();
 }
 
 /////////LOAD FUNCTIONS

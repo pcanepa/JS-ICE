@@ -135,7 +135,7 @@ loadSliders = function() {
 	// arrow keys
 	slabSlider.setValue(defaultFront)
 	slabSlider.onchange = function() {
-		applySlab(getbyID("slabSlider-input").value)
+		applySlab(slabSlider.getValue())
 	}
 	
 	depthSlider = new Slider(getbyID("depthSlider-div"), getbyID("depthSlider-input"), "horizontal");
@@ -145,7 +145,7 @@ loadSliders = function() {
 	// the arrow keys
 	depthSlider.setValue(defaultBack);
 	depthSlider.onchange = function() { // onchange MUST BE all lowercase
-		applyDepth(getbyID("depthSlider-input").value)
+		applyDepth(depthSlider.getValue())
 	}
 }
 

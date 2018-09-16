@@ -25,7 +25,7 @@
 var coordinateGromacs = null;
 
 function exportGromacs() {
-	warningMsg("Make sure you had selected the model you would like to export.");
+	warningMsg("Make sure you have selected the model you would like to export.");
 	setTitleGromacs();
 	setUnitCell();
 	runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/10);'

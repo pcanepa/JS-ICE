@@ -34,34 +34,35 @@ myLoadStructCallback = function(applet,b,c,d) {
 }
 
 loadDone = function(fDone) {
-	runJmolScriptWait("echo");
 	fDone && fDone();
-	setName();
+	setFileName();
 	setTitleEcho();
 }
 
 MESSAGE_MODE_NONE                   = 0;
-MESSAGE_MODE_SAVE_ISO               = 101;
+//MESSAGE_MODE_SAVE_ISO               = 101;
 
-lastIsoMsg = null;
+var messageMode = MESSAGE_MODE_NONE;
 
 setMessageMode = function(mode) {
-	switch(mode) {
-	case MESSAGE_MODE_SAVE_ISO:
-		saveIsoMessageCallback(lastIsoMsg);
+	messageMode = mode;
+}
+
+myMessageCallback = function (applet, msg) {	
+	switch(messageMode) {
+	default:
+//	case MESSAGE_MODE_SAVE_ISO:
+//		saveIsoMessageCallback(msg);
 		break;
 	}
 	messageMode = MESSAGE_MODE_NONE;
-}
-
-myMessageCallback = function (applet, msg) {
 }
 
 myErrorCallback = function(applet, b, msg, d) {
 	errorMsg(msg);
 }
 
-fPick = null;
+var fPick = null;
 
 setPickingCallbackFunction = function(f) {
 	fPick = f;

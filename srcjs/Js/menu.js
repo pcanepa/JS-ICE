@@ -32,14 +32,13 @@ createDebugPanel = function() {
 		+ "&nbsp;" + createButton("getHelp", "Scripting Help", 'runJmolScriptWait("help")', 0)
 		+ "<br>\n"
 		+ "<div id='debugdiv' style='display:none'>"
-		+ "<textarea id='debugarea' style='font-size:12pt;width:350px;height:150px;font-family:monospace;overflow-y:auto'></textarea>" 
-		+ "<br><input type='text' style='font-size:12pt;width:350px' value='' placeHolder='type a command here' onKeydown='event.keyCode === 13&&$(this).select()&&runJmolScriptWait(value)'/>" 
+		+ "<input type='text' style='font-size:12pt;width:350px' value='' placeHolder='type a command here' onKeydown='event.keyCode === 13&&$(this).select()&&runJmolScriptWait(value)'/>" 
+		+ "<br><textarea id='debugarea' style='font-size:12pt;width:350px;height:150px;font-family:monospace;overflow-y:auto'></textarea>" 
 		+ "</div></div>"
 }
 
 function cleanLists() {
 	// was "removeAll()"
-	cleanList('sym');
 	cleanList('geom');
 	cleanList('vib');
 	cleanList('colourbyElementList');
@@ -75,7 +74,7 @@ function createFileGrp() { // Here the order is crucial
 			"loadaimsfhi", "loadgauss", "loadgromacs", "loadGulp",
 			"loadmaterial", "loadMolden", "loadpdb", "loadQuantum",
 			"loadSiesta", "loadShel", "loadVASPoutcar", "loadVasp", "loadWien",
-			"loadXcrysden", "loadCUBE", "loadJvxl", "loadstate");
+			"loadXcrysden", "loadstate");
 	var elOptionText = new Array("Load New File", "General (*.*)",
 			"Reload current", "CIF (*.cif)", "XYZ (*.XYZ)",
 			"CASTEP (INPUT, OUTPUT)", "CRYSTAL (*.*)", "Dmol (*.*)",
@@ -83,19 +82,18 @@ function createFileGrp() { // Here the order is crucial
 			"GULP (*.gout)", "Material Studio (*.*)", "Molden, QEfreq (*.*)",
 			"PDB (*.pdb)", "QuantumESPRESSO (*.*)", "Siesta (*,*)",
 			"ShelX (*.*)", "VASP (OUTCAR, POSCAR)", "VASP (*.xml)",
-			"WIEN2k (*.struct)", "Xcrysden (*.xtal)", "map (*.CUBE)",
-			"map (*.jvxl)", "Jmol state (*.spt,*.png)");
+			"WIEN2k (*.struct)", "Xcrysden (*.xtal)", "Jmol state (*.spt,*.png)");
 
-	var strFile = "<form id='fileGroup' name='fileGroup' style='display:inline' class='contents'>\n";
+	var strFile = "<form autocomplete='nope'  id='fileGroup' name='fileGroup' style='display:inline' class='contents'>\n";
 	strFile += "<h2>File manager</h2>\n";
-	strFile += "<table><tr><td>Load File<BR>\n";
-	strFile += createListmenu('Load File', 'onChangeLoad(value)', 0, 1,
+	strFile += "<table><tr><td>Drag-drop a file into JSmol or use the menu below.<br>\n";
+	strFile += createSelectmenu('Load File', 'onChangeLoad(value)', 0, 1,
 			elOptionArr, elOptionText);
 	strFile += "</td><td><div style=display:none>model #" +
 		createText2("modelNo", "", 7, "")
 		+ "</div></td></tr><tr><td>\n";
 	strFile += "Sample Files<BR>\n";
-	strFile += createListmenu('Sample Files', 'onChangeLoadSample(value)', 0, 1,
+	strFile += createSelectmenu('Sample Files', 'onChangeLoadSample(value)', 0, 1,
 			sampleOptionArr);
 	strFile += "</td></tr></table><BR><BR>\n";
 	strFile += "Export/Save File<BR>\n";
@@ -111,16 +109,12 @@ function createFileGrp() { // Here the order is crucial
 			// "save Frequencies HTML (*.HTML)",
 			"image PNG (*.png)", "coordinates PDB (*.PDB)",
 			"image POV-ray (*.pov)", "current state (*.spt)", "image+state (PNGJ)");
-	strFile += createListmenu('Export File', 'onChangeSave(value)', 0, 1,
+	strFile += createSelectmenu('Export File', 'onChangeSave(value)', 0, 1,
 			elSOptionArr, elSOptionText);
 	strFile += "<p ><img src='images/j-ice.png' alt='logo'/></p>";
-	strFile += "<p style='color:#f00; font-weight:bold'>New readers <br> CASTEP, VASP POSCAR, and XcrysDen</p>";
 	strFile += "<div style='margin-top:50px;'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
 	strFile += "<blockquote>\"J-ICE: a new Jmol interface for handling<br> and visualizing Crystallographic<br> and Electronics properties.<br>"
 	strFile += "P. Canepa, R.M. Hanson, P. Ugliengo, M. Alfredsson, <br>  J. Appl. Cryst. 44, 225 (2011). <a href='http://dx.doi.org/10.1107/S0021889810049411' target'blank'>[doi]</a> \"</blockquote> </p></div>";
-	
-	strFile += "<div style='margin-top:10px;'><b style='color:#f00'>JAVA compatibility:</b><br>User who installed the last Java Virtual Machine (JVM 8.0) ";
-	strFile += "<br>please follow these instructions to execute J-ICE. <a href='https://www.java.com/en/download/faq/exception_sitelist.xml' target='blank'>here</a></div>"
 	strFile += "</form>\n";
 	return strFile;
 }
@@ -128,25 +122,25 @@ function createFileGrp() { // Here the order is crucial
 function createShowGrp() {
 	var colorBondsName = new Array("select", "atom", "bond");
 	var dotName = new Array("select", "1", "2", "3", "4");
-	var strShow = "<form id='showGroup' name='showGroup' style='display:none' >";
+	var strShow = "<form autocomplete='nope'  id='showGroup' name='showGroup' style='display:none' >";
 	strShow += "<table class='contents'><tr><td colspan='2'>\n";
 	strShow += "<h2>Structure Appearance</h2>\n";
 	strShow += "Select atom/s by:</td><tr>\n";
 	strShow += "<tr><td colspan='2'>";
 	strShow += "by element "
-		+ createListKey('colourbyElementList', "elementSelected(value)",
+		+ createSelectKey('colourbyElementList', "elementSelected(value)",
 				"elementSelected(value)", "", 1) + "\n";
 	// strShow += "&nbsp;by atom &nbsp;"
-	// + createList2('colourbyAtomList', 'atomSelectedColor(value)', '', 1)
+	// + createSelect2('colourbyAtomList', 'atomSelectedColor(value)', '', 1)
 	// + "\n";
 	strShow += createCheck("byselection", "by picking &nbsp;",
 			'setPicking(this)', 0, 0, "set picking");
 
 	strShow += createCheck("bydistance", "within a sphere (&#197); &nbsp;",
-			'setDistancehidehide(this)', 0, 0, "");
+			'setDistanceHide(this)', 0, 0, "");
 	strShow += "</td></tr><tr><td colspan='2'>\n";
 	strShow += createCheck("byplane", "within a plane &nbsp;",
-			'setPlanehide(this)', 0, 0, "");
+			'onClickPickPlane(this,showPickPlaneCallback)', 0, 0, "");
 	strShow += "</td></tr><tr><td colspan='2'>\n";
 	strShow += createButton('show_selectAll', 'select All', 'selectAll()', '')
 	+ "\n";
@@ -167,16 +161,15 @@ function createShowGrp() {
 	strShow += "Atom/s & bond/s style</td></tr> \n";
 	strShow += "<tr><td > \n";
 	strShow += "Atom/s colour: "
-		+ createButton("colorWhat", "Default colour",
-				'runJmolScriptWait("select *; color Jmol; draw off")', 0);
-	strShow += "</td><td align='left'><script type='text/javascript'>\n";
-	strShow += "var colorScript = [setcolorWhat, 'colorWhat'];";
-	strShow += 'jmolColorPickerBox(colorScript, "");';
+		+ createButton("colorAtoms", "Default colour",
+				'runJmolScriptWait("select *; color Jmol;")', 0);
+	strShow += "</td><td align='left'><script>\n";
+	strShow += 'jmolColorPickerBox([setColorWhat,"atoms"], "","atomColorPicker");';
 	strShow += "</script> </td></tr>";
 	strShow += "<tr><td>Bond colour: "
 		+ createButton("bondcolor", "Default colour",
 				'runJmolScriptWait(" color bonds Jmol")', 0);
-	strShow += "</td><td align='left'> <script type='text/javascript'> jmolColorPickerBox('select *; color bond $COLOR$',[255,255,255])</script></td>";
+	strShow += "</td><td align='left'> <script> jmolColorPickerBox([setColorWhat, 'bonds'],[255,255,255],'bondColorPicker')</script></td>";
 	strShow += "</td></tr>";
 	strShow += "<tr><td colspan='2'> Atom/s & bond/s finish \n";
 	strShow += createRadio(
@@ -191,14 +184,14 @@ function createShowGrp() {
 			'toggleDivRadioTrans(value,"transulcencyDiv") + runJmolScriptWait("color " +  getValue("setFashion") + " TRANSLUCENT")',
 			0, 0, "off", "off")
 			+ "\n";
-	strShow += createList('setFashion', '', 0, 1, colorBondsName)
+	strShow += createSelect('setFashion', '', 0, 1, colorBondsName)
 			+ "\n";
 	strShow += "</td></tr>"
 		strShow += "<tr><td><div id='transulcencyDiv' style='display:none; margin-top:20px'>";
 	strShow += createSlider("trans");
 	strShow += "</div></td></tr><tr><td>";
 	strShow += "Dot surface ";
-	strShow += createList('setDot',
+	strShow += createSelect('setDot',
 			'runJmolScriptWait("dots on; set dotScale " + value + "; draw off")', 0, 1,
 			dotName);
 	strShow += createRadio("dotStyle", "off", 'runJmolScriptWait("dots off")', 0, 0, "off",
@@ -241,10 +234,10 @@ function createShowGrp() {
 	strShow += "</td></tr><tr><td>H-bond colour: "
 		+ createButton("bondcolor", "Default colour",
 				'runJmolScriptWait("color HBONDS none")', 0) + "</td><td>\n";
-	strShow += "<script type='text/javascript' align='left'>jmolColorPickerBox('color HBONDS $COLOR$',[255,255,255])</script>";
+	strShow += "<script align='left'>jmolColorPickerBox([setColorWhat,'hbonds'],[255,255,255],'hbondColorPicker')</script>";
 	strShow += "</td></tr><tr><td colspan='2'> \n";
 	strShow += "View / Hide Hydrogen/s "
-		+ createCheck("hydrogenView", "", "setVCheckbox(this, this.value)",
+		+ createCheck("hydrogenView", "", "setJmolFromCheckbox(this, this.value)",
 				0, 1, "set showHydrogens") + "\n";
 	strShow += "</td></tr></table> \n";
 	strShow += createLine('blue', '');
@@ -256,7 +249,7 @@ function createEditGrp() {
 	var bondValue = new Array("select", "single", "partial", "hbond", "double",
 			"aromatic", "partialDouble", "triple", "partialTriple",
 	"parialTriple2");
-	var strEdit = "<form id='editGroup' name='editGroup' style='display:none'>";
+	var strEdit = "<form autocomplete='nope'  id='editGroup' name='editGroup' style='display:none'>";
 	strEdit += "<table class='contents'><tr><td > \n";
 	strEdit += "<h2>Edit structure</h2>\n";
 	strEdit += "</td></tr>\n";
@@ -265,25 +258,25 @@ function createEditGrp() {
 	strEdit += "</td><tr>\n";
 	strEdit += "<tr><td colspan='2'>";
 	strEdit += "by element "
-		+ createList2(
+		+ createSelect2(
 				"deletebyElementList",
 				"elementSelectedDelete(value) + elementSelectedHide(value) ",
 				false, 1) + "\n";
 	// strEdit += "&nbsp;by atom &nbsp;"
-	// + createList2('deltebyAtomList',
+	// + createSelect2('deltebyAtomList',
 	// 'atomSelectedDelete(value) + atomSelectedHide(value) ', '',
 	// 1) + "\n";
 	strEdit += createCheck("byselection", "by picking &nbsp;",
 			'setPickingDelete(this) + setPickingHide(this)', 0, 0, "");
 	;
 	strEdit += createCheck("bydistance", "within a sphere (&#197); &nbsp;",
-			'setDistancehidehide(this)', 0, 0, "");
+			'setDistanceHide(this)', 0, 0, "");
 	strEdit += "</td></tr><tr><td colspan='2'>\n"
 		strEdit += createCheck("byplane", "within a plane &nbsp;",
-				'setPlanehide(this)', 0, 0, "");
+				'onClickPickPlane(this,editPickPlaneCallback)', 0, 0, "");
 	strEdit += "</td></tr><tr><td colspan='2'>\n";
 	strEdit += createButton('edit_selectAll', 'select All',
-			'selectAllDelete()  + selectAllHide()', '')
+			'selectAll()', '')
 			+ "\n";
 	strEdit += createButton('unselect', 'unselect All',
 			'runJmolScriptWait("select *; halos off; label off")', '')
@@ -302,7 +295,7 @@ function createEditGrp() {
 	strEdit += "<tr><td colspan='2'>\n";
 	strEdit += "Rename atom/s<br>";
 	strEdit += "Element Name ";
-	strEdit += createList('renameEle', 'changeElement(value)', 0, 1,
+	strEdit += createSelect('renameEle', 'changeElement(value)', 0, 1,
 			eleSymb);
 	strEdit += createLine('blue', '');
 	strEdit += "</td></tr>\n";
@@ -338,8 +331,8 @@ function createEditGrp() {
 	strEdit += createRadio("connect", "all", 'checkBondStatus(value)', 0, 0,
 			"connect", "all")
 			+ "<br>\n";
-	strEdit += "From " + createList2("connectbyElementList", "", false, 1) + " ";
-	strEdit += "To " + createList2("connectbyElementListone", "", false, 1)
+	strEdit += "From " + createSelect2("connectbyElementList", "", false, 1) + " ";
+	strEdit += "To " + createSelect2("connectbyElementListone", "", false, 1)
 	+ "<br>\n";
 	strEdit += "Mode "
 		+ createRadio("range", "whithin", 'checkWhithin(value)', 'disab',
@@ -352,7 +345,7 @@ function createEditGrp() {
 	strEdit += " to " + createText2("radiuscoonectTo", "", "2", "disab")
 	+ " &#197;";
 	strEdit += "<br> Style bond "
-		+ createList('setBondFashion', '', 0, 1, bondValue) + "<br> \n";
+		+ createSelect('setBondFashion', '', 0, 1, bondValue) + "<br> \n";
 	strEdit += createButton('connect2', 'Connect atom', 'connectAtom()', '');
 	strEdit += createButton('connect0', 'Delete bond', 'deleteBond()', '')
 	+ "<br>\n";
@@ -367,7 +360,7 @@ function createEditGrp() {
 //	var periodicityName = new Array("select", "crystal", "film", "polymer");
 //	var periodicityValue = new Array("", "crystal", "slab", "polymer");
 //
-//	var strBuild = "<form id='builGroup' name='builGroup' style='display:none'>";
+//	var strBuild = "<form autocomplete='nope'  id='builGroup' name='builGroup' style='display:none'>";
 //	strBuild += "<table class='contents'><tr><td> \n";
 //	strBuild += "<h2>Build and modify</h2>\n";
 //	strBuild += "</td></tr>\n";
@@ -377,7 +370,7 @@ function createEditGrp() {
 //	 * createCheck("addZnew", "Start procedure",
 //	 * 'toggleDiv(this,"addAtomZmatrix") + addAtomZmatrix(this)', "", "", "");
 //	 * strBuild += "<div id='addAtomZmatrix' style='display:none;
-//	 * margin-top:20px'>"; strBuild += "<br> Element: " + createList('addEleZ',
+//	 * margin-top:20px'>"; strBuild += "<br> Element: " + createSelect('addEleZ',
 //	 * '', 0, 1, 100, eleSymb, eleSymb); strBuild += "<br>"; strBuild +=
 //	 * createButton("addAtom", "add Atom", "addZatoms()", ""); strBuild += "</div>"
 //	 * strBuild += createLine('blue', ''); strBuild += "</td></tr>\n";
@@ -392,7 +385,7 @@ function createEditGrp() {
 //	strBuild += "y <input type='text'  name='y_frac' id='y_frac' size='1' class='text'> ";
 //	strBuild += "z <input type='text'  name='z_frac' id='z_frac' size='1' class='text'> ";
 //	strBuild += ", Element: "
-//		+ createList('addNewFracList', '', 0, 1, eleSymb);
+//		+ createSelect('addNewFracList', '', 0, 1, eleSymb);
 //	strBuild += createButton("addNewFracListBut", "add Atom", "addNewatom()",
 //	"");
 //	strBuild += "<br><br> Read out coordinates of neighbor atom/s";
@@ -413,10 +406,10 @@ function createEditGrp() {
 //			"", "", "");
 //	strBuild += "<div id='createmolecularCrystal' style='display:none; margin-top:20px'>";
 //	strBuild += "<br> Periodicity: "
-//		+ createList('typeMole', 'checkIfThreeD(value)', 0, 1,
+//		+ createSelect('typeMole', 'checkIfThreeD(value)', 0, 1,
 //				periodicityValue, periodicityName);
 //	strBuild += "<br> Space group: "
-//		+ createList('periodMole', 'setCellParamSpaceGroup(value)', 0, 1,
+//		+ createSelect('periodMole', 'setCellParamSpaceGroup(value)', 0, 1,
 //				spaceGroupValue, spaceGroupName)
 //				+ " <a href=http://en.wikipedia.org/wiki/Hermann%E2%80%93Mauguin_notation target=_blank>Hermann-Mauguin</a>"; // space
 //	// group
@@ -447,17 +440,17 @@ function createEditGrp() {
 //	strBuild += createButton("resetuff", "Reset Opt.", "resetOptimize()", "");
 //	strBuild += "</td></tr><tr><td><div id='fragmentSelected' style='display:none; margin-top:20px'>Fragment selection options:<br>";
 //	// strBuild += "by element "
-//	// + createListKey('colourbyElementList', "elementSelected(value)",
+//	// + createSelectKey('colourbyElementList', "elementSelected(value)",
 //	// "elementSelected(value)", "", 1) + "\n";
 //	// strBuild += "&nbsp;by atom &nbsp;"
-//	// + createList2('colourbyAtomList', 'atomSelected(value)', '', 1)
+//	// + createSelect2('colourbyAtomList', 'atomSelected(value)', '', 1)
 //	// + "\n";
 //	strBuild += createCheck("byselection", "by picking &nbsp;",
 //			'setPicking(this)', 0, 0, "set picking");
 //	strBuild += createCheck("bydistance", "within a sphere (&#197) &nbsp;",
-//			'setDistancehidehide(this)', 0, 0, "");
+//			'setDistanceHide(this)', 0, 0, "");
 //	strBuild += createCheck("byplane", " within a plane &nbsp;",
-//			'setPlanehide(this)', 0, 0, "");
+//			'onClickPickPlane(this,buildPickPlaneCallback)', 0, 0, "");
 //	strBuild += "</div>";
 //	strBuild += "</td></tr><tr><td>\n";
 //	strBuild += "<br> Structural optimization criterion: <br>";
@@ -481,7 +474,7 @@ function createMeasureGrp() {
 	var textText = new Array("select", "6 pt", "8 pt", "10 pt", "12 pt",
 			"16 pt", "20 pt", "24 pt", "30 pt");
 	
-	var strMeas = "<form id='measureGroup' name='measureGroup' style='display:none'>";
+	var strMeas = "<form autocomplete='nope'  id='measureGroup' name='measureGroup' style='display:none'>";
 	strMeas += "<table class='contents'><tr><td > \n";
 	strMeas += "<h2>Measure and Info</h2>\n";
 	strMeas += "</td></tr>\n";
@@ -489,7 +482,7 @@ function createMeasureGrp() {
 	strMeas += "Measure<br>\n";
 	strMeas += createRadio("distance", "distance", 'checkMeasure(value)', '',
 			0, "", "distance");
-	strMeas += createListFunc('measureDist', 'setMeasureUnit(value)',
+	strMeas += createSelectFunc('measureDist', 'setMeasureUnit(value)',
 			'setTimeout("setMeasureUnit(value) ",50)', 0, 1, measureValue,
 			measureName)
 			+ " ";
@@ -506,22 +499,20 @@ function createMeasureGrp() {
 	strMeas += "<tr><td>Measure colour: "
 		+ createButton("colorMeasure", "Default colour",
 				'runJmolScriptWait("color measures none")', 0) + "</td><td >\n";
-	strMeas += "<script type='text/javascript' align='left'>jmolColorPickerBox('color measures $COLOR$',[255,255,255])</script>";
+	strMeas += "<script align='left'>jmolColorPickerBox([setColorWhat, 'measures'],[255,255,255],'measureColorPicker')</script>";
 	strMeas += "</td></tr>";
 	strMeas += "<tr><td colspan='2'>";
 	strMeas += createLine('blue', '');
 	strMeas += "</td></tr>";
 	strMeas += "<tr><td colspan='2'>";
 	strMeas += "View coordinates: ";
-	strMeas += createRadio("coord", "fractional", 'viewCoord(value)', '', 0,
-			"", "fractional");
-	strMeas += createRadio("coord", "cartesian", 'viewCoord(value)', '', 0, "",
-	"cartesian");
+	strMeas += createRadio("coord", "fractional", 'viewCoord(value)', '', 0, "", "fractional");
+	strMeas += createRadio("coord", "cartesian", 'viewCoord(value)', '', 0, "", "cartesian");
 	strMeas += createLine('blue', '');
 	strMeas += "</td></tr>";
 	strMeas += "<tr><td colspan='2'>";
 	strMeas += "Font size ";
-	strMeas += createList("fSize", "setMeasureSize(value)", 0, 1,
+	strMeas += createSelect("fSize", "setMeasureSize(value)", 0, 1,
 			textValue, textText);
 	strMeas += createLine('blue', '');
 	strMeas += "</td></tr>";
@@ -531,7 +522,7 @@ function createMeasureGrp() {
 
 function createOrientGrp() {
 	var motionValueName = new Array("select", "translate", "rotate");
-	var strOrient = "<form id='orientGroup' name='orientGroup' style='display:none'>\n";
+	var strOrient = "<form autocomplete='nope'  id='orientGroup' name='orientGroup' style='display:none'>\n";
 	strOrient += "<table class='contents' ><tr><td><h2>Orientation and Views</td><tr>\n";
 	strOrient += "<tr><td>\n";
 	strOrient += "Spin "
@@ -604,7 +595,7 @@ function createOrientGrp() {
 	strOrient += "Fine orientation\n";
 	strOrient += "<table class='contents'> \n";
 	strOrient += "<tr><td colspan='3'>Motion "
-		+ createListFunc('setmotion', 'setKindMotion(value)',
+		+ createSelectFunc('setmotion', 'setKindMotion(value)',
 				'setTimeout("setKindMotion(value)",50)', 0, 1,
 				motionValueName, motionValueName);
 	strOrient += " magnitude\n";
@@ -619,9 +610,9 @@ function createOrientGrp() {
 	strOrient += "</td></tr>\n";
 	strOrient += "<tr><td colspan='2'> ";
 	strOrient += "by element "
-		+ createList2("byElementAtomMotion", "elementSelected(value)", false, 1) + "\n";
+		+ createSelect2("byElementAtomMotion", "elementSelected(value)", false, 1) + "\n";
 	// strOrient += "&nbsp;by atom &nbsp;"
-	// + createList2('byAtomMotion', 'atomSelected(value)', '', 1) + "\n";
+	// + createSelect2('byAtomMotion', 'atomSelected(value)', '', 1) + "\n";
 	strOrient += createCheck("byselectionOrient", "by picking &nbsp;",
 			'setPicking(this)', 0, 0, "set picking");
 	strOrient += "</td></tr><tr><td colspan='2'>\n";
@@ -671,16 +662,16 @@ function createCellGrp() {
 	"0 0 1");
 	var unitcellSize = new Array("1", "2", "3", "4", "5", "6", "7", "8", "9",
 			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19");
-	var strCell = "<form id='cellGroup' name='cellGroup' style='display:none'>";
+	var strCell = "<form autocomplete='nope'  id='cellGroup' name='cellGroup' style='display:none'>";
 	strCell += "<table class='contents'><tr><td><h2>Cell properties</h2></td></tr>\n";
 	strCell += "<tr><td colspan='2'>"
 		+ createCheck("cell", "View Cell",
-				"setVCheckbox(this, this.value)", 0, 1, "unitcell");
+				"setJmolFromCheckbox(this, this.value)", 0, 1, "unitcell");
 	strCell += createCheck("axes", "View axes",
-			"setVCheckbox(this, this.value)", 0, 1, "set showAxes");
+			"setJmolFromCheckbox(this, this.value)", 0, 1, "set showAxes");
 	strCell += "</td></tr><tr><td> Cell style:  \n";
 	strCell += "size "
-		+ createListFunc('offsetCell',
+		+ createSelectFunc('offsetCell',
 				'runJmolScriptWait("set unitcell " + value + ";")',
 				'setTimeout("runJmolScriptWait("set unitcell " + value +";")",50)', 0,
 				1, unitcellSize, unitcellSize) + "\n";
@@ -688,7 +679,7 @@ function createCellGrp() {
 		+ createCheck("cellDott", "dotted, ", "setCellDotted()", 0, 0,
 		"DOTTED") + "  color ";
 	strCell += "</td><td align='left'>\n";
-	strCell += "<script type='text/javascript' align='left'>jmolColorPickerBox('set unitCellColor \"$COLOR$\"',[000,000,000])</script>";
+	strCell += "<script align='left'>jmolColorPickerBox([setColorWhat, 'unitCell'],[0,0,0],'unitcellColorPicker')</script>";
 	strCell += "</td></tr>\n";
 	// strCell += createLine('blue', '');
 	strCell += "<tr><td colspan='2'>Set cell:  \n";
@@ -731,7 +722,7 @@ function createCellGrp() {
 	strCell += "<tr><td colspan='2'> \n";
 	strCell += "Offset unitcell \n<br>";
 	strCell += "Common offsets "
-		+ createListFunc('offsetCell', 'setUnitCellOrigin(value)',
+		+ createSelectFunc('offsetCell', 'setUnitCellOrigin(value)',
 				'setTimeout("setUnitCellOrigin(value)",50)', 0, 1,
 				unitcellName, unitcellName) + "\n";
 	strCell += "<br>  \n"
@@ -795,7 +786,7 @@ function createPolyGrp() {
 	var polyStyleValue = new Array("NOEDGES", "noedges", "collapsed",
 			"noedges", "edges", "frontedges");
 	var polyFaceName = new Array("0.0", "0.25", "0.5", "0.9", "1.2");
-	var strPoly = "<FORM id='polyGroup' name='polyGroup' style='display:none'>\n";
+	var strPoly = "<form autocomplete='nope'  id='polyGroup' name='polyGroup' style='display:none'>\n";
 	strPoly += "<table class='contents'>\n";
 	strPoly += "<tr><td>\n";
 	strPoly += "<h2>Polyhedron</h2>\n";
@@ -808,7 +799,7 @@ function createPolyGrp() {
 	strPoly += "<tr><td colspan='2'>\n";
 	strPoly += "&nbsp;a) Select central atom:  <br>\n";
 	strPoly += "&nbsp;&nbsp;  by element "
-		+ createList2('polybyElementList', "", false, 0);
+		+ createSelect2('polybyElementList', "", false, 0);
 	// strPoly+=createCheck("byselectionPoly", "&nbsp;by picking &nbsp;",
 	// 'setPolybyPicking(this)', 0, 0, "set picking") + "<br>\n";
 	strPoly += "<br>&nbsp;&nbsp;just central atom"
@@ -818,7 +809,7 @@ function createPolyGrp() {
 	strPoly += "<tr><td colspan='2'>\n";
 	strPoly += "&nbsp; b) select vertex atoms:  <br>\n";
 	strPoly += "&nbsp;&nbsp;  by element "
-		+ createList2('poly2byElementList', "", false, 0) + "\n";
+		+ createSelect2('poly2byElementList', "", false, 0) + "\n";
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
 	strPoly += "&nbsp; c) based on <br>";
@@ -831,7 +822,7 @@ function createPolyGrp() {
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
 	strPoly += "&nbsp;d) number of vertex "
-		+ createList('polyEdge', '', 0, 0, polyEdgeName) + "\n";
+		+ createSelect('polyEdge', '', 0, 0, polyEdgeName) + "\n";
 	strPoly += createLine('blue', '');
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
@@ -839,9 +830,8 @@ function createPolyGrp() {
 	strPoly += "</td></tr><tr><td > &nbsp;a) colour polyhedra\n";
 	strPoly += createButton("polyColor", "Default colour",
 			'runJmolScriptWait("set defaultColors Jmol")', 0);
-	strPoly += "</td><td align='left'><script type='text/javascript'>\n";
-	strPoly += "var Colorscript = [setPolyColor, 'color'];";
-	strPoly += "jmolColorPickerBox(Colorscript, '');";
+	strPoly += "</td><td align='left'><script>\n";
+	strPoly += "jmolColorPickerBox([setColorWhat,'polyhedra'],'','polyColorPicker');";
 	strPoly += "</script> </td></tr>";
 	strPoly += "<tr><td colspan='2'>\n";
 	strPoly += createButton('advancePoly', '+',
@@ -857,11 +847,11 @@ function createPolyGrp() {
 	"translucent")
 	+ "\n<br><br>";
 	strPoly += "&nbsp;c) style edges\n"
-		+ createList('polyVert', 'checkPolyValue(this.value)', 0, 0,
+		+ createSelect('polyVert', 'checkPolyValue(this.value)', 0, 0,
 				polyStyleValue, polyStyleName) + "\n";
 	strPoly += "<br>"
 		strPoly += "&nbsp;&nbsp;collapsed faces Offset \n"
-			+ createList('polyFace', '', 0, 0, polyFaceName) + "\n";
+			+ createSelect('polyFace', '', 0, 0, polyFaceName) + "\n";
 	strPoly += "</div>";
 	strPoly += createLine('blue', '');
 	strPoly += "</td></tr>\n";
@@ -878,28 +868,33 @@ function createPolyGrp() {
 }
 
 function createIsoGrp() {
-	var isoName = new Array("delete isosurface",
+	var isoName = new Array("select a surface type",
+			"from CUBE or JVXL file",
 			"isosurface OFF",
 			"isosurface ON",
 			"Van der Waals", 
 			"periodic VdW",
-			"VdW+MEP",
-			"periodic VdW+MEP",
-			"solvent accessible", "molecular", "geodesic VdW", "geodesic IONIC",
-			"dots VdW", "dots IONIC");
-	var isoValue = new Array('isosurface DELETE',
+			"solvent accessible", 
+			"molecular"
+			// BH: TODO: Note that these do not allow mapping
+//			,"geodesic VdW", "geodesic IONIC", "dots VdW", "dots IONIC"
+			);
+	var isoValue = new Array('',
+			'isosurface "?"',
 			'isosurface OFF',
 			'isosurface ON',
 			SURFACE_VDW, 
 			SURFACE_VDW_PERIODIC,
-			SURFACE_VDW_MEP,
-			SURFACE_VDW_MEP_PERIODIC,
+//			SURFACE_VDW_MEP,
+//			SURFACE_VDW_MEP_PERIODIC,
 			'isosurface SASURFACE',
-			'isosurface MOLSURFACE resolution 0 molecular',
-			'geoSurface VANDERWAALS', 
-			'geoSurface IONIC',
-			'dots VANDERWAALS', 
-			'dots IONIC');
+			'isosurface MOLSURFACE resolution 0 molecular'
+//			,
+//			'geoSurface VANDERWAALS', 
+//			'geoSurface IONIC',
+//			'dots VANDERWAALS', 
+//			'dots IONIC'
+			);
 	var colSchemeName = new Array("Rainbow (default)", "Black & White",
 			"Blue-White-Red", "Red-Green", "Green-Blue");
 	var colSchemeValue = new Array("roygb", "bw", "bwr", "low", "high");
@@ -908,27 +903,28 @@ function createIsoGrp() {
 	 * http://chemapps.stolaf.edu/jmol/docs/examples-11/new.htm isosurface /
 	 * lattice {a b c}
 	 */
-	var strIso = "<FORM id='isoGroup' name='isoGroup' style='display:none'>\n";
+	var strIso = "<form autocomplete='nope'  id='isoGroup' name='isoGroup' style='display:none'>\n";
 	strIso += "<table class='contents'>\n";
 	strIso += "<tr><td colspan='2'>\n";
 	strIso += "<h2>IsoSurface</h2>\n";
 	strIso += "</td></tr>\n";
 	strIso += "<tr><td colspan='2'>\n";
-	strIso += "Molecular (classic) isoSurfaces: \n <br>";
-	strIso += createList('isoCommon', 'setIsoClassic(this.value)', 0, 0,
+	//strIso += "Molecular (classic) isoSurfaces: \n <br>";
+	strIso += createSelect('createIso', 'onClickCreateIso(this.value)', 0, 0,
 			isoValue, isoName)
 			+ "&nbsp;";
-	strIso += createButton('removeIso', 'remove iso', 'runJmolScriptWait("isosurface OFF")',
-	'');
+	strIso += createButton('removeIso', 'remove iso', 'runJmolScriptWait("isosurface OFF")','');
 	strIso += createLine('blue', '');
-	strIso += "</td></tr>\n";
-	strIso += "<tr><td colspan='2'>\n";
-	strIso += "Color map settings<br>\n ";
+	strIso += "</td></tr><tr><td colspan='2'>\n";
+	strIso += createButton('mapMEP', 'map charges', 'onClickMapMEP()','');
+	strIso += createButton('mapCube', 'map from CUBE file', 'onClickMapCube()','');
+	strIso += createButton('mapPlane', 'map plane', 'onClickPickPlane(null, surfacePickPlaneCallback)','');
+	strIso += "<br>Color map settings<br>\n ";
 	strIso += "<img src='images/band.png'><br><br>";
 	strIso += "- " + createText2("dataMin", "", "12", 0) + " + "
 	+ createText2("dataMax", "", "12", 0) + " e- *bohr^-3<br>";
 	strIso += "<br> Colour-scheme "
-		+ createList('isoColorScheme', 'setIsoColorscheme()', 0, 0,
+		+ createSelect('isoColorScheme', 'setIsoColorscheme()', 0, 0,
 				colSchemeValue, colSchemeName) + "&nbsp<br>";
 	strIso += createButton('up', 'Update map', 'setIsoColorRange()', '');
 	// + createButton('reverseColor', 'Reverse colour', 'setIsoColorReverse()',
@@ -969,9 +965,8 @@ function createIsoGrp() {
 	strIso += "</td></tr>\n";
 	strIso += "<tr><td>\n";
 	strIso += "Color Isosurface:\n";
-	strIso += "</td><td><script type='text/javascript'>\n";
-	strIso += "var Colorscript = [setIsoColor, 'color'];";
-	strIso += "jmolColorPickerBox(Colorscript, '');";
+	strIso += "</td><td><script>\n";
+	strIso += "jmolColorPickerBox([setColorWhat,'isosurface'], '','surfaceColorPicker');";
 	strIso += "</script>";
 	strIso += "</td></tr>";
 	strIso += "<tr><td>\n";
@@ -1006,13 +1001,13 @@ function createGeometryGrp() {
 	var vecUnitEnergyVal = new Array("h", "e", "r", "kj", "kc");
 	var vecUnitEnergyText = new Array("Hartree", "eV", "Rydberg", "kJ*mol-1",
 	"kcal*mol-1");
-	var strGeom = "<form id='geometryGroup' name='modelsGeom' style='display:none'>";
+	var strGeom = "<form autocomplete='nope'  id='geometryGroup' name='modelsGeom' style='display:none'>";
 	strGeom += "<table class='contents'><tr><td>";
-	strGeom += "<h2>Geometry optimiziation</h2>\n";
+	strGeom += "<h2>Geometry optimization</h2>\n";
 	strGeom += "</td></tr>"
 		strGeom += "<tr><td>\n";
 	strGeom += createButton("<<", "<<",
-			'runJmolScriptWait("model FIRST");  preselectMyItem("0")', 0)
+			'runJmolScriptWait("model FIRST");  selectListItem(document.modelsGeom.models, "0")', 0)
 			+ "\n";
 	strGeom += createButton(">", ">", 'runJmolScriptWait("animation ON")'/* + selectFrame'*/, 0) + "\n";
 	// BH: note that "selectFrame()" does not exist in the Java, either
@@ -1031,13 +1026,13 @@ function createGeometryGrp() {
 			0)
 			+ "\n";
 	strGeom += "<br>"
-		+ createList("framepersec", "runJmolScriptWait(value)", 0, 1, vecAnimValue,
+		+ createSelect("framepersec", "runJmolScriptWait(value)", 0, 1, vecAnimValue,
 				vecAnimText) + " motion speed | ";
 // this is problematic in JavaScript -- too many files created
 //	strGeom += createCheck('saveFrames', ' save video frames', 'saveFrame()',
 //			0, 0, "");
 	strGeom += "<br> Energy unit measure: ";
-	strGeom += createList("unitMeasureEnergy", "convertPlot(value)", 0, 1,
+	strGeom += createSelect("unitMeasureEnergy", "convertPlot(value)", 0, 1,
 			vecUnitEnergyVal, vecUnitEnergyText);
 	strGeom += "</td></tr><tr><td>";
 	strGeom += "<select id='geom' name='models' onchange='showFrame(value)'  class='selectmodels' size='10'></select>";
@@ -1064,20 +1059,20 @@ function createGeometryGrp() {
 }
 
 function createFreqGrp() {
+	// TODO -- move this into _m_spectra.js
+	var vibAmplitudeValue = new Array("", "vibration Scale 1",
+			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7", "vibration Scale 10");
 	var vecscaleValue = new Array("", "vectors SCALE 1", "vectors SCALE 3",
 			"vectors SCALE 5", "vectors SCALE 7", "vectors SCALE 10",
 			"vectors SCALE 15", "vectors SCALE 19");
 	var vecsizeValue = new Array("", "vectors 1", "vectors  3", "vectors  5",
 			"vectors  7", "vectors 10", "vectors 15", "vectors  19");
-	var vibAmplitudeValue = new Array("", "vibration Scale 1",
-			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7",
-	"vibration Scale 10");
 	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
-	var strFreq = "<table class='contents'><tr><td valign='top'><form id='freqGroup' name='modelsVib' style='display:none'>";
+	var strFreq = "<table class='contents'><tr><td valign='top'><form autocomplete='nope'  id='freqGroup' name='modelsVib' style='display:none'>";
 	strFreq += "<h2>IR-Raman Frequencies</h2>\n";
-	strFreq += "<select id='vib' name='models' OnClick='showFrame(value)' class='selectmodels' size=15 style='width:120px; overflow: auto;'></select>";
+	strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=15 style='width:120px; overflow: auto;'></select>";
 	strFreq += "<BR>\n";
 	strFreq += createRadio("modSpec", "All", "onClickModSpec()", 0, 1, "",
 	"all");
@@ -1090,30 +1085,30 @@ function createFreqGrp() {
 	strFreq += "</select> ";
 	strFreq += "<BR>\n";
 	strFreq += "vibration ";
-	strFreq += createRadio("vibration", "on", 'onClickVibrate(value)', 0, 1,
-			"", "on");
-	strFreq += createRadio("vibration", "off", 'onClickVibrate(value)', 0, 0,
-			"", "off");
+	strFreq += createRadio("vibration", "on", 'onClickFreqParams()', 0, 1,
+			"radVibrationOn", "on");
+	strFreq += createRadio("vibration", "off", 'onClickFreqParams()', 0, 0,
+			"radVibrationOff", "off");
 	strFreq += "<BR>\n";
-	strFreq += createList("vecsamplitude", "runJmolScriptWait(value)", 0, 1,
+	strFreq += createSelect("vecsamplitude", "onClickFreqParams()", 0, 1,
 			vibAmplitudeValue, vibAmplitudeText,[0,1])
 			+ " vib. amplitude";
 	strFreq += "<BR>\n";
 	strFreq += createCheck("vectors", "view vectors",
-			"setVCheckbox(this, this.value)", 0, 1, "vectors");
+			"onClickFreqParams()", 0, 1, "vectors");
 	strFreq += "<BR>\n";
-	strFreq += createList("vecscale", "runJmolScriptWait(value)", 0, 1, vecscaleValue,
+	strFreq += createSelect("vecscale", "onClickFreqParams()", 0, 1, vecscaleValue,
 			vecscaleText,[0,0,1])
 			+ " vector scale";
 	strFreq += "<BR>\n";
-	strFreq += createList("sizevec", "runJmolScriptWait(value)", 0, 1, vecsizeValue,
+	strFreq += createSelect("sizevec", "onClickFreqParams()", 0, 1, vecsizeValue,
 			vecscaleText,[0,0,0,1])
 			+ " vector size";
 	strFreq += "<BR>\n";
-	strFreq += "<table class='contents'> <tr><td>vector color</td> <td><script type='text/javascript'>jmolColorPickerBox('color vectors $COLOR$',[255,255,255])</script></td>";
+	strFreq += "<table class='contents'> <tr><td>vector color</td> <td><script>jmolColorPickerBox([setColorWhat,'vectors'],[255,255,255],'vectorColorPicker')</script></td>";
 	strFreq += "</tr><tr><td>"
 		+ createButton("vibVectcolor", "Default color",
-				'runJmolScriptWait("color vectors none")', 0) + "</td></tr></table>";
+				'onClickFreqParams()', 0) + "</td></tr></table>";
 	strFreq += "</td><td valign='top'><div id='freqdiv' style='display:none'>\n";
 	strFreq += createDiv("graphfreqdiv",
 	"width:200;height:200;background-color:#EFEFEF; margin-left:5px; display:none")
@@ -1155,7 +1150,7 @@ function createElecpropGrp() {
 	var colSchemeName = new Array("Rainbow (default)", "Black & White",
 			"Blue-White-Red", "Red-Green", "Green-Blue");
 	var colSchemeValue = new Array('roygb', 'bw', 'bwr', 'low', 'high');
-	var strElec = "<form id='elecGroup' name='elecGroup' style='display:none'>\n";
+	var strElec = "<form autocomplete='nope'  id='elecGroup' name='elecGroup' style='display:none'>\n";
 	strElec += "<table class='contents'><tr><td ><h2>Electronic - Magnetic properties</h2> \n";
 	strElec += "</td></tr>\n";
 	strElec += "<tr><td>\n";
@@ -1163,7 +1158,7 @@ function createElecpropGrp() {
 	strElec += createButton("mulliken", "view Mulliken",
 			'runJmolScriptWait("script scripts/mulliken.spt")', 0);
 	strElec += "<br> Colour-scheme "
-		+ createList('chergeColorScheme', 'setColorMulliken(value)', 0, 0,
+		+ createSelect('chergeColorScheme', 'setColorMulliken(value)', 0, 0,
 				colSchemeValue, colSchemeName)
 				+ "&nbsp<br>";
 	strElec += "</td></tr>\n";
@@ -1183,7 +1178,7 @@ function createElecpropGrp() {
 	strElec += "</td></tr>\n";
 	strElec += "<tr><td>\n";
 	strElec += createLine('blue', '');
-	strElec += createButton("Removeall", "Remove", 'exitElecpropGrp()', 0);
+	strElec += createButton("Removeall", "Remove", 'removeCharges()', 0);
 	strElec += "</td></tr>\n";
 	strElec += "<tr><td>\n";
 	strElec += createLine('blue', '');
@@ -1199,29 +1194,29 @@ function createMainGrp() {
 
 	var shadeName = new Array("select", "1", "2", "3")
 	var shadeValue = new Array("0", "1", "2", "3")
-	var strOther = "<form id='otherpropGroup' name='otherpropGroup' style='display:none' >";
+	var strOther = "<form autocomplete='nope'  id='otherpropGroup' name='otherpropGroup' style='display:none' >";
 	strOther += "<table class='contents'><tr><td> \n";
 	strOther += "<h2>Other properties</h2></td></tr>\n";
 	strOther += "<tr><td>Background colour:</td>\n";
-	strOther += "<td align='left'><script type='text/javascript'>jmolColorPickerBox('set background $COLOR$',[255,255,255])</script></td></tr> \n";
+	strOther += "<td align='left'><script>jmolColorPickerBox([setColorWhat,'background'],[255,255,255],'backgroundColorPicker')</script></td></tr> \n";
 	strOther += "<tr><td>"
 		+ createLine('blue', '')
 		+ createCheck(
 				"perspective",
 				"Perspective",
-				'setVCheckbox(this, this.value)+toggleDiv(this,"perspectiveDiv")',
+				'setJmolFromCheckbox(this, this.value)+toggleDiv(this,"perspectiveDiv")',
 				0, 0, "set perspectiveDepth");
 	strOther += "</td></tr><tr><td>"
 	strOther += "<div id='perspectiveDiv' style='display:none; margin-top:20px'>";
 	strOther += createSlider("cameraDepth");
 	strOther += "</div></td></tr>\n";
 	strOther += "<tr><td>"
-		+ createCheck("z-shade", "Z-Fog", "setVCheckbox(this, this.value)",
+		+ createCheck("z-shade", "Z-Fog", "setJmolFromCheckbox(this, this.value)",
 				0, 0, "set zShade");
 	strOther += " ";
-	strOther += createList(
+	strOther += createSelect(
 			'setzShadePower ',
-			'runJmolScriptWait("set zShade; set zShadePower " + value + " ;") + setVCheckbox("z-shade","")',
+			'runJmolScriptWait("set zShade; set zShadePower " + value + " ;") + setJmolFromCheckbox("z-shade","")',
 			0, 1, shadeValue, shadeName)
 			+ " Fog level";
 	strOther += "</td></tr>\n";
@@ -1259,15 +1254,15 @@ function createMainGrp() {
 	+ createLine('blue', '') + "</td></tr>\n";
 	strOther += "<tr><td colspan='2'>";
 	strOther += "Label controls <br>"
-		strOther += createCheck("frameName", "Name model", "setNameModel(this)", 0,
+		strOther += createCheck("frameName", "Name model", "setFrameTitle(this)", 0,
 				1, "frame title")
 				+ " ";
 	strOther += createCheck("jmollogo", "Jmol Logo",
-			"setVCheckbox(this, this.value)", 0, 1, "set showFrank")
+			"setJmolFromCheckbox(this, this.value)", 0, 1, "set showFrank")
 			+ "</td></tr>\n";
 	strOther += "<tr><td colspan='2'>";
 	strOther += "Font size ";
-	strOther += createList("fontSize", "setTextSize(value)", 0, 1,
+	strOther += createSelect("fontSize", "setTextSize(value)", 0, 1,
 			textValue, textText);
 	strOther += "</td></tr>";
 	strOther += "<tr><td colspan='2'>"
@@ -1281,7 +1276,7 @@ function createMainGrp() {
 ///////////////////////////// create History Grp 
 
 //function createHistGrp() {
-//	var strHist = "<FORM id='HistoryGroup' name='HistoryGroup' style='display:none'>";
+//	var strHist = "<form autocomplete='nope'  id='HistoryGroup' name='HistoryGroup' style='display:none'>";
 //	strHist += "History<BR>\n";
 //	strHist += "Work in progress<BR>\n";
 //	strHist += "</form>";

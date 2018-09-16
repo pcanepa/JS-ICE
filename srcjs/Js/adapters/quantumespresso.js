@@ -76,7 +76,7 @@ var kpointQ = null;
 
 //Main block
 function exportQuantum() {
-	warningMsg("Make sure you had selected the model you would like to export.");
+	warningMsg("Make sure you have selected the model you would like to export.");
 	prepareControlblock();
 	prepareSystemblock();
 	prepareElectronblock();
@@ -342,7 +342,7 @@ espressoDone = function() {
 
 function loadModelsEspresso() {
 	var counterFreq = 0;
-	cleanAndReloadForm();
+	//cleanAndReloadForm();
 	getUnitcell("1");
 	setFrameValues("1");
 	var counterMD = 0;
@@ -385,7 +385,6 @@ function loadModelsEspresso() {
 	 * 1 ); } }
 	 */
 	getSymInfo();
-	// setName();
 
 }
 

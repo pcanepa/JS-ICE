@@ -59,11 +59,9 @@ function loadModelsSiesta() {
 			}
 		}
 	}
-	symmetryModeAddSiesta();
 }
 
 function initializeJiceSiesta() {
-	var name = jmolGetPropertyAsJSON("filename");
 	setFrameValues("1");
 	setTitleEcho();
 	cleanArraySiesta();
@@ -77,14 +75,12 @@ function cleanArraySiesta() {
 	counterSiesta = 0;
 }
 
-function symmetryModeAddSiesta() {
-	sortedSymm = new Array;
-	sortedSymm = [];
-	sortedSymm = unique(freqSymmSiesta);
-	// alert(sortedSymm)
+function symmetryModeAdd_siesta() {
+	// this method is called using self["symmetryModeAdd_" + type]
+	var sortedSymm = unique(freqSymmSiesta);
 	for (var i = 0; i < freqSymmSiesta.length; i++) {
 		if (sortedSymm[i] != null)
-			addOption(getbyID("sym"), freqSymmSiesta[i], freqSymmSiesta[i])
+			addOption(getbyID('sym'), freqSymmSiesta[i], freqSymmSiesta[i])
 	}
 }
 

@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<!--
+ BH 2018.08.12
+
+ - requires tools/ant-contrib.jar
+  
+ - creates the site/ directory if it does not exist
+ - unzip libjs/*.zip into site/swingjs/j2s
+ - unzips swingjs/SwingJS-site.zip into site/
+ - copies non-java resources from resources/ into site/swingjs/j2s
+ - copies non-java resources from site-resources/ into site
+ 
+-->
+
+<project name="swingjs-project" default="tosite" basedir="."
+ xmlns:if="ant:if"
+    xmlns:unless="ant:unless">
+	
+  <target name="tosite">
+  	  	
+  	<!-- input directories -->
+  	
+  	<!-- location of ant-contrib.jar -->
+  	<property name="tools.dir" value = "tools" />
+
+ 	<!-- SwingjS_site zip file (could be varied if versioning is needed) -->
+  	<property name="swingjs.zip" value="swingjs/SwingJS-site.zip" />
+
+  	<!-- location of third-party jar contents as precompiled zipped .js files to copy to site/ -->
+  	<property name="libjs.dir" value="libjs" />
+ 
+  	<!-- non-Java resources to copy to site/ -->
+    <property name="resource.dir" value="resources" />  	
+    <property name="site.resource.dir" value="site-resources" />  	
+  	  	
+	<!-- output directories -->
+
+  	<property name="site.dir" value="site" />
+  	<property name="j2s.dir" value="${site.dir}/swingjs/j2s" />
+  	 
+    <!-- <for  ...> construct needs ant-contrib.jar -->
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+      <classpath>
+        <pathelement location="${tools.dir}/ant-contrib.jar" />
+      </classpath>
+    </taskdef>
+
+
+
+ 	<!-- transfer j2s resources 
+
+    FOR FUTURE REFERENCE  	
+
+  	<echo> Copying ${resource.dir} files into ${j2s.dir} </echo>
+  	<copy todir="${j2s.dir}">
+      <fileset dir="${resource.dir}">
+      	<include name="**"/>
+      	<exclude name="jmol/**"/>
+  	</fileset>
+    </copy>
+
+ 	
+ 	-->
+
+ 	<!-- transfer site resources 
+
+ 	-->
+ 	
+  	<echo> Copying ${site.resource.dir} files into ${site.dir} </echo>
+  	<copy todir="${site.dir}">
+      <fileset dir="${site.resource.dir}">
+      	<include name="**"/>
+  	</fileset>
+    </copy>
+
+  	<echo> Creating ${site.dir}/J-Ice.js</echo>
+  	<loadfile srcFile="srcjs/imports" property="imports"/>  	
+  	<echo file="${site.dir}/J-Ice.js"></echo>
+    <for param="line" list="${imports}" delimiter="${line.separator}">
+      <sequential>
+      	<echo file="${site.dir}/J-Ice.js" append="true">      		
+///js// @{line} /////
+</echo>
+	   	<concat destfile="${site.dir}/J-Ice.js" append="yes">
+	   		<filelist dir="srcjs" files="@{line}" />
+	   	</concat>
+      </sequential>
+    </for>
+
+  	
+</target>
+	
+
+</project>

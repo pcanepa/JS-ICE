@@ -1,3 +1,15 @@
+// note that JmolColorPicker is customized -- BH 2018
+
+function doClickSaveCurrentState() {
+	warningMsg("This option only saves the state temporarily. To save your work, use File...Export...image+state(PNGJ). The image created can be dragged back into Jmol or JSmol or sent to a colleague to reproduce the current state exactly as it appears in the image.");
+	runJmolScriptWait('save ORIENTATION orask; save STATE stask; save BOND bask');
+}
+
+function doClickReloadCurrentState() {
+	runJmolScriptWait('restore ORIENTATION orask; restore STATE stask; restore BOND bask;');
+}
+
+
 Array.prototype.max = function() {
 	var max = this[0];
 	var len = this.length;
@@ -16,6 +28,16 @@ Array.prototype.min = function() {
 	return min;
 }
 
+runJmolScript = function(script) {
+	debugSay(script);
+	jmolScript(script);	
+}
+
+runJmolScriptWait = function(script) {
+	debugSay(script);
+	jmolScriptWait(script);	
+}
+
 createApplet = function() {
 	Jmol.Info || (Jmol.Info = {});
 	Jmol.Info.serverUrl = "https://chemapps.stolaf.edu/jmol/jsmol/php/jmol.php"
@@ -28,16 +50,32 @@ createApplet = function() {
 			);
 }
 
-resetPage = function() {
-	runJmolScript("script ./scripts/reset.spt");
-	grpDisp(MENU_FILE);
-}
-
 setAntialias = function(isON) {
 	runJmolScriptWait(isOn? 
 			"antialiasDisplay = true;set hermiteLevel 5"
 			: "antialiasDisplay = false;set hermiteLevel 0"
 	);
+}
+
+function setStatus(status) {
+	setTextboxValue("statusLine", status); 
+}
+		
+function warningMsg(msg) {
+	alert("WARNING: " + msg);
+}
+
+function errorMsg(msg) {
+	if (msg.indexOf("#CANCELED#") < 0) {
+		alert("ERROR: " + msg);
+	} else {
+		runJmolScript("echo");
+	}
+	return false;
+}
+
+function messageMsg(msg) {
+	alert(msg);
 }
 
 function docWriteTabs() {
@@ -46,7 +84,7 @@ function docWriteTabs() {
 
 function docWriteBottomFrame() {
 	document.write("<br> ");	
-	document.write(createText5('filename', 'Filename:', '108', '', '', "disab"));
+	document.write(createText5('statusLine', '', '108', '', '', "disab"));
 	document.write("<br>");
 	document.write(createButton1("reload", "Reload",
 			'onChangeLoad("reload")', 0,
@@ -57,10 +95,10 @@ function docWriteBottomFrame() {
 			"specialbutton"));
 	document.write(createButton("NewWindow", "New window", "newAppletWindow()", 0));
 	document.write(createButton("viewfile", "File content", "printFileContent()", 0));
-	document.write(createButton1("saveState", 'Save state', 'saveCurrentState()',
+	document.write(createButton1("saveState", 'Save state', 'doClickSaveCurrentState()',
 			0, "savebutton"));
 	document.write(createButton1("restoreState", 'Restore state',
-			'reloadCurrentState()', 0, "savebutton"));
+			'doClickReloadCurrentState()', 0, "restorebutton"));
 	document.write(createButton("Feedback", 'Feedback', 'newAppletWindowFeed()', 0));
 }
 
