@@ -62,31 +62,43 @@
  	
  	-->
 
- 	<!-- transfer site resources 
+ 	<!-- transfer srcjs/Js/* and site-resources/*, create index-test.html
 
  	-->
  	
-  	<echo> Copying ${site.resource.dir} files into ${site.dir} </echo>
+  	<echo> Copying srcjs/Js files into ${site.dir} for ${site.dir}/index-test.html</echo>
   	<copy todir="${site.dir}">
+      <fileset dir="srcjs">
+      	<include name="Js/**"/>
+  	</fileset>
+    </copy>
+
+  	<echo> Copying ${site.resource.dir} files into ${site.dir} </echo>
+  	<copy todir="${site.dir}" overwrite="true">
       <fileset dir="${site.resource.dir}">
       	<include name="**"/>
   	</fileset>
     </copy>
 
-  	<echo> Creating ${site.dir}/J-Ice.js</echo>
+  	<echo> Creating ${site.dir}/js-ice.js and ${site.dir}/index-test.html</echo>
   	<loadfile srcFile="srcjs/imports" property="imports"/>  	
-  	<echo file="${site.dir}/J-Ice.js"></echo>
+  	<echo file="${site.dir}/js-ice.js"></echo>
+  	<echo file="${site.dir}/temp.tmp"></echo>
     <for param="line" list="${imports}" delimiter="${line.separator}">
       <sequential>
-      	<echo file="${site.dir}/J-Ice.js" append="true">      		
+      	<echo file="${site.dir}/temp.tmp" append="true">      		
+      		&lt;script src=@{line}&gt;&lt;/script&gt;</echo>
+      	<echo file="${site.dir}/js-ice.js" append="true">      		
 ///js// @{line} /////
 </echo>
-	   	<concat destfile="${site.dir}/J-Ice.js" append="yes">
+	   	<concat destfile="${site.dir}/js-ice.js" append="yes">
 	   		<filelist dir="srcjs" files="@{line}" />
 	   	</concat>
       </sequential>
     </for>
-
+  	<loadfile srcFile="${site.dir}/temp.tmp" property="scripts"/> 
+	<delete file="${site.dir}/temp.tmp"/>
+  	<replace file="${site.dir}/index-test.html" token="_SCRIPTS_" value="${scripts}"/>   	
   	
 </target>
 	
