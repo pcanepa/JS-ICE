@@ -573,13 +573,14 @@ function onClickFreqParams() {
 
 function updateJmolForFreqParams() {
 	var c = jmolColorPickerBoxes["vectorColorPicker"].getJmolColor();
+	var vectorsON = isChecked("vectors");
 	var script = "vibration " + isChecked("radVibrationOn")
+					+ ";vectors " + vectorsON
 					+ ";" + getValueSel("vecsamplitude")
 					+ ";" + getValueSel("vecscale")
-					+ ";" + getValueSel("sizevec")
-					+ ";color vectors " + (isChecked("vibVectcolor") ? "none" :  c)
-					+ ";vectors " + isChecked("vectors")				
-					;
+					+ ";color vectors " + (isChecked("vibVectcolor") ? "none" :  c);
+	if (vectorsON)
+		script += ";" + getValueSel("sizevec");
 	runJmolScriptWait(script)
 }
 
