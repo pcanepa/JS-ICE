@@ -18,6 +18,7 @@ function setColorMulliken(value) {
 //}
 
 function removeCharges() {
+
 // BH TODO - need to clear this without reloading
 //runJmolScriptWait('script scripts/reload.spt');
 //restoreOrientation_e();
