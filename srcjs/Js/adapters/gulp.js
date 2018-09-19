@@ -188,7 +188,7 @@ function gulpDone() {
 }
 
 function loadModelsGulp() {
-	runJmolScriptWait("script scripts/name.spt"); 
+	runJmolScriptWait("script scripts/gulp_name.spt"); 
 	var counterFreq = 0;
 	getUnitcell("1");
 	setFrameValues("1");
