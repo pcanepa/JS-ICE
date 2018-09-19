@@ -68,8 +68,10 @@ function setMotion(axis) {
 		stringa = "Selected" + " " + axis + " -" + magnitudeMotion;
 	}
 
-	(!getbyID("moveByselection").checked) ? runJmolScriptWait(motion + " " + axis + " "
-			+ magnitudeMotion) : runJmolScriptWait(motion + stringa);
+	stringa = motion + (getbyID("moveByselection").checked ? "Selected " : " ") + stringa;
+	 
+	runJmolScriptWait(stringa);
+
 
 }
 
