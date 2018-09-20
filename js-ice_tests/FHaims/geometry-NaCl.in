@@ -1,0 +1,16 @@
+# NaCl, conventional unit cell of cubic phase
+
+  lattice_vector         5.65		0.0		0.0
+  lattice_vector         0.0		5.65		0.0
+  lattice_vector         0.0		0.0		5.65
+
+       atom_frac         0.00000000        0.00000000        0.00000000  Na
+       atom_frac         0.00000000        0.50000000        0.50000000  Na
+       atom_frac         0.50000000        0.00000000        0.50000000  Na
+       atom_frac         0.50000000        0.50000000        0.00000000  Na
+
+       atom_frac         0.5               0.0               0.0         Cl
+       atom_frac         0.5               0.5               0.5         Cl
+       atom_frac         0.0               0.0               0.5         Cl
+       atom_frac         0.0               0.5               0.0         Cl
+

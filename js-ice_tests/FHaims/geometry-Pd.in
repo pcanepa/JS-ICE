@@ -1,0 +1,10 @@
+# Pd fcc, conventional unit cell
+
+  lattice_vector         3.96		0.0		0.0
+  lattice_vector         0.0		3.96		0.0
+  lattice_vector         0.0		0.0		3.96
+
+       atom_frac         0.0               0.0               0.0         Pd
+       atom              1.98              1.98              0.0         Pd
+       atom_frac         0.5               0.0               0.5         Pd
+       atom              0.0               1.98              1.98        Pd
