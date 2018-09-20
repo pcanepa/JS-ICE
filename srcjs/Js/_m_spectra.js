@@ -132,6 +132,7 @@ function simSpectrum() {
 	var drawGaussian = true;
 	var sigma = getValue("sigma");
 	intTot = [];
+	var sortInt = [];
 	var rescale = isChecked("rescaleSpectra");
 	switch (convoluzione) {
 	case "stick":
@@ -139,7 +140,7 @@ function simSpectrum() {
 		case "ir": // IR + Raman
 			irInt = [];
 			RamanInt = [];
-			irInt = extractFreqData(freqCount);
+			irInt = extractFreqData(freqCount, null, null, sortInt);
 			var maxInt = maxValue(sortInt);
 			var max0 = (maxInt == 0);
 			if (max0) {
@@ -175,7 +176,7 @@ function simSpectrum() {
 		case "both":
 			irInt = [];
 			RamanInt = [];
-			irInt = extractFreqData(freqCount);
+			irInt = extractFreqData(freqCount, null, null, sortInt);
 			if (flagCrystal) {
 				RamanInt = extractRamanData(freqCount);
 				var maxInt = maxValue(sortInt);
@@ -250,53 +251,10 @@ function simSpectrum() {
 		} 
 		break;
 	case "gaus":
-		drawGaussian = true;
-
-		irInt = [];
-		RamanInt = [];
-		sortInt = [];
-		irInt = extractFreqData(freqCount);
-		if (flagCrystal) {
-			RamanInt = extractRamanData(freqCount);
-			var maxInt = maxValue(sortInt);
-			defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
-					drawGaussian);
-		} else if (flagOutcar) {
-			var maxInt = 100.00;
-			RamanInt = [];
-			defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
-					drawGaussian);
-		} else if (flagGaussian || flagDmol) {
-			RamanInt = [];
-			var maxInt = maxR;
-			defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
-					drawGaussian);
-		}
+		createSpectrum(radvalue, freqCount, sigma, true);
 		break;
-
 	case "lor":
-		drawGaussian = false;
-
-		irInt = [];
-		RamanInt = [];
-		sortInt = [];
-		irInt = extractFreqData(freqCount);
-		if (flagCrystal) {
-			var maxInt = maxValue(sortInt);
-			RamanInt = extractRamanData(freqCount);
-			defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
-					drawGaussian);
-		} else if (flagOutcar) {
-			var maxInt = 100.00;
-			RamanInt = [];
-			defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
-					drawGaussian);
-		} else if (flagGaussian || flagDmol) {
-			RamanInt = [];
-			var maxInt = maxR;
-			defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
-					drawGaussian);
-		}
+		createSpectrum(radvalue, freqCount, sigma, false);
 		break;
 	}
 
@@ -304,6 +262,26 @@ function simSpectrum() {
 	var newwin = open("spectrum.html");
 
 }
+
+function createSpectrum(radvalue, freqCount, sigma, drawGaussian) {
+		var RamanInt = [];
+		var sortInt = [];
+		var irInt = extractFreqData(freqCount, null, null, sortInt);
+		var maxInt;
+		if (flagCrystal) {
+			RamanInt = extractRamanData(freqCount);
+		 	maxInt = maxValue(sortInt);
+		} else if (flagOutcar) {
+		 	maxInt = 100.00;
+		} else if (flagGaussian || flagDmol) {
+			maxInt = maxR;
+		} else {
+			return;
+		}
+		defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
+					drawGaussian);
+}
+
 //
 //function extractIrData(freqCount) {
 //	var irInt = [];
@@ -336,7 +314,7 @@ function simSpectrum() {
 //	return irInt;
 //}
 
-function extractFreqData(freqCount, intData, unknownData) {
+function extractFreqData(freqCount, intData, unknownData, sortInt) {
 	var irInt = [];
 	if (flagCrystal) {
 		for (var i = 0; i < freqCount - 1; i++) { // populate IR array
