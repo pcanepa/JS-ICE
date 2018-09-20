@@ -1,0 +1,439 @@
+##############################################################################
+###                                                                        ###
+###        Electronic paper (Acta Crystallographica Section E)             ###
+###                                                                        ###
+##############################################################################
+#                                                                            #
+# This CIF contains the data in a paper accepted for publication in Acta     #
+# Crystallographica Section E. It conforms to the requirements of Notes      #
+# for Authors for Section E, and has been peer reviewed under the auspices   #
+# of the IUCr Commission on Journals.                                        #
+#                                                                            #
+# Full details of the Crystallographic Information File format               #
+# are given in the paper "The Crystallographic Information File (CIF):       #
+# a New Standard Archive File for Crystallography" by S. R. Hall, F. H.      #
+# Allen and I. D. Brown [Acta Cryst. (1991), A47, 655-685].                  #
+#                                                                            #
+# The current version of the core CIF dictionary is obtainable from          #
+# ftp://ftp.iucr.org/pub/cif_core.dic. The current version number is 2.4.    #
+#                                                                            #
+# Software is freely available for graphical display of the structure(s) in  #
+# this CIF.  For information consult the CIF home page http://www.iucr.org/  #
+# cif/home.html                                                              #
+#                                                                            #
+# This file may be used for bona fide research purposes within the           #
+# scientific community so long as proper attribution is given to the journal # 
+# article from which it was obtained.                                        #
+#                                                                            #
+##############################################################################
+                                             
+data_global
+_audit_creation_method     'form.cif (version 2.0)'
+_journal_data_validation_number     ?
+_journal_date_recd_electronic     2010-12-06
+_journal_date_accepted     2010-12-19
+_journal_name_full     'Acta Crystallographica, Section E'
+_journal_year     2011
+_journal_volume     67
+_journal_issue      2
+_journal_page_first     o263
+_journal_page_last     o263
+_journal_paper_category     QO
+_journal_coeditor_code     DS2078
+_publ_contact_author_name     'Ren, Chun-Xia; Shang, Shao-Ming'
+_publ_contact_author_address
+;
+      School of Chemical and Material Engineering
+      Jiangnan University
+      1800 Lihu Road
+      Wuxi
+      Jiangsu Province 214122
+      People's Republic of China
+;
+_publ_contact_author_email     'chunxiaren@yahoo.com.cn, smshang@126.com'
+_publ_contact_author_phone     '0086-13382888962'
+_publ_section_title
+;
+2,2'-(<i>p</i>-Phenylene)bis(4,5-dihydro-1<i>H</i>-imidazol-3-ium)
+bis(3-nitrobenzoate)
+;
+loop_
+    _publ_author_name
+    _publ_author_address
+    'Xiu-Mei Song'
+;
+School of Chemical and Material Engineering
+Jiangnan University
+1800 Lihu Road
+Wuxi
+Jiangsu Province 214122
+People's Republic of China
+;
+    'Jun-Jun Li'
+;
+College of Pharmacy
+GuangDong Pharmaceutical University
+Guangzhou
+Guangdong Province 510006
+People's Republic of China
+;
+    'Xin-Hua Liu'
+;
+School of Chemical and Material Engineering
+Jiangnan University
+1800 Lihu Road
+Wuxi
+Jiangsu Province 214122
+People's Republic of China
+;
+    'Chun-Xia Ren'
+;
+School of Chemical and Material Engineering
+Jiangnan University
+1800 Lihu Road
+Wuxi
+Jiangsu Province 214122
+People's Republic of China
+;
+    'Shao-Ming Shang'
+;
+School of Chemical and Material Engineering
+Jiangnan University
+1800 Lihu Road
+Wuxi
+Jiangsu Province 214122
+People's Republic of China
+;
+data_I
+_audit_creation_method     SHELXL-97
+_chemical_name_systematic
+;
+2,2'-(<i>p</i>-Phenylene)bis(4,5-dihydro-1<i>H</i>-imidazol-3-ium)
+bis(3-nitrobenzoate)
+;
+_chemical_name_common     ?
+_chemical_formula_moiety     'C12 H16 N4 2+, 2(C7 H4 N O4 -)'
+_chemical_formula_sum     'C26 H24 N6 O8'
+_chemical_formula_iupac     'C12 H16 N4 2+, 2C7 H4 N O4 -'
+_chemical_formula_weight     548.51
+_chemical_melting_point     ?
+_symmetry_cell_setting     triclinic
+_symmetry_space_group_name_H-M     'P -1'
+_symmetry_space_group_name_Hall     '-P 1'
+loop_
+    _symmetry_equiv_pos_as_xyz
+    'x, y, z'
+    '-x, -y, -z'
+_cell_length_a     6.9882(12)
+_cell_length_b     7.4165(12)
+_cell_length_c     13.233(2)
+_cell_angle_alpha     81.343(3)
+_cell_angle_beta     82.443(3)
+_cell_angle_gamma     62.699(2)
+_cell_volume     600.96(17)
+_cell_formula_units_Z     1
+_cell_measurement_reflns_used     ?
+_cell_measurement_theta_min     ?
+_cell_measurement_theta_max     ?
+_cell_measurement_temperature     273(2)
+_exptl_crystal_description     block
+_exptl_crystal_colour     colorless
+_exptl_crystal_size_max     0.67
+_exptl_crystal_size_mid     0.55
+_exptl_crystal_size_min     0.42
+_exptl_crystal_density_diffrn     1.516
+_exptl_crystal_density_meas     ?
+_exptl_crystal_density_method     'not measured'
+_exptl_crystal_F_000     286
+_exptl_absorpt_coefficient_mu     0.115
+_exptl_absorpt_correction_type     multi-scan
+_exptl_absorpt_process_details     '(SADABS; Bruker, 1998)'
+_exptl_absorpt_correction_T_min     0.9269
+_exptl_absorpt_correction_T_max     0.9533
+_exptl_special_details
+;
+;
+_diffrn_ambient_temperature     273(2)
+_diffrn_radiation_type     MoK\a
+_diffrn_radiation_wavelength     0.71073
+_diffrn_radiation_source     'fine-focus sealed tube'
+_diffrn_radiation_monochromator     graphite
+_diffrn_measurement_device_type     'Bruker SMART APEX CCD area-detector'
+_diffrn_measurement_method     '\f and \w'
+_diffrn_detector_area_resol_mean     ?
+_diffrn_reflns_number     3714
+_diffrn_reflns_av_R_equivalents     0.0161
+_diffrn_reflns_av_sigmaI/netI     0.0345
+_diffrn_reflns_theta_min     1.56
+_diffrn_reflns_theta_max     27.01
+_diffrn_reflns_theta_full     27.01
+_diffrn_measured_fraction_theta_max     0.982
+_diffrn_measured_fraction_theta_full     0.982
+_diffrn_reflns_limit_h_min     -8
+_diffrn_reflns_limit_h_max     8
+_diffrn_reflns_limit_k_min     -9
+_diffrn_reflns_limit_k_max     9
+_diffrn_reflns_limit_l_min     -16
+_diffrn_reflns_limit_l_max     8
+_diffrn_standards_number     ?
+_diffrn_standards_interval_count     ?
+_diffrn_standards_interval_time     ?
+_diffrn_standards_decay_%     ?
+_refine_special_details
+;
+Refinement of <i>F</i>^2^ against ALL reflections. The weighted <i>R</i>-factor
+<i>wR</i> and goodness of fit <i>S</i> are based on <i>F</i>^2^, conventional
+<i>R</i>-factors <i>R</i> are based on <i>F</i>, with <i>F</i> set to zero for
+negative <i>F</i>^2^. The threshold expression of <i>F</i>^2^ >
+\s(<i>F</i>^2^) is used only for calculating <i>R</i>-factors(gt) <i>etc</i>.
+and is not relevant to the choice of reflections for refinement.
+<i>R</i>-factors based on <i>F</i>^2^ are statistically about twice as large
+as those based on <i>F</i>, and <i>R</i>- factors based on ALL data will be
+even larger.
+;
+_reflns_number_total     2575
+_reflns_number_gt     1676
+_reflns_threshold_expression     I>2sigma(I)
+_refine_ls_structure_factor_coef     Fsqd
+_refine_ls_matrix_type     full
+_refine_ls_R_factor_all     0.0839
+_refine_ls_R_factor_gt     0.0534
+_refine_ls_wR_factor_gt     0.1291
+_refine_ls_wR_factor_ref     0.1510
+_refine_ls_goodness_of_fit_ref     1.067
+_refine_ls_restrained_S_all     1.067
+_refine_ls_number_reflns     2575
+_refine_ls_number_parameters     181
+_refine_ls_number_restraints     1
+_refine_ls_hydrogen_treatment     constr
+_refine_ls_weighting_scheme     calc
+_refine_ls_weighting_details
+         'calc w=1/[\s^2^(Fo^2^)+(0.0613P)^2^+0.1694P] where P=(Fo^2^+2Fc^2^)/3'
+_atom_sites_solution_hydrogens     geom
+_atom_sites_solution_primary     direct
+_atom_sites_solution_secondary     difmap
+_refine_ls_shift/su_max     0.000
+_refine_ls_shift/su_mean     0.000
+_refine_diff_density_max     0.197
+_refine_diff_density_min     -0.284
+_refine_ls_extinction_method     none
+_refine_ls_extinction_coef     ?
+loop_
+    _atom_type_symbol
+    _atom_type_description
+    _atom_type_scat_dispersion_real
+    _atom_type_scat_dispersion_imag
+    _atom_type_scat_source
+    'C' 'C' 0.0033 0.0016
+                         'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+    'H' 'H' 0.0000 0.0000
+                         'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+    'N' 'N' 0.0061 0.0033
+                         'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+    'O' 'O' 0.0106 0.0060
+                         'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+_computing_data_collection     '<i>SMART</i> (Bruker, 1998)'
+_computing_cell_refinement     '<i>SAINT-Plus</i> (Bruker, 1998)'
+_computing_data_reduction     '<i>SAINT-Plus</i> (Bruker, 1998)'
+_computing_structure_solution     '<i>SHELXS97</i> (Sheldrick, 2008)'
+_computing_structure_refinement     '<i>SHELXL97</i> (Sheldrick, 2008)'
+_computing_molecular_graphics     '<i>SHELXTL</i> (Sheldrick, 2008)'
+_computing_publication_material     '<i>SHELXTL</i> (Sheldrick, 2008)'
+loop_
+    _atom_site_type_symbol
+    _atom_site_label
+    _atom_site_fract_x
+    _atom_site_fract_y
+    _atom_site_fract_z
+    _atom_site_U_iso_or_equiv
+    _atom_site_adp_type
+    _atom_site_calc_flag
+    _atom_site_refinement_flags
+    _atom_site_occupancy
+    _atom_site_disorder_assembly
+    _atom_site_disorder_group
+    C C1 0.7607(4) 0.1903(4) 0.18562(17) 0.0483(6) Uani d . 1 . .
+    H H1A 0.7398 0.2592 0.2458 0.058 Uiso calc R 1 . .
+    H H1B 0.6839 0.1075 0.1981 0.058 Uiso calc R 1 . .
+    C C2 0.6871(4) 0.3430(3) 0.09029(18) 0.0492(6) Uani d . 1 . .
+    H H2A 0.5961 0.3147 0.0521 0.059 Uiso calc R 1 . .
+    H H2B 0.6093 0.4820 0.1083 0.059 Uiso calc R 1 . .
+    C C3 1.0544(3) 0.1481(3) 0.07401(15) 0.0383(5) Uani d . 1 . .
+    C C4 1.2831(3) 0.0707(3) 0.03509(15) 0.0373(5) Uani d . 1 . .
+    C C5 1.3404(3) 0.1420(3) -0.06192(15) 0.0414(5) Uani d . 1 . .
+    H H5 1.2337 0.2373 -0.1034 0.050 Uiso calc R 1 . .
+    C C6 1.5554(4) 0.0716(3) -0.09660(15) 0.0416(5) Uani d . 1 . .
+    H H6 1.5925 0.1195 -0.1615 0.050 Uiso calc R 1 . .
+    C C7 0.1900(4) 0.5421(5) 0.2448(2) 0.0620(8) Uani d . 1 . .
+    C C8 0.2163(3) 0.3932(3) 0.33993(16) 0.0437(5) Uani d . 1 . .
+    C C9 0.1925(4) 0.2191(4) 0.33805(19) 0.0529(6) Uani d . 1 . .
+    H H9 0.1691 0.1887 0.2765 0.064 Uiso calc R 1 . .
+    C C10 0.2027(4) 0.0885(4) 0.4264(2) 0.0639(7) Uani d . 1 . .
+    H H10 0.1849 -0.0275 0.4239 0.077 Uiso calc R 1 . .
+    C C11 0.2391(4) 0.1307(4) 0.5170(2) 0.0620(7) Uani d . 1 . .
+    H H11 0.2445 0.0452 0.5769 0.074 Uiso calc R 1 . .
+    C C12 0.2671(3) 0.3009(4) 0.51797(16) 0.0507(6) Uani d U 1 . .
+    C C13 0.2561(3) 0.4345(3) 0.43168(17) 0.0462(5) Uani d . 1 . .
+    H H13 0.2750 0.5497 0.4350 0.055 Uiso calc R 1 . .
+    N N1 0.8925(3) 0.3081(3) 0.03187(14) 0.0482(5) Uani d . 1 . .
+    H H1 0.9055 0.3822 -0.0226 0.058 Uiso calc R 1 . .
+    N N2 0.9901(3) 0.0671(3) 0.15833(13) 0.0438(5) Uani d . 1 . .
+    H H2 1.0721 -0.0439 0.1930 0.053 Uiso calc R 1 . .
+    N N3 0.3060(4) 0.3471(5) 0.61616(18) 0.0776(8) Uani d U 1 . .
+    O O1 0.1555(3) 0.4959(3) 0.16467(14) 0.0884(7) Uani d . 1 . .
+    O O2 0.2025(3) 0.7013(3) 0.25649(18) 0.0916(8) Uani d . 1 . .
+    O O3 0.3241(4) 0.5037(6) 0.6153(2) 0.1100(10) Uani d . 1 . .
+    O O4 0.3135(4) 0.2288(5) 0.69216(16) 0.1205(11) Uani d . 1 . .
+loop_
+    _atom_site_aniso_label
+    _atom_site_aniso_U_11
+    _atom_site_aniso_U_22
+    _atom_site_aniso_U_33
+    _atom_site_aniso_U_12
+    _atom_site_aniso_U_13
+    _atom_site_aniso_U_23
+    C1 0.0495(13) 0.0543(13) 0.0410(12) -0.0242(11) -0.0023(10) -0.0025(10)
+    C2 0.0456(13) 0.0468(12) 0.0473(13) -0.0152(10) -0.0034(10) -0.0009(10)
+    C3 0.0477(12) 0.0387(10) 0.0286(10) -0.0187(9) -0.0089(9) -0.0010(8)
+    C4 0.0446(12) 0.0356(10) 0.0298(10) -0.0160(9) -0.0068(8) -0.0011(8)
+    C5 0.0472(12) 0.0380(11) 0.0323(11) -0.0142(9) -0.0099(9) 0.0053(8)
+    C6 0.0516(13) 0.0424(11) 0.0273(10) -0.0197(10) -0.0045(9) 0.0040(8)
+    C7 0.0410(13) 0.0717(18) 0.0494(16) -0.0137(12) -0.0021(11) 0.0233(13)
+    C8 0.0359(11) 0.0477(12) 0.0367(12) -0.0129(9) -0.0031(9) 0.0074(9)
+    C9 0.0513(14) 0.0599(15) 0.0463(14) -0.0226(11) -0.0085(11) -0.0052(11)
+    C10 0.0610(16) 0.0510(14) 0.080(2) -0.0292(13) -0.0097(14) 0.0104(13)
+    C11 0.0513(15) 0.0686(17) 0.0530(16) -0.0235(13) -0.0059(12) 0.0225(13)
+    C12 0.0350(12) 0.0701(16) 0.0336(12) -0.0131(11) -0.0033(9) -0.0013(11)
+    C13 0.0362(11) 0.0487(12) 0.0484(13) -0.0153(10) -0.0014(9) -0.0037(10)
+    N1 0.0481(11) 0.0478(10) 0.0372(10) -0.0146(9) -0.0047(8) 0.0072(8)
+    N2 0.0464(10) 0.0434(10) 0.0365(10) -0.0181(8) -0.0060(8) 0.0062(8)
+    N3 0.0438(13) 0.124(2) 0.0481(14) -0.0212(14) -0.0029(10) -0.0174(15)
+    O1 0.0837(14) 0.1023(16) 0.0365(10) -0.0115(12) -0.0080(9) 0.0177(10)
+    O2 0.0766(14) 0.0759(14) 0.1167(19) -0.0418(12) -0.0346(12) 0.0561(13)
+    O3 0.0816(17) 0.173(3) 0.0934(19) -0.0593(18) 0.0042(13) -0.0671(19)
+    O4 0.0984(18) 0.183(3) 0.0363(12) -0.0305(18) -0.0134(11) 0.0122(15)
+_geom_special_details
+;
+All e.s.d.'s (except the e.s.d. in the dihedral angle between two l.s. planes)
+are estimated using the full covariance matrix. The cell e.s.d.'s are taken
+into account individually in the estimation of e.s.d.'s in distances, angles
+and torsion angles; correlations between e.s.d.'s in cell parameters are only
+used when they are defined by crystal symmetry. An approximate (isotropic)
+treatment of cell e.s.d.'s is used for estimating e.s.d.'s involving l.s.
+planes.
+;
+loop_
+    _geom_bond_atom_site_label_1
+    _geom_bond_atom_site_label_2
+    _geom_bond_site_symmetry_2
+    _geom_bond_distance
+    _geom_bond_publ_flag
+    C1 N2 . 1.462(3) ?
+    C1 C2 . 1.531(3) ?
+    C1 H1A . 0.9700 ?
+    C1 H1B . 0.9700 ?
+    C2 N1 . 1.468(3) ?
+    C2 H2A . 0.9700 ?
+    C2 H2B . 0.9700 ?
+    C3 N2 . 1.312(3) ?
+    C3 N1 . 1.317(3) ?
+    C3 C4 . 1.476(3) ?
+    C4 C6 2_855 1.393(3) ?
+    C4 C5 . 1.394(3) ?
+    C5 C6 . 1.383(3) ?
+    C5 H5 . 0.9300 ?
+    C6 C4 2_855 1.393(3) ?
+    C6 H6 . 0.9300 ?
+    C7 O1 . 1.246(4) ?
+    C7 O2 . 1.257(4) ?
+    C7 C8 . 1.514(3) ?
+    C8 C9 . 1.380(3) ?
+    C8 C13 . 1.387(3) ?
+    C9 C10 . 1.388(3) ?
+    C9 H9 . 0.9300 ?
+    C10 C11 . 1.367(4) ?
+    C10 H10 . 0.9300 ?
+    C11 C12 . 1.366(4) ?
+    C11 H11 . 0.9300 ?
+    C12 C13 . 1.380(3) ?
+    C12 N3 . 1.481(3) ?
+    C13 H13 . 0.9300 ?
+    N1 H1 . 0.8600 ?
+    N2 H2 . 0.8600 ?
+    N3 O4 . 1.221(3) ?
+    N3 O3 . 1.222(4) ?
+loop_
+    _geom_angle_atom_site_label_1
+    _geom_angle_atom_site_label_2
+    _geom_angle_atom_site_label_3
+    _geom_angle_site_symmetry_1
+    _geom_angle_site_symmetry_3
+    _geom_angle
+    _geom_angle_publ_flag
+    N2 C1 C2 . . 102.53(17) ?
+    N2 C1 H1A . . 111.3 ?
+    C2 C1 H1A . . 111.3 ?
+    N2 C1 H1B . . 111.3 ?
+    C2 C1 H1B . . 111.3 ?
+    H1A C1 H1B . . 109.2 ?
+    N1 C2 C1 . . 102.37(17) ?
+    N1 C2 H2A . . 111.3 ?
+    C1 C2 H2A . . 111.3 ?
+    N1 C2 H2B . . 111.3 ?
+    C1 C2 H2B . . 111.3 ?
+    H2A C2 H2B . . 109.2 ?
+    N2 C3 N1 . . 111.85(19) ?
+    N2 C3 C4 . . 122.98(18) ?
+    N1 C3 C4 . . 125.13(18) ?
+    C6 C4 C5 2_855 . 119.30(19) ?
+    C6 C4 C3 2_855 . 119.93(18) ?
+    C5 C4 C3 . . 120.75(18) ?
+    C6 C5 C4 . . 120.20(19) ?
+    C6 C5 H5 . . 119.9 ?
+    C4 C5 H5 . . 119.9 ?
+    C5 C6 C4 . 2_855 120.50(19) ?
+    C5 C6 H6 . . 119.7 ?
+    C4 C6 H6 2_855 . 119.7 ?
+    O1 C7 O2 . . 127.2(2) ?
+    O1 C7 C8 . . 117.2(3) ?
+    O2 C7 C8 . . 115.6(3) ?
+    C9 C8 C13 . . 118.9(2) ?
+    C9 C8 C7 . . 120.8(2) ?
+    C13 C8 C7 . . 120.2(2) ?
+    C8 C9 C10 . . 121.2(2) ?
+    C8 C9 H9 . . 119.4 ?
+    C10 C9 H9 . . 119.4 ?
+    C11 C10 C9 . . 119.9(2) ?
+    C11 C10 H10 . . 120.1 ?
+    C9 C10 H10 . . 120.1 ?
+    C12 C11 C10 . . 118.7(2) ?
+    C12 C11 H11 . . 120.7 ?
+    C10 C11 H11 . . 120.7 ?
+    C11 C12 C13 . . 122.8(2) ?
+    C11 C12 N3 . . 118.7(2) ?
+    C13 C12 N3 . . 118.4(3) ?
+    C12 C13 C8 . . 118.5(2) ?
+    C12 C13 H13 . . 120.7 ?
+    C8 C13 H13 . . 120.7 ?
+    C3 N1 C2 . . 110.95(18) ?
+    C3 N1 H1 . . 124.5 ?
+    C2 N1 H1 . . 124.5 ?
+    C3 N2 C1 . . 111.14(17) ?
+    C3 N2 H2 . . 124.4 ?
+    C1 N2 H2 . . 124.4 ?
+    O4 N3 O3 . . 124.9(3) ?
+    O4 N3 C12 . . 117.8(3) ?
+    O3 N3 C12 . . 117.3(3) ?
+loop_
+    _geom_hbond_atom_site_label_D
+    _geom_hbond_atom_site_label_H
+    _geom_hbond_atom_site_label_A
+    _geom_hbond_site_symmetry_A
+    _geom_hbond_distance_DH
+    _geom_hbond_distance_HA
+    _geom_hbond_distance_DA
+    _geom_hbond_angle_DHA
+    C6 H6 O2 2_765 0.93 2.48 3.283(3) 144
+    N1 H1 O1 2_665 0.86 1.97 2.763(3) 153
+    N2 H2 O2 1_645 0.86 1.80 2.646(3) 166
+
