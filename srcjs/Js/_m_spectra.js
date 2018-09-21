@@ -29,9 +29,6 @@ function enterSpectra() {
 		getInfoFreq();
 		freqCount = (flagOutcar? freqData.length - 1 : flagGaussian ? freqGauss.length - 1 : InfoFreq.length);
 		setMaxMinPlot();
-//		irData = [[],[]], ramanData = [[],[]], unknownData = [[],[]];
-//		extractFreqData(freqCount, irData, unknownData);
-//		extractRamanData(freqCount, ramanData);
 		onClickModSpec();
 	}
 }
@@ -138,8 +135,6 @@ function simSpectrum() {
 	case "stick":
 		switch (radvalue) {
 		case "ir": // IR + Raman
-			irInt = [];
-			RamanInt = [];
 			irInt = extractFreqData(freqCount, null, null, sortInt);
 			var maxInt = maxValue(sortInt);
 			var max0 = (maxInt == 0);
@@ -161,8 +156,6 @@ function simSpectrum() {
 			}
 			break;
 		case "raman":// Raman
-			irInt = [];
-			RamanInt = [];
 			RamanInt = extractRamanData(freqCount);
 			for (var i = 0; i < 4000; i++) {
 				for (var k = 0; k < freqCount - 1; k++) {
@@ -174,8 +167,6 @@ function simSpectrum() {
 			}
 			break;
 		case "both":
-			irInt = [];
-			RamanInt = [];
 			irInt = extractFreqData(freqCount, null, null, sortInt);
 			if (flagCrystal) {
 				RamanInt = extractRamanData(freqCount);
@@ -271,6 +262,8 @@ function createSpectrum(radvalue, freqCount, sigma, drawGaussian) {
 		if (flagCrystal) {
 			RamanInt = extractRamanData(freqCount);
 		 	maxInt = maxValue(sortInt);
+			if (maxInt == 0)
+				maxInt = 200;
 		} else if (flagOutcar) {
 		 	maxInt = 100.00;
 		} else if (flagGaussian || flagDmol) {
@@ -373,6 +366,7 @@ function extractRamanData(freqCount, RamanData) {
 
 function defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
 		drawGaussian) {
+	var rescale = isChecked("rescaleSpectra");
 	var max0 = (maxInt == 0);
 	var sp = 0.000;
 	// Gaussian Convolution
@@ -387,7 +381,6 @@ function defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
 	var radvalue;
 	var summInt = [];
 	sortInt = [];
-	var rescale = isChecked("rescaleSpectra");
 	if (drawGaussian) {
 		for (var i = 0; i < 4000; i++) {
 			sp = 0.000;
@@ -504,12 +497,12 @@ function sortNumber(a, b) {
 	return a - b;
 }
 
-function maxValue(irInt) {
+function maxValue(a) {
 	// BH 2018
-	irInt.sort(sortNumber);
+	a.sort(sortNumber);
 	var n = 0;
-	while (irInt.length > 0 && isNaN(n = parseInt(irInt[irInt.length - 1]))){
-		irInt.pop();
+	while (a.length > 0 && isNaN(n = parseInt(a[a.length - 1]))){
+		a.pop();
 	}
 	return (isNaN(n) ? 0 : n);
 }
