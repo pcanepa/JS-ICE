@@ -4403,11 +4403,11 @@ function createShowGrp() {
 	// strShow += "&nbsp;by atom &nbsp;"
 	// + createSelect2('colourbyAtomList', 'atomSelectedColor(value)', '', 1)
 	// + "\n";
-	strShow += createCheck("byselection", "by picking &nbsp;",
-			'setPicking(this)', 0, 0, "set picking");
-
-	strShow += createCheck("bydistance", "within a sphere (&#197); &nbsp;",
-			'setDistanceHide(this)', 0, 0, "");
+//	strShow += createCheck("byselection", "by picking &nbsp;",
+//		'setPicking(this)', 0, 0, "set picking");
+//
+//	strShow += createCheck("bydistance", "within a sphere (&#197); &nbsp;",
+//			'setDistanceHide(this)', 0, 0, "");
 	strShow += "</td></tr><tr><td colspan='2'>\n";
 	strShow += createCheck("byplane", "within a plane &nbsp;",
 			'onClickPickPlane(this,showPickPlaneCallback)', 0, 0, "");
@@ -4536,11 +4536,11 @@ function createEditGrp() {
 	// + createSelect2('deltebyAtomList',
 	// 'atomSelectedDelete(value) + atomSelectedHide(value) ', '',
 	// 1) + "\n";
-	strEdit += createCheck("byselection", "by picking &nbsp;",
-			'setPickingDelete(this) + setPickingHide(this)', 0, 0, "");
-	;
-	strEdit += createCheck("bydistance", "within a sphere (&#197); &nbsp;",
-			'setDistanceHide(this)', 0, 0, "");
+	//strEdit += createCheck("byselection", "by picking &nbsp;",
+	//		'setPickingDelete(this) + setPickingHide(this)', 0, 0, "");
+//	;
+//	strEdit += createCheck("bydistance", "within a sphere (&#197); &nbsp;",
+//			'setDistanceHide(this)', 0, 0, "");
 	strEdit += "</td></tr><tr><td colspan='2'>\n"
 		strEdit += createCheck("byplane", "within a plane &nbsp;",
 				'onClickPickPlane(this,editPickPlaneCallback)', 0, 0, "");
