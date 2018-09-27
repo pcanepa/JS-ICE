@@ -11,10 +11,10 @@ var measureCoord = false;
 function viewCoord(value) {
 	kindCoord = value;
 	measureCoord = true;
-	messageMsg("Pick the atom your interested, please.");
+	messageMsg("Pick the atom you are interested in, please.");
 	setPickingCallbackFunction(showCoord);
 	runJmolScriptWait("select *; label off"
-			+ 'set defaultDistanceLabel "%10.7VALUE %UNITS"'
+			+ 'set defaultDistanceLabel "%2.7VALUE %UNITS"'
 			+ 'showSelections TRUE; select none; set picking ON;set picking LABEL; set picking SELECT atom; halos on; set LABEL on;');
 }
 
@@ -50,7 +50,7 @@ function checkMeasure(value) {
 			return false;
 		}
 		measureHint('Pick two atoms');
-		runJmolScriptWait('set defaultDistanceLabel "%10.2VALUE %UNITS";'
+		runJmolScriptWait('set defaultDistanceLabel "%2.3VALUE %UNITS";'
 				+ 'showSelections TRUE; select none;  label on ; set picking on; set picking LABEL; set picking SELECT atom; set picking DISTANCE;'
 				+ "measure ON; set measurements ON; set showMeasurements ON; set measurements ON; set measurementUnits "
 				+ unit + ";set picking MEASURE DISTANCE;" + "set measurements "
@@ -58,13 +58,13 @@ function checkMeasure(value) {
 
 	} else if (radiobutton == "angle") {
 		measureHint('Pick three atoms');
-		runJmolScriptWait('set defaultAngleLabel "%10.2VALUE %UNITS";'
+		runJmolScriptWait('set defaultAngleLabel "%2.3VALUE %UNITS";'
 				+ 'showSelections TRUE; select none;  label on ; set picking on; set picking LABEL; set picking SELECT atom; set picking ANGLE;'
 				+ "measure ON; set measurements ON; set showMeasurements ON; set picking MEASURE ANGLE;"
 				+ 'set measurements ' + unitMeasure + ';label ON');
 	} else if (radiobutton == "torsional") {
 		measureHint('Pick four atoms');
-		runJmolScriptWait('set defaultTorsionLabel "%10.2VALUE %UNITS";'
+		runJmolScriptWait('set defaultTorsionLabel "%2.3VALUE %UNITS";'
 				+ 'showSelections TRUE; select none;  label on ; set picking on; set picking TORSION; set picking SELECT atom; set picking ANGLE;'
 				+ 'measure ON; set measurements ON; set showMeasurements ON; set picking MEASURE TORSION;label ON');
 	}
