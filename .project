@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-<<<<<<< Upstream, based on branch 'dev' of https://github.com/JS-ICE/JS-ICE.git
 	<name>JS-ICEv2</name>
-=======
-	<name>JS-ICE</name>
->>>>>>> 4efd691 .project, file and spectra changes
 	<comment></comment>
 	<projects>
 	</projects>
