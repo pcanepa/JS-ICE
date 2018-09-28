@@ -1103,7 +1103,7 @@ function createFreqGrp() {
 	strFreq += "<BR>\n";
 	strFreq += createSelect("sizevec", "onClickFreqParams()", 0, 1, vecsizeValue,
 			vecscaleText,[0,0,0,1])
-			+ " vector thickness";
+			+ " vector width";
 	strFreq += "<BR>\n";
 	strFreq += "<table class='contents'> <tr><td>vector color</td> <td><script>jmolColorPickerBox([setColorWhat,'vectors'],[255,255,255],'vectorColorPicker')</script></td>";
 	strFreq += "</tr><tr><td>"
