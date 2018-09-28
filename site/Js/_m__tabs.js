@@ -159,6 +159,7 @@ function createTabMenu() {
 	return strMenu;
 }
 
+
 function createMenuCell(i) {
 
 	var sTab = "<li id='menu'+ i +' "; // Space is mandatory between i and "
