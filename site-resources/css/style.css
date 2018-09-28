@@ -139,18 +139,26 @@ li.menu  {
 	color: #fff;   
 }
 
+li.menu.picked {
+	background: url('../images/tabsel.png') repeat-x; 
+}
 li.menu:hover {
 	color: #395DA3;
 	background: url('../images/tabsel.png') repeat-x; 
 }
 
+
 a.menu:hover{
 	color: #395DA3;
 }
 
+
+
 a.menu span{
     display: none;
 }
+
+
 
 
 a.menu:hover span{ /*the span will display just on :hover state*/
@@ -169,11 +177,14 @@ a.menu:hover span{ /*the span will display just on :hover state*/
  
  
  
- a.menu:visited span{
+ 
+
+a.menu:visited span{
     display:none;
     visibility:hidden;
  }
  
+
 
 td.details {
 	border-width: 0px;
