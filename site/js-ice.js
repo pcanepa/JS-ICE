@@ -347,7 +347,7 @@ loadUser = function(packing, filter) {
 
 
 function setDefaultJmolSettings() {
-	runJmolScriptWait('select visible; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
+	runJmolScriptWait('select all; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
 	radiiSlider.setValue(20);
 	bondSlider.setValue(15);
 	// radiiConnectSlider.setValue(20);
