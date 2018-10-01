@@ -1163,24 +1163,23 @@ function elementSelected(element) {
 	return colorWhat;
 }
 
-function showSelected(chosenSelection) {
-	var selection = "element";
-	if (chosenSelection == 'by picking' || chosenSelection == 'by distance') {
-		selection = chosenSelection;  
-	}
-	switch(selection){
-		case "element":
-			elementSelected(element); 
-			break;
-		case "by picking":
-			setPicking(this); //placeholder function--does not work as of 10.1.18 A.Salij
-			break;
-		case "by distance":
-			'setDistanceHide(this)'; //placeholder function--does not work as of 10.1.18 A.Salij
-			break;
-	}
-	
-}
+//function showSelected(chosenSelection) {
+//	var selection = "element";
+//	if (chosenSelection == 'by picking' || chosenSelection == 'by distance') {
+//		selection = chosenSelection;  
+//	}
+//	switch(selection){
+//		case "element":
+//			elementSelected(element); 
+//			break;
+//		case "by picking":
+//			setPicking(this); //placeholder function--does not work as of 10.1.18 A.Salij
+//			break;
+//		case "by distance":
+//			'setDistanceHide(this)'; //placeholder function--does not work as of 10.1.18 A.Salij
+//			break;
+//	}	
+//}
 
 function applyTrans(t) {
 	getbyID('transMsg').innerHTML = t + " %"
@@ -4431,10 +4430,10 @@ function createShowGrp() {
 	strShow += "Select atom/s by:</td><tr>\n";
 	strShow += "<tr><td colspan='2'>";
 	strShow += "by element "
-//		+ createSelectKey('colourbyElementList', "elementSelected(value)",
-//				"elementSelected(value)", "", 1) + "\n";
-   	    + createSelectKey('showList', "showSelected(value)",
-	      "showSelected(value)", "", 1) + "\n";
+		+ createSelectKey('colourbyElementList', "elementSelected(value)",
+				"elementSelected(value)", "", 1) + "\n";
+//   	    + createSelectKey('showList', "showSelected(value)",
+//	      "showSelected(value)", "", 1) + "\n";
 	// strShow += "&nbsp;by atom &nbsp;"
 	// + createSelect2('colourbyAtomList', 'atomSelectedColor(value)', '', 1)
 	// + "\n";

@@ -129,10 +129,10 @@ function createShowGrp() {
 	strShow += "Select atom/s by:</td><tr>\n";
 	strShow += "<tr><td colspan='2'>";
 	strShow += "by element "
-//		+ createSelectKey('colourbyElementList', "elementSelected(value)",
-//				"elementSelected(value)", "", 1) + "\n";
-   	    + createSelectKey('showList', "showSelected(value)",
-	      "showSelected(value)", "", 1) + "\n";
+		+ createSelectKey('colourbyElementList', "elementSelected(value)",
+				"elementSelected(value)", "", 1) + "\n";
+//   	    + createSelectKey('showList', "showSelected(value)",
+//	      "showSelected(value)", "", 1) + "\n";
 	// strShow += "&nbsp;by atom &nbsp;"
 	// + createSelect2('colourbyAtomList', 'atomSelectedColor(value)', '', 1)
 	// + "\n";

@@ -131,7 +131,7 @@ function createShowGrp() {
 	strShow += "by element "
 		+ createSelectKey('colourbyElementList', "elementSelected(value)",
 				"elementSelected(value)", "", 1) + "\n";
- //  	    + createSelectKey('showList', "showSelected(value)",
+//   	    + createSelectKey('showList', "showSelected(value)",
 //	      "showSelected(value)", "", 1) + "\n";
 	// strShow += "&nbsp;by atom &nbsp;"
 	// + createSelect2('colourbyAtomList', 'atomSelectedColor(value)', '', 1)
