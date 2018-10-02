@@ -59,6 +59,14 @@ function updateElementLists(x) {
 	}
 }
 
+function createShowList(colourbyElementList){
+	var showList = colourbyElementList.push('by picking')
+	showList = showList.push('by distance')
+	return showList
+}
+
+
+
 function formResetAll() {
 
 	setStatus("");
