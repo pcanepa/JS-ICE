@@ -209,6 +209,7 @@ var showMenu = function(menu) {
 	exitTab();
 	hideArrays(menu);
 	self["enter" + menuNames[menu]]();
+	$("#menu"+menu).addClass("picked");
 }
 
 
@@ -238,6 +239,9 @@ var grpDispDelayed = function(n, mode) {
 	switch(mode) {
 	case TAB_OVER:
 		tabTimeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},tabDelayMS);
+		for (var i = 0; i < tabMenu.length; i++){
+			$("#menu"+i).removeClass("picked");
+		}
 		break;
 	case TAB_CLICK:
 		for (var i = 0; i < tabMenu.length; i++) {
@@ -247,6 +251,7 @@ var grpDispDelayed = function(n, mode) {
 		getbyID(tabMenu[n].grp).style.display = "inline";
 		tabMenu[n].disp = 1;
 		showMenu(n);
+		
 		break;
 	case TAB_OUT:
 		break;
@@ -286,7 +291,7 @@ function createTabMenu() {
 
 function createMenuCell(i) {
 
-	var sTab = "<li id='menu'+ i +' "; // Space is mandatory between i and "
+	var sTab = "<li id='menu"+ i +"' "; // Space is mandatory between i and "
 	sTab += "onClick='grpDispDelayed(" + i + ",TAB_CLICK)' onmouseover='grpDispDelayed("+i+",TAB_OVER)' onmouseout='grpDispDelayed("+i+",TAB_OUT)'"; // BH 2018
 	sTab += "class = 'menu' ";
 	sTab += ">";
@@ -1157,6 +1162,24 @@ function elementSelected(element) {
 	colorWhat = "color atom ";
 	return colorWhat;
 }
+
+//function showSelected(chosenSelection) {
+//	var selection = "element";
+//	if (chosenSelection == 'by picking' || chosenSelection == 'by distance') {
+//		selection = chosenSelection;  
+//	}
+//	switch(selection){
+//		case "element":
+//			elementSelected(element); 
+//			break;
+//		case "by picking":
+//			setPicking(this); //placeholder function--does not work as of 10.1.18 A.Salij
+//			break;
+//		case "by distance":
+//			'setDistanceHide(this)'; //placeholder function--does not work as of 10.1.18 A.Salij
+//			break;
+//	}	
+//}
 
 function applyTrans(t) {
 	getbyID('transMsg').innerHTML = t + " %"
@@ -3758,6 +3781,14 @@ function updateElementLists(x) {
 	}
 }
 
+function createShowList(colourbyElementList){
+	var showList = colourbyElementList.push('by picking')
+	showList = showList.push('by distance')
+	return showList
+}
+
+
+
 function formResetAll() {
 
 	setStatus("");
@@ -4390,6 +4421,7 @@ function createFileGrp() { // Here the order is crucial
 }
 
 function createShowGrp() {
+	//var showList = createShowList('colourbyElementList');
 	var colorBondsName = new Array("select", "atom", "bond");
 	var dotName = new Array("select", "1", "2", "3", "4");
 	var strShow = "<form autocomplete='nope'  id='showGroup' name='showGroup' style='display:none' >";
@@ -4400,6 +4432,8 @@ function createShowGrp() {
 	strShow += "by element "
 		+ createSelectKey('colourbyElementList', "elementSelected(value)",
 				"elementSelected(value)", "", 1) + "\n";
+//   	    + createSelectKey('showList', "showSelected(value)",
+//	      "showSelected(value)", "", 1) + "\n";
 	// strShow += "&nbsp;by atom &nbsp;"
 	// + createSelect2('colourbyAtomList', 'atomSelectedColor(value)', '', 1)
 	// + "\n";
@@ -5373,7 +5407,7 @@ function createFreqGrp() {
 	strFreq += "<BR>\n";
 	strFreq += createSelect("sizevec", "onClickFreqParams()", 0, 1, vecsizeValue,
 			vecscaleText,[0,0,0,1])
-			+ " vector size";
+			+ " vector width";
 	strFreq += "<BR>\n";
 	strFreq += "<table class='contents'> <tr><td>vector color</td> <td><script>jmolColorPickerBox([setColorWhat,'vectors'],[255,255,255],'vectorColorPicker')</script></td>";
 	strFreq += "</tr><tr><td>"

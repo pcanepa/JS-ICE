@@ -37,6 +37,24 @@ function elementSelected(element) {
 	return colorWhat;
 }
 
+//function showSelected(chosenSelection) {
+//	var selection = "element";
+//	if (chosenSelection == 'by picking' || chosenSelection == 'by distance') {
+//		selection = chosenSelection;  
+//	}
+//	switch(selection){
+//		case "element":
+//			elementSelected(element); 
+//			break;
+//		case "by picking":
+//			setPicking(this); //placeholder function--does not work as of 10.1.18 A.Salij
+//			break;
+//		case "by distance":
+//			'setDistanceHide(this)'; //placeholder function--does not work as of 10.1.18 A.Salij
+//			break;
+//	}	
+//}
+
 function applyTrans(t) {
 	getbyID('transMsg').innerHTML = t + " %"
 	runJmolScript("color " + getValueSel("setFashion") + " TRANSLUCENT " + (t/100));

@@ -120,6 +120,7 @@ function createFileGrp() { // Here the order is crucial
 }
 
 function createShowGrp() {
+	//var showList = createShowList('colourbyElementList');
 	var colorBondsName = new Array("select", "atom", "bond");
 	var dotName = new Array("select", "1", "2", "3", "4");
 	var strShow = "<form autocomplete='nope'  id='showGroup' name='showGroup' style='display:none' >";
@@ -130,6 +131,8 @@ function createShowGrp() {
 	strShow += "by element "
 		+ createSelectKey('colourbyElementList', "elementSelected(value)",
 				"elementSelected(value)", "", 1) + "\n";
+//   	    + createSelectKey('showList', "showSelected(value)",
+//	      "showSelected(value)", "", 1) + "\n";
 	// strShow += "&nbsp;by atom &nbsp;"
 	// + createSelect2('colourbyAtomList', 'atomSelectedColor(value)', '', 1)
 	// + "\n";
@@ -1103,7 +1106,7 @@ function createFreqGrp() {
 	strFreq += "<BR>\n";
 	strFreq += createSelect("sizevec", "onClickFreqParams()", 0, 1, vecsizeValue,
 			vecscaleText,[0,0,0,1])
-			+ " vector size";
+			+ " vector width";
 	strFreq += "<BR>\n";
 	strFreq += "<table class='contents'> <tr><td>vector color</td> <td><script>jmolColorPickerBox([setColorWhat,'vectors'],[255,255,255],'vectorColorPicker')</script></td>";
 	strFreq += "</tr><tr><td>"
