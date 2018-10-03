@@ -66,7 +66,7 @@ var $t$;
 //var c$;
 Jmol.___JmolDate="$Date: 2018-09-09 13:50:29 -0500 (Sun, 09 Sep 2018) $"
 Jmol.___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-Jmol.___JmolVersion="14.29.23"
+Jmol.___JmolVersion="14.29.24"
 // JSmolJavaExt.js
  
 

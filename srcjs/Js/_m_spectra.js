@@ -512,7 +512,7 @@ function minValue(irInt) {
 	return parseInt(irInt.sort(sortNumber)[0]);
 }
 
-function symmetryModeAdd() {
+function symmetryModeAdd() { //extracts vibrational symmetry modes from Info array and lets one get symmetry operations by ID
 	cleanList('sym');
 	if (Info[3].modelProperties) {
 		if (symmetryModeAdd_type)
@@ -611,8 +611,8 @@ function setMaxMinPlot() {
 	setValue("nMax", max)
 	setValue("nMin", min)
 }
-
-function createFreqGrp() {
+//Creates the frequency menu on the web applet 
+function createFreqGrp() { 
 	var vibAmplitudeValue = new Array("", "vibration Scale 1",
 			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7", "vibration Scale 10");
 	var vecscaleValue = new Array("", "vectors SCALE 1", "vectors SCALE 3",
@@ -663,7 +663,7 @@ function createFreqGrp() {
 		+ createButton("vibVectcolor", "Default color",
 				'onClickFreqParams()', 0) + "</td></tr></table>";
 	strFreq += "</td><td valign='top'><div id='freqdiv' style='display:none'>\n";
-	strFreq += createDiv("graphfreqdiv", \\making small graph
+	strFreq += createDiv("graphfreqdiv", //making small graph
 	"width:200px;height:200px;background-color:#EFEFEF; margin-left:5px; display:none")
 	+ "\n";
 	strFreq += createDiv("plottitlefreq", ";display:none")
@@ -675,11 +675,11 @@ function createFreqGrp() {
 	strFreq += "<br>\n";
 	strFreq += createLine('blue', '');
 	strFreq += "Simulate spectrum<br>";
-	strFreq += createRadio("kindspectra", "IR", '', 0, 1, "", "ir");\\could add in Onclickgraphparams to change graph immediately 
-	strFreq += createRadio("kindspectra", "Raman", '', 0, 1, "", "raman");\\will try to consolidate
+	strFreq += createRadio("kindspectra", "IR", '', 0, 1, "", "ir");//could add in Onclickgraphparams to change graph immediately 
+	strFreq += createRadio("kindspectra", "Raman", '', 0, 1, "", "raman");//will try to consolidate
 	strFreq += createRadio("kindspectra", "Both", '', 0, 1, "", "both");
 	strFreq += "<br>Convolution with<br>";
-	strFreq += createRadio("convol", "Stick", '', 0, 1, "", "stick");\\add new function to change immediately (third param)
+	strFreq += createRadio("convol", "Stick", '', 0, 1, "", "stick");//add new function to change immediately (third param)
 	strFreq += createRadio("convol", "Gaussian", '', 0, 0, "", "gaus");
 	strFreq += createRadio("convol", "Lorentzian", '', 0, 0, "", "lor");
 	strFreq += "<br>Specrum setting <br>\n";

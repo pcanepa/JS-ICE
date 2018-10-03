@@ -263,7 +263,7 @@ function setUnitCellOrigin(value) {
 	setValue("par_z", eval(aval[2]));
 }
 
-function getSymInfo() {
+function getSymInfo() { //parses data file and provides symmetry operations
 
 	// update all of the model-specific page items
 

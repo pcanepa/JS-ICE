@@ -6039,11 +6039,12 @@ Clazz.getStackTrace = function(n) {
   // updateNode and updateParents cause infinite loop here
 	var s = "\n";
 	var c = arguments.callee;
-  var showParams = (n < 0);
+  var showParams = (n < 0)
   if (showParams)
     n = -n;
-	for (var i = 0; i < n; i++) {
-		if (!(c = c.caller))
+ try {
+  for (var i = 0; i < n; i++) {
+    if (!(c = c.caller))
       break;
     var sig = (c.toString ? c.toString().substring(0, c.toString().indexOf("{")) : "<native method>");
 		s += i + " " + (c.exName ? (c.claxxOwner ? c.claxxOwner.__CLASS_NAME__ + "."  : "") + c.exName  + sig.replace(/function /,""): sig) + "\n";
@@ -6060,7 +6061,8 @@ Clazz.getStackTrace = function(n) {
         s += " args[" + j + "]=" + sa.replace(/\s+/g," ") + "\n";
       }
     }
-	}
+  }
+ }catch(e){}
 	return s;
 }
 
@@ -10581,4 +10583,4 @@ Sys.err.write = function (buf, offset, len) {
 }; // called by external application 
 Jmol.___JmolDate="$Date: 2018-09-09 13:50:29 -0500 (Sun, 09 Sep 2018) $"
 Jmol.___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-Jmol.___JmolVersion="14.29.23"
+Jmol.___JmolVersion="14.29.24"
