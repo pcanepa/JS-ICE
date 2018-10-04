@@ -66,7 +66,7 @@ var $t$;
 //var c$;
 Jmol.___JmolDate="$Date: 2018-09-09 13:50:29 -0500 (Sun, 09 Sep 2018) $"
 Jmol.___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-Jmol.___JmolVersion="14.29.23"
+Jmol.___JmolVersion="14.29.24"
 // JSmolJavaExt.js
  
 
@@ -65445,6 +65445,9 @@ c$ = Clazz_p0p ();
 Clazz_defineStatics (c$,
 "MAXABS", 4);
 });
+Jmol.___JSVDate="$Date: 2017-04-14 11:34:29 -0500 (Fri, 14 Apr 2017) $"
+Jmol.___JSVSvnRev="$LastChangedRevision: 1764 $"
+Jmol.___JSVVersion="14.2.8"
 Clazz_declarePackage ("JSV.common");
 c$ = Clazz_declareType (JSV.common, "JSVersion");
 Clazz_defineStatics (c$,
