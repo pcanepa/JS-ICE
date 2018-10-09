@@ -111,12 +111,13 @@ var grpDispDelayed = function(n, mode) {
 			clearTimeout(tabTimeouts[i]);
 		tabTimeouts = [];
 	}	
+	for (var i = 0; i < tabMenu.length; i++){
+		$("#menu"+i).removeClass("picked");
+	}
 	switch(mode) {
 	case TAB_OVER:
 		tabTimeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},tabDelayMS);
-		for (var i = 0; i < tabMenu.length; i++){
-			$("#menu"+i).removeClass("picked");
-		}
+		
 		break;
 	case TAB_CLICK:
 		for (var i = 0; i < tabMenu.length; i++) {
@@ -130,6 +131,9 @@ var grpDispDelayed = function(n, mode) {
 		break;
 	case TAB_OUT:
 		break;
+	}
+	if (thisMenu >= 0) {
+		$("#menu"+i).addClass("picked");
 	}
 }
 
