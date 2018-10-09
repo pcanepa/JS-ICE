@@ -201,9 +201,7 @@ if (this.isPrimitive) for (var i = 0, n = this.symops.size (); i < n; i++) this.
 });
 Clazz.overrideMethod (c$, "finalizeSubclassReader", 
 function () {
-var lastAtomCount = this.ac;
 this.processCoordLines ();
-if (this.ac > 0 && lastAtomCount == this.ac) this.asc.atomSetCount--;
 if (this.energy != null) this.setEnergy ();
 this.finalizeReaderASCR ();
 });

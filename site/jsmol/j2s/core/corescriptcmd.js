@@ -118,7 +118,7 @@ return this.e.floatParameter (i);
 }, "~N");
 Clazz_defineMethod (c$, "getPoint3f", 
 function (i, allowFractional) {
-return this.e.getPoint3f (i, allowFractional);
+return this.e.getPoint3f (i, allowFractional, true);
 }, "~N,~B");
 Clazz_defineMethod (c$, "intParameter", 
 function (index) {
@@ -426,7 +426,7 @@ this.slen = eval.slen;
 var lattice = null;
 var tok = this.tokAt (i);
 if (tok == 1073742332 || tok == 8) {
-lattice = eval.getPointOrPlane (i, false, true, false, true, 3, 3);
+lattice = eval.getPointOrPlane (i, false, true, false, true, 3, 3, true);
 tok = this.tokAt (i = eval.iToken + 1);
 }switch (tok) {
 case 1073741938:
@@ -2166,7 +2166,7 @@ eval.checkLast (eval.iToken);
 break;
 case 1073742332:
 case 8:
-qtOffset = eval.getPoint3f (1, false);
+qtOffset = eval.getPoint3f (1, false, true);
 isQ = (this.tokAt (eval.iToken + 1) == 1073742335);
 break;
 default:
@@ -2186,14 +2186,14 @@ if (this.isFloatParameter (i)) {
 var t1 = this.floatParameter (i);
 qtOffset = JU.P3.new3 (t1, t1, t1);
 } else {
-qtOffset = eval.getPoint3f (i, false);
+qtOffset = eval.getPoint3f (i, false, true);
 }break;
 case 2:
 if (this.tokAt (i) == 2) {
 var t = this.intParameter (i);
 qtOffset = JU.P3.new3 (t, t, t);
 } else {
-qtOffset = eval.getPoint3f (i, false);
+qtOffset = eval.getPoint3f (i, false, true);
 }isQ = true;
 break;
 }
@@ -3995,7 +3995,7 @@ break;
 case 1073742066:
 isOffset = true;
 case 1073742114:
-pt = eval.getPointOrPlane (++i, false, true, false, true, 3, 3);
+pt = eval.getPointOrPlane (++i, false, true, false, true, 3, 3, true);
 pt = JU.P4.new4 (pt.x, pt.y, pt.z, (isOffset ? 1 : 0));
 i = eval.iToken;
 break;
@@ -4012,7 +4012,7 @@ if (eval.isArrayParameter (i)) {
 oabc = eval.getPointArray (i, 4, false);
 i = eval.iToken;
 } else if (this.slen > i + 1) {
-pt = eval.getPointOrPlane (i, false, true, false, true, 3, 3);
+pt = eval.getPointOrPlane (i, false, true, false, true, 3, 3, true);
 i = eval.iToken;
 } else {
 i--;

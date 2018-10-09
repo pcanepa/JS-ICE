@@ -118,7 +118,7 @@ return this.e.floatParameter (i);
 }, "~N");
 Clazz_defineMethod (c$, "getPoint3f", 
 function (i, allowFractional) {
-return this.e.getPoint3f (i, allowFractional);
+return this.e.getPoint3f (i, allowFractional, true);
 }, "~N,~B");
 Clazz_defineMethod (c$, "intParameter", 
 function (index) {

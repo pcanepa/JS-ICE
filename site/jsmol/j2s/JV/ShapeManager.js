@@ -60,8 +60,9 @@ if (this.shapes[shapeID] != null) return this.shapes[shapeID];
 if (shapeID == 2 || shapeID == 3 || shapeID == 4) return null;
 var className = JV.JC.getShapeClassName (shapeID, false);
 var shape;
-if ((shape = J.api.Interface.getInterface (className, this.vwr, "shape")) == null) return null;
-this.vwr.setShapeErrorState (shapeID, "allocate");
+if ((shape = J.api.Interface.getInterface (className, this.vwr, "shape")) == null) {
+return null;
+}this.vwr.setShapeErrorState (shapeID, "allocate");
 shape.initializeShape (this.vwr, this.ms, shapeID);
 this.vwr.setShapeErrorState (-1, null);
 return this.shapes[shapeID] = shape;

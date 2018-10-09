@@ -146,7 +146,7 @@ bs.and (ret[1]);
 }return (bs.cardinality () == 1 ? this.vwr.ms.at[bs.nextSetBit (0)] : this.vwr.ms.getAtomSetCenter (bs));
 case 1073742332:
 case 8:
-return this.getPoint3f (i, true);
+return this.getPoint3f (i, true, true);
 }
 this.invArg ();
 return null;
@@ -270,7 +270,7 @@ plane.scale4 (-1);
 Clazz.defineMethod (c$, "hklParameter", 
 function (i) {
 if (!this.chk && this.vwr.getCurrentUnitCell () == null) this.error (33);
-var pt = this.getPointOrPlane (i, false, true, false, true, 3, 3);
+var pt = this.getPointOrPlane (i, false, true, false, true, 3, 3, true);
 var p = this.getHklPlane (pt);
 if (p == null) this.error (3);
 if (!this.chk && JU.Logger.debugging) JU.Logger.debug ("defined plane: " + p);
@@ -304,18 +304,22 @@ this.vwr.toCartesian (this.pt3, false);
 return JU.Measure.getPlaneThroughPoints (this.pt1, this.pt2, this.pt3,  new JU.V3 (),  new JU.V3 (),  new JU.P4 ());
 }, "JU.P3");
 Clazz.defineMethod (c$, "getPointOrPlane", 
-function (index, integerOnly, allowFractional, doConvert, implicitFractional, minDim, maxDim) {
+function (index, integerOnly, allowFractional, doConvert, implicitFractional, minDim, maxDim, throwE) {
 var coord =  Clazz.newFloatArray (6, 0);
 var code555 =  Clazz.newIntArray (6, 0);
 var useCell555P4 = false;
 var n = 0;
+var isOK = true;
+try {
 this.coordinatesAreFractional = implicitFractional;
 if (this.tokAt (index) == 8) {
 if (minDim <= 3 && maxDim >= 3) return this.getToken (index).value;
-this.invArg ();
+isOK = false;
+return null;
 }if (this.tokAt (index) == 9) {
 if (minDim <= 4 && maxDim >= 4) return this.getToken (index).value;
-this.invArg ();
+isOK = false;
+return null;
 }var multiplier = 1;
 out : for (var i = index; i < this.st.length; i++) {
 switch (this.getToken (i).tok) {
@@ -330,8 +334,10 @@ case 268435616:
 multiplier = -1;
 break;
 case 1073742363:
-if (n == 6) this.invArg ();
-coord[n++] = this.theToken.intValue;
+if (n == 6) {
+isOK = false;
+return null;
+}coord[n++] = this.theToken.intValue;
 multiplier = -1;
 break;
 case 2:
@@ -344,11 +350,15 @@ multiplier = 1;
 break;
 case 268435632:
 case 1073742358:
-if (!allowFractional) this.invArg ();
-if (this.theTok == 268435632) this.getToken (++i);
+if (!allowFractional) {
+isOK = false;
+return null;
+}if (this.theTok == 268435632) this.getToken (++i);
 n--;
-if (n < 0 || integerOnly) this.invArg ();
-if (Clazz.instanceOf (this.theToken.value, Integer) || this.theTok == 2) {
+if (n < 0 || integerOnly) {
+isOK = false;
+return null;
+}if (Clazz.instanceOf (this.theToken.value, Integer) || this.theTok == 2) {
 coord[n++] /= (this.theToken.intValue == 2147483647 ? (this.theToken.value).intValue () : this.theToken.intValue);
 } else if (Clazz.instanceOf (this.theToken.value, Float)) {
 coord[n++] /= (this.theToken.value).floatValue ();
@@ -360,16 +370,23 @@ coord[n++] = NaN;
 break;
 case 3:
 case 1073742359:
-if (integerOnly) this.invArg ();
-if (n == 6) this.invArg ();
-coord[n++] = (this.theToken.value).floatValue ();
+if (integerOnly) {
+isOK = false;
+return null;
+}if (n == 6) {
+isOK = false;
+return null;
+}coord[n++] = (this.theToken.value).floatValue ();
 break;
 default:
-this.invArg ();
+isOK = false;
+return null;
 }
 }
-if (n < minDim || n > maxDim) this.invArg ();
-if (n == 3) {
+if (n < minDim || n > maxDim) {
+isOK = false;
+return null;
+}if (n == 3) {
 if (useCell555P4) {
 return JU.P4.new4 (coord[0], coord[1], coord[2], (code555[0] % 1000) * 1000 + (code555[1] % 1000) + 1000000);
 }var pt = JU.P3.new3 (coord[0], coord[1], coord[2]);
@@ -378,11 +395,16 @@ this.fractionalPoint = JU.P3.newP (pt);
 if (!this.chk) this.vwr.toCartesian (pt, false);
 }return pt;
 }if (n == 4) {
-if (this.coordinatesAreFractional) this.invArg ();
-var plane = JU.P4.new4 (coord[0], coord[1], coord[2], coord[3]);
+if (this.coordinatesAreFractional) {
+isOK = false;
+return null;
+}var plane = JU.P4.new4 (coord[0], coord[1], coord[2], coord[3]);
 return plane;
 }return coord;
-}, "~N,~B,~B,~B,~B,~N,~N");
+} finally {
+if (!isOK && throwE) this.invArg ();
+}
+}, "~N,~B,~B,~B,~B,~N,~N,~B");
 Clazz.defineMethod (c$, "isPoint3f", 
 function (i) {
 var itok = this.tokAt (i);
@@ -393,7 +415,7 @@ this.ignoreError = true;
 var t = this.iToken;
 isOK = true;
 try {
-this.getPoint3f (i, true);
+isOK = (this.getPoint3f (i, true, false) != null);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 isOK = false;
@@ -406,12 +428,12 @@ this.iToken = t;
 return isOK;
 }, "~N");
 Clazz.defineMethod (c$, "getPoint3f", 
-function (i, allowFractional) {
-return this.getPointOrPlane (i, false, allowFractional, true, false, 3, 3);
-}, "~N,~B");
+function (i, allowFractional, throwE) {
+return this.getPointOrPlane (i, false, allowFractional, true, false, 3, 3, throwE);
+}, "~N,~B,~B");
 Clazz.defineMethod (c$, "getPoint4f", 
 function (i) {
-return this.getPointOrPlane (i, false, false, false, false, 4, 4);
+return this.getPointOrPlane (i, false, false, false, false, 4, 4, true);
 }, "~N");
 Clazz.defineMethod (c$, "xypParameter", 
 function (index) {
@@ -842,7 +864,7 @@ case 8:
 pt = this.theToken.value;
 break;
 case 1073742332:
-pt = this.getPoint3f (index, false);
+pt = this.getPoint3f (index, false, true);
 break;
 case 1073742333:
 if (allowNone) return 0;
@@ -928,7 +950,7 @@ tickInfo =  new JM.TickInfo (null);
 tickInfo.type = str;
 this.iToken = index;
 return tickInfo;
-}tickInfo =  new JM.TickInfo (this.getPointOrPlane (index, false, true, false, false, 3, 3));
+}tickInfo =  new JM.TickInfo (this.getPointOrPlane (index, false, true, false, false, 3, 3, true));
 if (this.coordinatesAreFractional || this.tokAt (this.iToken + 1) == 1814695966) {
 tickInfo.scale = JU.P3.new3 (NaN, NaN, NaN);
 allowScale = false;
@@ -941,7 +963,7 @@ if (this.isFloatParameter (this.iToken + 2)) {
 var f = this.floatParameter (this.iToken + 2);
 tickInfo.scale = JU.P3.new3 (f, f, f);
 } else {
-tickInfo.scale = this.getPoint3f (this.iToken + 2, true);
+tickInfo.scale = this.getPoint3f (this.iToken + 2, true, true);
 }}if (allowFirst) if (this.tokAt (this.iToken + 1) == 1073741942) tickInfo.first = this.floatParameter (this.iToken + 2);
 return tickInfo;
 }, "~N,~B,~B,~B");

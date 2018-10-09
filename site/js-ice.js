@@ -1,6 +1,6 @@
 
       		
-///js// Js/init.js /////
+///js// Js/init.js /////
 // note that JmolColorPicker is customized -- BH 2018
 
 function doClickSaveCurrentState() {
@@ -122,7 +122,7 @@ function docWriteSpectrumHeader() {
 }
 
       		
-///js// Js/_m__tabs.js /////
+///js// Js/_m__tabs.js /////
 /*  J-ICE library 
 
  based on:
@@ -303,7 +303,7 @@ function createMenuCell(i) {
 }
 
       		
-///js// Js/_m_file.js /////
+///js// Js/_m_file.js /////
 function enterFile() {
 	
 }
@@ -711,7 +711,7 @@ function restoreStateAndOrientation_a() {
 //}
 
       		
-///js// Js/_m_cell.js /////
+///js// Js/_m_cell.js /////
 function enterCell() {
 	getUnitcell(frameValue);
 	getSymInfo();
@@ -1123,7 +1123,7 @@ cellOperation = function(){
 
 
       		
-///js// Js/_m_show.js /////
+///js// Js/_m_show.js /////
 function enterShow() {
 	if (firstTimeBond) {
 		bondSlider.setValue(20);
@@ -1371,7 +1371,7 @@ function createShowGrp() {
 }
 
       		
-///js// Js/_m_edit.js /////
+///js// Js/_m_edit.js /////
 function enterEdit() {
 	
 }
@@ -1652,7 +1652,7 @@ function selectAll() {
 
 
       		
-///js// Js/_m_measure.js /////
+///js// Js/_m_measure.js /////
 function enterMeasure() {
 
 }
@@ -1755,7 +1755,7 @@ function mesReset() {
 function measuramentCallback(a, b, c, d, e) {
 	setMeasureText(b);
 }      		
-///js// Js/_m_orient.js /////
+///js// Js/_m_orient.js /////
 function enterOrient() {
 	slabSlider.setValue(100 - jmolEvaluate("slab"));
 	depthSlider.setValue(100 - jmolEvaluate("depth"));
@@ -1834,7 +1834,7 @@ function setMotion(axis) {
 }
 
       		
-///js// Js/_m_polyhedra.js /////
+///js// Js/_m_polyhedra.js /////
 function enterPolyhedra() {
 	
 }
@@ -1902,7 +1902,7 @@ function setPolybyPicking(element) {
 	checkBoxStatus(element, "poly2byElementList");
 }
       		
-///js// Js/_m_surface.js /////
+///js// Js/_m_surface.js /////
 /*  J-ICE library 
 
     based on:
@@ -2085,7 +2085,7 @@ function setIsoPack() {
 
 ////////////////END ISOSURFACE FUNCTIONS
       		
-///js// Js/_m_optimize.js /////
+///js// Js/_m_optimize.js /////
 function enterOptimize() {
 	plotEnergies();		
 }
@@ -2102,7 +2102,7 @@ function exitOptimize() {
 //}
 
       		
-///js// Js/_m_spectra.js /////
+///js// Js/_m_spectra.js /////
 /*  J-ICE library 
 
     based on:
@@ -2803,7 +2803,7 @@ function createFreqGrp() {
 	return strFreq;
 }
       		
-///js// Js/_m_elec.js /////
+///js// Js/_m_elec.js /////
 function enterElec() {
 //	saveOrientation_e();
 
@@ -2834,7 +2834,7 @@ function removeCharges() {
 
 
       		
-///js// Js/_m_other.js /////
+///js// Js/_m_other.js /////
 function enterOther() {
 	setValuesOther();	
 }
@@ -2898,7 +2898,7 @@ function setFrameTitle(chkbox) {
 
 
       		
-///js// Js/callback.js /////
+///js// Js/callback.js /////
 // BH 2018
 
 getCallbackSettings = function() {
@@ -2983,7 +2983,7 @@ myMinimizationCallback = function(applet,b,c,d) {
 }
 
       		
-///js// Js/constant.js /////
+///js// Js/constant.js /////
 /*  J-ICE library 
 
     based on:
@@ -3437,7 +3437,7 @@ eleSymbMass[97] = 247.00;
 eleSymbMass[98] = 251.00;
 eleSymbMass[99] = 252.00;
       		
-///js// Js/conversion.js /////
+///js// Js/conversion.js /////
 /*  J-ICE library 
 
     based on:
@@ -3801,7 +3801,7 @@ function fromAngstromtoBohr(value) {
 
 /////////////////////////////////END ENERGY conversion
       		
-///js// Js/debug.js /////
+///js// Js/debug.js /////
 debugSay = function(script) {
 	// BH 2018
 	var div = getbyID("debugdiv");
@@ -3831,7 +3831,7 @@ debugShowHistory = function() {
 }
 
       		
-///js// Js/export.js /////
+///js// Js/export.js /////
 
 function setVacuum() {
 	switch (typeSystem) {
@@ -3932,7 +3932,7 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 }
 
       		
-///js// Js/form.js /////
+///js// Js/form.js /////
 /*  J-ICE library 
 
     based on:
@@ -4452,7 +4452,7 @@ function selectListItem(list, itemToSelect) {
 
 
       		
-///js// Js/frame.js /////
+///js// Js/frame.js /////
 var frameSelection = null;
 var frameNum = null;
 var frameValue = null;
@@ -4478,7 +4478,7 @@ function showFrame(model) {
 	getUnitcell(model);
 }
       		
-///js// Js/info.js /////
+///js// Js/info.js /////
 var Info, InfoFreq;
 
 function extractInfoJmol(whatToExtract) {
@@ -4511,7 +4511,7 @@ function getInfoFreq() {
 }
 
       		
-///js// Js/menu.js /////
+///js// Js/menu.js /////
 /*  J-ICE library 
  *
  *  based on:
@@ -5590,7 +5590,7 @@ function createMainGrp() {
 
 
       		
-///js// Js/pick.js /////
+///js// Js/pick.js /////
 function setPicking(form) {
 	if (form.checked) {
 		runJmolScriptWait('showSelections TRUE; select none;halos on; ');
@@ -5749,7 +5749,7 @@ function pickDistanceCallback() {
 }
 
       		
-///js// Js/plotgraph.js /////
+///js// Js/plotgraph.js /////
 /* J-ICE 0.1 script library Piero Canepa 
 
     based on: http://chemapps.stolaf.edu/jmol/docs/examples-11/flot/ Bob Hanson
@@ -6354,7 +6354,7 @@ function writeSpectumHTML(){
 }
 
       		
-///js// Js/sliders.js /////
+///js// Js/sliders.js /////
 /*  J-ICE library 
 
     based on: A toolkit for publishing enhanced figures; B. McMahon and R. M. Hanson; J. Appl. Cryst. (2008). 41, 811-814
@@ -6507,7 +6507,7 @@ loadSliders = function() {
 }
 
       		
-///js// Js/symmetry.js /////
+///js// Js/symmetry.js /////
 //prevframeSelection needs because of the conventional
 var prevframeSelection = null;
 var prevFrame = null;
@@ -6684,7 +6684,7 @@ function findCellParameters() {
 	}
 }
       		
-///js// Js/uff.js /////
+///js// Js/uff.js /////
 /*  J-ICE library 
  *
  *   based on:
@@ -6764,7 +6764,7 @@ function scriptUffCallback(b, step, d, e, f, g) {
 	counterUff++;
 }
       		
-///js// Js/windows.js /////
+///js// Js/windows.js /////
 var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50";
 function newAppletWindow() {
 	var sm = "" + Math.random();
@@ -6793,7 +6793,7 @@ function newAppletWindowFeed() {
 	var newwin = open("http://j-ice.sourceforge.net/?page_id=9", sm, windowfeed);
 }
       		
-///js// Js/adapters/castep.js /////
+///js// Js/adapters/castep.js /////
 /*  J-ICE library 
 
     based on:
@@ -6979,7 +6979,7 @@ function substringEnergyCastepToFloat(value) {
 
 /////END FUNCTIONS
       		
-///js// Js/adapters/crystal.js /////
+///js// Js/adapters/crystal.js /////
 /*  J-ICE library 
 
     based on:
@@ -7221,7 +7221,7 @@ function reloadFastModels() {
 }
 
       		
-///js// Js/adapters/dmol.js /////
+///js// Js/adapters/dmol.js /////
 /*  J-ICE library 
 
     based on:
@@ -7290,7 +7290,7 @@ function loadModelsDmol() {
 	getSymInfo();
 }
       		
-///js// Js/adapters/gaussian.js /////
+///js// Js/adapters/gaussian.js /////
 /*  J-ICE library 
 
     based on:
@@ -7394,7 +7394,7 @@ function changeIrepGauss(irep) {
 }
 
       		
-///js// Js/adapters/gromacs.js /////
+///js// Js/adapters/gromacs.js /////
 /*  J-ICE library 
 
     based on:
@@ -7459,7 +7459,7 @@ function setCoordinatesGromacs() {
 	runJmolScriptWait(coordinateGromacs);
 }
       		
-///js// Js/adapters/gulp.js /////
+///js// Js/adapters/gulp.js /////
 /*  J-ICE library 
 
     based on:
@@ -7683,7 +7683,7 @@ function substringEnergyGulpToFloat(value) {
 	return grab;
 }
       		
-///js// Js/adapters/molden.js /////
+///js// Js/adapters/molden.js /////
 /*  J-ICE library 
 
     based on:
@@ -7740,7 +7740,7 @@ function loadModelsMolden() {
 	getSymInfo();
 }
       		
-///js// Js/adapters/quantumespresso.js /////
+///js// Js/adapters/quantumespresso.js /////
 /*  J-ICE library 
 
     based on:
@@ -8143,7 +8143,7 @@ function substringEnergyQuantumToFloat(value) {
 	return grab;
 }
       		
-///js// Js/adapters/siesta.js /////
+///js// Js/adapters/siesta.js /////
 /*  J-ICE library 
 
     based on:
@@ -8251,7 +8251,7 @@ function changeIrepSiesta(irep) {
 //				+ counterSiesta + 1);
 //}
       		
-///js// Js/adapters/vasp.js /////
+///js// Js/adapters/vasp.js /////
 /*  J-ICE library 
 
     based on:

@@ -1986,7 +1986,7 @@ var index0 = index;
 var pt1 = this.centerParameter (index, ret);
 index = this.iToken + 1;
 if (byCorner || this.isCenterParameter (index)) {
-var pt2 = (byCorner ? this.centerParameter (index, ret) : this.getPoint3f (index, true));
+var pt2 = (byCorner ? this.centerParameter (index, ret) : this.getPoint3f (index, true, true));
 index = this.iToken + 1;
 if (!this.chk) this.vwr.ms.setBoundBox (pt1, pt2, byCorner, scale);
 } else if (ret[0] != null && Clazz.instanceOf (ret[0], JU.BS)) {
@@ -2981,7 +2981,7 @@ i++;
 loadScript.append (" " + modelName);
 if (tok == 536870926) htParams.put ("isTrajectory", Boolean.TRUE);
 if (this.isPoint3f (i)) {
-var pt = this.getPoint3f (i, false);
+var pt = this.getPoint3f (i, false, true);
 i = this.iToken + 1;
 htParams.put ("firstLastStep",  Clazz.newIntArray (-1, [Clazz.floatToInt (pt.x), Clazz.floatToInt (pt.y), Clazz.floatToInt (pt.z)]));
 loadScript.append (" " + JU.Escape.eP (pt));
@@ -3268,7 +3268,7 @@ if (firstLastSteps == null) {
 firstLastSteps =  new JU.Lst ();
 pt = JU.P3.new3 (0, -1, 1);
 }if (this.isPoint3f (++i)) {
-pt = this.getPoint3f (i, false);
+pt = this.getPoint3f (i, false, true);
 i = this.iToken + 1;
 } else if (this.tokAt (i) == 10) {
 bs = this.getToken (i).value;
@@ -3700,7 +3700,7 @@ case 9:
 case 8:
 case 1073742332:
 if (this.isPoint3f (i)) {
-axis.setT (this.getPoint3f (i, true));
+axis.setT (this.getPoint3f (i, true, true));
 i = this.iToken + 1;
 degrees = this.floatParameter (i++);
 } else {
@@ -5025,7 +5025,7 @@ break;
 case 1073742066:
 propertyName = "offset";
 if (this.isPoint3f (pt)) {
-var pt3 = this.getPoint3f (pt, false);
+var pt3 = this.getPoint3f (pt, false, true);
 propertyValue =  Clazz.newFloatArray (-1, [-1, pt3.x, pt3.y, pt3.z, 0, 0, 0]);
 pt = this.iToken + 1;
 } else if (this.isArrayParameter (pt)) {
@@ -5092,7 +5092,7 @@ break;
 if (str.equals ("offset") || (isAbsolute = (str.equals ("offsetabsolute") || str.equals ("offsetexact")))) {
 str = "offset";
 if (this.isPoint3f (2)) {
-var pt = this.getPoint3f (2, false);
+var pt = this.getPoint3f (2, false, true);
 propertyValue =  Clazz.newFloatArray (-1, [-1, pt.x, pt.y, pt.z, 0, 0, 0]);
 } else if (this.isArrayParameter (2)) {
 propertyValue = this.floatParameterSet (2, 7, 7);
@@ -5429,7 +5429,7 @@ isSelected = true;
 i0 = 1;
 i = 2;
 }if (this.isPoint3f (i)) {
-var pt = this.getPoint3f (i, true);
+var pt = this.getPoint3f (i, true, true);
 bs = (this.iToken + 1 < this.slen ? this.atomExpressionAt (++this.iToken) : null);
 this.checkLast (this.iToken);
 if (!this.chk) this.vwr.setAtomCoordsRelative (pt, bs);

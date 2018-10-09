@@ -1514,6 +1514,7 @@ this.setShapeProperty (iShape, "text", msg);
 }, "~S");
 Clazz.defineMethod (c$, "initializeModel", 
  function (isAppend) {
+try {
 this.clearThreads ();
 if (isAppend) {
 this.am.initializePointers (1);
@@ -1536,6 +1537,13 @@ this.setFrankOn (this.getShowFrank ());
 this.startHoverWatcher (true);
 this.setTainted (true);
 this.finalizeTransformParameters ();
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+System.err.println ("????" + e);
+} else {
+throw e;
+}
+}
 }, "~B");
 Clazz.defineMethod (c$, "startHoverWatcher", 
 function (tf) {
