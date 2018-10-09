@@ -46,7 +46,7 @@ loadUser = function(packing, filter) {
 
 
 function setDefaultJmolSettings() {
-	runJmolScriptWait('select visible; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
+	runJmolScriptWait('select all; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
 	radiiSlider.setValue(20);
 	bondSlider.setValue(15);
 	// radiiConnectSlider.setValue(20);
@@ -115,7 +115,7 @@ function onChangeLoad(load) {
 	document.fileGroup.reset();
 }
 
-function postLoad(type) {
+function postLoad(type, filePath) {
 	freqData = [];
 	geomData = [];
 	resetGraphs();
@@ -127,6 +127,9 @@ function postLoad(type) {
 	getUnitcell(1);
 	runJmolScriptWait('unitcell on');
 	cleanAndReloadForm();
+	if (filePath.indexOf("cache://DROP_", 0) == 0) {
+		grpDisp(0);
+	}
 }
 
 function cleanAndReloadForm() {

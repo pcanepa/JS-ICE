@@ -84,6 +84,7 @@ var showMenu = function(menu) {
 	exitTab();
 	hideArrays(menu);
 	self["enter" + menuNames[menu]]();
+	$("#menu"+menu).addClass("picked");
 }
 
 
@@ -110,9 +111,13 @@ var grpDispDelayed = function(n, mode) {
 			clearTimeout(tabTimeouts[i]);
 		tabTimeouts = [];
 	}	
+	for (var i = 0; i < tabMenu.length; i++){
+		$("#menu"+i).removeClass("picked");
+	}
 	switch(mode) {
 	case TAB_OVER:
 		tabTimeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},tabDelayMS);
+		
 		break;
 	case TAB_CLICK:
 		for (var i = 0; i < tabMenu.length; i++) {
@@ -122,9 +127,13 @@ var grpDispDelayed = function(n, mode) {
 		getbyID(tabMenu[n].grp).style.display = "inline";
 		tabMenu[n].disp = 1;
 		showMenu(n);
+		
 		break;
 	case TAB_OUT:
 		break;
+	}
+	if (thisMenu >= 0) {
+		$("#menu"+i).addClass("picked");
 	}
 }
 
@@ -161,7 +170,7 @@ function createTabMenu() {
 
 function createMenuCell(i) {
 
-	var sTab = "<li id='menu'+ i +' "; // Space is mandatory between i and "
+	var sTab = "<li id='menu"+ i +"' "; // Space is mandatory between i and "
 	sTab += "onClick='grpDispDelayed(" + i + ",TAB_CLICK)' onmouseover='grpDispDelayed("+i+",TAB_OVER)' onmouseout='grpDispDelayed("+i+",TAB_OUT)'"; // BH 2018
 	sTab += "class = 'menu' ";
 	sTab += ">";
