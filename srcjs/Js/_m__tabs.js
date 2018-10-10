@@ -95,7 +95,7 @@ var exitTab = function() {
 
 
 var tabTimeouts = [];
-var tabDelayMS = 1000;
+var tabDelayMS = 100;
 
 var TAB_OVER  = 0;
 var TAB_CLICK = 1;
@@ -112,12 +112,21 @@ var grpDispDelayed = function(n, mode) {
 		tabTimeouts = [];
 	}	
 	for (var i = 0; i < tabMenu.length; i++){
+<<<<<<< Upstream, based on branch 'dev' of https://github.com/JS-ICE/JS-ICE.git
 		$("#menu"+i).removeClass("picked");
 	}
+=======
+			$("#menu"+i).removeClass("picked");
+		}
+>>>>>>> e2cd328 Tab hover fixes from morning meeting
 	switch(mode) {
 	case TAB_OVER:
 		tabTimeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},tabDelayMS);
+<<<<<<< Upstream, based on branch 'dev' of https://github.com/JS-ICE/JS-ICE.git
 		
+=======
+
+>>>>>>> e2cd328 Tab hover fixes from morning meeting
 		break;
 	case TAB_CLICK:
 		for (var i = 0; i < tabMenu.length; i++) {
@@ -132,10 +141,16 @@ var grpDispDelayed = function(n, mode) {
 	case TAB_OUT:
 		break;
 	}
+<<<<<<< Upstream, based on branch 'dev' of https://github.com/JS-ICE/JS-ICE.git
 	if (thisMenu >= 0) {
 		$("#menu"+i).addClass("picked");
 	}
+=======
+	if (thisMenu >= 0)
+		$("#menu"+thisMenu).addClass("picked");
+>>>>>>> e2cd328 Tab hover fixes from morning meeting
 }
+
 
 var arrayGeomObjects = new Array(
 		"appletdiv", 
