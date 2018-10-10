@@ -62,6 +62,7 @@ function createAllMenus() {
 		+ createFreqGrp()
 		+ createElecpropGrp()
 		+ createMainGrp()
+		/* createSymmetryGrp() */
 		+ createDebugPanel()
 		//+ createHistGrp()
 		;
