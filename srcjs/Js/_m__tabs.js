@@ -53,6 +53,14 @@ MENU_SPECTRA  = 9;
 MENU_EM       =10;
 MENU_OTHER    =11;
 
+var TAB_OVER  = 0;
+var TAB_CLICK = 1;
+var TAB_OUT   = 2;
+
+var thisMenu = -1;
+var tabTimeouts = [];
+var tabDelayMS = 100;
+
 var menuNames = [
 	"File", "Cell", "Show" ,"Edit" /*, "Build"*/, 
 	"Measure", "Orient", "Polyhedra", "Surface", 
@@ -75,8 +83,6 @@ function defineMenu() {
 	/* 11 */ addTab("Other", "otherpropGroup", "Change background, light settings and other.");
 }
 
-var thisMenu = -1;
-
 var showMenu = function(menu) {
 	if (thisMenu >= 0)
 		self["exit" + menuNames[menu]]();
@@ -93,14 +99,6 @@ var exitTab = function() {
 	runJmolScriptWait('select *;color atoms opaque; echo; draw off;set selectionHalos off;halos off;');
 }
 
-
-var tabTimeouts = [];
-var tabDelayMS = 1000;
-
-var TAB_OVER  = 0;
-var TAB_CLICK = 1;
-var TAB_OUT   = 2;
-
 function grpDisp(n) {
 	grpDispDelayed(n, TAB_CLICK);
 }
@@ -111,12 +109,13 @@ var grpDispDelayed = function(n, mode) {
 			clearTimeout(tabTimeouts[i]);
 		tabTimeouts = [];
 	}	
+	for (var i = 0; i < tabMenu.length; i++){
+		$("#menu"+i).removeClass("picked");
+	}
 	switch(mode) {
 	case TAB_OVER:
 		tabTimeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},tabDelayMS);
-		for (var i = 0; i < tabMenu.length; i++){
-			$("#menu"+i).removeClass("picked");
-		}
+		
 		break;
 	case TAB_CLICK:
 		for (var i = 0; i < tabMenu.length; i++) {
@@ -130,6 +129,9 @@ var grpDispDelayed = function(n, mode) {
 		break;
 	case TAB_OUT:
 		break;
+	}
+	if (thisMenu >= 0) {
+		$("#menu"+thisMenu).addClass("picked");
 	}
 }
 

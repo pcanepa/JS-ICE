@@ -115,7 +115,7 @@ function onChangeLoad(load) {
 	document.fileGroup.reset();
 }
 
-function postLoad(type) {
+function postLoad(type, filePath) {
 	freqData = [];
 	geomData = [];
 	resetGraphs();
@@ -127,6 +127,9 @@ function postLoad(type) {
 	getUnitcell(1);
 	runJmolScriptWait('unitcell on');
 	cleanAndReloadForm();
+	if (filePath.indexOf("cache://DROP_", 0) == 0) {
+		grpDisp(0);
+	}
 }
 
 function cleanAndReloadForm() {
