@@ -1007,7 +1007,7 @@ function createMainGrp() {
 	strOther += " ";
 	strOther += createSelect(
 			'setzShadePower ',
-			'runJmolScriptWait("set zShade; set zShadePower " + value + " ;") + setJmolFromCheckbox("z-shade","")',
+			'runJmolScriptWait("set zShade; set zShadePower " + value + ";") + setJmolFromCheckbox("z-shade"," "+value)',
 			0, 1, shadeValue, shadeName)
 			+ " Fog level";
 	strOther += "</td></tr>\n";
