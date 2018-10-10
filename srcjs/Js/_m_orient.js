@@ -1,6 +1,6 @@
 function enterOrient() {
 	slabSlider.setValue(100 - jmolEvaluate("slab"));
-	depthSlider.setValue(100 - jmolEvaluate("depth"));
+	depthSlider.setValue(jmolEvaluate("depth"));
 	if (jmolEvaluate("slabEnabled") == "true")
 		checkBox("slabToggle");
 	else
