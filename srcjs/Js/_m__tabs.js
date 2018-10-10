@@ -81,6 +81,7 @@ function defineMenu() {
 	/* 9 */ addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
 	/* 10 */ addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
 	/* 11 */ addTab("Other", "otherpropGroup", "Change background, light settings and other.");
+	// addTab("Symmetru", "symmetryGroup", "Add atoms to structure following rules of symmetry.");
 }
 
 var showMenu = function(menu) {
