@@ -1,3 +1,0 @@
-connect 1.5 2.0 {_O} {_H} hbond create; 
-connect 1.5 2.0 {_N} {_H} hbond create; 
-connect 1.5 2.0 {_S} {_H} hbond create;
