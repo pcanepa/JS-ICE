@@ -24,17 +24,14 @@
 
 //24th May 2011 P. Canepa
 
-siestaDone = function(msg) {
-	loadDone(loadModelsSiesta);
-}
-
 var geomSiesta = new Array;
 var freqSymmSiesta = new Array;
 var freqIntensSiesta = new Array;
 var freqSiesta = new Array;
 var energySiesta = new Array;
 var counterSiesta = 0;
-function loadModelsSiesta() {
+
+siestaDone = function(msg) {
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
 	// Reset program and set filename if available
 	// This also extract the auxiliary info
@@ -59,6 +56,7 @@ function loadModelsSiesta() {
 			}
 		}
 	}
+	loadDone();
 }
 
 function initializeJiceSiesta() {

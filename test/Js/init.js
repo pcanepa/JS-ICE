@@ -81,7 +81,6 @@ function messageMsg(msg) {
 
 function docWriteTabs() {
 	document.write(createTabMenu());
-	grpDispDelayed(0,TAB_OVER);
 }
 
 function docWriteBottomFrame() {

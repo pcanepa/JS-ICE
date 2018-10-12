@@ -9,9 +9,11 @@ function exitFile() {
 // was "flagCif"
 // used only in crystal, gulp, and quantumespresso 
 // in symmetry.js#figureOutSpaceGroup() 
-// to set the frame to the first frame 
-var flagCif = false; 
+// to set the frame to the first frame
 
+var _fileIsReload = false;
+
+var flagCif = false; 
 var flagCrystal = false; 
 var flagGromos = false;
 var flagGulp = false;
@@ -28,20 +30,29 @@ var geomData = [];
 var counterFreq = 0;
 
 reload = function(packing, filter, more) {	
-	packing || (packing = "");
-	filter = (filter ? " FILTER '" + filter + "'" : "");
-	more || (more = "");
-	runJmolScriptWait("zap;set echo top left; echo reloading...;");
-	runJmolScriptWait("load '' " + packing + filter + ";" + more + ';echo;frame all;frame title "@{_modelName}";frame FIRST;');
-	setFileName();
-	getUnitcell(1);
+	// no ZAP here
+	runJmolScriptWait("set echo top left; echo reloading...;");
+	loadFile("", packing, filter, more);
+//	runJmolScript("load '' " + packing + filter);
+	//+ ";" + more + ';echo;frame all;frame title "@{_modelName}";frame FIRST;');
+//	setFileName();
+//	getUnitcell(1);
 }
 
 loadUser = function(packing, filter) {
+	loadFile("?", packing, filter);
+}
+
+loadFile = function(fileName, packing, filter, more) {
 	packing || (packing = "");
 	filter = (filter ? " FILTER '" + filter + "'" : "");
-	runJmolScriptWait("zap;");
-	runJmolScript("load ? " + packing + filter + ";");
+	more || (more = "");
+	_fileIsReload = !fileName;
+	if (!_fileIsReload) {
+		runJmolScriptWait("zap;");
+	}
+	// ZAP will clear the Jmol file cache
+	runJmolScript("load '" + fileName + "' " + packing + filter + ";" + more);
 }
 
 
@@ -115,7 +126,7 @@ function onChangeLoad(load) {
 	document.fileGroup.reset();
 }
 
-function postLoad(type) {
+function postLoad(type, filePath) {
 	freqData = [];
 	geomData = [];
 	resetGraphs();
@@ -127,6 +138,21 @@ function postLoad(type) {
 	getUnitcell(1);
 	runJmolScriptWait('unitcell on');
 	cleanAndReloadForm();
+	setFileName();
+	if (!_fileIsReload) {
+		grpDisp(0);
+	}
+	_fileIsReload = false;
+	// specialized finalization based on file type
+	// all such methods must call load
+	if (window[type+"Done"])
+		window[type+"Done"]();
+	else
+		loadDone();
+}
+
+loadDone = function() {
+	setTitleEcho();
 }
 
 function cleanAndReloadForm() {
@@ -294,20 +320,6 @@ function onChangeLoadSample(value) {
 	}
 }
 
-//var LOAD_ISO_ONLY     = 0;
-//var LOAD_ISO_MAP_ONLY = 1;
-//var LOAD_ISO_WITH_MAP = 2;
-//
-//function loadCube(mode, msg) {
-//	// this should work in JavaScript, because the script will wait for the ? processing to complete
-//	setMessageMode(MESSAGE_MODE_SAVE_ISO);	
-//	runJmolScript('set echo top left; echo loading CUBE...'
-//			+ (mode != LOAD_ISO_MAP_ONLY ? "isosurface ?.CUBE;" : "")
-//			+ (mode != LOAD_ISO_ONLY ? "isosurface  map ?.CUBE;" : "")
-//			+ "message " + msg + ";");
-//}
-//
-
 var quantumEspresso = false;
 function onChangeSave(save) {
 	// see menu.js
@@ -371,6 +383,7 @@ function printFileContent() {
 
 
 function setTitleEcho() {
+// BH this is not a generally useful thing to do. Crystal only?
 	var titleFile = extractInfoJmolString("fileHeader").split("\n")[0];
 	runJmolScriptWait('set echo top right; echo "' + titleFile + ' ";');
 }
@@ -388,19 +401,4 @@ function saveStateAndOrientation_a() {
 function restoreStateAndOrientation_a() {
 	runJmolScriptWait("restore ORIENTATION orienta; restore STATE status;");
 }
-
-
-
-//refresh = function() {
-//saveState();
-//setLoadingMode(LOADING_MODE_PLOT_ENERGIES);
-//reload();
-//restoreState();
-//}
-//
-//refreshFreq = function() {
-//saveState();
-//setLoadingMode(LOADING_MODE_PLOT_FREQUENCIES);
-//reload();
-//}
 

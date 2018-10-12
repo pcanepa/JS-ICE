@@ -184,10 +184,6 @@ function setPotentialgulp() {
 // ////////////GULP READER
 
 function gulpDone() {
-		loadDone(loadModelsGulp);
-}
-
-function loadModelsGulp() {
 	runJmolScriptWait("script scripts/gulp_name.spt"); 
 	var counterFreq = 0;
 	getUnitcell("1");
@@ -206,7 +202,7 @@ function loadModelsGulp() {
 
 	}
 	getSymInfo();
-
+	loadDone();
 }
 
 function substringEnergyGulpToFloat(value) {
