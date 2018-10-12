@@ -9,9 +9,11 @@ function exitFile() {
 // was "flagCif"
 // used only in crystal, gulp, and quantumespresso 
 // in symmetry.js#figureOutSpaceGroup() 
-// to set the frame to the first frame 
-var flagCif = false; 
+// to set the frame to the first frame
 
+var _fileIsReload = false;
+
+var flagCif = false; 
 var flagCrystal = false; 
 var flagGromos = false;
 var flagGulp = false;
@@ -28,20 +30,29 @@ var geomData = [];
 var counterFreq = 0;
 
 reload = function(packing, filter, more) {	
-	packing || (packing = "");
-	filter = (filter ? " FILTER '" + filter + "'" : "");
-	more || (more = "");
-	runJmolScriptWait("zap;set echo top left; echo reloading...;");
-	runJmolScriptWait("load '' " + packing + filter + ";" + more + ';echo;frame all;frame title "@{_modelName}";frame FIRST;');
-	setFileName();
-	getUnitcell(1);
+	// no ZAP here
+	runJmolScriptWait("set echo top left; echo reloading...;");
+	loadFile("", packing, filter, more);
+//	runJmolScript("load '' " + packing + filter);
+	//+ ";" + more + ';echo;frame all;frame title "@{_modelName}";frame FIRST;');
+//	setFileName();
+//	getUnitcell(1);
 }
 
 loadUser = function(packing, filter) {
+	loadFile("?", packing, filter);
+}
+
+loadFile = function(fileName, packing, filter, more) {
 	packing || (packing = "");
 	filter = (filter ? " FILTER '" + filter + "'" : "");
-	runJmolScriptWait("zap;");
-	runJmolScript("load ? " + packing + filter + ";");
+	more || (more = "");
+	_fileIsReload = !fileName;
+	if (!_fileIsReload) {
+		runJmolScriptWait("zap;");
+	}
+	// ZAP will clear the Jmol file cache
+	runJmolScript("load '" + fileName + "' " + packing + filter + ";" + more);
 }
 
 
@@ -127,9 +138,21 @@ function postLoad(type, filePath) {
 	getUnitcell(1);
 	runJmolScriptWait('unitcell on');
 	cleanAndReloadForm();
-	if (filePath.indexOf("cache://DROP_", 0) == 0) {
+	setFileName();
+	if (!_fileIsReload) {
 		grpDisp(0);
 	}
+	_fileIsReload = false;
+	// specialized finalization based on file type
+	// all such methods must call load
+	if (window[type+"Done"])
+		window[type+"Done"]();
+	else
+		loadDone();
+}
+
+loadDone = function() {
+	setTitleEcho();
 }
 
 function cleanAndReloadForm() {
@@ -374,6 +397,7 @@ function printFileContent() {
 
 
 function setTitleEcho() {
+// BH this is not a generally useful thing to do. Crystal only?
 	var titleFile = extractInfoJmolString("fileHeader").split("\n")[0];
 	runJmolScriptWait('set echo top right; echo "' + titleFile + ' ";');
 }

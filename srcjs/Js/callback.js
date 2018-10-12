@@ -29,16 +29,6 @@ myLoadStructCallback = function(applet,filePath,c,d) {
 	// run xxxDone() if it exists, otherwise just loadDone()
 	var type = jmolEvaluate("_fileType").toLowerCase();
 	postLoad(type, filePath);
-	if (window[type+"Done"])
-		window[type+"Done"]();
-	else
-		loadDone();
-}
-
-loadDone = function(fDone) {
-	fDone && fDone();
-	setFileName();
-	setTitleEcho();
 }
 
 MESSAGE_MODE_NONE                   = 0;

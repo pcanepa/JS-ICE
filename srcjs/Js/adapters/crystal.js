@@ -187,10 +187,6 @@ function savCRYSTALSpace() {
 /////////////////////////
 ///////////////////////// LOAD & ON LOAD functions
 
-crystalDone = function() {
-	loadDone(loadModelsCrystal);
-}
-
 function setGeomAndFreqData() {
 	counterFreq = 0;
 	var vib = getbyID('vib');
@@ -215,12 +211,12 @@ function setGeomAndFreqData() {
 	} 
 }
 
-//This is called each time a new file is loaded
-function loadModelsCrystal() {	
+crystalDone = function() {
 	getUnitcell("1");
 	runJmolScriptWait("echo");
 	setGeomAndFreqData();
 	setTitleEcho();
+	loadDone();
 }
 
 // this method was called when the Geometry Optimize and Spectra tabs

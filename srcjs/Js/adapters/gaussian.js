@@ -22,10 +22,6 @@
  *  02111-1307  USA.
  */
 
-gaussianDone = function() {
-	loadDone(loadModelsGaussian);
-}
-
 var geomGauss = new Array;
 var freqSymmGauss = new Array;
 var freqIntensGauss = new Array;
@@ -33,7 +29,7 @@ var freqGauss = new Array;
 var energyGauss = new Array;
 var counterGauss = 0;
 
-function loadModelsGaussian() {
+gaussianDone = function() {
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
 	// Reset program and set filename if available
 	// This also extract the auxiliary info
@@ -63,6 +59,7 @@ function loadModelsGaussian() {
 			}
 		}
 	}
+	loadDone();
 }
 
 function initializeJiceGauss() {
