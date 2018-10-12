@@ -6,6 +6,6 @@ JS-ICE is an extension of the powerful, platform independent molecular visualize
 
 #### We are now at https://github.com/JS-ICE/JS-ICE.
 
-#### JS-ICE can be browsed and utilized at https://js-ice.github.io/JS-ICE/site/
+#### Our development version of JS-ICE can be browsed and utilized at https://js-ice.github.io/JS-ICE/test/
 
 #### Our old site is http://j-ice.sourceforge.net. 
