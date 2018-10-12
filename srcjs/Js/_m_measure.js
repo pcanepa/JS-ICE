@@ -13,8 +13,8 @@ function viewCoord(value) {
 	measureCoord = true;
 	messageMsg("Pick the atom you are interested in, please.");
 	setPickingCallbackFunction(showCoord);
-	runJmolScriptWait("select *; label off"
-			+ 'set defaultDistanceLabel "%2.7VALUE %UNITS"'
+	runJmolScriptWait("select *; label off;"
+			+ 'set defaultDistanceLabel "%2.7VALUE %UNITS";'
 			+ 'showSelections TRUE; select none; set picking ON;set picking LABEL; set picking SELECT atom; halos on; set LABEL on;');
 }
 
