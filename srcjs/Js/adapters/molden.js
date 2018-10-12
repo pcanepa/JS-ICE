@@ -22,13 +22,9 @@
  *  02111-1307  USA.
  */
 
-moldenDone = function(msg) {
-	loadDone(loadModelsMolden);
-}
-
 var counterFreq = 0;
-function loadModelsMolden() {
-	//cleanAndReloadForm();
+
+moldenDone = function(msg) {
 	var counterMD = 0;
 	counterFreq = 0;
 	for (i = 0; i < Info.length; i++) {
@@ -52,4 +48,5 @@ function loadModelsMolden() {
 	}
 	disableFreqOpts();
 	getSymInfo();
+	loadDone();
 }

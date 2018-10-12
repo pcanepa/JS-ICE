@@ -337,12 +337,7 @@ function symmetryQuantum() {
 ///// QUANTUM ESPRESSO READER
 
 espressoDone = function() {
-	loadDone(loadModelsEspresso)
-}
-
-function loadModelsEspresso() {
 	var counterFreq = 0;
-	//cleanAndReloadForm();
 	getUnitcell("1");
 	setFrameValues("1");
 	var counterMD = 0;
@@ -385,7 +380,7 @@ function loadModelsEspresso() {
 	 * 1 ); } }
 	 */
 	getSymInfo();
-
+	loadDone();
 }
 
 function substringEnergyQuantumToFloat(value) {

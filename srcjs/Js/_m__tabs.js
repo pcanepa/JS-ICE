@@ -64,7 +64,7 @@ var tabDelayMS = 100;
 var menuNames = [
 	"File", "Cell", "Show" ,"Edit" /*, "Build"*/, 
 	"Measure", "Orient", "Polyhedra", "Surface", 
-	"Optimize", "Spectra", "Elec", "Other" 
+	"Optimize", "Spectra", "Elec", "Other", "Symmetry" 
 	];
 
 function defineMenu() {
@@ -81,6 +81,7 @@ function defineMenu() {
 	/* 9 */ addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
 	/* 10 */ addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
 	/* 11 */ addTab("Other", "otherpropGroup", "Change background, light settings and other.");
+	/* 12   addTab("Symmetry", "symmetryGroup", "Add atoms to structure following rules of symmetry."); */
 }
 
 var showMenu = function(menu) {

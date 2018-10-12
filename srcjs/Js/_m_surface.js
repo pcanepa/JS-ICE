@@ -73,7 +73,6 @@ function surfacePickPlaneCallback() {
 var createSurface = function(cmd, doClear) {
 	if (cmd.indexOf("_CELL_") >= 0)
 		cmd = cmd.replace("_CELL_", getCurrentCell()); 
-//	setMessageMode(MESSAGE_MODE_SAVE_ISO)
 	runJmolScript((doClear ? "isosurface delete;" : "") 
 			+ "set echo top left; echo creating ISOSURFACE...; refresh;" + cmd + '; echo;javascript getIsoInfo()');
 }

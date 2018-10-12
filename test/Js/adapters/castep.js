@@ -105,10 +105,6 @@ function prepareCoordinateblockCastep() {
 // /// FUNCTION LOAD
 
 castepDone = function() {
-	loadDone(loadModelsCastep);
-}
-
-function loadModelsCastep() {
 	var counterFreq = 0;
 	var counterMD = 0;
 	//cleanAndReloadForm();
@@ -142,6 +138,7 @@ function loadModelsCastep() {
 	}
 	disableFreqOpts();
 	getSymInfo();
+	loadDone();
 }
 
 // ///////LOAD FUNCTIONS

@@ -24,12 +24,9 @@
 
 //3rd-Sept-2010 CANEPA
 
-dmolDone = function() {
-	loadDone(loadModelsDmol);
-}
-
 var counterFreq = 0;
-function loadModelsDmol() {
+
+dmolDone = function() {
 	//cleanAndReloadForm();
 	getUnitcell("1");
 	setFrameValues("1");
@@ -64,4 +61,5 @@ function loadModelsDmol() {
 	// These are in the vaspfunctions.js
 	disableFreqOpts();
 	getSymInfo();
+	loadDone();
 }

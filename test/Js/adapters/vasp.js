@@ -23,10 +23,6 @@
  */
 
 xmlvaspDone = function() {
-	loadDone(loadModelsVASP);
-}
-
-function loadModelsVASP() {
 	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
 	getUnitcell("1");
 	//cleanAndReloadForm();
@@ -42,7 +38,7 @@ function loadModelsVASP() {
 			addOption(getbyID('geom'), i + " " + stringa, i + 1);
 		}
 	}
-
+	loadDone();
 }
 
 function substringEnergyVaspToFloat(value) {
@@ -152,12 +148,9 @@ function exportVASP() {
 
 /////////// IMPORT OUTCAR
 
-vaspoutcarDone = function() {
-	loadDone(loadModelsOutcar);
-}
-
 var counterFreq = 0;
-function loadModelsOutcar() {
+
+vaspoutcarDone = function() {
 	//cleanAndReloadForm();
 	getUnitcell("1");
 	setFrameValues("1");
@@ -191,6 +184,7 @@ function loadModelsOutcar() {
 	}
 	disableFreqOpts();
 	getSymInfo();
+	loadDone();
 }
 
 /////////LOAD FUNCTIONS
