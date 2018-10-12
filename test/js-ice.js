@@ -84,7 +84,6 @@ function messageMsg(msg) {
 
 function docWriteTabs() {
 	document.write(createTabMenu());
-	grpDispDelayed(0,TAB_OVER);
 }
 
 function docWriteBottomFrame() {
@@ -190,7 +189,7 @@ var tabDelayMS = 100;
 var menuNames = [
 	"File", "Cell", "Show" ,"Edit" /*, "Build"*/, 
 	"Measure", "Orient", "Polyhedra", "Surface", 
-	"Optimize", "Spectra", "Elec", "Other" 
+	"Optimize", "Spectra", "Elec", "Other", "Symmetry" 
 	];
 
 function defineMenu() {
@@ -207,6 +206,7 @@ function defineMenu() {
 	/* 9 */ addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
 	/* 10 */ addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
 	/* 11 */ addTab("Other", "otherpropGroup", "Change background, light settings and other.");
+	/* 12   addTab("Symmetry", "symmetryGroup", "Add atoms to structure following rules of symmetry."); */
 }
 
 var showMenu = function(menu) {
@@ -318,9 +318,11 @@ function exitFile() {
 // was "flagCif"
 // used only in crystal, gulp, and quantumespresso 
 // in symmetry.js#figureOutSpaceGroup() 
-// to set the frame to the first frame 
-var flagCif = false; 
+// to set the frame to the first frame
 
+var _fileIsReload = false;
+
+var flagCif = false; 
 var flagCrystal = false; 
 var flagGromos = false;
 var flagGulp = false;
@@ -337,20 +339,29 @@ var geomData = [];
 var counterFreq = 0;
 
 reload = function(packing, filter, more) {	
-	packing || (packing = "");
-	filter = (filter ? " FILTER '" + filter + "'" : "");
-	more || (more = "");
-	runJmolScriptWait("zap;set echo top left; echo reloading...;");
-	runJmolScriptWait("load '' " + packing + filter + ";" + more + ';echo;frame all;frame title "@{_modelName}";frame FIRST;');
-	setFileName();
-	getUnitcell(1);
+	// no ZAP here
+	runJmolScriptWait("set echo top left; echo reloading...;");
+	loadFile("", packing, filter, more);
+//	runJmolScript("load '' " + packing + filter);
+	//+ ";" + more + ';echo;frame all;frame title "@{_modelName}";frame FIRST;');
+//	setFileName();
+//	getUnitcell(1);
 }
 
 loadUser = function(packing, filter) {
+	loadFile("?", packing, filter);
+}
+
+loadFile = function(fileName, packing, filter, more) {
 	packing || (packing = "");
 	filter = (filter ? " FILTER '" + filter + "'" : "");
-	runJmolScriptWait("zap;");
-	runJmolScript("load ? " + packing + filter + ";");
+	more || (more = "");
+	_fileIsReload = !fileName;
+	if (!_fileIsReload) {
+		runJmolScriptWait("zap;");
+	}
+	// ZAP will clear the Jmol file cache
+	runJmolScript("load '" + fileName + "' " + packing + filter + ";" + more);
 }
 
 
@@ -436,9 +447,21 @@ function postLoad(type, filePath) {
 	getUnitcell(1);
 	runJmolScriptWait('unitcell on');
 	cleanAndReloadForm();
-	if (filePath.indexOf("cache://DROP_", 0) == 0) {
+	setFileName();
+	if (!_fileIsReload) {
 		grpDisp(0);
 	}
+	_fileIsReload = false;
+	// specialized finalization based on file type
+	// all such methods must call load
+	if (window[type+"Done"])
+		window[type+"Done"]();
+	else
+		loadDone();
+}
+
+loadDone = function() {
+	setTitleEcho();
 }
 
 function cleanAndReloadForm() {
@@ -606,20 +629,6 @@ function onChangeLoadSample(value) {
 	}
 }
 
-//var LOAD_ISO_ONLY     = 0;
-//var LOAD_ISO_MAP_ONLY = 1;
-//var LOAD_ISO_WITH_MAP = 2;
-//
-//function loadCube(mode, msg) {
-//	// this should work in JavaScript, because the script will wait for the ? processing to complete
-//	setMessageMode(MESSAGE_MODE_SAVE_ISO);	
-//	runJmolScript('set echo top left; echo loading CUBE...'
-//			+ (mode != LOAD_ISO_MAP_ONLY ? "isosurface ?.CUBE;" : "")
-//			+ (mode != LOAD_ISO_ONLY ? "isosurface  map ?.CUBE;" : "")
-//			+ "message " + msg + ";");
-//}
-//
-
 var quantumEspresso = false;
 function onChangeSave(save) {
 	// see menu.js
@@ -683,6 +692,7 @@ function printFileContent() {
 
 
 function setTitleEcho() {
+// BH this is not a generally useful thing to do. Crystal only?
 	var titleFile = extractInfoJmolString("fileHeader").split("\n")[0];
 	runJmolScriptWait('set echo top right; echo "' + titleFile + ' ";');
 }
@@ -700,21 +710,6 @@ function saveStateAndOrientation_a() {
 function restoreStateAndOrientation_a() {
 	runJmolScriptWait("restore ORIENTATION orienta; restore STATE status;");
 }
-
-
-
-//refresh = function() {
-//saveState();
-//setLoadingMode(LOADING_MODE_PLOT_ENERGIES);
-//reload();
-//restoreState();
-//}
-//
-//refreshFreq = function() {
-//saveState();
-//setLoadingMode(LOADING_MODE_PLOT_FREQUENCIES);
-//reload();
-//}
 
       		
 ///js// Js/_m_cell.js /////
@@ -1674,8 +1669,8 @@ function viewCoord(value) {
 	measureCoord = true;
 	messageMsg("Pick the atom you are interested in, please.");
 	setPickingCallbackFunction(showCoord);
-	runJmolScriptWait("select *; label off"
-			+ 'set defaultDistanceLabel "%2.7VALUE %UNITS"'
+	runJmolScriptWait("select *; label off;"
+			+ 'set defaultDistanceLabel "%2.7VALUE %UNITS";'
 			+ 'showSelections TRUE; select none; set picking ON;set picking LABEL; set picking SELECT atom; halos on; set LABEL on;');
 }
 
@@ -1764,7 +1759,7 @@ function measuramentCallback(a, b, c, d, e) {
 ///js// Js/_m_orient.js /////
 function enterOrient() {
 	slabSlider.setValue(100 - jmolEvaluate("slab"));
-	depthSlider.setValue(100 - jmolEvaluate("depth"));
+	depthSlider.setValue(jmolEvaluate("depth"));
 	if (jmolEvaluate("slabEnabled") == "true")
 		checkBox("slabToggle");
 	else
@@ -1984,7 +1979,6 @@ function surfacePickPlaneCallback() {
 var createSurface = function(cmd, doClear) {
 	if (cmd.indexOf("_CELL_") >= 0)
 		cmd = cmd.replace("_CELL_", getCurrentCell()); 
-//	setMessageMode(MESSAGE_MODE_SAVE_ISO)
 	runJmolScript((doClear ? "isosurface delete;" : "") 
 			+ "set echo top left; echo creating ISOSURFACE...; refresh;" + cmd + '; echo;javascript getIsoInfo()');
 }
@@ -2908,8 +2902,8 @@ function setFrameTitle(chkbox) {
 // BH 2018
 
 getCallbackSettings = function() {
-	return  "set messageCallback 'myMessageCallback';" +
-			"set errorCallback 'myErrorCallback';" +
+//	return  "set messageCallback 'myMessageCallback';" +
+	return	"set errorCallback 'myErrorCallback';" +
 			"set loadStructCallback 'myLoadStructCallback';" +
 			"set measureCallback 'myMeasurementCallback';" +
 			"set pickCallback 'myPickCallback';" +
@@ -2922,49 +2916,12 @@ function myMeasuramentCallback(app, msg, type, state, value) {
 		setMeasureText(msg);
 }
 
-LOADING_MODE_NONE = 0;
-
-loadingMode = LOADING_MODE_NONE;
-
-setLoadingMode = function(mode) {
-	loadingMode = mode;	
-}
-
 myLoadStructCallback = function(applet,filePath,c,d) {
 	if (!filePath)
 		return;
 	// run xxxDone() if it exists, otherwise just loadDone()
 	var type = jmolEvaluate("_fileType").toLowerCase();
 	postLoad(type, filePath);
-	if (window[type+"Done"])
-		window[type+"Done"]();
-	else
-		loadDone();
-}
-
-loadDone = function(fDone) {
-	fDone && fDone();
-	setFileName();
-	setTitleEcho();
-}
-
-MESSAGE_MODE_NONE                   = 0;
-//MESSAGE_MODE_SAVE_ISO               = 101;
-
-var messageMode = MESSAGE_MODE_NONE;
-
-setMessageMode = function(mode) {
-	messageMode = mode;
-}
-
-myMessageCallback = function (applet, msg) {	
-	switch(messageMode) {
-	default:
-//	case MESSAGE_MODE_SAVE_ISO:
-//		saveIsoMessageCallback(msg);
-		break;
-	}
-	messageMode = MESSAGE_MODE_NONE;
 }
 
 myErrorCallback = function(applet, b, msg, d) {
@@ -4584,6 +4541,7 @@ function createAllMenus() {
 		+ createFreqGrp()
 		+ createElecpropGrp()
 		+ createMainGrp()
+		/* createSymmetryGrp() */
 		+ createDebugPanel()
 		//+ createHistGrp()
 		;
@@ -5529,7 +5487,7 @@ function createMainGrp() {
 	strOther += " ";
 	strOther += createSelect(
 			'setzShadePower ',
-			'runJmolScriptWait("set zShade; set zShadePower " + value + " ;") + setJmolFromCheckbox("z-shade","")',
+			'runJmolScriptWait("set zShade; set zShadePower " + value + ";") + setJmolFromCheckbox("z-shade"," "+value)',
 			0, 1, shadeValue, shadeName)
 			+ " Fog level";
 	strOther += "</td></tr>\n";
@@ -6909,10 +6867,6 @@ function prepareCoordinateblockCastep() {
 // /// FUNCTION LOAD
 
 castepDone = function() {
-	loadDone(loadModelsCastep);
-}
-
-function loadModelsCastep() {
 	var counterFreq = 0;
 	var counterMD = 0;
 	//cleanAndReloadForm();
@@ -6946,6 +6900,7 @@ function loadModelsCastep() {
 	}
 	disableFreqOpts();
 	getSymInfo();
+	loadDone();
 }
 
 // ///////LOAD FUNCTIONS
@@ -7177,10 +7132,6 @@ function savCRYSTALSpace() {
 /////////////////////////
 ///////////////////////// LOAD & ON LOAD functions
 
-crystalDone = function() {
-	loadDone(loadModelsCrystal);
-}
-
 function setGeomAndFreqData() {
 	counterFreq = 0;
 	var vib = getbyID('vib');
@@ -7205,12 +7156,12 @@ function setGeomAndFreqData() {
 	} 
 }
 
-//This is called each time a new file is loaded
-function loadModelsCrystal() {	
+crystalDone = function() {
 	getUnitcell("1");
 	runJmolScriptWait("echo");
 	setGeomAndFreqData();
 	setTitleEcho();
+	loadDone();
 }
 
 // this method was called when the Geometry Optimize and Spectra tabs
@@ -7256,12 +7207,9 @@ function reloadFastModels() {
 
 //3rd-Sept-2010 CANEPA
 
-dmolDone = function() {
-	loadDone(loadModelsDmol);
-}
-
 var counterFreq = 0;
-function loadModelsDmol() {
+
+dmolDone = function() {
 	//cleanAndReloadForm();
 	getUnitcell("1");
 	setFrameValues("1");
@@ -7296,6 +7244,7 @@ function loadModelsDmol() {
 	// These are in the vaspfunctions.js
 	disableFreqOpts();
 	getSymInfo();
+	loadDone();
 }
       		
 ///js// Js/adapters/gaussian.js /////
@@ -7323,10 +7272,6 @@ function loadModelsDmol() {
  *  02111-1307  USA.
  */
 
-gaussianDone = function() {
-	loadDone(loadModelsGaussian);
-}
-
 var geomGauss = new Array;
 var freqSymmGauss = new Array;
 var freqIntensGauss = new Array;
@@ -7334,7 +7279,7 @@ var freqGauss = new Array;
 var energyGauss = new Array;
 var counterGauss = 0;
 
-function loadModelsGaussian() {
+gaussianDone = function() {
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
 	// Reset program and set filename if available
 	// This also extract the auxiliary info
@@ -7364,6 +7309,7 @@ function loadModelsGaussian() {
 			}
 		}
 	}
+	loadDone();
 }
 
 function initializeJiceGauss() {
@@ -7654,10 +7600,6 @@ function setPotentialgulp() {
 // ////////////GULP READER
 
 function gulpDone() {
-		loadDone(loadModelsGulp);
-}
-
-function loadModelsGulp() {
 	runJmolScriptWait("script scripts/gulp_name.spt"); 
 	var counterFreq = 0;
 	getUnitcell("1");
@@ -7676,7 +7618,7 @@ function loadModelsGulp() {
 
 	}
 	getSymInfo();
-
+	loadDone();
 }
 
 function substringEnergyGulpToFloat(value) {
@@ -7716,13 +7658,9 @@ function substringEnergyGulpToFloat(value) {
  *  02111-1307  USA.
  */
 
-moldenDone = function(msg) {
-	loadDone(loadModelsMolden);
-}
-
 var counterFreq = 0;
-function loadModelsMolden() {
-	//cleanAndReloadForm();
+
+moldenDone = function(msg) {
 	var counterMD = 0;
 	counterFreq = 0;
 	for (i = 0; i < Info.length; i++) {
@@ -7746,6 +7684,7 @@ function loadModelsMolden() {
 	}
 	disableFreqOpts();
 	getSymInfo();
+	loadDone();
 }
       		
 ///js// Js/adapters/quantumespresso.js /////
@@ -8088,12 +8027,7 @@ function symmetryQuantum() {
 ///// QUANTUM ESPRESSO READER
 
 espressoDone = function() {
-	loadDone(loadModelsEspresso)
-}
-
-function loadModelsEspresso() {
 	var counterFreq = 0;
-	//cleanAndReloadForm();
 	getUnitcell("1");
 	setFrameValues("1");
 	var counterMD = 0;
@@ -8136,7 +8070,7 @@ function loadModelsEspresso() {
 	 * 1 ); } }
 	 */
 	getSymInfo();
-
+	loadDone();
 }
 
 function substringEnergyQuantumToFloat(value) {
@@ -8178,17 +8112,14 @@ function substringEnergyQuantumToFloat(value) {
 
 //24th May 2011 P. Canepa
 
-siestaDone = function(msg) {
-	loadDone(loadModelsSiesta);
-}
-
 var geomSiesta = new Array;
 var freqSymmSiesta = new Array;
 var freqIntensSiesta = new Array;
 var freqSiesta = new Array;
 var energySiesta = new Array;
 var counterSiesta = 0;
-function loadModelsSiesta() {
+
+siestaDone = function(msg) {
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
 	// Reset program and set filename if available
 	// This also extract the auxiliary info
@@ -8213,6 +8144,7 @@ function loadModelsSiesta() {
 			}
 		}
 	}
+	loadDone();
 }
 
 function initializeJiceSiesta() {
@@ -8285,10 +8217,6 @@ function changeIrepSiesta(irep) {
  */
 
 xmlvaspDone = function() {
-	loadDone(loadModelsVASP);
-}
-
-function loadModelsVASP() {
 	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
 	getUnitcell("1");
 	//cleanAndReloadForm();
@@ -8304,7 +8232,7 @@ function loadModelsVASP() {
 			addOption(getbyID('geom'), i + " " + stringa, i + 1);
 		}
 	}
-
+	loadDone();
 }
 
 function substringEnergyVaspToFloat(value) {
@@ -8414,12 +8342,9 @@ function exportVASP() {
 
 /////////// IMPORT OUTCAR
 
-vaspoutcarDone = function() {
-	loadDone(loadModelsOutcar);
-}
-
 var counterFreq = 0;
-function loadModelsOutcar() {
+
+vaspoutcarDone = function() {
 	//cleanAndReloadForm();
 	getUnitcell("1");
 	setFrameValues("1");
@@ -8453,6 +8378,7 @@ function loadModelsOutcar() {
 	}
 	disableFreqOpts();
 	getSymInfo();
+	loadDone();
 }
 
 /////////LOAD FUNCTIONS
