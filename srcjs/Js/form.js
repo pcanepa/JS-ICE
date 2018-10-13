@@ -320,19 +320,13 @@ function createText5(name, text, size, value, onchange, disab) {
 	return s;
 }
 
-function createDiv(name, style) {
-	var s = "<DIV ";
-	s += "NAME='" + name + "'";
-	s += "ID='" + name + "'";
-	s += "STYLE='" + style + "'>";
-	return s;
+function createDiv(id, style, contents) {
+	return "<div id='" + id + "' style='" + style + "'>"
+		+ (contents == null ? "" : contents + "</div>");
 }
 
 function createLine(color, style) {
-	var s = "<HR ";
-	s += "COLOR='#D8E4F8' "
-	s += "STYLE='" + style + "' >";
-	return s;
+	return "<hr color='#D8E4F8' style='" + style + "' >";
 }
 
 
