@@ -286,6 +286,7 @@ var sampleOptionArr = ["Load a Sample File",
 	"NH3 geometry optimization", 
 	"NH3 vibrations", 
 	"quartz CIF", 
+	"ice.out", 
 	"=AMS/rutile (11 models)"
 ]
 
@@ -297,6 +298,9 @@ function onChangeLoadSample(value) {
 		break;
 	case "quartz CIF":
 		fname = "output/quartz.cif";
+		break;
+	case "ice.out":
+		fname = "output/ice.out";
 		break;
 	case "MgO slab":
 		fname = "output/cube_mgo_slab/mgo_slab_100_5l.out";
