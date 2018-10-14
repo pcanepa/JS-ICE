@@ -286,6 +286,7 @@ var sampleOptionArr = ["Load a Sample File",
 	"NH3 geometry optimization", 
 	"NH3 vibrations", 
 	"quartz CIF", 
+	"ice.out", 
 	"=AMS/rutile (11 models)"
 ]
 
@@ -297,6 +298,9 @@ function onChangeLoadSample(value) {
 		break;
 	case "quartz CIF":
 		fname = "output/quartz.cif";
+		break;
+	case "ice.out":
+		fname = "output/ice.out";
 		break;
 	case "MgO slab":
 		fname = "output/cube_mgo_slab/mgo_slab_100_5l.out";
@@ -401,4 +405,57 @@ function saveStateAndOrientation_a() {
 function restoreStateAndOrientation_a() {
 	runJmolScriptWait("restore ORIENTATION orienta; restore STATE status;");
 }
+
+
+function createFileGrp() { // Here the order is crucial
+	var elOptionArr = new Array("default", "loadC", "reload", "loadcif",
+			"loadxyz", "loadOutcastep", "loadcrystal", "loadDmol",
+			"loadaimsfhi", "loadgauss", "loadgromacs", "loadGulp",
+			"loadmaterial", "loadMolden", "loadpdb", "loadQuantum",
+			"loadSiesta", "loadShel", "loadVASPoutcar", "loadVasp", "loadWien",
+			"loadXcrysden", "loadstate");
+	var elOptionText = new Array("Load New File", "General (*.*)",
+			"Reload current", "CIF (*.cif)", "XYZ (*.XYZ)",
+			"CASTEP (INPUT, OUTPUT)", "CRYSTAL (*.*)", "Dmol (*.*)",
+			"FHI-aims (*.in)", "GAUSSIAN0X (*.*)", "GROMACS (*.gro)",
+			"GULP (*.gout)", "Material Studio (*.*)", "Molden, QEfreq (*.*)",
+			"PDB (*.pdb)", "QuantumESPRESSO (*.*)", "Siesta (*,*)",
+			"ShelX (*.*)", "VASP (OUTCAR, POSCAR)", "VASP (*.xml)",
+			"WIEN2k (*.struct)", "Xcrysden (*.xtal)", "Jmol state (*.spt,*.png)");
+
+	var strFile = "<form autocomplete='nope'  id='fileGroup' name='fileGroup' style='display:inline' class='contents'>\n";
+	strFile += "<h2>File manager</h2>\n";
+	strFile += "<table><tr><td>Drag-drop a file into JSmol or use the menu below.<br>\n";
+	strFile += createSelectmenu('Load File', 'onChangeLoad(value)', 0, 1,
+			elOptionArr, elOptionText);
+	strFile += "</td><td><div style=display:none>model #" +
+		createText2("modelNo", "", 7, "")
+		+ "</div></td></tr><tr><td>\n";
+	strFile += "Sample Files<BR>\n";
+	strFile += createSelectmenu('Sample Files', 'onChangeLoadSample(value)', 0, 1,
+			sampleOptionArr);
+	strFile += "</td></tr></table><BR><BR>\n";
+	strFile += "Export/Save File<BR>\n";
+	// Save section
+	var elSOptionArr = new Array("default", "saveCASTEP", "saveCRYSTAL",
+			"saveGULP", "saveGROMACS", "saveQuantum", "saveVASP", "saveXYZ",
+			"saveFrac", /* "savefreqHtml", */"savePNG", "savepdb", "savePOV",
+	"saveState", "savePNGJ");
+	var elSOptionText = new Array("Export File", "CASTEP (*.cell)",
+			"CRYSTAL (*.d12)", "GULP (*.gin)", "GROMACS (*.gro)",
+			"PWscf QuantumESPRESSO (*.inp)", "VASP (POSCAR)", "XYZ (*.XYZ)",
+			"frac. coord. (*.XYZfrac)",
+			// "save Frequencies HTML (*.HTML)",
+			"image PNG (*.png)", "coordinates PDB (*.PDB)",
+			"image POV-ray (*.pov)", "current state (*.spt)", "image+state (PNGJ)");
+	strFile += createSelectmenu('Export File', 'onChangeSave(value)', 0, 1,
+			elSOptionArr, elSOptionText);
+	strFile += "<p ><img src='images/j-ice.png' alt='logo'/></p>";
+	strFile += "<div style='margin-top:50px;'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
+	strFile += "<blockquote>\"J-ICE: a new Jmol interface for handling<br> and visualizing Crystallographic<br> and Electronics properties.<br>"
+	strFile += "P. Canepa, R.M. Hanson, P. Ugliengo, M. Alfredsson, <br>  J. Appl. Cryst. 44, 225 (2011). <a href='http://dx.doi.org/10.1107/S0021889810049411' target'blank'>[doi]</a> \"</blockquote> </p></div>";
+	strFile += "</form>\n";
+	return strFile;
+}
+
 

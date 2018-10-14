@@ -329,7 +329,7 @@ var fy = Math.abs (JS.SymmetryOperation.approxF (ftrans.y));
 var fz = Math.abs (JS.SymmetryOperation.approxF (ftrans.z));
 s = " " + JS.SymmetryDesc.strCoord (ftrans, op.isBio);
 if (fx != 0 && fy != 0 && fz != 0) {
-if ((fx == 0.25 || fx == 0.75) && (fy == 0.25 || fy == 0.75) && (fz == 0.25 || fz == 0.75)) {
+if (fx == 0.25 && fy == 0.25 && fz == 0.25) {
 info1 = "d-";
 } else if (fx == 0.5 && fy == 0.5 && fz == 0.5) {
 info1 = "n-";
@@ -431,14 +431,14 @@ vtemp.normalize ();
 var w = -vtemp.x * pa1.x - vtemp.y * pa1.y - vtemp.z * pa1.z;
 plane = JU.P4.new4 (vtemp.x, vtemp.y, vtemp.z, w);
 var margin = (Math.abs (w) < 0.01 && vtemp.x * vtemp.y > 0.4 ? 1.30 : 1.05);
-var v = this.modelSet.vwr.getTriangulator ().intersectPlane (plane, uc.getCanonicalCopy (margin, false), 3);
-for (var i = v.size (); --i >= 0; ) {
+var v = this.modelSet.vwr.getTriangulator ().intersectPlane (plane, uc.getCanonicalCopy (margin, true), 3);
+if (v != null) for (var i = v.size (); --i >= 0; ) {
 var pts = v.get (i);
 draw1.append (drawid).append ("planep").appendI (i).append (" ").append (JU.Escape.eP (pts[0])).append (JU.Escape.eP (pts[1]));
 if (pts.length == 3) draw1.append (JU.Escape.eP (pts[2]));
 draw1.append (" color translucent ").append (color);
 }
-if (v.size () == 0) {
+if (v == null || v.size () == 0) {
 ptemp.add2 (pa1, ax1);
 draw1.append (drawid).append ("planeCircle scale 2.0 circle ").append (JU.Escape.eP (pa1)).append (JU.Escape.eP (ptemp)).append (" color translucent ").append (color).append (" mesh fill");
 }}if (haveInversion) {

@@ -1,9 +1,10 @@
 Clazz.declarePackage ("J.adapter.smarter");
-Clazz.load (["javajs.api.GenericLineReader", "JU.SB"], "J.adapter.smarter.AtomSetCollectionReader", ["java.io.BufferedReader", "java.lang.Boolean", "$.Float", "$.NullPointerException", "javajs.api.GenericBinaryDocument", "JU.BS", "$.Lst", "$.M3", "$.P3", "$.PT", "$.Quat", "$.T4", "$.V3", "J.adapter.smarter.Atom", "$.AtomSetCollection", "J.api.Interface", "$.JmolAdapter", "JU.BSUtil", "$.Logger", "JV.Viewer"], function () {
+Clazz.load (["javajs.api.GenericLineReader", "JU.SB"], "J.adapter.smarter.AtomSetCollectionReader", ["java.io.BufferedReader", "java.lang.Boolean", "$.Float", "$.NullPointerException", "javajs.api.GenericBinaryDocument", "JU.BS", "$.Lst", "$.M3", "$.P3", "$.PT", "$.Quat", "$.T4", "$.V3", "J.adapter.smarter.Atom", "$.AtomSetCollection", "J.api.Interface", "$.JmolAdapter", "JU.BSUtil", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.isBinary = false;
 this.debugging = false;
 this.requiresBSFilter = false;
+this.primitiveToCrystal = null;
 this.asc = null;
 this.reader = null;
 this.binaryDoc = null;
@@ -162,7 +163,7 @@ this.processBinaryDocument ();
 if (!this.isFinalized) this.finalizeReaderASCR ();
 } catch (e) {
 JU.Logger.info ("Reader error: " + e);
-if (!JV.Viewer.isJS) e.printStackTrace ();
+e.printStackTrace ();
 this.setError (e);
 }
 if (this.reader != null) this.reader.close ();
@@ -318,12 +319,12 @@ Clazz.defineMethod (c$, "setError",
 var s;
 {
 if (e.getMessage)
-s = e.getMessage()
+s = e.getMessage();
 else
 s = e.toString();
 }if (this.line == null) this.asc.errorMessage = "Error reading file at end of file \n" + s;
  else this.asc.errorMessage = "Error reading file at line " + this.ptLine + ":\n" + this.line + "\n" + s;
-if (!JV.Viewer.isJS) e.printStackTrace ();
+e.printStackTrace ();
 }, "Throwable");
 Clazz.defineMethod (c$, "initialize", 
  function () {

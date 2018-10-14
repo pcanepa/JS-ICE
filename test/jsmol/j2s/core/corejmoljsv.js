@@ -64,9 +64,9 @@
 ){
 var $t$;
 //var c$;
-Jmol.___JmolDate="$Date: 2018-09-09 13:50:29 -0500 (Sun, 09 Sep 2018) $"
+Jmol.___JmolDate="$Date: 2018-10-13 23:02:01 -0500 (Sat, 13 Oct 2018) $"
 Jmol.___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-Jmol.___JmolVersion="14.29.24"
+Jmol.___JmolVersion="14.29.27"
 // JSmolJavaExt.js
  
 
@@ -16842,7 +16842,6 @@ return this.atomSetAtomCounts[this.iSet];
 });
 Clazz_defineMethod (c$, "getLastAtomSetAtomIndex", 
 function () {
-if (this.ac < this.atomSetAtomCounts[this.iSet]) System.out.println ("???");
 return this.ac - this.atomSetAtomCounts[this.iSet];
 });
 Clazz_defineMethod (c$, "addNewAtom", 
@@ -17275,6 +17274,11 @@ this.atomSetCount--;
 } else {
 this.bsAtoms.setBits (i0, i0 + nnow);
 }});
+Clazz_defineMethod (c$, "checkNoEmptyModel", 
+function () {
+while (this.atomSetCount > 0 && this.atomSetAtomCounts[this.atomSetCount - 1] == 0) this.atomSetCount--;
+
+});
 Clazz_defineStatics (c$,
 "globalBooleans",  Clazz_newArray (-1, ["someModelsHaveFractionalCoordinates", "someModelsHaveSymmetry", "someModelsHaveUnitcells", "someModelsHaveCONECT", "isPDB", "someModelsHaveDomains", "someModelsHaveValidations"]),
 "GLOBAL_FRACTCOORD", 0,
@@ -17286,11 +17290,12 @@ Clazz_defineStatics (c$,
 "GLOBAL_VALIDATIONS", 6);
 });
 Clazz_declarePackage ("J.adapter.smarter");
-Clazz_load (["javajs.api.GenericLineReader", "JU.SB"], "J.adapter.smarter.AtomSetCollectionReader", ["java.io.BufferedReader", "java.lang.Boolean", "$.Float", "$.NullPointerException", "javajs.api.GenericBinaryDocument", "JU.BS", "$.Lst", "$.M3", "$.P3", "$.PT", "$.Quat", "$.T4", "$.V3", "J.adapter.smarter.Atom", "$.AtomSetCollection", "J.api.Interface", "$.JmolAdapter", "JU.BSUtil", "$.Logger", "JV.Viewer"], function () {
+Clazz_load (["javajs.api.GenericLineReader", "JU.SB"], "J.adapter.smarter.AtomSetCollectionReader", ["java.io.BufferedReader", "java.lang.Boolean", "$.Float", "$.NullPointerException", "javajs.api.GenericBinaryDocument", "JU.BS", "$.Lst", "$.M3", "$.P3", "$.PT", "$.Quat", "$.T4", "$.V3", "J.adapter.smarter.Atom", "$.AtomSetCollection", "J.api.Interface", "$.JmolAdapter", "JU.BSUtil", "$.Logger"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.isBinary = false;
 this.debugging = false;
 this.requiresBSFilter = false;
+this.primitiveToCrystal = null;
 this.asc = null;
 this.reader = null;
 this.binaryDoc = null;
@@ -17449,7 +17454,7 @@ this.processBinaryDocument ();
 if (!this.isFinalized) this.finalizeReaderASCR ();
 } catch (e) {
 JU.Logger.info ("Reader error: " + e);
-if (!JV.Viewer.isJS) e.printStackTrace ();
+e.printStackTrace ();
 this.setError (e);
 }
 if (this.reader != null) this.reader.close ();
@@ -17605,12 +17610,12 @@ Clazz_defineMethod (c$, "setError",
 var s;
 {
 if (e.getMessage)
-s = e.getMessage()
+s = e.getMessage();
 else
 s = e.toString();
 }if (this.line == null) this.asc.errorMessage = "Error reading file at end of file \n" + s;
  else this.asc.errorMessage = "Error reading file at line " + this.ptLine + ":\n" + this.line + "\n" + s;
-if (!JV.Viewer.isJS) e.printStackTrace ();
+e.printStackTrace ();
 }, "Throwable");
 Clazz_defineMethod (c$, "initialize", 
  function () {
@@ -24964,7 +24969,7 @@ return null;
 }, "~A,~S");
 });
 Clazz_declarePackage ("J.i18n");
-Clazz_load (null, "J.i18n.Resource", ["java.util.Hashtable", "JU.PT", "$.Rdr", "J.translation.Trans", "JU.Logger", "JV.FileManager", "$.Viewer"], function () {
+Clazz_load (null, "J.i18n.Resource", ["java.util.Hashtable", "JU.PT", "$.Rdr", "J.translation.PO", "JU.Logger", "JV.FileManager", "$.Viewer"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.resource = null;
 this.resourceMap = null;
@@ -24984,7 +24989,7 @@ JU.Logger.info ("Loading language resource " + fname);
 poData = vwr.getFileAsString3 (fname, false, "gt");
 } else {
 try {
-var br = JV.FileManager.getBufferedReaderForResource (vwr,  new J.translation.Trans (), "J/translation/", (className.indexOf ("Applet") >= 0 ? "JmolApplet/" : "Jmol/") + name + ".po");
+var br = JV.FileManager.getBufferedReaderForResource (vwr,  new J.translation.PO (), "J/translation/", (className.indexOf ("Applet") >= 0 ? "JmolApplet/" : "Jmol/") + name + ".po");
 var data =  new Array (1);
 JU.Rdr.readAllAsString (br, 2147483647, false, data, 0);
 poData = data[0];
@@ -26338,7 +26343,7 @@ if (Clazz_instanceOf (x, java.util.Map)) return JS.SV.getVariableMap (x);
 if (Clazz_instanceOf (x, JU.Lst)) return JS.SV.getVariableList (x);
 if (Clazz_instanceOf (x, JU.BArray)) return JS.SV.newV (15, x);
 if (Clazz_instanceOf (x, JS.ScriptContext)) return JS.SV.newV (14, x);
-if (JU.Escape.isAV (x)) return JS.SV.getVariableAV (x);
+if (Clazz_instanceOf (x, Array)) return JS.SV.getVariableAV (x);
 if (JU.AU.isAI (x)) return JS.SV.getVariableAI (x);
 if (JU.AU.isAB (x)) return JS.SV.getVariableAB (x);
 if (JU.AU.isAF (x)) return JS.SV.getVariableAF (x);
@@ -26354,25 +26359,52 @@ return JS.SV.newJSVar (x);
 }, "~O");
 c$.newJSVar = Clazz_defineMethod (c$, "newJSVar", 
  function (x) {
+var itype;
+var itest;
+var inum;
+var array;
+var keys;
 {
 switch(x.BYTES_PER_ELEMENT ? Array : x.constructor) {
 case Boolean:
-return (x ? JS.SV.vT : JS.SV.vF);
+itype = 0;
+itest = x;
+break;
 case Number:
-return (x > Integer.MAX_VALUE || x != Math.floor(x) ? JS.SV.newF(x) : JS.SV.newI(x));
+itype = 1;
+inum = x;
+break;
 case Array:
-var v =  new JU.Lst();
-for (var i = 0, n = x.length; i < n; i++)
-v.addLast(JS.SV.newJSVar(x[i]));
-return JS.SV.getVariableList(v);
+itype = 2;
+array = x;
+break;
 case Object:
-var keys = Object.keys(x);
-var v =  new java.util.Hashtable();
-for (var i = keys.length; --i >= 0;)
-v.put(keys[i],JS.SV.newJSVar(x[keys[i]]));
-return JS.SV.getVariableMap(v);
+itype = 3;
+array = x;
+keys = Object.keys(x);
+break;
 }
-}return JS.SV.newS (x.toString ());
+}switch (itype) {
+case 0:
+return (itest ? JS.SV.vT : JS.SV.vF);
+case 1:
+return (inum > 2147483647 || inum != Math.floor (inum) ? JS.SV.newF (inum) : JS.SV.newI (Clazz_floatToInt (inum)));
+case 2:
+var v =  new JU.Lst ();
+for (var i = 0, n = array.length; i < n; i++) v.addLast (JS.SV.newJSVar (array[i]));
+
+return JS.SV.getVariableList (v);
+case 3:
+var map =  new java.util.Hashtable ();
+for (var i = keys.length; --i >= 0; ) {
+var o = null;
+{
+o = array[keys[i]];
+}map.put (keys[i], JS.SV.newJSVar (o));
+}
+return JS.SV.getVariableMap (map);
+}
+return JS.SV.newS (x.toString ());
 }, "~O");
 c$.getVariableMap = Clazz_defineMethod (c$, "getVariableMap", 
 function (x) {
@@ -27214,6 +27246,10 @@ case 8:
 return ((x1.value).distance (x2.value) < 0.000001);
 case 9:
 return ((x1.value).distance4 (x2.value) < 0.000001);
+case 11:
+return (x1.value).equals (x2.value);
+case 12:
+return (x1.value).equals (x2.value);
 }
 }return (Math.abs (JS.SV.fValue (x1) - JS.SV.fValue (x2)) < 0.000001);
 }, "JS.SV,JS.SV");
@@ -38197,8 +38233,10 @@ if ((C = JM.ModelSet.checkMinAttachedAngle (atomNear, minAttachedAngle, v1, v2, 
 }var energy = 0;
 var bo;
 if (isH && !Float.isNaN (C.x) && !Float.isNaN (D.x)) {
+var ca = C.distance (atom);
+if (ca > JM.ModelSet.hbondHCMaxReal) continue;
 bo = 4096;
-energy = JM.HBond.getEnergy (Math.sqrt (d2), C.distance (atom), C.distance (D), atomNear.distance (D)) / 1000;
+energy = JM.HBond.getEnergy (Math.sqrt (d2), ca, C.distance (D), atomNear.distance (D)) / 1000;
 } else {
 bo = 2048;
 }bsHBonds.set (this.addHBond (atom, atomNear, bo, energy));
@@ -39138,7 +39176,8 @@ return s;
 }, "JU.BS,~B");
 Clazz_defineStatics (c$,
 "hbondMinRasmol", 2.5,
-"hbondMaxReal", 3.5);
+"hbondMaxReal", 3.5,
+"hbondHCMaxReal", 2.2);
 });
 Clazz_declarePackage ("JM");
 Clazz_load (["JU.M3", "$.P3"], "JM.Orientation", ["JU.PT", "JU.Escape"], function () {
@@ -50241,9 +50280,8 @@ if (this.shapes[shapeID] != null) return this.shapes[shapeID];
 if (shapeID == 2 || shapeID == 3 || shapeID == 4) return null;
 var className = JV.JC.getShapeClassName (shapeID, false);
 var shape;
-if ((shape = J.api.Interface.getInterface (className, this.vwr, "shape")) == null) {
-return null;
-}this.vwr.setShapeErrorState (shapeID, "allocate");
+if ((shape = J.api.Interface.getInterface (className, this.vwr, "shape")) == null) return null;
+this.vwr.setShapeErrorState (shapeID, "allocate");
 shape.initializeShape (this.vwr, this.ms, shapeID);
 this.vwr.setShapeErrorState (-1, null);
 return this.shapes[shapeID] = shape;
@@ -54588,7 +54626,6 @@ this.setShapeProperty (iShape, "text", msg);
 }, "~S");
 Clazz_defineMethod (c$, "initializeModel", 
  function (isAppend) {
-try {
 this.clearThreads ();
 if (isAppend) {
 this.am.initializePointers (1);
@@ -54611,13 +54648,6 @@ this.setFrankOn (this.getShowFrank ());
 this.startHoverWatcher (true);
 this.setTainted (true);
 this.finalizeTransformParameters ();
-} catch (e) {
-if (Clazz_exceptionOf (e, Exception)) {
-System.err.println ("????" + e);
-} else {
-throw e;
-}
-}
 }, "~B");
 Clazz_defineMethod (c$, "startHoverWatcher", 
 function (tf) {
@@ -59529,6 +59559,10 @@ throw e;
 }
 }
 }, "~S");
+Clazz_defineMethod (c$, "getModelForAtomIndex", 
+function (iatom) {
+return this.ms.am[this.ms.at[iatom].mi];
+}, "~N");
 Clazz_defineMethod (c$, "assignAtom", 
 function (atomIndex, element) {
 if (atomIndex < 0) atomIndex = this.atomHighlighted;

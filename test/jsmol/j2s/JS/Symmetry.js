@@ -434,10 +434,10 @@ function (vwr, atom, atoms, bsAtoms, radius) {
 return (J.api.Interface.getInterface ("JS.UnitCellIterator", vwr, "script")).set (this, atom, atoms, bsAtoms, radius);
 }, "JV.Viewer,JM.Atom,~A,JU.BS,~N");
 Clazz.overrideMethod (c$, "toFromPrimitive", 
-function (toPrimitive, type, oabc) {
+function (toPrimitive, type, oabc, primitiveToCrystal) {
 if (this.unitCell == null) this.unitCell = JS.UnitCell.fromOABC (oabc, false);
-return this.unitCell.toFromPrimitive (toPrimitive, type, oabc);
-}, "~B,~S,~A");
+return this.unitCell.toFromPrimitive (toPrimitive, type, oabc, primitiveToCrystal);
+}, "~B,~S,~A,JU.M3");
 Clazz.overrideMethod (c$, "generateCrystalClass", 
 function (pt0) {
 var ops = this.getSymmetryOperations ();
@@ -513,9 +513,9 @@ Clazz.defineMethod (c$, "getCIPChirality",
 return (this.cip == null ? (this.cip = (J.api.Interface.getInterface ("JS.CIPChirality", vwr, "script"))) : this.cip);
 }, "JV.Viewer");
 Clazz.overrideMethod (c$, "getConventionalUnitCell", 
-function (latticeType) {
-return (this.unitCell == null || latticeType == null ? null : this.unitCell.getConventionalUnitCell (latticeType));
-}, "~S");
+function (latticeType, primitiveToCrystal) {
+return (this.unitCell == null || latticeType == null ? null : this.unitCell.getConventionalUnitCell (latticeType, primitiveToCrystal));
+}, "~S,JU.M3");
 Clazz.overrideMethod (c$, "getUnitCellInfoMap", 
 function () {
 return (this.unitCell == null ? null : this.unitCell.getInfo ());

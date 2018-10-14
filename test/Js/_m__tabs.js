@@ -89,7 +89,7 @@ var showMenu = function(menu) {
 		self["exit" + menuNames[menu]]();
 	thisMenu = menu;
 	exitTab();
-	hideArrays(menu);
+//	hideArrays(menu);
 	self["enter" + menuNames[menu]]();
 	$("#menu"+menu).addClass("picked");
 }
@@ -136,27 +136,27 @@ var grpDispDelayed = function(n, mode) {
 	}
 }
 
-var arrayGeomObjects = new Array(
-		"appletdiv", 
-		"graphdiv", 
-		"plottitle",
-		"plotarea", 
-		"appletdiv1", 
-		"graphdiv1", 
-		"plottitle1", 
-		"plotarea1");
-var arrayFreqObjects = new Array(
-		"freqdiv", 
-		"graphfreqdiv", 
-		"plottitlefreq",
-		"plotareafreq");
-
-var hideArrays = function(menu) {
-	for (var i = 0; i < arrayGeomObjects.length; i++)
-		getbyID(arrayGeomObjects[i]).style.display = (menu == MENU_OPTIMIZE ? "block" : "none");
-	for (var j = 0; j < arrayFreqObjects.length; j++)
-		getbyID(arrayFreqObjects[j]).style.display = (menu == MENU_SPECTRA ? "block" : "none");
-}
+//var arrayGeomObjects = new Array(
+//		"appletdiv", 
+//		"graphdiv", 
+//		"plottitle",
+//		"plotarea", 
+//		"appletdiv1", 
+//		"graphdiv1", 
+//		"plottitle1", 
+//		"plotarea1");
+//var arrayFreqObjects = new Array(
+//		"freqdiv", 
+//		"graphfreqdiv", 
+//		"plottitlefreq",
+//		"plotareafreq");
+//
+//var hideArrays = function(menu) {
+//	for (var i = 0; i < arrayGeomObjects.length; i++)
+//		getbyID(arrayGeomObjects[i]).style.display = (menu == MENU_OPTIMIZE ? "block" : "none");
+//	for (var j = 0; j < arrayFreqObjects.length; j++)
+//		getbyID(arrayFreqObjects[j]).style.display = (menu == MENU_SPECTRA ? "block" : "none");
+//}
 
 function createTabMenu() {
 	var strMenu = "<ul class='menu' id='menu'>";
@@ -168,7 +168,6 @@ function createTabMenu() {
 }
 
 function createMenuCell(i) {
-
 	var sTab = "<li id='menu"+ i +"' "; // Space is mandatory between i and "
 	sTab += "onClick='grpDispDelayed(" + i + ",TAB_CLICK)' onmouseover='grpDispDelayed("+i+",TAB_OVER)' onmouseout='grpDispDelayed("+i+",TAB_OUT)'"; // BH 2018
 	sTab += "class = 'menu' ";

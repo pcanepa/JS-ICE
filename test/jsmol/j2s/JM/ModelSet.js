@@ -1902,8 +1902,10 @@ if ((C = JM.ModelSet.checkMinAttachedAngle (atomNear, minAttachedAngle, v1, v2, 
 }var energy = 0;
 var bo;
 if (isH && !Float.isNaN (C.x) && !Float.isNaN (D.x)) {
+var ca = C.distance (atom);
+if (ca > JM.ModelSet.hbondHCMaxReal) continue;
 bo = 4096;
-energy = JM.HBond.getEnergy (Math.sqrt (d2), C.distance (atom), C.distance (D), atomNear.distance (D)) / 1000;
+energy = JM.HBond.getEnergy (Math.sqrt (d2), ca, C.distance (D), atomNear.distance (D)) / 1000;
 } else {
 bo = 2048;
 }bsHBonds.set (this.addHBond (atom, atomNear, bo, energy));
@@ -2843,5 +2845,6 @@ return s;
 }, "JU.BS,~B");
 Clazz.defineStatics (c$,
 "hbondMinRasmol", 2.5,
-"hbondMaxReal", 3.5);
+"hbondMaxReal", 3.5,
+"hbondHCMaxReal", 2.2);
 });

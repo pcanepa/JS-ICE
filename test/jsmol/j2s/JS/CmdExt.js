@@ -131,7 +131,7 @@ if (Clazz.exceptionOf (ex, Exception)) {
 this.e.vwr.setStringProperty ("_errormessage", "" + ex);
 if (se.thisContext == null) {
 JU.Logger.error ("Error evaluating context " + ex);
-if (!JV.Viewer.isJS) ex.printStackTrace ();
+ex.printStackTrace ();
 }return false;
 } else {
 throw ex;
@@ -3693,7 +3693,7 @@ ucname = (u == null ? "" : u.getSpaceGroupName () + " ") + ucname;
 oabc = (u == null ?  Clazz.newArray (-1, [JU.P3.new3 (0, 0, 0), JU.P3.new3 (1, 0, 0), JU.P3.new3 (0, 1, 0), JU.P3.new3 (0, 0, 1)]) : u.getUnitCellVectors ());
 if (stype == null) stype = this.vwr.getSymTemp ().getSymmetryInfoAtom (this.vwr.ms, this.vwr.getFrameAtoms ().nextSetBit (0), null, 0, null, null, null, 1073741994, 0, -1);
 if (u == null) u = this.vwr.getSymTemp ();
-u.toFromPrimitive (true, stype.length == 0 ? 'P' : stype.charAt (0), oabc);
+u.toFromPrimitive (true, stype.length == 0 ? 'P' : stype.charAt (0), oabc, this.vwr.getCurrentModelAuxInfo ().get ("primitiveToCrystal"));
 if (!isPrimitive) {
 JU.SimpleUnitCell.getReciprocal (oabc, oabc, scale);
 }break;
