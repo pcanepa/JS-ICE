@@ -267,6 +267,23 @@ if (isNegated) {
 plane.scale4 (-1);
 }return plane;
 }, "~N");
+Clazz.defineMethod (c$, "getPointOrCenterVector", 
+function (t) {
+var data =  new JU.Lst ();
+var pt;
+var bs;
+var pts = (t).getList ();
+if (pts == null) this.invArg ();
+for (var j = 0; j < pts.size (); j++) {
+if ((pt = JS.SV.ptValue (pts.get (j))) != null) {
+data.addLast (pt);
+} else if ((bs = JS.SV.getBitSet (pts.get (j), true)) != null) {
+data.addLast (bs.cardinality () == 1 ? JU.P3.newP (this.vwr.ms.at[bs.nextSetBit (0)]) : this.vwr.ms.getAtomSetCenter (bs));
+} else {
+this.invArg ();
+}}
+return data;
+}, "JS.T");
 Clazz.defineMethod (c$, "hklParameter", 
 function (i) {
 if (!this.chk && this.vwr.getCurrentUnitCell () == null) this.error (33);
@@ -415,7 +432,7 @@ this.ignoreError = true;
 var t = this.iToken;
 isOK = true;
 try {
-isOK = (this.getPoint3f (i, true, false) != null);
+if (this.getPoint3f (i, true, false) == null) isOK = false;
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 isOK = false;
@@ -770,23 +787,6 @@ return data;
 if (i > 0) return this.vwr.ms.getAtomPointVector ((this).atomExpressionAt (i));
 return null;
 }, "JS.T,~N");
-Clazz.defineMethod (c$, "getPointOrCenterVector", 
-function (t) {
-var data =  new JU.Lst ();
-var pt;
-var bs;
-var pts = (t).getList ();
-if (pts == null) this.invArg ();
-for (var j = 0; j < pts.size (); j++) {
-if ((pt = JS.SV.ptValue (pts.get (j))) != null) {
-data.addLast (pt);
-} else if ((bs = JS.SV.getBitSet (pts.get (j), true)) != null) {
-data.addLast (bs.cardinality () == 1 ? JU.P3.newP (this.vwr.ms.at[bs.nextSetBit (0)]) : this.vwr.ms.getAtomSetCenter (bs));
-} else {
-this.invArg ();
-}}
-return data;
-}, "JS.T");
 c$.getFloatEncodedInt = Clazz.defineMethod (c$, "getFloatEncodedInt", 
 function (strDecimal) {
 var pt = strDecimal.indexOf (".");

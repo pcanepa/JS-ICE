@@ -436,3 +436,115 @@ function cleanCreateCrystal() {
 	makeDisable("gamma_frac");
 	document.builGroup.reset();
 }
+
+function createBuildGrp() {
+	var periodicityName = new Array("select", "crystal", "film", "polymer");
+	var periodicityValue = new Array("", "crystal", "slab", "polymer");
+
+	var strBuild = "<form autocomplete='nope'  id='builGroup' name='builGroup' style='display:none'>";
+	strBuild += "<table class='contents'><tr><td> \n";
+	strBuild += "<h2>Build and modify</h2>\n";
+	strBuild += "</td></tr>\n";
+	/*
+	 * strBuild += "<tr><td>\n"; strBuild += "Add new atom/s <i>via</i>
+	 * internal coordinates (distance, angle and torsional)<br>" strBuild +=
+	 * createCheck("addZnew", "Start procedure",
+	 * 'toggleDiv(this,"addAtomZmatrix") + addAtomZmatrix(this)', "", "", "");
+	 * strBuild += "<div id='addAtomZmatrix' style='display:none;
+	 * margin-top:20px'>"; strBuild += "<br> Element: " + createSelect('addEleZ',
+	 * '', 0, 1, 100, eleSymb, eleSymb); strBuild += "<br>"; strBuild +=
+	 * createButton("addAtom", "add Atom", "addZatoms()", ""); strBuild += "</div>"
+	 * strBuild += createLine('blue', ''); strBuild += "</td></tr>\n";
+	 */
+	strBuild += "<tr><td>\n";
+	strBuild += "Add new atom/s<br>";
+	strBuild += createCheck("addNewFrac", "Start procedure",
+			'addAtomfrac()  + toggleDiv(this,"addAtomCrystal")', "", "", "");
+	strBuild += "<div id='addAtomCrystal' style='display:none; margin-top:20px'>";
+	strBuild += "<br> \n ";
+	strBuild += "x <input type='text'  name='x_frac' id='x_frac' size='1' class='text'> ";
+	strBuild += "y <input type='text'  name='y_frac' id='y_frac' size='1' class='text'> ";
+	strBuild += "z <input type='text'  name='z_frac' id='z_frac' size='1' class='text'> ";
+	strBuild += ", Element: "
+		+ createSelect('addNewFracList', '', 0, 1, eleSymb);
+	strBuild += createButton("addNewFracListBut", "add Atom", "addNewatom()",
+	"");
+	strBuild += "<br><br> Read out coordinates of neighbor atom/s";
+	strBuild += createRadio("coord", "fractional", 'viewCoord(value)', '', 0,
+			"", "fractional");
+	strBuild += createRadio("coord", "cartesian", 'viewCoord(value)', '', 0,
+			"", "cartesian");
+	strBuild += "</div>";
+	strBuild += createLine('blue', '');
+	strBuild += "</td></tr>\n";
+	strBuild += "<tr><td>\n";
+	strBuild += "Create a molecular CRYSTAL, FILM, POLYMER<br>";
+
+	strBuild += createCheck(
+			"createCrystal",
+			"Start procedure",
+			'createCrystalStr(this) + toggleDiv(this,"createmolecularCrystal")  + cleanCreateCrystal()',
+			"", "", "");
+	strBuild += "<div id='createmolecularCrystal' style='display:none; margin-top:20px'>";
+	strBuild += "<br> Periodicity: "
+		+ createSelect('typeMole', 'checkIfThreeD(value)', 0, 1,
+				periodicityValue, periodicityName);
+	strBuild += "<br> Space group: "
+		+ createSelect('periodMole', 'setCellParamSpaceGroup(value)', 0, 1,
+				spaceGroupValue, spaceGroupName)
+				+ " <a href=http://en.wikipedia.org/wiki/Hermann%E2%80%93Mauguin_notation target=_blank>Hermann-Mauguin</a>"; // space
+	// group
+	// list
+	// spageGroupName
+	strBuild += "<br> Cell parameters: <br><br>";
+	strBuild += "<i>a</i> <input type='text'  name='a_frac' id='a_frac' size='7' class='text'> ";
+	strBuild += "<i>b</i> <input type='text'  name='b_frac' id='b_frac' size='7' class='text'> ";
+	strBuild += "<i>c</i> <input type='text'  name='c_frac' id='c_frac' size='7' class='text'> ";
+	strBuild += " &#197; <br>";
+	strBuild += "<i>&#945;</i> <input type='text'  name='alpha_frac' id='alpha_frac' size='7' class='text'> ";
+	strBuild += "<i>&#946;</i> <input type='text'  name='beta_frac' id='beta_frac' size='7' class='text'> ";
+	strBuild += "<i>&#947;</i> <input type='text'  name='gamma_frac' id='gamma_frac' size='7' class='text'> ";
+	strBuild += " degrees <br><br> "
+		+ createButton("createCrystal", "Create structure",
+				"createMolecularCrystal()", "") + "</div>";
+	strBuild += createLine('blue', '');
+	strBuild += "</td></tr>\n";
+	strBuild += "<tr><td>\n";
+	strBuild += "Optimize (OPT.) structure  UFF force filed<br>";
+	strBuild += "Rappe, A. K., <i>et. al.</i>; <i>J. Am. Chem. Soc.</i>, 1992, <b>114</b>, 10024-10035. <br><br>";
+	strBuild += createButton("minuff", "Optimize", "minimizeStructure()", "");
+	strBuild += createCheck("fixstructureUff", "fix fragment",
+			'fixFragmentUff(this) + toggleDiv(this,"fragmentSelected")', "",
+			"", "")
+			+ " ";
+	strBuild += createButton("stopuff", "Stop Opt.", "stopOptimize()", "");
+	strBuild += createButton("resetuff", "Reset Opt.", "resetOptimize()", "");
+	strBuild += "</td></tr><tr><td><div id='fragmentSelected' style='display:none; margin-top:20px'>Fragment selection options:<br>";
+	// strBuild += "by element "
+	// + createSelectKey('colourbyElementList', "elementSelected(value)",
+	// "elementSelected(value)", "", 1) + "\n";
+	// strBuild += "&nbsp;by atom &nbsp;"
+	// + createSelect2('colourbyAtomList', 'atomSelected(value)', '', 1)
+	// + "\n";
+	strBuild += createCheck("byselection", "by picking &nbsp;",
+			'setPicking(this)', 0, 0, "set picking");
+	strBuild += createCheck("bydistance", "within a sphere (&#197) &nbsp;",
+			'setDistanceHide(this)', 0, 0, "");
+	strBuild += createCheck("byplane", " within a plane &nbsp;",
+			'onClickPickPlane(this,buildPickPlaneCallback)', 0, 0, "");
+	strBuild += "</div>";
+	strBuild += "</td></tr><tr><td>\n";
+	strBuild += "<br> Structural optimization criterion: <br>";
+	strBuild += "Opt. threshold <input type='text'  name='optciteria' id='optciteria' size='7'  value='0.001' class='text'> kJ*mol<sup>-1</sup> (Def.: 0.001, Min.: 0.0001) <br>";
+	strBuild += "Max. No. Steps <input type='text'  name='maxsteps' id='maxsteps' size='7'  value='100' class='text'> (Def.: 100)";
+	strBuild += "<tr><td>";
+	strBuild += "<br> Optimization Output: <br>";
+	strBuild += createTextArea("textUff", "", 4, 50, "");
+	strBuild += createLine('blue', '');
+	strBuild += "</td></tr>\n";
+	strBuild += "</table>\n";
+	strBuild += "</form>\n";
+	return strBuild;
+}
+
+

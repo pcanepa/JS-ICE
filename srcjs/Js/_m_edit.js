@@ -277,3 +277,114 @@ function selectAll() {
 //}
 
 
+
+function createEditGrp() {
+	var bondValue = new Array("select", "single", "partial", "hbond", "double",
+			"aromatic", "partialDouble", "triple", "partialTriple",
+	"parialTriple2");
+	var strEdit = "<form autocomplete='nope'  id='editGroup' name='editGroup' style='display:none'>";
+	strEdit += "<table class='contents'><tr><td > \n";
+	strEdit += "<h2>Edit structure</h2>\n";
+	strEdit += "</td></tr>\n";
+	strEdit += "<tr><td>\n";
+	strEdit += "Select atom/s by:\n";
+	strEdit += "</td><tr>\n";
+	strEdit += "<tr><td colspan='2'>";
+	strEdit += "by element "
+		+ createSelect2(
+				"deletebyElementList",
+				"elementSelectedDelete(value) + elementSelectedHide(value) ",
+				false, 1) + "\n";
+	// strEdit += "&nbsp;by atom &nbsp;"
+	// + createSelect2('deltebyAtomList',
+	// 'atomSelectedDelete(value) + atomSelectedHide(value) ', '',
+	// 1) + "\n";
+	//strEdit += createCheck("byselection", "by picking &nbsp;",
+	//		'setPickingDelete(this) + setPickingHide(this)', 0, 0, "");
+//	;
+//	strEdit += createCheck("bydistance", "within a sphere (&#197); &nbsp;",
+//			'setDistanceHide(this)', 0, 0, "");
+	strEdit += "</td></tr><tr><td colspan='2'>\n"
+		strEdit += createCheck("byplane", "within a plane &nbsp;",
+				'onClickPickPlane(this,editPickPlaneCallback)', 0, 0, "");
+	strEdit += "</td></tr><tr><td colspan='2'>\n";
+	strEdit += createButton('edit_selectAll', 'select All',
+			'selectAll()', '')
+			+ "\n";
+	strEdit += createButton('unselect', 'unselect All',
+			'runJmolScriptWait("select *; halos off; label off")', '')
+			+ "\n";
+	strEdit += createButton('halooff', 'Halo/s off',
+			'runJmolScriptWait("halos off; selectionhalos off" )', '')
+			+ "\n";
+	strEdit += createButton('label All', 'Label All',
+			'runJmolScriptWait("select *; label on")', '')
+			+ "\n";
+	strEdit += createButton('label off', 'Label off',
+			'runJmolScriptWait("select *; label off")', '')
+			+ "\n";
+	strEdit += createLine('blue', '');
+	strEdit += "</td></tr>\n";
+	strEdit += "<tr><td colspan='2'>\n";
+	strEdit += "Rename atom/s<br>";
+	strEdit += "Element Name ";
+	strEdit += createSelect('renameEle', 'changeElement(value)', 0, 1,
+			eleSymb);
+	strEdit += createLine('blue', '');
+	strEdit += "</td></tr>\n";
+	strEdit += "<tr><td colspan='2'>\n";
+	strEdit += "Remove / hide atom/s <br>";
+	strEdit += createButton('Delete atom', 'Delete atom/s', 'deleteAtom()', '')
+	+ "\n";
+	strEdit += createButton('Hide atom/s', 'Hide atom/s', 'hideAtom()', '')
+	+ "\n";
+	strEdit += createButton('Display atom', 'Display hidden atom/s',
+			'runJmolScriptWait("select hidden; display")', '')
+			+ "\n";
+	strEdit += createLine('blue', '');
+	strEdit += "</td></tr>\n";
+	strEdit += "<tr><td >";
+	strEdit += "Connectivity</a>";
+	strEdit += "</td><td>";
+	strEdit += createSlider("radiiConnect");
+	strEdit += '<br>'
+		+ createCheck('allBondconnect', 'apply to all structures', '', 0,
+				1, '');
+	strEdit += "</td></tr>";
+	strEdit += "<tr><td colspan='2'>\n";
+	strEdit += createButton('advanceEdit', '+',
+			'toggleDivValue(true,"advanceEditDiv",this)', '')
+			+ " Advanced options <br>"
+			strEdit += "<div id='advanceEditDiv' style='display:none; margin-top:20px'>";
+	strEdit += "Connect by:\n";
+	strEdit += createRadio("connect", "selection", 'checkBondStatus(value)', 0,
+			0, "connect", "selection");
+	strEdit += createRadio("connect", "by element", 'checkBondStatus(value)',
+			0, 0, "connect", "atom");
+	strEdit += createRadio("connect", "all", 'checkBondStatus(value)', 0, 0,
+			"connect", "all")
+			+ "<br>\n";
+	strEdit += "From " + createSelect2("connectbyElementList", "", false, 1) + " ";
+	strEdit += "To " + createSelect2("connectbyElementListone", "", false, 1)
+	+ "<br>\n";
+	strEdit += "Mode "
+		+ createRadio("range", "whithin", 'checkWhithin(value)', 'disab',
+				0, "range", "just");
+	strEdit += createRadio("range", "whithin a range", 'checkWhithin(value)',
+			'disab', 0, "range", "range")
+			+ "<br>\n";
+	strEdit += "From / whithin "
+		+ createText2("radiuscoonectFrom", "", "2", "disab") + " ";
+	strEdit += " to " + createText2("radiuscoonectTo", "", "2", "disab")
+	+ " &#197;";
+	strEdit += "<br> Style bond "
+		+ createSelect('setBondFashion', '', 0, 1, bondValue) + "<br> \n";
+	strEdit += createButton('connect2', 'Connect atom', 'connectAtom()', '');
+	strEdit += createButton('connect0', 'Delete bond', 'deleteBond()', '')
+	+ "<br>\n";
+	strEdit += "</div>";
+	strEdit += createLine('blue', '');
+	strEdit += "</td></tr>\n";
+	strEdit += "</table></FORM>\n";
+	return strEdit;
+}

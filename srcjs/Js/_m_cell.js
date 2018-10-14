@@ -408,3 +408,126 @@ cellOperation = function(){
 }
 
 
+function createCellGrp() {
+	var unitcellName = new Array("0 0 0", "1/2 1/2 1/2", "1/2 0 0", "0 1/2 0",
+			"0 0 1/2", "-1/2 -1/2 -1/2", "1 1 1", "-1 -1 -1", "1 0 0", "0 1 0",
+	"0 0 1");
+	var unitcellSize = new Array("1", "2", "3", "4", "5", "6", "7", "8", "9",
+			"10", "11", "12", "13", "14", "15", "16", "17", "18", "19");
+	var strCell = "<form autocomplete='nope'  id='cellGroup' name='cellGroup' style='display:none'>";
+	strCell += "<table class='contents'><tr><td><h2>Cell properties</h2></td></tr>\n";
+	strCell += "<tr><td colspan='2'>"
+		+ createCheck("cell", "View Cell",
+				"setJmolFromCheckbox(this, this.value)", 0, 1, "unitcell");
+	strCell += createCheck("axes", "View axes",
+			"setJmolFromCheckbox(this, this.value)", 0, 1, "set showAxes");
+	strCell += "</td></tr><tr><td> Cell style:  \n";
+	strCell += "size "
+		+ createSelectFunc('offsetCell',
+				'runJmolScriptWait("set unitcell " + value + ";")',
+				'setTimeout("runJmolScriptWait("set unitcell " + value +";")",50)', 0,
+				1, unitcellSize, unitcellSize) + "\n";
+	strCell += " dotted "
+		+ createCheck("cellDott", "dotted, ", "setCellDotted()", 0, 0,
+		"DOTTED") + "  color ";
+	strCell += "</td><td align='left'>\n";
+	strCell += "<script align='left'>jmolColorPickerBox([setColorWhat, 'unitCell'],[0,0,0],'unitcellColorPicker')</script>";
+	strCell += "</td></tr>\n";
+	// strCell += createLine('blue', '');
+	strCell += "<tr><td colspan='2'>Set cell:  \n";
+
+	strCell += createRadio("cella", "primitive", 'setCellType(value)', 0, 1,
+			"primitive", "primitive")
+			+ "\n";
+	strCell += createRadio("cella", "conventional", 'setCellType(value)', 0, 0,
+			"conventional", "conventional")
+			+ "\n";
+	strCell += "</td></tr>\n";
+	strCell += "<tr><td> \n";
+	strCell += createCheck('superPack', 'Auto Pack', 'uncheckPack()', 0, 1, '')
+	+ " ";
+	strCell += createCheck('chPack', 'Choose Pack Range',
+			'checkPack() + toggleDiv(this,"packDiv")', '', '', '');
+	strCell += "</td></tr>\n";
+	strCell += "<tr><td> \n";
+	strCell += "<div id='packDiv' style='display:none; margin-top:30px'>";
+	strCell += createSlider("pack");
+	strCell += "</div></td></tr>\n";
+	strCell += "<tr><td colspan='2'> \n";
+	strCell += createLine('blue', '');
+	strCell += "Supercell: <br>";
+	strCell += "</td></tr><tr><td colspan='2'>\n";
+	strCell += "<i>a: </i>";
+	strCell += "<input type='text'  name='par_a' id='par_a' size='1' class='text'>";
+	strCell += "<i> b: </i>";
+	strCell += "<input type='text' name='par_b' id='par_b' size='1' class='text'>";
+	strCell += "<i> c: </i>";
+	strCell += "<input type='text'  name='par_c' id='par_c' size='1' class='text'> &#197;";
+	strCell += createCheck('supercellForce', 'force supercell (P1)', '', '',
+			'', '')
+			+ "<br>\n";
+	strCell += createButton('set_pack', 'pack', 'setPackaging("packed")', '') + " \n";
+	strCell += createButton('set_pack', 'centroid', 'setPackaging("centroid")', '') + " \n";
+	strCell += createButton('set_pack', 'unpack', 'setPackaging("")', '') + " \n";
+	strCell += createLine('blue', '');
+	strCell += "</td></tr>\n";
+	strCell += "<tr><td colspan='2'> \n";
+	strCell += "Offset unitcell \n<br>";
+	strCell += "Common offsets "
+		+ createSelectFunc('offsetCell', 'setUnitCellOrigin(value)',
+				'setTimeout("setUnitCellOrigin(value)",50)', 0, 1,
+				unitcellName, unitcellName) + "\n";
+	strCell += "<br>  \n"
+		strCell += createButton('advanceCelloffset', '+',
+				'toggleDivValue(true,"advanceCelloffDiv",this)', '')
+				+ " Advanced cell-offset options <br>"
+				strCell += "<div id='advanceCelloffDiv' style='display:none; margin-top:20px'>"
+					+ createCheck("manualCellset", "Manual set",
+							'checkBoxStatus(this, "offsetCell")', 0, 0, "manualCellset")
+							+ "\n";
+	strCell += " x: ";
+	strCell += "<input type='text'  name='par_x' id='par_x' size='3' class='text'>";
+	strCell += " y: ";
+	strCell += "<input type='text'  name='par_y' id='par_y' size='3' class='text'>";
+	strCell += " z: ";
+	strCell += "<input type='text'  name='par_z' id='par_z' size='3' class='text'>";
+	strCell += createButton('setnewOrigin', 'set', 'setManualOrigin()', '')
+	+ " \n";
+	strCell += "</div>";
+	strCell += createLine('blue', '');
+	strCell += "</td></tr>\n";
+	strCell += "<tr ><td colspan='2'>\n";
+	strCell += "Cell parameters (selected model)<br>\n";
+	strCell += "Unit: "
+		+ createRadio("cellMeasure", "&#197", 'setCellMeasure(value)', 0,
+				1, "", "a") + "\n";
+	strCell += createRadio("cellMeasure", "Bohr", 'setCellMeasure(value)', 0,
+			0, "", "b")
+			+ "\n <br>";
+	strCell += "<i>a</i> " + createText2("aCell", "", 7, 1);
+	strCell += "<i>b</i> " + createText2("bCell", "", 7, 1);
+	strCell += "<i>c</i> " + createText2("cCell", "", 7, 1) + "<br><br>\n";
+	strCell += "<i>&#945;</i> " + createText2("alphaCell", "", 7, 1);
+	strCell += "<i>&#946;</i> " + createText2("betaCell", "", 7, 1);
+	strCell += "<i>&#947;</i> " + createText2("gammaCell", "", 7, 1)
+	+ " degrees <br><br>\n";
+	strCell += "Voulme cell " + createText2("volumeCell", "", 10, 1)
+	+ "  &#197<sup>3</sup><br><br>";
+//	strCell += createButton('advanceCell', '+',
+//			'toggleDivValue(true,"advanceCellDiv",this)', '')
+//			+ " Advanced cell options <br>";
+	strCell += "<div id='advanceCellDiv' style='display:block; margin-top:20px'>"
+	strCell += "<i>b/a</i> " + createText2("bovera", "", 8, 1) + " ";
+	strCell += "<i>c/a</i> " + createText2("covera", "", 8, 1);
+	strCell += "</div>"
+		strCell += createLine('blue', '');
+	strCell += "</td></tr>\n";
+	strCell += "<tr><td colspan='2'> \n";
+	strCell += "Symmetry operators ";
+	strCell += "<div id='syminfo'></div>";
+	strCell += createLine('blue', '');
+	strCell += "</td></tr>\n";
+	strCell += "</table></FORM>\n";
+	return strCell;
+}
+

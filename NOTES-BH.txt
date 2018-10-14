@@ -5,6 +5,10 @@ run build-site-02-jice.xml to create j-ice.js and transfer necessary file into s
 
 You only have to run build-site-01-jsmol.xml if there is a new jsmol.zip file.
 
+2018.09.13 -- new jsmol.zip adds features for symmetry operators and 
+proper primitive unitcells. (Crystal does not use the standard primitive cell for C lattice.
+See ice.out.)
+
 2018.09.10 -- new jsmol.zip fixes problem with checkboxes in menu items
 
 Notes - Bob Hanson 2018.09.01

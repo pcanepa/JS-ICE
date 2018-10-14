@@ -169,20 +169,21 @@ var pt0 = null;
 if (this.acr.latticeType == null) this.acr.latticeType = this.symmetry.getLatticeType ();
 if (this.acr.isPrimitive) {
 this.asc.setCurrentModelInfo ("isprimitive", Boolean.TRUE);
-if (!"P".equals (this.acr.latticeType)) {
-this.asc.setCurrentModelInfo ("unitcell_conventional", this.symmetry.getConventionalUnitCell (this.acr.latticeType));
-}}if (this.acr.latticeType != null) this.asc.setCurrentModelInfo ("latticeType", this.acr.latticeType);
-if (Clazz.instanceOf (this.acr.fillRange, String) && this.acr.latticeType != null) {
+if (!"P".equals (this.acr.latticeType) || this.acr.primitiveToCrystal != null) {
+this.asc.setCurrentModelInfo ("unitcell_conventional", this.symmetry.getConventionalUnitCell (this.acr.latticeType, this.acr.primitiveToCrystal));
+}}if (this.acr.latticeType != null) {
+this.asc.setCurrentModelInfo ("latticeType", this.acr.latticeType);
+if (Clazz.instanceOf (this.acr.fillRange, String)) {
 var type = this.acr.fillRange;
 if (type.equals ("conventional")) {
-this.acr.fillRange = this.symmetry.getConventionalUnitCell (this.acr.latticeType);
+this.acr.fillRange = this.symmetry.getConventionalUnitCell (this.acr.latticeType, this.acr.primitiveToCrystal);
 } else if (type.equals ("primitive")) {
 this.acr.fillRange = this.symmetry.getUnitCellVectors ();
-this.symmetry.toFromPrimitive (true, this.acr.latticeType.charAt (0), this.acr.fillRange);
+this.symmetry.toFromPrimitive (true, this.acr.latticeType.charAt (0), this.acr.fillRange, this.acr.primitiveToCrystal);
 } else {
 this.acr.fillRange = null;
 }if (this.acr.fillRange != null) this.acr.addJmolScript ("unitcell " + type);
-}if (this.acr.fillRange != null) {
+}}if (this.acr.fillRange != null) {
 bsAtoms = this.updateBSAtoms ();
 this.acr.forcePacked = true;
 this.doPackUnitCell = false;
