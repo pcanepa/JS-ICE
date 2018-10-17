@@ -20,3 +20,27 @@ function createSymmetryGrp() {
 	strSymmetry += "</form>\n";
 	return strSymmetry
 } 
+
+function readSymmetryNames() {
+	var allSymopInfo = getProperty("spacegroupInfo.operations");
+	var numSymops = allSymopInfo.length;
+	var symopNameArray = [];
+	for (i = 1; i< numSymops+1;i++){
+		var symopCurrent = allSymopInfo[i];
+		var currentName = symopCurrent[3];
+		symopNameArray[i] = currentName;
+	}
+	return symopNameArray
+}
+
+function readSymmetryVectors() {
+	var allSymopInfo = getProperty("spacegroupInfo.operations");
+	var numSymops = allSymopInfo.length;
+	var symopVectorArray = [];
+	for (i = 1; i< numSymops+1;i++){
+		var symopCurrent = allSymopInfo[i];
+		var currentName = symopCurrent[2];
+		symopNameArray[i] = currentName;
+	}
+	return symopVectorArray
+}
