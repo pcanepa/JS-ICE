@@ -44,3 +44,18 @@ function readSymmetryVectors() {
 	}
 	return symopVectorArray
 }
+
+function displaySymmetryDrawObjects(symopNumber){
+	var i = symopNumber
+	if (symopNameArray[i].includes("identity"){
+		//INSERT CODE HERE
+	}
+	else if (symopNameArray[i].includes("axis"){
+		//INSERT CODE HERE
+	}
+	else if (symopNameArray[i].includes("mirror"){
+		runJmolScriptWait("draw symop \{i}") ;
+	}
+} */
+
+}
