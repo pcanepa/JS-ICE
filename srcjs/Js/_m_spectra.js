@@ -614,63 +614,79 @@ function setMaxMinPlot() {
 //Creates the frequency menu on the web applet 
 function createFreqGrp() { 
 	var vibAmplitudeValue = new Array("", "vibration Scale 1",
-			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7", "vibration Scale 10");
+			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7", "vibration Scale 10"); //creates vibration amplitude array
 	var vecscaleValue = new Array("", "vectors SCALE 1", "vectors SCALE 3",
 			"vectors SCALE 5", "vectors SCALE 7", "vectors SCALE 10",
-			"vectors SCALE 15", "vectors SCALE 19");
-	var vecsizeValue = new Array("", "vectors 1", "vectors  3", "vectors  5",
-			"vectors  7", "vectors 10", "vectors 15", "vectors  19");
-	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");
-	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
+			"vectors SCALE 15", "vectors SCALE 19");//creates vector scale array
+	var vecwidthValue = new Array("", "vectors 1", "vectors  3", "vectors  5",
+			"vectors  7", "vectors 10", "vectors 15", "vectors  19");//creates vector width array
+	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");// vector scale and width text array
+	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");//creates vib. amplitude text array
 
-	var strFreq = "<table class='contents'><tr><td valign='top'><form autocomplete='nope'  id='freqGroup' name='modelsVib' style='display:none'>";
-	strFreq += "<h2>IR-Raman Frequencies</h2>\n";
-	strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=15 style='width:120px; overflow: auto;'></select>";
-	strFreq += "<BR>\n";
-	strFreq += createRadio("modSpec", "Both", "onClickModSpec()", 0, 1, "","all");
-	strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "","ir");
-	strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "","raman");
-	strFreq += "<BR>\n";
-	strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onChangeListSym(value)' onkeypress='onChangeListSym()' CLASS='select' >";
-	strFreq += "</select> ";
-	strFreq += "<BR>\n";
-	strFreq += "vibration ";
-	strFreq += createRadio("vibration", "on", 'onClickFreqParams()', 0, 1,"radVibrationOn", "on");
-	strFreq += createRadio("vibration", "off", 'onClickFreqParams()', 0, 0,"radVibrationOff", "off");
-	strFreq += "<BR>\n";
-	strFreq += createSelect("vecsamplitude", "onClickFreqParams()", 0, 1,vibAmplitudeValue, vibAmplitudeText,[0,1])+ " vib. amplitude";
-	strFreq += "<BR>\n";
-	strFreq += createCheck("vectors", "view vectors","onClickFreqParams()", 0, 1, "vectors");
-	strFreq += "<BR>\n";
-	strFreq += createSelect("vecscale", "onClickFreqParams()", 0, 1, vecscaleValue,vecscaleText,[0,0,1])+ " vector scale";
-	strFreq += "<BR>\n";
-	strFreq += createSelect("sizevec", "onClickFreqParams()", 0, 1, vecsizeValue,vecscaleText,[0,0,0,1])+ " vector width";
-	strFreq += "<BR>\n";
-	strFreq += "<table class='contents'> <tr><td>vector color</td> <td><script>jmolColorPickerBox([setColorWhat,'vectors'],[255,255,255],'vectorColorPicker')</script></td>";
-	strFreq += "</tr><tr><td>"+ createButton("vibVectcolor", "Default color",'onClickFreqParams()', 0) + "</td></tr></table>";
-	strFreq += "</td><td valign='top'><div id='freqdiv' style='display:none'>\n";
-	strFreq += createDiv("graphfreqdiv", "width:200px;height:200px;background-color:#EFEFEF; margin-left:5px; display:none")+ "\n";//making small graph
-	strFreq += createDiv("plottitlefreq", ";display:none")+ "IR - Raman  dispersion </div>\n";
-	strFreq += createDiv("plotareafreq", "width:210px;height:210px;background-color:#EFEFEF;display:none")+ "</div>\n";
-	strFreq += "Raman intensities set to 0.0 kmMol<sup>-1</sup>";
-	strFreq += "<br>\n";
-	strFreq += createLine('blue', '');
-	strFreq += "Simulate spectrum<br>";
-	strFreq += createRadio("kindspectra", "IR", '', 0, 1, "", "ir");//could add in Onclickgraphparams to change graph immediately 
-	strFreq += createRadio("kindspectra", "Raman", '', 0, 1, "", "raman");//will try to consolidate
-	strFreq += createRadio("kindspectra", "Both", '', 0, 1, "", "both");
-	strFreq += "<br>Convolution with<br>";
-	strFreq += createRadio("convol", "Stick", '', 0, 1, "", "stick");//add new function to change immediately (third param)
-	strFreq += createRadio("convol", "Gaussian", '', 0, 0, "", "gaus");
-	strFreq += createRadio("convol", "Lorentzian", '', 0, 0, "", "lor");
-	strFreq += "<br>Specrum setting <br>\n";
-	strFreq += "band width " + createText2("sigma", "15", "3", "")+ " (cm<sup>-1</sup>)<br>";
-	strFreq += "Min freq. " + createText2("nMin", "", "4", "");
-	strFreq += " Max " + createText2("nMax", "", "4", "")+ "(cm<sup>-1</sup>)<br>";
-	strFreq += createButton("simSpectra", "Simulate spectrum", "simSpectrum()",0)+ " ";
-	strFreq += createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "");
-	strFreq += "</div></div>\n";
-	strFreq += "</form></td></tr></table>";
+	var smallGraph = createDiv("plottitlefreq", ";background:green", "IR - Raman  dispersion")			
+					+ createDiv("plotareafreq", "background:blue;width:210px;height:210px;background-color:#EFEFEF","");  
+	
+	var simPanel = "Raman intensities set to 0.0 kmMol<sup>-1</sup>"
+		+ "<br>\n"
+		+ createLine('blue', '')
+		+ "Simulate spectrum<br>"
+		+ createRadio("kindspectra", "IR", '', 0, 1, "", "ir")
+		+ createRadio("kindspectra", "Raman", '', 0, 1, "", "raman")
+		+ createRadio("kindspectra", "Both", '', 0, 1, "", "both")
+		+ "<br>Convolution with<br>"
+		+ createRadio("convol", "Stick", '', 0, 1, "", "stick")
+		+ createRadio("convol", "Gaussian", '', 0, 0, "", "gaus")
+		+ createRadio("convol", "Lorentzian", '', 0, 0, "", "lor")
+		+ "<br>Specrum setting <br>\n"
+		+ "band width " + createText2("sigma", "15", "3", "") + " (cm<sup>-1</sup>)<br>"
+		+ "Min freq. " + createText2("nMin", "", "4", "")
+		+ " Max " + createText2("nMax", "", "4", "") + "(cm<sup>-1</sup>)<br>"
+		+ createButton("simSpectra", "Simulate spectrum", "simSpectrum()", 0) + " "
+		+ createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "");
+
+	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib'> This is the start of the form";
+		strFreq += "<table border=0 class='contents'><tr><td valign='top'>";
+			strFreq += "<h2>IR-Raman Frequencies</h2>\n";
+			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=15 style='width:120px; overflow: auto;'></select>";
+			strFreq += "<BR>\n";
+			strFreq += createRadio("modSpec", "Both", "onClickModSpec()", 0, 1, "",
+			"all");
+			strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "",
+			"ir");
+			strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "",
+			"raman");
+			strFreq += "<BR>\n";
+			strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onChangeListSym(value)' onkeypress='onChangeListSym()' CLASS='select' >";
+			strFreq += "</select> ";
+			strFreq += "<BR>\n";
+			strFreq += "vibration ";
+			strFreq += createRadio("vibration", "on", 'onClickFreqParams()', 0, 1, "radVibrationOn", "on");
+			strFreq += createRadio("vibration", "off", 'onClickFreqParams()', 0, 0, "radVibrationOff", "off");
+			strFreq += "<BR>\n";
+			strFreq += createSelect("vecsamplitude", "onClickFreqParams()", 0, 1,
+					vibAmplitudeValue, vibAmplitudeText,[0,1])
+					+ " vib. amplitude"; //makes drop down selection for vib. amplitude
+			strFreq += "<BR>\n";
+			strFreq += createCheck("vectors", "view vectors", "onClickFreqParams()", 0, 1, "vectors");//makes view vectors button
+			strFreq += "<BR>\n";
+			strFreq += createSelect("vecscale", "onClickFreqParams()", 0, 1, vecscaleValue, vecscaleText, [0,0,1]) + " vector scale"; //makes drop down selection for vector scale
+			strFreq += "<BR>\n";
+			strFreq += createSelect("widthvec", "onClickFreqParams()", 0, 1, vecwidthValue, vecscaleText,[0,0,0,1]) + " vector width"; //makes drop down for vector width
+			strFreq += "<BR>\n";
+			strFreq += "<table border=0 class='contents'> <tr>";
+				strFreq += "<td>vector color</td> <td><script>jmolColorPickerBox([setColorWhat,'vectors'],[255,255,255],'vectorColorPicker')</script></td>";
+				strFreq += "</tr><tr><td>" + createButton("vibVectcolor", "Default color", 'onClickFreqParams()', 0) + "</td>";
+			strFreq += "</tr></table>";					
+		strFreq += "</td>"; //end of the first column
+		strFreq += "<td valign='top'>";
+			strFreq += createDiv("graphfreqdiv", //making small graph
+				"width:200px;height:200px;background-color:#EFEFEF; margin-left:5px", smallGraph + simPanel);
+		strFreq += "</td></tr>";
+		strFreq += "<tr><td style='background:red' colspan=2>";
+		strFreq += "New graph here";
+		strFreq += "</td></tr>";
+	strFreq += "</table>This is the end of the form</form> ";
 
 	return strFreq;
 }
+
