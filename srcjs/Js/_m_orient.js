@@ -123,7 +123,7 @@ function createOrientGrp() {
 	strOrient += createButton(
 			'c',
 			'c',
-			'runJmolScriptWait("moveto 1.0 front;var axisC = {0 0 1/1};var axisZ = {0 0 1};var rotAxisCZ = cross(axisC,axisZ);var rotAngleCZ = angle(axisC, {0 0 0}, rotAxisCZ, axisZ);moveto 1.0 @rotAxisCZ @{rotAngleCZ}")',
+			'runJmolScriptWait("moveto 1.0 front;var axisC = {0 0.0001 1/1};var axisZ = {0 0 1};var rotAxisCZ = cross(axisC,axisZ);var rotAngleCZ = angle(axisC, {0 0 0}, rotAxisCZ, axisZ);moveto 1.0 @rotAxisCZ @{rotAngleCZ}")',
 	'');
 	strOrient += createLine('blue', '');
 	strOrient += "</td></tr>\n";
