@@ -644,7 +644,7 @@ function createFreqGrp() {
 		+ createButton("simSpectra", "Simulate spectrum", "simSpectrum()", 0) + " "
 		+ createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "");
 
-	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib' style='display:none'> This is the start of the form";
+	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib' style=''> This is the start of the form";
 		strFreq += "<table border=0 class='contents'><tr><td valign='top'>";
 			strFreq += "<h2>IR-Raman Frequencies</h2>\n";
 			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=15 style='width:120px; overflow: auto;'></select>";
@@ -680,7 +680,7 @@ function createFreqGrp() {
 		strFreq += "</td>"; //end of the first column
 		strFreq += "<td valign='top'>";
 			strFreq += createDiv("graphfreqdiv", //making small graph
-				"width:200px;height:200px;background-color:#EFEFEF; margin-left:5px; display:none", smallGraph + simPanel);
+				"width:200px;height:200px;background-color:#EFEFEF; margin-left:5px; ", smallGraph + simPanel);
 		strFreq += "</td></tr>";
 		strFreq += "<tr><td style='background:red' colspan=2>";
 		strFreq += "New graph here";
