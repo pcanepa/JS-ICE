@@ -638,12 +638,12 @@ function createFreqGrp() {
 		+ "&nbsp;"
 		+ "Min freq. " + createText2("nMin", "", "4", "")
 		+ " Max " + createText2("nMax", "", "4", "") + "(cm<sup>-1</sup>)"
-		+ createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "")) + "<br>"
+		+ createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "") + "<br>"
 		+ createRadio("convol", "Stick", '', 0, 1, "", "stick")
 		+ createRadio("convol", "Gaussian", '', 0, 0, "", "gaus")
 		+ createRadio("convol", "Lorentzian", '', 0, 0, "", "lor") 
 		+ "&nbsp;" + "&nbsp;" + "&nbsp;"
-		+ createButton("simSpectra", "Simulate spectrum", "simSpectrum()", 0) + " ";
+		+ createButton("simSpectra", "Simulate spectrum", "simSpectrum()", 0));
 
 	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib' style=''>";
 		strFreq += "<table border=0 class='contents'><tr><td valign='top'>";
@@ -682,7 +682,7 @@ function createFreqGrp() {
 		strFreq += "</td></tr>";
 		strFreq += "<tr><td colspan=2>";
 		strFreq += createDiv("graphfreqdiv", //making small graph
-				"width:350px;height:200px;background-color:#EFEFEF; margin-left:5px; ", smallGraph + simPanel);
+				"width:350px;height:200px;background-color:#EFEFEF;margin-left:5px;display:inline", smallGraph + simPanel);
 		strFreq += "</td></tr>";
 	strFreq += "</table></form> ";
 
