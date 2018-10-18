@@ -623,42 +623,41 @@ function createFreqGrp() {
 	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");// vector scale and width text array
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");//creates vib. amplitude text array
 
-	var smallGraph = createDiv("plottitlefreq", ";background:green", "IR - Raman  dispersion")			
+	var smallGraph = createDiv("plottitlefreq", ";background:green;display:none", "IR - Raman  dispersion")			
 					+ createDiv("plotareafreq", "background:blue;width:350px;height:180px;background-color:#EFEFEF","");  
 	
 	var simPanel = createDiv("simPanel", "", "Raman intensities set to 0.0 kmMol<sup>-1</sup>"
 		+ "<br>\n"
 		+ createLine('blue', '')
-		+ "Simulate spectrum<br>"
+		+ "<br>"
 		+ createRadio("kindspectra", "IR", '', 0, 1, "", "ir")
 		+ createRadio("kindspectra", "Raman", '', 0, 1, "", "raman")
 		+ createRadio("kindspectra", "Both", '', 0, 1, "", "both")
-		+ "<br>Convolution with<br>"
+		+"<br>"
+		+ "Band width " + createText2("sigma", "15", "3", "") + " (cm<sup>-1</sup>)" 
+		+ "&nbsp;"
+		+ "Min freq. " + createText2("nMin", "", "4", "")
+		+ " Max " + createText2("nMax", "", "4", "") + "(cm<sup>-1</sup>)"
+		+ createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "")) + "<br>"
 		+ createRadio("convol", "Stick", '', 0, 1, "", "stick")
 		+ createRadio("convol", "Gaussian", '', 0, 0, "", "gaus")
-		+ createRadio("convol", "Lorentzian", '', 0, 0, "", "lor")
-		+ "<br>Specrum setting <br>\n"
-		+ "band width " + createText2("sigma", "15", "3", "") + " (cm<sup>-1</sup>)<br>"
-		+ "Min freq. " + createText2("nMin", "", "4", "")
-		+ " Max " + createText2("nMax", "", "4", "") + "(cm<sup>-1</sup>)<br>"
-		+ createButton("simSpectra", "Simulate spectrum", "simSpectrum()", 0) + " "
-		+ createCheck("rescaleSpectra", "Re-scale", "", 0, 1, ""));
+		+ createRadio("convol", "Lorentzian", '', 0, 0, "", "lor") 
+		+ "&nbsp;" + "&nbsp;" + "&nbsp;"
+		+ createButton("simSpectra", "Simulate spectrum", "simSpectrum()", 0) + " ";
 
-	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib' style=''> This is the start of the form";
+	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib' style=''>";
 		strFreq += "<table border=0 class='contents'><tr><td valign='top'>";
 			strFreq += "<h2>IR-Raman Frequencies</h2>\n";
-			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=15 style='width:120px; overflow: auto;'></select>";
-			strFreq += "<BR>\n";
-			strFreq += createRadio("modSpec", "Both", "onClickModSpec()", 0, 1, "",
+			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=11 style='width:200px; overflow: auto;'></select>";	
+		strFreq += "</td>"; //end of the first column
+		strFreq += "<td valign='top'>";
+		strFreq += createRadio("modSpec", "Both", "onClickModSpec()", 0, 1, "",
 			"all");
 			strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "",
 			"ir");
 			strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "",
 			"raman");
 			strFreq += "<BR>\n";
-			
-		strFreq += "</td>"; //end of the first column
-		strFreq += "<td valign='top'>";
 		strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onChangeListSym(value)' onkeypress='onChangeListSym()' CLASS='select' >";
 			strFreq += "</select> ";
 			strFreq += "<BR>\n";
@@ -681,11 +680,11 @@ function createFreqGrp() {
 				strFreq += "</tr><tr><td>" + createButton("vibVectcolor", "Default color", 'onClickFreqParams()', 0) + "</td>";
 			strFreq += "</tr></table>";					
 		strFreq += "</td></tr>";
-		strFreq += "<tr><td style='background:red' colspan=2>";
+		strFreq += "<tr><td colspan=2>";
 		strFreq += createDiv("graphfreqdiv", //making small graph
 				"width:350px;height:200px;background-color:#EFEFEF; margin-left:5px; ", smallGraph + simPanel);
 		strFreq += "</td></tr>";
-	strFreq += "</table>This is the end of the form</form> ";
+	strFreq += "</table></form> ";
 
 	return strFreq;
 }
