@@ -52,6 +52,7 @@ MENU_OPTIMIZE = 8;
 MENU_SPECTRA  = 9;
 MENU_EM       =10;
 MENU_OTHER    =11;
+MENU_SYM      =12;
 
 var TAB_OVER  = 0;
 var TAB_CLICK = 1;
@@ -81,9 +82,29 @@ function defineMenu() {
 	/* 9 */ addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
 	/* 10 */ addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
 	/* 11 */ addTab("Other", "otherpropGroup", "Change background, light settings and other.");
-	/* 12   addTab("Symmetry", "symmetryGroup", "Add atoms to structure following rules of symmetry."); */
+	/* 12 */  addTab("Symmetry", "symmetryGroup", "Add atoms to structure following rules of symmetry."); 
 }
 
+function createAllMenus() {
+	var s = createFileGrp()
+		+ createShowGrp()
+		+ createEditGrp()
+		//+ createBuildGrp()
+		+ createMeasureGrp()
+		+ createOrientGrp()
+		+ createCellGrp()
+		+ createPolyGrp()
+		+ createIsoGrp()
+		+ createOptimizeGrp()
+		+ createFreqGrp()
+		+ createElecpropGrp()
+		+ createOtherGrp()
+		+ createSymmetryGrp() 
+		+ addCommandBox()
+		//+ createHistGrp()
+		;
+	return s
+}
 var showMenu = function(menu) {
 	if (thisMenu >= 0)
 		self["exit" + menuNames[menu]]();
