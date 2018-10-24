@@ -162,12 +162,13 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</td></tr></table> \n";
 	strSymmetry += "<tr><td>\n";
-	//strSymmetry += createCheck("symLock", "Lock Added Atoms to Symmetry Operation?",
-	//		0, 0, 1, 0);
+	strSymmetry += createCheck("symLock", "Lock Added Atoms to Symmetry Operation?",
+			0, 0, 1, 0);
 	strSymmetry += "</td></tr>\n";	
+	strSymmetry += "<BR>\n"; 
 	strSymmetry += "<tr><td>\n";
-	//strSymmetry += createCheck("copyOpaque", "Make atom copies opaque?",
-	//		0, 0, 1, 0);
+	strSymmetry += createCheck("copyOpaque", "Make atom copies opaque?",
+			0, 0, 1, 0);
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</form>\n";
 	return strSymmetry;

@@ -43,16 +43,16 @@ MENU_FILE     = 0;
 MENU_CELL     = 1;
 MENU_SHOW     = 2;
 MENU_EDIT     = 3;
-//MENU_BUILD    = x;
-MENU_MEASURE  = 4;
-MENU_ORIENT   = 5;
-MENU_POLY     = 6;
-MENU_SURFACE  = 7;
-MENU_OPTIMIZE = 8;
-MENU_SPECTRA  = 9;
-MENU_EM       =10;
-MENU_OTHER    =11;
-MENU_SYM      =12;
+MENU_SYM      = 4;
+//MENU_BUILD  = x;
+MENU_MEASURE  = 5;
+MENU_ORIENT   = 6;
+MENU_POLY     = 7;
+MENU_SURFACE  = 8;
+MENU_OPTIMIZE = 9;
+MENU_SPECTRA  = 10;
+MENU_EM       = 11;
+MENU_OTHER    = 12;
 
 var TAB_OVER  = 0;
 var TAB_CLICK = 1;
@@ -63,9 +63,9 @@ var tabTimeouts = [];
 var tabDelayMS = 100;
 
 var menuNames = [
-	"File", "Cell", "Show" ,"Edit" /*, "Build"*/, 
+	"File", "Cell", "Show" ,"Edit" /*, "Build"*/, "Symmetry",
 	"Measure", "Orient", "Polyhedra", "Surface", 
-	"Optimize", "Spectra", "Elec", "Other", "Symmetry" 
+	"Optimize", "Spectra", "Elec", "Other",
 	];
 
 function defineMenu() {
@@ -74,21 +74,23 @@ function defineMenu() {
 	/* 2 */ addTab("Show", "showGroup", "Change atom, bond colours, and dimensions.");
 	/* 3 */ addTab("Edit", "editGroup", "Change connectivity and remove atoms.");
 	/* x */ //addTab("Build", "builGroup", "Modify and optimize structure.");
-	/* 4 */ addTab("Measure", "measureGroup", "Measure bond distances, angles, and torsionals.");
-	/* 5 */ addTab("Orient", "orientGroup", "Change orientation and views.");
-	/* 6 */ addTab("Poly", "polyGroup", "Create polyhedra.");
-	/* 7 */ addTab("Surface", "isoGroup", "Modify and create isosurface maps.");
-	/* 8 */ addTab("Optimize", "geometryGroup", "Geometry optimizations.");
-	/* 9 */ addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
-	/* 10 */ addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
-	/* 11 */ addTab("Other", "otherpropGroup", "Change background, light settings and other.");
-	/* 12 */  addTab("Sym Build", "symmetryGroup", "Add atoms to structure following rules of symmetry."); 
+	/* 4 */ addTab("Sym Build", "symmetryGroup", "Add atoms to structure following rules of symmetry.");
+	/* 5 */ addTab("Measure", "measureGroup", "Measure bond distances, angles, and torsionals.");
+	/* 6 */ addTab("Orient", "orientGroup", "Change orientation and views.");
+	/* 7 */ addTab("Poly", "polyGroup", "Create polyhedra.");
+	/* 8 */ addTab("Surface", "isoGroup", "Modify and create isosurface maps.");
+	/* 9 */ addTab("Optimize", "geometryGroup", "Geometry optimizations.");
+	/* 10 */ addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
+	/* 11 */ addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
+	/* 12 */ addTab("Other", "otherpropGroup", "Change background, light settings and other.");
+  
 }
 
 function createAllMenus() {
 	var s = createFileGrp()
 		+ createShowGrp()
 		+ createEditGrp()
+		+ createSymmetryGrp() 
 		//+ createBuildGrp()
 		+ createMeasureGrp()
 		+ createOrientGrp()
@@ -99,7 +101,6 @@ function createAllMenus() {
 		+ createFreqGrp()
 		+ createElecpropGrp()
 		+ createOtherGrp()
-		+ createSymmetryGrp() 
 		+ addCommandBox()
 		//+ createHistGrp()
 		;
