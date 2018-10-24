@@ -170,6 +170,11 @@ function createSymmetryGrp() {
 	strSymmetry += createCheck("copyOpaque", "Make atom copies opaque?",
 			0, 0, 1, 0);
 	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n"; 
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "Add element:"
+	//strSymmetry +=  createSelect();
+	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</form>\n";
 	return strSymmetry;
 }
@@ -232,8 +237,9 @@ function getSymmetricAtomArray(symopSelected,point,iterations){
 // needs significant work such that elements that should be strings are strings and that code runs out of javascript and not just jmol script editor
 // A.S. 10.24.18 
 //
+/*
 function appendNewAtom(elementName, point) {
-	assign atom ({0}) "H" pointValue
+	assign atom ({0}) "H" pointValue;
 	bondNumber =  getProperty("modelInfo.models[1].bondCount")-1;
 	atomNumber = getProperty("modelInfo.models[1].atomCount")-1; 
 	assign bond [{bondNumber}] "0";
@@ -255,6 +261,6 @@ function appendSymmetricAtoms(elementName, point,symopNumber,symopNameArray){
 		appendNewAtom(elementName, newAtomArray[i];
 	}
 }
-
+*/
 
 
