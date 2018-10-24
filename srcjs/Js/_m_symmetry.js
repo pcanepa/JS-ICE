@@ -211,3 +211,34 @@ function displaySymmetryDrawObjects(symopNumber){
 		runJmolScriptWait("draw symop \{i}") ;
 	}
 } 
+// returns the points given after performing a symmetry operation a chosen number of times (one point per operation
+function getSymmetricAtomArray(symopSelected,point,iterations){
+	var symAtomArray = [];
+	for (i = 1; i<= iterations;i++) {
+		if (i=1){
+			var output = all.symop(symopSelected,point)
+			symAtomArray[i] =  output; 
+			}
+		else {
+			var output = all.symop(symopSelected[i-1],point)
+			symAtomArray[i] = output;
+		}	
+
+	}
+	return symAtomArray 
+
+}
+// adds new element by appending a hydrogen, deleting the bond to the hydrogen, and then changing the hydrogen to chosen element
+// needs significant work such that elements that should be strings are strings and that code runs out of javascript and not just jmol script editor
+// A.S. 10.24.18 
+//
+function appendNewAtom (elementName, point) {
+	assign atom ({0}) "H" pointValue
+	bondNumber =  getProperty("modelInfo.models[1].bondCount")-1;
+	atomNumber = getProperty("modelInfo.models[1].atomCount")-1; 
+	assign bond [{bondNumber}] "0";
+	{atomNumber}.element = elementName;
+} 
+
+
+
