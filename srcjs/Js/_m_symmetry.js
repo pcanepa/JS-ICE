@@ -232,13 +232,29 @@ function getSymmetricAtomArray(symopSelected,point,iterations){
 // needs significant work such that elements that should be strings are strings and that code runs out of javascript and not just jmol script editor
 // A.S. 10.24.18 
 //
-function appendNewAtom (elementName, point) {
+function appendNewAtom(elementName, point) {
 	assign atom ({0}) "H" pointValue
 	bondNumber =  getProperty("modelInfo.models[1].bondCount")-1;
 	atomNumber = getProperty("modelInfo.models[1].atomCount")-1; 
 	assign bond [{bondNumber}] "0";
 	{atomNumber}.element = elementName;
 } 
+// takes a given point and add the elements provided to it by a symmetry operation
+// symmetry operations with multiple outputs (e.g. C3) will produce multiple symmetry atoms 
+function appendSymmetricAtoms(elementName, point,symopNumber,symopNameArray){
+	symopName = symopNameArray[symopNumber];
+	iterations = 1 
+	if (symopName.includes("C") {
+		indexOfC = symopName.indexOf("C");
+		iterationString = symopName.substring(indexOfC,indexOfC+1) ;
+		iterations = parseInt(iterationString)	
+	}
+	newAtomArray = getSymmetricAtomArray(symopNumber,point,iterations) ;
+	numberOfNewAtoms = newAtomArray.length(); 
+	for (i = 1; i <= numberOfNewAtoms; i++){
+		appendNewAtom(elementName, newAtomArray[i];
+	}
+}
 
 
 
