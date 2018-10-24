@@ -153,7 +153,6 @@ cellOperation = function(){
 }
 
 function createSymmetryGrp() {
-
 	var strSymmetry = "<form autocomplete='nope'  id='symmetryGroup' name='symmetryGroup' style='display:none'>\n";
 	strSymmetry += "<table class='contents'>\n";
 	strSymmetry += "<tr><td>\n";
@@ -161,8 +160,16 @@ function createSymmetryGrp() {
 	strSymmetry += "<div id='syminfo'></div>";
 	strSymmetry += createLine('blue', '');
 	strSymmetry += "</td></tr>\n";
-	strSymmetry += "</table>\n";
-	strSymmetry += "</FORM>\n";
+	strSymmetry += "</td></tr></table> \n";
+	strSymmetry += "<tr><td>\n";
+	//strSymmetry += createCheck("symLock", "Lock Added Atoms to Symmetry Operation?",
+	//		0, 0, 1, 0);
+	strSymmetry += "</td></tr>\n";	
+	strSymmetry += "<tr><td>\n";
+	//strSymmetry += createCheck("copyOpaque", "Make atom copies opaque?",
+	//		0, 0, 1, 0);
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "</form>\n";
 	return strSymmetry;
 }
 // gets and returns the symmetry operation names (e.g. "identity") 
