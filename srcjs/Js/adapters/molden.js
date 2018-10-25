@@ -24,28 +24,24 @@
 
 var counterFreq = 0;
 
-moldenDone = function(msg) {
-	var counterMD = 0;
-	counterFreq = 0;
-	for (i = 0; i < Info.length; i++) {
+loadDone_molden = function(msg) {
+
+	_fileData.energyUnits = ENERGY_EV;
+	_fileData.StrUnitEnergy = "e";
+	
+	for (var i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
 			var line = Info[i].name;
 			if (line.search(/cm/i) != -1) {
-				freqData[i] = line;
-				counterMD++;
+				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
+				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqData.push(line);
+				_fileData.vibLine.push(i + " A " + data + " cm^-1");
+				_fileData.counterMD++;
 			}
 		}
 	}
 
-	if (freqData != null) {
-		var vib = getbyID('vib');
-		for (i = 1; i < freqData.length; i++) {
-			var data = parseFloat(freqData[i].substring(0, freqData[i]
-					.indexOf("c") - 1));
-			addOption(vib, i + " A " + data + " cm^-1", i
-					+ counterFreq + 1);
-		}
-	}
 	disableFreqOpts();
 	getSymInfo();
 	loadDone();

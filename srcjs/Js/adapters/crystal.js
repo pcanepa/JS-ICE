@@ -187,50 +187,49 @@ function savCRYSTALSpace() {
 /////////////////////////
 ///////////////////////// LOAD & ON LOAD functions
 
-function setGeomAndFreqData() {
-	counterFreq = 0;
+loadDone_crystal = function() {
+	_fileData.energyUnits = ENERGY_HARTREE;
+	_fileData.StrUnitEnergy = "H";
 	var vib = getbyID('vib');
-	for (i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
+	for (var i = 0; i < Info.length; i++) {
+		var line = Info[i].name;
+		if (line != null) {
 			if (line.search(/Energy/i) != -1) { // Energy
-				if (i > 0 && i < Info.length)
-					var previous = substringEnergyToFloat(Info[i - 1].name);
-				if (Info[i].name != null) {
-					addOption(getbyID('geom'), i + " " + Info[i].name, i + 1);
-					geomData[i] = Info[i].name;
-					counterFreq++;
-				}
+//				if (i > 0 && i < Info.length)
+//					var previous = substringEnergyToFloat(Info[i - 1].name);
+//				if (Info[i].name != null) {
+				addOption(getbyID('geom'), i + " " + line, i + 1);
+				_fileData.geomData[i] = line;
+				_fileData.counterFreq++;
+//				}
 			} else if (line.search(/cm/i) != -1) {
-				addOption(vib, (i + counterFreq +1) + " " + Info[i].name, i + 1);
-				if (line.search(/LO/) == -1)
-					freqData[i - counterFreq] = Info[i].name;
+				if (line.search(/LO/) == -1) {
+					_fileData.freqInfo.push(Info[i]);
+					_fileData.vibLine.push((i - _fileData.counterFreq) + " " + line); 
+					_fileData.freqData.push(line);
+				}
 			}
 	
 		}
 	} 
-}
-
-crystalDone = function() {
 	getUnitcell("1");
 	runJmolScriptWait("echo");
-	setGeomAndFreqData();
 	setTitleEcho();
 	loadDone();
 }
 
-// this method was called when the Geometry Optimize and Spectra tabs
-// were clicked via a complex sequence of callbacks
-// but that is not done now, because all this should be done from a loadStructCallback.
-function reloadFastModels() {
-	setDefaultJmolSettings();
-	if (flagCryVasp) {
-		getUnitcell("1");
-		runJmolScriptWait("echo");
-		setTitleEcho();
-		setGeomAndFreqData();
-		enableFreqOpts();
-		//getSymInfo();
-	}
-}
+//// this method was called when the Geometry Optimize and Spectra tabs
+//// were clicked via a complex sequence of callbacks
+//// but that is not done now, because all this should be done from a loadStructCallback.
+//function reloadFastModels() {
+//	setDefaultJmolSettings();
+//	if (flagCryVasp) {
+//		getUnitcell("1");
+//		runJmolScriptWait("echo");
+//		setTitleEcho();
+//		setGeomAndFreqData();
+//		enableFreqOpts();
+//		//getSymInfo();
+//	}
+//}
 

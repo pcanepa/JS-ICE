@@ -16,11 +16,8 @@ function myMeasuramentCallback(app, msg, type, state, value) {
 }
 
 myLoadStructCallback = function(applet,filePath,c,d) {
-	if (!filePath)
-		return;
-	// run xxxDone() if it exists, otherwise just loadDone()
-	var type = jmolEvaluate("_fileType").toLowerCase();
-	postLoad(type, filePath);
+	if (filePath)
+		file_loadedCallback(filePath);
 }
 
 myErrorCallback = function(applet, b, msg, d) {

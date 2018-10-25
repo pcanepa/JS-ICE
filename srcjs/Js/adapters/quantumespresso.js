@@ -336,34 +336,24 @@ function symmetryQuantum() {
 
 ///// QUANTUM ESPRESSO READER
 
-espressoDone = function() {
-	var counterFreq = 0;
-	getUnitcell("1");
-	setFrameValues("1");
-	var counterMD = 0;
+loadDone_espresso = function() {
+	
+	_fileData.energyUnits = ENERGY_RYDBERG;
+	_fileData.StrUnitEnergy = "R";
+	_fileData.hasInputModel = true;
 
-	flagQuantumEspresso = true;
-	flagOutcar = false;
-
-	for (i = 0; i < Info.length; i++) {
+	for (var i = 0; i < Info.length; i++) {
 		var line = Info[i].name;
 
 		if (i == 0) {
-			line = "Initial";
-			addOption(getbyID('geom'), i + " " + line, i + 1);
-			geomData[0] = Info[0].name;
+			_fileData.geomData[0] = line;
+			addOption(getbyID('geom'), "0 initial", 1);
 		}
-
-		// alert(line)
 		if (line != null) {
-
-			// alert(line)
 			if (line.search(/E =/i) != -1) {
-				// alert("geometry")
 				addOption(getbyID('geom'), i + 1 + " " + line, i + 1);
-				geomData[i + 1] = Info[i].name;
-
-				counterFreq++;
+				_fileData.geomData[i + 1] = line;
+				_fileData.counterFreq++;
 			} /*
 			 * else if (line.search(/cm/i) != -1) { // alert("vibration")
 			 * freqData[i - counterFreq] = Info[i].name; counterMD++; } else
@@ -373,24 +363,15 @@ espressoDone = function() {
 		}
 	}
 	/*
-	 * if (freqData != null) { for (i = 1; i < freqData.length; i++) { if
+	 * if (freqData != null) { for (var i = 1; i < freqData.length; i++) { if
 	 * (freqData[i] != null) var data =
 	 * parseFloat(freqData[i].substring(0,freqData[i].indexOf("c") - 1));
 	 * addOption(getbyID('vib'), i + " A " + data + " cm^-1", i + counterFreq +
 	 * 1 ); } }
 	 */
+	getUnitcell("1");
+	setFrameValues("1");
 	getSymInfo();
 	loadDone();
 }
 
-function substringEnergyQuantumToFloat(value) {
-	if (value != null) {
-		var grab = parseFloat(
-				value.substring(value.indexOf('=') + 1, value.indexOf('R') - 1))
-				.toPrecision(8); // E = 100000.0000 Ry
-		grab = grab * 96.485 * 0.5; // constant from
-		// http://web.utk.edu/~rcompton/constants
-		grab = Math.round(grab * 100000000) / 100000000;
-	}
-	return grab;
-}

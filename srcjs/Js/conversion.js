@@ -40,6 +40,56 @@ function substringEnergyToFloat(value) {
 	return grab;
 }
 
+function substringEnergyGulpToFloat(value) {
+	if (value != null) {
+		var grab = parseFloat(
+				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
+				.toPrecision(8); // E = 100000.0000 eV
+		grab = grab * 96.48;
+		// http://web.utk.edu/~rcompton/constants
+		grab = Math.round(grab * 100000000) / 100000000;
+	}
+	return grab;
+}
+
+function substringEnergyVaspToFloat(value) {
+	if (value != null) {
+		var grab = parseFloat(
+				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
+				.toPrecision(8); // Enthaply = -26.45132096 eV
+		grab = grab * 96.485; // constant from
+		// http://web.utk.edu/~rcompton/constants
+		grab = Math.round(grab * 100000000) / 100000000;
+	}
+	return grab;
+}
+
+
+function substringEnergyCastepToFloat(value) {
+	if (value != null) {
+		var grab = parseFloat(
+				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
+				.toPrecision(8); // Enthaply = -26.45132096 eV
+		grab = grab * 96.485; // constant from
+		// http://web.utk.edu/~rcompton/constants
+		grab = Math.round(grab * 100000000) / 100000000;
+		//alert(grab)
+	}
+	return grab;
+}
+
+function substringEnergyQuantumToFloat(value) {
+	if (value != null) {
+		var grab = parseFloat(
+				value.substring(value.indexOf('=') + 1, value.indexOf('R') - 1))
+				.toPrecision(8); // E = 100000.0000 Ry
+		grab = grab * 96.485 * 0.5; // constant from
+		// http://web.utk.edu/~rcompton/constants
+		grab = Math.round(grab * 100000000) / 100000000;
+	}
+	return grab;
+}
+
 function substringFreqToFloat(value) {
 	if (value != null) {
 		var grab = parseFloat(value.substring(0, value.indexOf('c') - 1));
@@ -112,77 +162,180 @@ function convertPlot(value) {
 	// ////var vecUnitEnergyVal = new Array ("h", "e", "r", "kj", "kc");
 	setconversionParam();
 	switch (unitEnergy) {
-
 	case "h": // Hartree
 		finalGeomUnit = " Hartree";
-		if (flagQuantumEspresso) {
+		switch (_fileData.energyUnits) {
+		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtohartree);
-		} else if (!flagCrystal || flagOutcar || flagGulp) {
+			break;
+		case ENERGY_EV:
 			convertGeomData(fromevToHartree);
-		} else if (flagCrystal || flagDmol) {
+			break;
+		case ENERGY_HARTREE:
 			convertGeomData(fromHartreetoHartree);
+			break;
 		}
 		break;
 	case "e": // eV
 		finalGeomUnit = " eV";
-		if (flagCrystal || flagDmol) {
+		switch (_fileData.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtoEV);
+			break;
+		case ENERGY_EV:
+			convertGeomData(fromevToev);
+			break;
+		case ENERGY_HARTREE:
 			convertGeomData(fromHartreetoEv);
-		} else if (flagQuantumEspresso) {
-			convertGeomData(fromRydbergtoEv);
-		} else if (!flagCrystal || flagOutcar || flagGulp) {
-			convertGeomData(fromevtoev);
+			break;
 		}
-
 		break;
 
 	case "r": // Rydberg
 		finalGeomUnit = " Ry";
-		if (flagCrystal || flagDmol) {
-			convertGeomData(fromHartreetoRydberg);
-		} else if (!flagCrystal || flagOutcar || flagGulp) {
+		switch (_fileData.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtorydberg);
+			break;
+		case ENERGY_EV:
 			convertGeomData(fromevTorydberg);
-		} else if (flagQuantumEspresso) {
-			convertGeomData(fromRydbergTorydberg);
+			break;
+		case ENERGY_HARTREE:
+			convertGeomData(fromHartreetoRydberg);
+			break;
 		}
 		break;
 
 	case "kj": // Kj/mol
 		finalGeomUnit = " kJ/mol"
-
-			if (flagCrystal || flagDmol) {
-				convertGeomData(fromHartreetokJ);
-			} else if (!flagCrystal || flagOutcar || flagGulp) {
+			switch (_fileData.energyUnits) {
+			case ENERGY_RYDBERG:
+				convertGeomData(fromRydbergtoKj);
+				break;
+			case ENERGY_EV:
 				convertGeomData(fromevTokJ);
-			} else if (flagQuantumEspresso) {
-				convertGeomData(fromRydbergToKj);
+				break;
+			case ENERGY_HARTREE:
+				convertGeomData(fromHartreetoKj);
+				break;
 			}
 		break;
 
 	case "kc": // Kcal*mol
-		finalGeomUnit = " kcal/mol"
-			
-			if (flagCrystal || flagDmol) {
-				convertGeomData(fromHartreetokcalmol);
-			} else if (!flagCrystal || flagOutcar || flagGulp) {
-				convertGeomData(fromevtokcalmol);
-			} else if (flagQuantumEspresso) {
-				convertGeomData(fromRytokcalmol);
-			}
+		finalGeomUnit = " kcal/mol"			
+		switch (_fileData.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtokcalmol);
+			break;
+		case ENERGY_EV:
+			convertGeomData(fromevTokcalmol);
+			break;
+		case ENERGY_HARTREE:
+			convertGeomData(fromHartreetokcalmol);
+			break;
+		}
 		break;
 	}
 }
 
 function setconversionParam() {
-	if (flagCrystal || flagDmol) {
-		unitGeomEnergy = "H"; // Hartree
-	} else if ((!flagCrystal && !flagQuantumEspresso) || (flagOutcar && !flagQuantumEspresso)) {
-		unitGeomEnergy = "e"; // VASP
-	} else if (flagGulp) {
-		unitGeomEnergy = "k";
-	} else if (flagQuantumEspresso || !flagOutcar) {
+	unitGeomEnergy = _fileData.unitGeomEnergy;
+	switch (_fileData.energyUnits) {
+	case ENERGY_RYDBERG:
 		unitGeomEnergy = "R";
+		break;
+	case ENERGY_EV:
+		unitGeomEnergy = "e";
+		break;
+	case ENERGY_HARTREE:
+		unitGeomEnergy = "H";
+		break;
+// TODO: why 'k'
+//	case ENERGY_KJ_PER_MOLE:
+//		unitGeomEnergy = "k";
 	}
 }
+
+
+//function convertPlot(value) {
+//	var unitEnergy = value;
+//
+//	// ////var vecUnitEnergyVal = new Array ("h", "e", "r", "kj", "kc");
+//	setconversionParam();
+//	switch (unitEnergy) {
+//
+//	case "h": // Hartree
+//		finalGeomUnit = " Hartree";
+//		if (flagQuantumEspresso) {
+//			convertGeomData(fromRydbergtohartree);
+//		} else if (!flagCrystal || flagOutcar || flagGulp) {
+//			convertGeomData(fromevToHartree);
+//		} else if (flagCrystal || flagDmol) {
+//			convertGeomData(fromHartreetoHartree);
+//		}
+//		break;
+//	case "e": // eV
+//		finalGeomUnit = " eV";
+//		if (flagCrystal || flagDmol) {
+//			convertGeomData(fromHartreetoEv);
+//		} else if (flagQuantumEspresso) {
+//			convertGeomData(fromRydbergtoEv);
+//		} else if (!flagCrystal || flagOutcar || flagGulp) {
+//			convertGeomData(fromevtoev);
+//		}
+//
+//		break;
+//
+//	case "r": // Rydberg
+//		finalGeomUnit = " Ry";
+//		if (flagCrystal || flagDmol) {
+//			convertGeomData(fromHartreetoRydberg);
+//		} else if (!flagCrystal || flagOutcar || flagGulp) {
+//			convertGeomData(fromevTorydberg);
+//		} else if (flagQuantumEspresso) {
+//			convertGeomData(fromRydbergTorydberg);
+//		}
+//		break;
+//
+//	case "kj": // Kj/mol
+//		finalGeomUnit = " kJ/mol"
+//
+//			if (flagCrystal || flagDmol) {
+//				convertGeomData(fromHartreetokJ);
+//			} else if (!flagCrystal || flagOutcar || flagGulp) {
+//				convertGeomData(fromevTokJ);
+//			} else if (flagQuantumEspresso) {
+//				convertGeomData(fromRydbergToKj);
+//			}
+//		break;
+//
+//	case "kc": // Kcal*mol
+//		finalGeomUnit = " kcal/mol"
+//			
+//			if (flagCrystal || flagDmol) {
+//				convertGeomData(fromHartreetokcalmol);
+//			} else if (!flagCrystal || flagOutcar || flagGulp) {
+//				convertGeomData(fromevtokcalmol);
+//			} else if (flagQuantumEspresso) {
+//				convertGeomData(fromRytokcalmol);
+//			}
+//		break;
+//	}
+//}
+//
+//function setconversionParam() {
+//	if (flagCrystal || flagDmol) {
+//		unitGeomEnergy = "H"; // Hartree
+//	} else if ((!flagCrystal && !flagQuantumEspresso) || (flagOutcar && !flagQuantumEspresso)) {
+//		unitGeomEnergy = "e"; // VASP
+//	} else if (flagGulp) {
+//		unitGeomEnergy = "k";
+//	} else if (flagQuantumEspresso || !flagOutcar) {
+//		unitGeomEnergy = "R";
+//	}
+//}
+
+
 
 function convertGeomData(f) {
 	// The required value is the end of the string Energy = -123.456 Hartree.
@@ -190,16 +343,14 @@ function convertGeomData(f) {
 	if (geom != null)
 		cleanList('geom');
 
-	var arraynewUnit = [];
+	var val = 0;
 
-	var n = 0;
-	if (flagQuantumEspresso)
-		n = 1;
+	var n = (_fileData.hasInputModel ? 1 : 0);
 	for (var i = n; i < geomData.length; i++) {
-		var data = geomData[i];
-		arraynewUnit[i] = f(data.substring(data.indexOf('=') + 1, 
+		var data = _fileInfo.geomData[i];
+		val = f(data.substring(data.indexOf('=') + 1, 
 				data.indexOf(unitGeomEnergy) - 1));
-		addOption(geom, i + " E = " + arraynewUnit[i] + finalGeomUnit, i + 1);
+		addOption(geom, i + " E = " + val + finalGeomUnit, i + 1);
 	}
 
 }

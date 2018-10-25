@@ -42,7 +42,6 @@ addCommandBox = function() {
 function cleanLists() {
 	// was "removeAll()"
 	cleanList('geom');
-	cleanList('vib');
 	cleanList('colourbyElementList');
 	// cleanList('colourbyAtomList');
 	cleanList('polybyElementList');
