@@ -104,78 +104,30 @@ function prepareCoordinateblockCastep() {
 
 // /// FUNCTION LOAD
 
-castepDone = function() {
-	var counterFreq = 0;
-	var counterMD = 0;
-	//cleanAndReloadForm();
-	getUnitcell("1");
-	setFrameValues("1");
-
-	for (i = 0; i < Info.length; i++) {
+loadDone_castep = function() {
+	_fileData.energyUnits = ENERGY_EV;
+	_fileData.counterFreq = 0;
+	_fileData.counterMD = 0;
+	for (var i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
 			var line = Info[i].name;
-			// alert(line)
 			if (line.search(/Energy =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				geomData[i] = line;
-				counterFreq++;
+				_fileData.geomData[i] = line;
+				_fileData.counterFreq++;
 			} else if (line.search(/cm-1/i) != -1) {
-				freqData[i - counterFreq] = line;
-				counterMD++;
+				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
+				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqData.push(line);
+				_fileData.vibLine.push(i + " A " + data + " cm^-1");
+				_fileData.counterMD++;
 			}
 		}
 	}
-
-	if (freqData != null) {
-		var vib = getbyID('vib');
-		for (i = 1; i < freqData.length; i++) {
-			if (freqData[i] != null)
-				var data = parseFloat(freqData[i].substring(0, freqData[i]
-						.indexOf("c") - 1));
-			addOption(vib, i + " A " + data + " cm^-1", i
-					+ counterFreq + 1);
-		}
-	}
+	getUnitcell("1");
+	setFrameValues("1");
 	disableFreqOpts();
 	getSymInfo();
 	loadDone();
 }
 
-// ///////LOAD FUNCTIONS
-
-function disableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = true;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = true;
-
-	// getbyID("modAct").enable = false;
-	// makeDisable("modAct");
-	// makeDisable("vibSym");
-	// makeDisable("reload");
-}
-
-function enableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = false;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = false;
-
-}
-
-// /// COVERT FUNCTION
-
-function substringEnergyCastepToFloat(value) {
-	if (value != null) {
-		var grab = parseFloat(
-				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
-				.toPrecision(8); // Enthaply = -26.45132096 eV
-		grab = grab * 96.485; // constant from
-		// http://web.utk.edu/~rcompton/constants
-		grab = Math.round(grab * 100000000) / 100000000;
-		//alert(grab)
-	}
-	return grab;
-}
-
-/////END FUNCTIONS

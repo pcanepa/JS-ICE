@@ -5,13 +5,19 @@ function enterFile() {
 function exitFile() {
 }
 
+file_method = function(methodName, defaultMethod, params) {
+	// Execute a method specific to a given file type, for example:
+	// loadDone_crystal
+	params || (params = []);
+	methodName += "_" + _fileData.fileType;
+	var f = self[methodName] || defaultmethod;
+	return (f && f.apply(null, params));
+}
 
-// was "flagCif"
-// used only in crystal, gulp, and quantumespresso 
-// in symmetry.js#figureOutSpaceGroup() 
-// to set the frame to the first frame
+var _fileData = {};
 
 var _fileIsReload = false;
+
 
 var flagCif = false; 
 var flagCrystal = false; 
@@ -25,9 +31,6 @@ var flagDmol = false;
 var flagMolden = false;
 var flagCastep = false;
 
-var freqData = [];
-var geomData = [];
-var counterFreq = 0;
 
 reload = function(packing, filter, more) {	
 	// no ZAP here
@@ -54,7 +57,6 @@ loadFile = function(fileName, packing, filter, more) {
 	// ZAP will clear the Jmol file cache
 	runJmolScript("load '" + fileName + "' " + packing + filter + ";" + more);
 }
-
 
 function setDefaultJmolSettings() {
 	runJmolScriptWait('select all; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
@@ -126,29 +128,34 @@ function onChangeLoad(load) {
 	document.fileGroup.reset();
 }
 
-function postLoad(type, filePath) {
-	freqData = [];
-	geomData = [];
+function file_loadedCallback(filePath) {
+	_specData = null;
+	_fileData = {
+			fileType    : jmolEvaluate("_fileType").toLowerCase(), 
+			energyUnits : ENERGY_EV,
+			strUnitEnergy : "e",
+			hasInputModel : false,
+			haveSpecData : false,
+			geomData    : [],
+			freqInfo 	: [],
+			freqData	: [],
+			vibLine		: [],
+			counterFreq : 0,
+			counterMD 	: 0
+	};
 	resetGraphs();
 	counterFreq = 0;
-	InfoFreq = null;
 	extractAuxiliaryJmol();
-	setFlags(type);
+	setFlags(_fileData.fileType);
 	setFileName();
 	getUnitcell(1);
 	runJmolScriptWait('unitcell on');
 	cleanAndReloadForm();
 	setFileName();
-	if (!_fileIsReload) {
+	if (!_fileIsReload)
 		grpDisp(0);
-	}
 	_fileIsReload = false;
-	// specialized finalization based on file type
-	// all such methods must call load
-	if (window[type+"Done"])
-		window[type+"Done"]();
-	else
-		loadDone();
+	file_method("loadDone", loadDone);
 }
 
 loadDone = function() {
@@ -276,7 +283,6 @@ setFlags = function(type) {
 		flagCastep = true;
 		break;
 	}
-	symmetryModeAdd_type = self["symmetryModeAdd_" + type];
 }
 
 var sampleOptionArr = ["Load a Sample File", 

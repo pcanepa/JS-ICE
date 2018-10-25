@@ -359,6 +359,15 @@ function resetValue(form) {
 	return element;
 }
 
+function getRadioSetValue(radios) {
+	// BH -- switched to top radios -- for frequency list as well as spectrum
+	for (var i = 0; i < radios.length; i++) {
+		if (radios[i].checked) {
+			return radios[i].value;
+		}
+	}
+}
+
 function makeDisable(element) {
 	// BH 2018
 	var d = getbyID(element);
@@ -449,21 +458,6 @@ function getbyName(na) {
 	return document.getElementsByName(na);
 }
 
-function unique(a) {
-	//this function removes duplicates
-	var r = [];
-	var list = "";
-	for (var i = 0, n = a.length; i < n; i++) {
-		var item = a[i];
-		var key = ";" + item + ";";
-		if (list.indexOf(key) >= 0)
-			continue;
-		list += key;
-		r.push(item);
-	}
-	return r;
-}
-
 //This is meant to add new element to a list
 function addOption(selectbox, text, value) {
 	var optn = document.createElement("OPTION");
@@ -478,9 +472,6 @@ function cleanList(listname) {
 		for (var i = d.options.length; --i >= 0;)
 			d.remove(i);
 }
-
-
-
 
 function selectListItem(list, itemToSelect) {
 	// Loop through all the items

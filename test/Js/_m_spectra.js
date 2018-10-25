@@ -1,6 +1,5 @@
-/*  J-ICE library 
-
-    based on:
+/*
+ *   based on:
  *
  *  Copyright (C) 2010-2014 Pieremanuele Canepa http://j-ice.sourceforge.net/
  *
@@ -24,12 +23,24 @@
 
 //This simulates the IR - Raman spectrum given an input 
 
+
+var _specData;
+
 function enterSpectra() {
-	if (!InfoFreq) {
-		getInfoFreq();
-		freqCount = (flagOutcar? freqData.length - 1 : flagGaussian ? freqGauss.length - 1 : InfoFreq.length);
-		setMaxMinPlot();
-		onClickModSpec();
+
+// from vaspoutcar
+//	if (fileData.vibLine) {
+//		var vib = getbyID('vib');
+//		for (var i = 1; i < _fileData.fileData.vibLine.length; i++) {
+//			 addOption(vib, _fileData.vibLine[i], i + 1);
+//		}
+//	}
+	
+	if (!_fileData.haveSpecData) {
+		_specData = null;
+		_fileData.haveSpecData = true;
+		symmetryModeAdd();	
+		onClickModSpec(true);
 	}
 }
 
@@ -37,19 +48,35 @@ function exitSpectra() {
 	runJmolScriptWait('vibration off; vectors off');
 }
 
-var intTot = [];
-var irFreq = [];
-var RamanFreq = [];
-var intTotNewboth = [];
-var newRamanInt = [];
-var newInt = [];
-var summedInt = [];
-var sortInt = [];
+function doSpectraNewWindow() {
+	// this opens the window that contains the spectrum
+	//var win = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=800,height=600,left=50";
+	var newwin = open("spectrum.html");
+}
 
-var irData, ramanData, unknownData;
+//This resets the frequency state
+function resetFreq() {
+	checkBox("radVibrationOff");
+	uncheckBox("vectors");
+}
 
-var freqCount;
 
+/////////LOAD FUNCTIONS
+
+function disableFreqOpts() {
+	for (var i = 0; i < document.modelsVib.modAct.length; i++)
+		document.modelsVib.modAct[i].disabled = true;
+	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
+		document.modelsVib.kindspectra[i].disabled = true;
+}
+
+function enableFreqOpts() {
+	for (var i = 0; i < document.modelsVib.modAct.length; i++)
+		document.modelsVib.modAct[i].disabled = false;
+	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
+		document.modelsVib.kindspectra[i].disabled = false;
+
+}
 
 function onClickSelectVib(value) {
 	showFrame(value);	
@@ -57,436 +84,425 @@ function onClickSelectVib(value) {
 }
 
 
-function onClickModSpec() {
-	// all, ir, or raman radio buttons
-	if (!InfoFreq[2] || !InfoFreq[2].modelProperties.Frequency) {
-		//errorMsg("No vibrations available")
+function onClickModSpec(isPageOpen) {
+	if (_fileData.freqData.length == 0) {
 		return;
 	}
+	simSpectrum(isPageOpen);
+}
 
-	cleanLists();
+function simSpectrum(isPageOpen) {
+	cleanList('vib');
 	resetFreq();
-	symmetryModeAdd();
-	var rad_val;
-	for (var i = 0; i < document.modelsVib.modSpec.length; i++) {
-		if (document.modelsVib.modSpec[i].checked) {
-			rad_val = document.modelsVib.modSpec[i].value;
-			break;
-		}
-	}	
-	var vib = getbyID('vib');	
-	//MP 09/19/18 Changed i+1 to InfoFreq[i].modelNumber		
-	switch (rad_val) {
-	case "all":
-		for (var i = 0; i < InfoFreq.length; i++) {
-			if (InfoFreq[i].modelProperties.Frequency != null) {
-				addOption(vib, i + " " + InfoFreq[i].name, InfoFreq[i].modelNumber);
-			}
-		}
-		break;	
+	var typeIRorRaman = getRadioSetValue(document.modelsVib.modSpec);
+	var typeConvolve = getRadioSetValue(document.modelsVib.convol);
+	var irrep = getValueSel('sym');		
+	var specData = _specData = {
+			typeIRorRaman : typeIRorRaman, 
+			typeConvolve  : typeConvolve, 
+			irrep     : irrep,
+			sigma     : getValue('sigma'), 
+			rescale   : isChecked('rescaleSpectra'),
+			freqCount : _fileData.freqInfo.length,
+			freqInfo  : [],
+			irInt     : [],
+			irFreq    : [],
+			ramanInt  : [],
+			ramanFreq : [],
+			sortInt   : [],
+			specIR    : [],
+			specRaman : []
+	};
+	setFrequencyList(specData);
+	switch (typeIRorRaman) {
 	case "ir":
-		for (var i = 0; i < InfoFreq.length; i++) {
-			if (InfoFreq[i].modelProperties.Frequency != null) {
-				if (InfoFreq[i].modelProperties.IRactivity == "A") {
-					addOption(vib, i + " " + InfoFreq[i].name, InfoFreq[i].modelNumber);
-				}
-			}
-		}
-		break;	
+		extractIRData(specData);
+		break;
 	case "raman":
-		for (var i = 0; i < InfoFreq.length; i++) {
-			if (InfoFreq[i].modelProperties.Frequency != null) {
-				if (InfoFreq[i].modelProperties.Ramanactivity == "A") {
-					addOption(vib, i + " " + InfoFreq[i].name, InfoFreq[i].modelNumber);
-				}
-			}
-		}
+		extractRamanData(specData);
+		break;
+	default:
+		extractIRData(specData);
+		extractRamanData(specData);
 		break;
 	}
-	plotFrequencies(true);
-}
+	if (isPageOpen)
+		setMaxMinPlot(specData);
+	specData.minX = getValue("nMin");
+	specData.maxX = getValue("nMax");
 
-function getKindSpectrum() {
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++) {
-		if (document.modelsVib.kindspectra[i].checked)
-			return document.modelsVib.kindspectra[i].value;
-	}
-}
+	var create = (typeConvolve == "stick" ? createStickSpectrum : createCoolSpectrum);
 
-function getConvolve() {
-	for (var i = 0; i < document.modelsVib.convol.length; i++) {
-		if (document.modelsVib.convol[i].checked)
-			return document.modelsVib.convol[i].value;
-	}	
-}
-
-function simSpectrum() {
-	var win = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=800,height=600,left=50";
-	var irInt = [];
-	var RamanInt = [];
-	var freqTot = [];
-	var convoluzione = getConvolve();
-	var radvalue = getKindSpectrum();
-	var drawGaussian = true;
-	var sigma = getValue("sigma");
-	intTot = [];
-	var sortInt = [];
-	var rescale = isChecked("rescaleSpectra");
-	switch (convoluzione) {
-	case "stick":
-		switch (radvalue) {
-		case "ir": // IR + Raman
-			irInt = extractFreqData(freqCount, null, null, sortInt);
-			var maxInt = maxValue(sortInt);
-			var max0 = (maxInt == 0);
-			if (max0) {
-				maxInt = 200;
-				rescale = true;
-			}
-			for (var i = 0; i < 4000; i++) {
-				if (intTot[i] == null)
-					intTot[i] = 0.000;
-				else {
-					if (max0 && intTot[i] == 0)
-						intTot[i] = maxInt / 2; 
-					if (rescale) {
-						if (intTot[i] != 0.00)
-							intTot[i] = (intTot[i] / maxInt) * 100.00;
-					}
-				}
-			}
-			break;
-		case "raman":// Raman
-			RamanInt = extractRamanData(freqCount);
-			for (var i = 0; i < 4000; i++) {
-				for (var k = 0; k < freqCount - 1; k++) {
-					if (RamanFreq[k] == i)
-						intTot[i] = 100;
-				}
-				if (intTot[i] == null)
-					intTot[i] = 0;
-			}
-			break;
-		case "both":
-			irInt = extractFreqData(freqCount, null, null, sortInt);
-			if (flagCrystal) {
-				RamanInt = extractRamanData(freqCount);
-				var maxInt = maxValue(sortInt);
-				var max0 = (maxInt == 0);
-				if (max0) {
-					maxInt = 200;
-					rescale = true;
-				}
-				for (var i = 0; i < 4000; i++) {
-
-					if (newRamanInt[i] == null)
-						newRamanInt[i] = 0;
-
-					if (intTot[i] == null)
-						intTot[i] = 0.000;
-					else {
-						if (max0 && intTot[i] == 0)
-							intTot[i] = maxInt / 2; 
-						if (rescale) {
-							if (intTot[i] != 0.00)
-								intTot[i] = (intTot[i] / maxInt) * 100.00;
-						}						
-					}
-					intTot[i] = newRamanInt[i] + intTot[i];
-				}
-
-			} else if (flagOutcar) {
-				var maxInt = 100.00;
-				for (var i = 0; i < 4000; i++) {
-					newInt[i] = 100.00;
-					if (intTot[i] == null)
-						intTot[i] = 0.000;
-
-					if (rescale) {
-						if (intTot[i] != 0.00)
-							intTot[i] = (intTot[i] / maxInt) * 100.00;
-					}
-
-					intTot[i] = intTot[i];
-
-				}
-
-			} else if (flagDmol) {
-				var maxInt = 100.00;
-				for (var i = 0; i < 4000; i++) {
-					newInt[i] = 100.00;
-					if (intTot[i] == null)
-						intTot[i] = 0.000;
-
-					if (rescale) {
-						if (intTot[i] != 0.00)
-							intTot[i] = (intTot[i] / maxInt) * 100.00;
-					}
-
-					intTot[i] = intTot[i];
-
-				}
-			} else if (flagGaussian) {
-				var maxInt = 100.00;
-				for (var i = 0; i < 4000; i++) {
-					if (intTot[i] == null)
-						intTot[i] = 0.000;
-
-					if (rescale) {
-						if (intTot[i] != 0.00)
-							intTot[i] = (intTot[i] / maxInt) * 100.00;
-					}
-					intTot[i] = intTot[i];
-				}
-			}
-			break;
-		} 
+	switch (typeIRorRaman) {
+	case "ir":
+		create(specData, "ir");
 		break;
-	case "gaus":
-		createSpectrum(radvalue, freqCount, sigma, true);
+	case "raman":
+		create(specData, "raman");
 		break;
-	case "lor":
-		createSpectrum(radvalue, freqCount, sigma, false);
+	default:
+		create(specData, "ir");
+		create(specData, "raman");
 		break;
 	}
 
-	// this opens the window that contains the spectrum
-	var newwin = open("spectrum.html");
-
+	showFreqGraph(specData);
 }
 
-function createSpectrum(radvalue, freqCount, sigma, drawGaussian) {
-		var RamanInt = [];
-		var sortInt = [];
-		var irInt = extractFreqData(freqCount, null, null, sortInt);
-		var maxInt;
-		if (flagCrystal) {
-			RamanInt = extractRamanData(freqCount);
-		 	maxInt = maxValue(sortInt);
-			if (maxInt == 0)
-				maxInt = 200;
-		} else if (flagOutcar) {
-		 	maxInt = 100.00;
-		} else if (flagGaussian || flagDmol) {
-			maxInt = maxR;
-		} else {
-			return;
-		}
-		defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
-					drawGaussian);
-}
+function setFrequencyList(specData) {
+	var vib = getbyID('vib');			
+	var vibLinesFromIrrep = getVibLinesFromIrrep(specData);
+	var prop = (specData.typeIRorRaman == "ir" ? "IRactivity" 
+			: specData.typeIRorRaman == "raman" ? "Ramanactivity" 
+			: null);
 
-//
-//function extractIrData(freqCount) {
-//	var irInt = [];
-//	for (var i = 0; i < freqCount - 1; i++) { // populate IR array
-//		if (Info[i].name != null) {
-//			if (Info[i].modelProperties.IRactivity == "A") {
-//				irFreq[i] = roundoff(
-//						substringFreqToFloat(Info[i].modelProperties.Frequency),
-//						0);
-//				irInt[i] = roundoff(
-//						substringIntFreqToFloat(Info[i].modelProperties.IRintensity),
-//						0);
-//				sortInt[i] = roundoff(
-//						substringIntFreqToFloat(Info[i].modelProperties.IRintensity),
-//						0);
-//				intTot[irFreq[i]] = roundoff(
-//						substringIntFreqToFloat(Info[i].modelProperties.IRintensity),
-//						0);
-//				intTotNewboth[irFreq[i]] = roundoff(
-//						substringIntFreqToFloat(Info[i].modelProperties.IRintensity),
-//						0);
-//				// if(irInt[i]== 0.0){
-//				// irInt[i] = 100.00;
-//				// intTot[irFreq[i]]= 100.00;
-//				// intTotNewboth[irFreq[i]] = 100.00;
-//				// }
-//			}
-//		}
-//	}
-//	return irInt;
-//}
-
-function extractFreqData(freqCount, intData, unknownData, sortInt) {
-	var irInt = [];
-	if (flagCrystal) {
-		for (var i = 0; i < freqCount - 1; i++) { // populate IR array
-			irFreq[i] = Math.round(substringFreqToFloat(InfoFreq[i].modelProperties.Frequency));
-			var int = InfoFreq[i].modelProperties.IRintensity;
-			irInt[i] = Math.round(substringIntFreqToFloat(int));
-			if (intData && (irInt[i] || irInt[i]==0)) {
-				intData[0].push(irFreq[i]);
-				intData[1].push(irInt[i]);
-			}
-			sortInt[i] = irInt[i];
-			intTot[irFreq[i]] = irInt[i];
-		}
-	} else if (flagOutcar) {
-		for (var i = 0; i < freqCount; i++) {
-			irFreq[i] = Math.round(substringFreqToFloat(freqData[i]));
-			if (unknownData) {
-				unknownData[0].push(irFreq[i]);
-				unknownData[1].push(100);
-			}
-			intTot[irFreq[i]] = 100.00;
-			irInt[i] = 100.00;
-			if (i == 0)
-				irInt[i] = 0.00;
-		}
-	} else if (flagGaussian) {
-		for (var i = 0; i < freqCount; i++) {
-			irFreq[i] = Math.round(substringFreqToFloat(freqGauss[i]));
-			intTot[irFreq[i]] = freqIntensGauss[i].substring(1,
-					freqIntensGauss[i].indexOf("K") - 1);
-			irInt[i] = freqIntensGauss[i].substring(1, freqIntensGauss[i].indexOf("K") - 1);
-			if (unknownData && (irInt[i] || irInt[i]==0)) {
-				unknownData[0].push(irFreq[i]);
-				unknownData[1].push(irInt[i]);				
-			}
+	for (var i = 0; i < specData.freqCount; i++) {
+		var label = null;
+		if ((vibLinesFromIrrep == null || (label = vibLinesFromIrrep[i]))
+			  && (prop == null || _fileData.freqInfo[i].modelProperties[prop] == "A")) {
+			specData.freqInfo.push(_fileData.freqInfo[i]);
+			addOption(vib, (label || i + " " + _fileData.freqInfo[i].name), _fileData.freqInfo[i].modelNumber);
 		}
 	}
-	return irInt;
 }
 
-function extractRamanData(freqCount, RamanData) {
-	var RamanInt = [];
-	for (var i = 0, freq; i < (freqCount - 1); i++) {
-		if (Info[i].name != null) {
-			RamanInt[i] = 0.000;
-			if (Info[i].modelProperties.Ramanactivity == "A") {
-				RamanFreq[i] = roundoff(freq = substringFreqToFloat(Info[i].modelProperties.Frequency), 0);
-				RamanInt[i] = 100.00;
-				RamanData && (RamanData.push([freq, 100]));
-				newRamanInt[RamanFreq[i]] = 100;
-			}
-		}
-	}
-	return RamanInt;
-}
-
-function defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
-		drawGaussian) {
-	var rescale = isChecked("rescaleSpectra");
-	var max0 = (maxInt == 0);
-	var sp = 0.000;
-	// Gaussian Convolution
-	var cx = 4 * Math.LN2;
-	var ssa = sigma * sigma / cx;
-	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI));
-
-	// Lorentzian Convolution
-	var xgamma = sigma;
-	var ssc = xgamma * 0.5 / Math.PI; // old ss1
-	var ssd = (xgamma * 0.5) ^ 2; // old ss2
-	var radvalue;
-	var summInt = [];
-	sortInt = [];
-	if (drawGaussian) {
-		for (var i = 0; i < 4000; i++) {
-			sp = 0.000;
-			if (intTot[i] == null)
-				intTot[i] = 0;
-			else if (max0 && intTot[i] == 0)
-				intTot[i] = maxInt / 2; 
-			for (var k = 0; k < freqCount - 1; k++) {
-				switch (radvalue) {
-				case "ir":
-					if (irInt[k] == null)
-						irInt[k] == 0.00;
-					summInt[k] = irInt[k];
-					break;
-				case "raman":
-					if (RamanInt[k] == null)
-						RamanInt[k] == 0.00;
-					summInt[k] = RamanInt[k];
-					break;
-				case "both":
-					if (irInt[k] == null)
-						irInt[k] == 0.00;
-					if (flagCrystal) { // CRYSTAL
-						if (RamanInt[k] == null)
-							RamanInt[k] == 0.00;
-						summInt[k] = irInt[k] + RamanInt[k];
-					} else if (flagOutcar || flagGaussian) {
-						summInt[k] = irInt[k]
-						// OUTCAR
-						// or
-						// GAUSSIAN
-						// summInt[k]
-						// =
-						// irInt[k];
-					}
-
-					break;
-				} // end switch
-				if (irFreq[k] != null) {
-					var xnn = i - irFreq[k];
-					var f1 = Math.exp(-xnn * xnn / ssa) * summInt[k] * sb;
-					if (rescale == true)
-						var f1 = Math.exp(-xnn * xnn / ssa) * summInt[k]
-					/ maxInt * 100 * sb;
-					sp = sp + f1;
-
-				}
-
-			}
-			intTot[i] = sp;
+function getVibLinesFromIrrep(specData) {
+	var vibLinesFromIrrep = [];
+	var irep = specData.irrep;
+	if (irep == "any")
+		return null;
+	if (_fileData.freqSymm) {
+		// gaussian
+		for (var i = 0, val; i < _fileData.freqSymm.length; i++) {
+			if (irep == _fileData.freqSymm[i])
+				vibLinesFromIrrep[i] = 
+					i + " " + irep + " "+ _fileData.freqData[i] 
+					+ (_fileData.freqIntens[i] ? " (" + _fileData.freqIntens[i] + ")" : "");
 		}
 	} else {
+		for (var i = 1, val; i < _fileData.freqInfo.length; i++) {
+			if (irep == _fileData.freqInfo[i].modelProperties.vibrationalSymmetry)
+				vibLinesFromIrrep[i] = i + " " + _fileData.freqInfo[i].name;
+		}
+	}
+	return vibLinesFromIrrep;
+}
 
-		for (var i = 0; i < 4000; i++) {
-			sp = 0.000;
-			if (intTot[i] == null)
-				intTot[i] = 0;
-			for (var k = 0; k < freqCount - 1; k++) {
-				switch (radvalue) {
-				case "ir":
-					if (irInt[k] == null)
-						irInt[k] == 0.00;
-					summInt[k] = irInt[k];
-					break;
-				case "raman":
-					if (RamanInt[k] == null)
-						RamanInt[k] == 0.00;
-					summInt[k] = RamanInt[k];
-					break;
-				case "both":
-					if (irInt[k] == null)
-						irInt[k] == 0.00;
-					if (flagCrystal) {
-						if (RamanInt[k] == null)
-							RamanInt[k] == 0.00;
-						summInt[k] = irInt[k] + RamanInt[k];
-					} else if (flagOutcar || flagGaussian) { // VASP
-						// OUTCAR
-						// or
-						// GAUSSIAN
-						summInt[k] = irInt[k]
-					}
-					break;
-				} // end switch
-				if (irFreq[k] != null) {
-					var xnn = i - irFreq[k];
-					var f1 = ssc * summInt[k] / (xnn * xnn + ssd);
-					if (rescale == true)
-						var f1 = ssc * summInt[k] / maxInt * 100
-						/ (xnn * xnn + ssd);
-					sp = sp + f1;
-				}
+function extractIRData(specData) {
+ return file_method("extractIRData", function() {return {}}, [specData]);
+}
 
-				intTot[i] = sp;
+function extractIRData_crystal(specData) {
+	var n = specData.freqInfo.length;
+	for (var i = 0; i < n; i++) {
+		if (specData.freqInfo[i].modelProperties.IRactivity != "A") 
+			continue;
+		specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
+		var int = specData.freqInfo[i].modelProperties.IRintensity;
+		specData.irInt[i] = Math.round(substringIntFreqToFloat(int));
+		specData.sortInt[i] = specData.irInt[i];
+		specData.specIR[specData.irFreq[i]] = specData.irInt[i];
+	}
+	System.out.println("crystal extractIRData");
+}
+
+function extractIRData_vaspoutcar(specData) {
+	var n = specData.freqInfo.length;
+	for (var i = 0; i < n; i++) {
+		specData.irFreq[i] = Math.round(substringFreqToFloat(_fileData.freqData[i]));
+		specData.specIR[specData.irFreq[i]] = 100;
+		specData.irInt[i] = 100;
+		if (i == 0)
+			specData.irInt[i] = 0;
+	}
+}
+
+function extractIRData_gaussian(specData) {
+	var n = specData.freqInfo.length;
+	for (var i = 0; i < n; i++) {
+		specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqData[i]));
+		specData.specIR[specData.irFreq[i]] = specData.irInt[i] = rtrim(specData.freqIntens[i], 1, "K", 1);
+	}
+}
+
+function rtrim(s, i0, char, i1) {
+	return s.substring(i0,s.indexOf("K") - i1);
+}
+
+function extractRamanData(specData) {
+	var n = specData.freqInfo.length;
+	for (var i = 0; i < n; i++) {
+		if (specData.freqInfo[i].modelProperties.Ramanactivity == "A") {
+			specData.ramanFreq[i] = roundoff(substringFreqToFloat(Info[i].modelProperties.Frequency), 0);
+			specData.ramanInt[i] = 100;
+			specData.specRaman[specData.ramanFreq[i]] = 100;
+		} else {
+			specData.ramanInt[i] = 0;
+		}
+	}
+	return specData;
+}
+
+function createStickSpectrum(specData, type) {
+	var rescale = specData.rescale;
+	var spec = (type == "ir" ? specData.specIR : specData.specRaman);
+	var maxInt = maxValue(spec);
+	var allZero = (maxInt == 0);
+	if (allZero) {
+		maxInt = 200;
+		rescale = true;
+	}
+	for (var i = 0; i < 4000; i++) {
+		if (spec[i] == null) {
+			spec[i] = 0;
+		} else {
+			if (allZero && spec[i] == 0)
+				spec[i] = maxInt / 2; 
+			if (rescale) {
+				if (spec[i] != 0)
+					spec[i] = (spec[i] / maxInt) * 100;
 			}
 		}
 	}
 }
+
+function createCoolSpectrum(specData, type) {
+		var maxInt;
+		if (specData.sortInt) {
+		 	maxInt = maxValue(specData.sortInt);
+		} else if (specData.maxR) {
+			maxint = specData.maxR;
+		} else {
+			maxInt = 100;
+		}
+		if (maxInt == 0)
+			maxInt = 200;
+		specData.maxInt = maxInt;
+		
+		createConvolvedSpectrum(specData, type);
+}
+
+function getPlotIntArray() {
+	alert("_m_spectra.js#getPlotIntArray has not been implemented.");
+}
+
+function createConvolvedSpectrum(specData, type) {
+
+	var isGaussian = (specData.typeConvolve == "gaus");
+	var spec = (type == "ir" ? specData.specIR : specData.specRaman);
+	var freqCount = specData.freqCount;
+	var irInt = specData.irInt;
+	var irFreq = specData.irFreq;
+	var ramanInt = specData.ramanInt;
+	var ramanFreq = specData.ramanFreq;
+	var sigma = specData.sigma;	
+	var maxInt = specData.maxInt;
+
+	var allZero = (maxValue(spec) == 0);
+	var fscale = (specData.rescale && !allZero ? 100 * 0.3 / maxInt : 1);
+
+	if (!isGaussian)
+		fscale *= 100;
+	
+	// Gaussian Convolution
+	var cx = 4 * Math.LN2;
+	// Lorentzian Convolution
+	var xgamma = specData.sigma;
+	var ssc = xgamma * 0.5 / Math.PI;
+	var ssd = (xgamma * 0.5) * (xgamma * 0.5);
+	
+	var ssa = sigma * sigma / cx;	
+	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI)) * fscale;
+	var freq = (type == "ir" ? irFreq : ramanFreq);
+	var int = (type == "ir" ? irInt : ramanInt);
+	for (var i = 0; i < 4000; i++) {
+		var sp = 0;
+		for (var k = 0, n = freqCount; k < n; k++) {
+			// discard translation
+			if (!freq[k]) 
+				continue;
+			int[k] || (int[k] = 0);
+			v = (allZero ? maxInt / 4 : int[k]);
+			var xnn = i - freq[k];
+			sp += (isGaussian ? Math.exp(-xnn * xnn / ssa) : ssc / (xnn * xnn + ssd)) * v * sb;
+		}
+		spec[i] = sp;
+	}
+}
+
+function showFreqGraph(specData) {
+	var A = specData.specIR, B = specData.specRaman;	
+	var nplots = (B && B.length && A && A.length ? 2 : 1);
+	var minY = 999999;
+	var maxY = 0;
+	for (var i = 0; i < A.length; i++) {
+		if (A[i] > maxY)
+			maxY = A[i];
+		if (A[i] < minY)
+			minY = A[i];
+	}
+	for (var i = 0; i < B.length; i++) {
+		if (B[i] > maxY)
+			maxY = B[i];	
+		if (B[i] < minY)
+			minY = B[i];
+	}
+	if (minY == maxY)
+		maxY = (maxY == 0 ? 200 : maxY * 2);
+	maxY *= 1.2;
+	
+	var options = {
+      series:{
+    	  	lines: { show: true, fill: false }
+      },
+      xaxis: { 
+    	  min : specData.minX, 
+    	  max : specData.maxX, 
+    	  ticks : 10, 
+    	  tickDecimals: 0 
+      },
+      yaxis: { ticks: 0,tickDecimals: 0, min: -0.1, max: maxY },
+      selection: { 
+    	  	mode: (nplots == 1 ? "x" : "xy"), 
+    	  	hoverMode: (nplots == 1 ? "x" : "xy") 
+      },
+      grid: { 
+			hoverable: true, 
+			clickable: true, 
+			hoverDelay: 10, 
+		    autoHighlight: false,
+			hoverDelayDefault: 10
+      }
+	};
+	
+	var ir = [];
+	var raman = [];
+	for (var i = specData.minX, pt = 0; i < specData.maxX; i++, pt++) {
+		if (A.length)
+			ir[pt] = [i, A[i]];
+		if (B.length)
+			raman[pt] = [i, B[i]];		
+	}
+	if (A.length && B.length) {
+		theplot = $.plot($("#plotareafreq"), [{label:"IR", data:ir}, {label:"Raman", data: raman}], options)
+	} else if (A.length) {
+		theplot = $.plot($("#plotareafreq"), [{data: ir}], options)
+	} else if (B.length) {
+		theplot = $.plot($("#plotareafreq"), [{data: raman}], options)
+	}
+	
+	previousPointFreq = null;
+	
+	$("#plotareafreq").unbind("plothover plotclick", null)
+	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
+	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
+	//itemFreq = {datapoint: A.length ? ir[0] : raman[0]}
+	//setTimeout('plotClickCallbackFreq(null,null,itemFreq)',100);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// this was the old spectrum plot
+
+var nullValues;
+
+function plotFrequencies(forceNew){
+	if (haveGraphSpectra && !forceNew)
+		return;
+	if (!flagCrystal && !flagOutcar && !flagGaussian)
+		return;
+	haveGraphSpectra = true;
+	var data = [];
+	var data2 =[];
+	var A = [];
+	var B = [];
+	var nplots = 1;
+	var modelCount = Info.length;
+	var irFreq, irInt, freqValue, ramanFreq, ramanInt, isRaman;
+	var labelIR, labelRaman, modelNumber;
+	
+	var stringa = Info[4].name;
+	
+	if(flagCrystal){
+		if(counterFreq != 0){
+			stringa = Info[counterFreq + 1].name;
+			if (stringa == null)
+				stringa = Info[counterFreq + 2].name;
+		}
+		if(stringa.search(/Energy/i) < 0){
+			nullValues = countNullModel(Info);
+			for (var i = (counterFreq == 0 ? 0 : counterFreq + 1); i < modelCount; i++) {
+				modelnumber = Info[i].modelNumber - nullValues -1;
+				if (Info[i].name == null)
+					continue;
+				freqValue = substringFreqToFloat(Info[i].modelProperties.Frequency);
+				intValue = substringIntFreqToFloat(Info[i].modelProperties.IRintensity);
+				isRaman = (intValue == 0);
+ 				if(!isRaman){
+					irFreq = freqValue;
+					irInt = intValue;
+					isRaman = (Info[i].modelProperties.Ramanactivity == "A");
+					labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
+					A.push([irFreq,irInt,modelnumber,labelIR]);
+ 				}
+ 				if (isRaman) {
+					ramanFreq =  freqValue;
+					ramanInt = [100];
+					labelRaman = 'Model = Frequency ' +   ramanFreq  + ', Intensity = ' + ramanInt + ' kmMol^-1';
+					B.push([ramanFreq,ramanInt,modelnumber,labelRaman]);
+				}
+			}			
+		}
+	} else if (flagOutcar) {
+		stringa = Info[4].name
+		if(counterFreq != 0){
+			stringa = Info[counterFreq + 1].name;
+			if (stringa == null)
+				stringa = Info[counterFreq + 2].name;
+		}
+		if(stringa.search(/G =/i) == -1){
+			nullValues = countNullModel(Info);
+		}
+		for (var i = 0; i < freqData.length; i++) {
+			if(Info[i].name != null){
+				irFreq = substringFreqToFloat(freqData[i]);
+				irInt = [0];
+				modelnumber = Info[i].modelNumber + counterFreq  - nullValues -1 
+				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
+				A.push([irFreq,irInt,modelnumber,labelIR]);
+			}
+		}
+	} else if (flagGaussian){
+		for (var i = 0; i < freqGauss.length; i++) {
+			if(Info[i].name != null){
+				irFreq = substringFreqToFloat(freqGauss[i]);
+				irInt = substringIntGaussToFloat(freqIntensGauss[i]);
+				modelnumber = counterGauss + i; 
+				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
+				A.push([irFreq,irInt,modelnumber,labelIR]);
+			}
+		}
+	}
+
+	showFrequencyGraph(A, B);
+}
+
 
 /*
  * function scaleSpectrum(){
  * 
- * var vecorFreq = []; var vecorChk = []; var counter; for(var
- * i =0 ; i < Info.length; i++){ vecorFreq[i] = Info[i].name; vecorChk[i] = 0
- * if(i == 0) vecorChk[i] = 1 counter++ }
+ * var vecorFreq = []; var vecorChk = []; var counter; for(var i =0 ; i <
+ * Info.length; i++){ vecorFreq[i] = Info[i].name; vecorChk[i] = 0 if(i == 0)
+ * vecorChk[i] = 1 counter++ }
  * 
  * var s = " Shift spectrum "; s+= createSelect("Frequencies", "", 0, 1, counter ,
  * vecorFreq, vecorFreq, vecorChk) + "" s+=
@@ -499,37 +515,56 @@ function sortNumber(a, b) {
 }
 
 function maxValue(a) {
-	// BH 2018
-	a.sort(sortNumber);
-	var n = 0;
-	while (a.length > 0 && isNaN(n = parseInt(a[a.length - 1]))){
-		a.pop();
+	var max = 0;
+	for (var i = a.length; --i >= 0;) {
+		if (a[i] > max)
+			max = a[i];
 	}
-	return (isNaN(n) ? 0 : n);
+	return max;
 }
 
 function minValue(irInt) {
 	return parseInt(irInt.sort(sortNumber)[0]);
 }
 
-function symmetryModeAdd() { //extracts vibrational symmetry modes from Info array and lets one get symmetry operations by ID
+function symmetryModeAdd() { // extracts vibrational symmetry modes from Info
+								// array and lets one get symmetry operations by
+								// ID
 	cleanList('sym');
+	var sym = getbyID('sym');
 	if (Info[3].modelProperties) {
-		if (symmetryModeAdd_type)
-			return symmetryModeAdd_type();
-		var symm = [];
-		for (var i = 1; i < Info.length; i++)
-			if (Info[i].name != null)
-				symm[i] = Info[i].modelProperties.vibrationalSymmetry;
-	
-		var sortedSymm = unique(symm);
-		for (var i = 0; i < sortedSymm.length; i++) {
-			if (sortedSymm[i] != null)
-				addOption(getbyID('sym'), sortedSymm[i], sortedSymm[i])
+		var symm = _fileData.freqSymm;
+		if (!symm) {
+			var symm = [];
+			for (var i = 1; i < Info.length; i++)
+				if (Info[i].name)
+					symm[i] = Info[i].modelProperties.vibrationalSymmetry;
 		}
-	}
-	
+		var sortedSymm = unique(symm);
+		addOption(sym, "any", "any");
+		for (var i = 0; i < sortedSymm.length; i++) {
+			var label = sortedSymm[i]; 
+			if (label)
+				addOption(sym, label, label);
+		}
+	}	
 }
+
+function unique(a) {
+	// this function removes duplicates
+	var r = [];
+	var list = "";
+	for (var i = 0, n = a.length; i < n; i++) {
+		var item = a[i];
+		var key = ";" + item + ";";
+		if (list.indexOf(key) >= 0)
+			continue;
+		list += key;
+		r.push(item);
+	}
+	return r;
+}
+
 
 function setVibrationOn(isON) {
 	if (isON)
@@ -556,144 +591,100 @@ function updateJmolForFreqParams() {
 	runJmolScriptWait(script)
 }
 
-//function onClickVibrate(select) {
-//	switch (radioval) {
-//	case "on":
-//		// TODO
-//		runJmolScriptWait("vibration on; vectors SCALE 3; vector 5; vibration SCALE 1;");
-//		break;
-//	case "off":
-//		runJmolScriptWait("vibration off;");
-//		break;
-//	}
-//}
-
-//This listens the action change the irep
-function onChangeListSym(irep) {
-	resetFreq();
-	cleanLists()
-	if (flagGaussian) {
-		changeIrepGauss(irep);
-	} else {
-		for (var i = 1; i < Info.length; i++) {
-			if (Info[i].modelProperties.vibrationalSymmetry != null) {
-				var value = Info[i].modelProperties.vibrationalSymmetry;
-				if (irep == value)
-					addOption(getbyID('vib'), i + " " + Info[i].name, i + 1);
-			}
-		}
-	}
-}
-
-//This resets the frequency state
-function resetFreq() {
-	checkBox("radVibrationOff");
-	uncheckBox("vectors");
-}
-
-var maxR = 0;
-function setMaxMinPlot() {
-	var localFreqCount = InfoFreq.length
-	var irFrequency = [];	
+function setMaxMinPlot(specData) {
+	var n = specData.freqCount;
+	var sum = 0;
 	try { 
-		for (var i = 0; i < localFreqCount; i++) { // populate IR array
-			if (InfoFreq[i].modelProperties && InfoFreq[i].modelProperties.Frequency) {
-				irFrequency[i] = roundoff(substringFreqToFloat(InfoFreq[i].modelProperties.Frequency), 0);
-			}
+		for (var i = 0; i < n; i++) {
+			
+			System.out.println(i + " " + specData.freqInfo[i].modelProperties.Frequency);
+			
+			sum += roundoff(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency), 0);
 		}
-		maxR = maxValue(irFrequency);
+		specData.maxR = (isNaN(sum) ? 3700 : sum / n);
+
 	} catch (err){
-			maxR = 3700
+			specData.maxR = 3700;
 	}
 	
-	var max = maxR + 300;
-	min = 0;
-	setValue("nMax", max)
-	setValue("nMin", min)
+	
+	specData.maxX = specData.maxR + 300;
+	specData.minX = 0;
+	
+	setValue("nMax", specData.maxX);
+	setValue("nMin", specData.minX);
 }
-//Creates the frequency menu on the web applet 
+
+// Creates the frequency menu on the web applet
 function createFreqGrp() { 
 	var vibAmplitudeValue = new Array("", "vibration Scale 1",
-			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7", "vibration Scale 10");
+			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7", "vibration Scale 10"); 
 	var vecscaleValue = new Array("", "vectors SCALE 1", "vectors SCALE 3",
 			"vectors SCALE 5", "vectors SCALE 7", "vectors SCALE 10",
 			"vectors SCALE 15", "vectors SCALE 19");
-	var vecsizeValue = new Array("", "vectors 1", "vectors  3", "vectors  5",
+	var vecwidthValue = new Array("", "vectors 1", "vectors  3", "vectors  5",
 			"vectors  7", "vectors 10", "vectors 15", "vectors  19");
 	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
-	var strFreq = "<table class='contents'><tr><td valign='top'><form autocomplete='nope'  id='freqGroup' name='modelsVib' style='display:none'>";
-	strFreq += "<h2>IR-Raman Frequencies</h2>\n";
-	strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=15 style='width:120px; overflow: auto;'></select>";
-	strFreq += "<BR>\n";
-	strFreq += createRadio("modSpec", "Both", "onClickModSpec()", 0, 1, "",
-	"all");
-	strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "",
-	"ir");
-	strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "",
-	"raman");
-	strFreq += "<BR>\n";
-	strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onChangeListSym(value)' onkeypress='onChangeListSym()' CLASS='select' >";
-	strFreq += "</select> ";
-	strFreq += "<BR>\n";
-	strFreq += "vibration ";
-	strFreq += createRadio("vibration", "on", 'onClickFreqParams()', 0, 1,
-			"radVibrationOn", "on");
-	strFreq += createRadio("vibration", "off", 'onClickFreqParams()', 0, 0,
-			"radVibrationOff", "off");
-	strFreq += "<BR>\n";
-	strFreq += createSelect("vecsamplitude", "onClickFreqParams()", 0, 1,
-			vibAmplitudeValue, vibAmplitudeText,[0,1])
-			+ " vib. amplitude";
-	strFreq += "<BR>\n";
-	strFreq += createCheck("vectors", "view vectors",
-			"onClickFreqParams()", 0, 1, "vectors");
-	strFreq += "<BR>\n";
-	strFreq += createSelect("vecscale", "onClickFreqParams()", 0, 1, vecscaleValue,
-			vecscaleText,[0,0,1])
-			+ " vector scale";
-	strFreq += "<BR>\n";
-	strFreq += createSelect("sizevec", "onClickFreqParams()", 0, 1, vecsizeValue,
-			vecscaleText,[0,0,0,1])
-			+ " vector width";
-	strFreq += "<BR>\n";
-	strFreq += "<table class='contents'> <tr><td>vector color</td> <td><script>jmolColorPickerBox([setColorWhat,'vectors'],[255,255,255],'vectorColorPicker')</script></td>";
-	strFreq += "</tr><tr><td>"
-		+ createButton("vibVectcolor", "Default color",
-				'onClickFreqParams()', 0) + "</td></tr></table>";
-	strFreq += "</td><td valign='top'><div id='freqdiv' style='display:none'>\n";
-	strFreq += createDiv("graphfreqdiv", //making small graph
-	"width:200px;height:200px;background-color:#EFEFEF; margin-left:5px; display:none")
-	+ "\n";
-	strFreq += createDiv("plottitlefreq", ";display:none")
-	+ "IR - Raman  dispersion </div>\n";
-	strFreq += createDiv("plotareafreq",
-	"width:210px;height:210px;background-color:#EFEFEF;display:none")
-	+ "</div>\n";
-	strFreq += "Raman intensities set to 0.0 kmMol<sup>-1</sup>";
-	strFreq += "<br>\n";
-	strFreq += createLine('blue', '');
-	strFreq += "Simulate spectrum<br>";
-	strFreq += createRadio("kindspectra", "IR", '', 0, 1, "", "ir");//could add in Onclickgraphparams to change graph immediately 
-	strFreq += createRadio("kindspectra", "Raman", '', 0, 1, "", "raman");//will try to consolidate
-	strFreq += createRadio("kindspectra", "Both", '', 0, 1, "", "both");
-	strFreq += "<br>Convolution with<br>";
-	strFreq += createRadio("convol", "Stick", '', 0, 1, "", "stick");//add new function to change immediately (third param)
-	strFreq += createRadio("convol", "Gaussian", '', 0, 0, "", "gaus");
-	strFreq += createRadio("convol", "Lorentzian", '', 0, 0, "", "lor");
-	strFreq += "<br>Specrum setting <br>\n";
-	strFreq += "band width " + createText2("sigma", "15", "3", "")
-	+ " (cm<sup>-1</sup>)<br>";
-	strFreq += "Min freq. " + createText2("nMin", "", "4", "");
-	strFreq += " Max " + createText2("nMax", "", "4", "")
-	+ "(cm<sup>-1</sup>)<br>";
-	strFreq += createButton("simSpectra", "Simulate spectrum", "simSpectrum()",
-			0)
-			+ " ";
-	strFreq += createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "");
-	strFreq += "</div></div>\n";
-	strFreq += "</form></td></tr></table>";
+	var smallGraph = createDiv("plottitlefreq", ";background:green;display:none", "IR - Raman  dispersion")			
+					+ createDiv("plotareafreq", "background:blue;width:350px;height:180px;background-color:#EFEFEF","");  
+	
+	var simPanel = createDiv("simPanel", "", "Raman intensities set to 0.0 kmMol<sup>-1</sup>"
+		+ "<br>\n"
+		+ createLine('blue', '')
+		+ "<br>"
+		+ "Band width " + createText2("sigma", "15", "3", "") + " (cm<sup>-1</sup>)" 
+		+ "&nbsp;"
+		+ "Min freq. " + createText2("nMin", "", "4", "")
+		+ " Max " + createText2("nMax", "", "4", "") + "(cm<sup>-1</sup>)"
+		+ createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "") + "<br>"
+		+ createRadio("convol", "Stick", 'onClickModSpec()', 0, 1, "", "stick")
+		+ createRadio("convol", "Gaussian", 'onClickModSpec()', 0, 0, "", "gaus")
+		+ createRadio("convol", "Lorentzian", 'onClickModSpec()', 0, 0, "", "lor") 
+		+ "&nbsp;" + "&nbsp;" + "&nbsp;"
+		+ createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
+
+	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib' style='display:none'>";
+		strFreq += "<table border=0 class='contents'><tr><td valign='top'>";
+			strFreq += "<h2>IR-Raman Frequencies</h2>\n";
+			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=11 style='width:200px; overflow: auto;'></select>";	
+		strFreq += "</td>"; // end of the first column
+		strFreq += "<td valign='top'>";
+		strFreq += createRadio("modSpec", "Both", "onClickModSpec()", 0, 1, "", "all");
+			strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "", "ir");
+			strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "", "raman");
+			strFreq += "<BR>\n";
+		strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeypress='onClickModSpec()' CLASS='select' >";
+			strFreq += "</select> ";
+			strFreq += "<BR>\n";
+			strFreq += "vibration ";
+			strFreq += createRadio("vibration", "on", 'onClickFreqParams()', 0, 1, "radVibrationOn", "on");
+			strFreq += createRadio("vibration", "off", 'onClickFreqParams()', 0, 0, "radVibrationOff", "off");
+			strFreq += "<BR>\n";
+			strFreq += createSelect("vecsamplitude", "onClickFreqParams()", 0, 1,
+					vibAmplitudeValue, vibAmplitudeText,[0,1])
+					+ " vib. amplitude"; 
+			strFreq += "<BR>\n";
+			strFreq += createCheck("vectors", "view vectors", "onClickFreqParams()", 0, 1, "vectors");
+			strFreq += "<BR>\n";
+			strFreq += createSelect("vecscale", "onClickFreqParams()", 0, 1, vecscaleValue, vecscaleText, [0,0,1]) + " vector scale"; 																									// scale
+			strFreq += "<BR>\n";
+			strFreq += createSelect("widthvec", "onClickFreqParams()", 0, 1, vecwidthValue, vecscaleText,[0,0,0,1]) + " vector width";
+			strFreq += "<BR>\n";
+			strFreq += "<table border=0 class='contents'> <tr>";
+				strFreq += "<td>vector color</td> <td><script>jmolColorPickerBox([setColorWhat,'vectors'],[255,255,255],'vectorColorPicker')</script></td>";
+				strFreq += "</tr><tr><td>" + createButton("vibVectcolor", "Default color", 'onClickFreqParams()', 0) + "</td>";
+			strFreq += "</tr></table>";					
+		strFreq += "</td></tr>";
+		strFreq += "<tr><td colspan=2>";
+		strFreq += createDiv("graphfreqdiv", // making small graph
+				"width:350px;height:200px;background-color:#EFEFEF;margin-left:5px;display:inline", smallGraph + simPanel);
+		strFreq += "</td></tr>";
+	strFreq += "</table></form> ";
 
 	return strFreq;
 }
+
+
+

@@ -177,6 +177,7 @@ MENU_OPTIMIZE = 8;
 MENU_SPECTRA  = 9;
 MENU_EM       =10;
 MENU_OTHER    =11;
+MENU_SYM      =12;
 
 var TAB_OVER  = 0;
 var TAB_CLICK = 1;
@@ -206,9 +207,29 @@ function defineMenu() {
 	/* 9 */ addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
 	/* 10 */ addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
 	/* 11 */ addTab("Other", "otherpropGroup", "Change background, light settings and other.");
-	/* 12   addTab("Symmetry", "symmetryGroup", "Add atoms to structure following rules of symmetry."); */
+	/* 12 */  addTab("Sym Build", "symmetryGroup", "Add atoms to structure following rules of symmetry."); 
 }
 
+function createAllMenus() {
+	var s = createFileGrp()
+		+ createShowGrp()
+		+ createEditGrp()
+		//+ createBuildGrp()
+		+ createMeasureGrp()
+		+ createOrientGrp()
+		+ createCellGrp()
+		+ createPolyGrp()
+		+ createIsoGrp()
+		+ createOptimizeGrp()
+		+ createFreqGrp()
+		+ createElecpropGrp()
+		+ createOtherGrp()
+		+ createSymmetryGrp() 
+		+ addCommandBox()
+		//+ createHistGrp()
+		;
+	return s
+}
 var showMenu = function(menu) {
 	if (thisMenu >= 0)
 		self["exit" + menuNames[menu]]();
@@ -313,13 +334,19 @@ function enterFile() {
 function exitFile() {
 }
 
+file_method = function(methodName, defaultMethod, params) {
+	// Execute a method specific to a given file type, for example:
+	// loadDone_crystal
+	params || (params = []);
+	methodName += "_" + _fileData.fileType;
+	var f = self[methodName] || defaultmethod;
+	return (f && f.apply(null, params));
+}
 
-// was "flagCif"
-// used only in crystal, gulp, and quantumespresso 
-// in symmetry.js#figureOutSpaceGroup() 
-// to set the frame to the first frame
+var _fileData = {};
 
 var _fileIsReload = false;
+
 
 var flagCif = false; 
 var flagCrystal = false; 
@@ -333,9 +360,6 @@ var flagDmol = false;
 var flagMolden = false;
 var flagCastep = false;
 
-var freqData = [];
-var geomData = [];
-var counterFreq = 0;
 
 reload = function(packing, filter, more) {	
 	// no ZAP here
@@ -362,7 +386,6 @@ loadFile = function(fileName, packing, filter, more) {
 	// ZAP will clear the Jmol file cache
 	runJmolScript("load '" + fileName + "' " + packing + filter + ";" + more);
 }
-
 
 function setDefaultJmolSettings() {
 	runJmolScriptWait('select all; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
@@ -434,29 +457,34 @@ function onChangeLoad(load) {
 	document.fileGroup.reset();
 }
 
-function postLoad(type, filePath) {
-	freqData = [];
-	geomData = [];
+function file_loadedCallback(filePath) {
+	_specData = null;
+	_fileData = {
+			fileType    : jmolEvaluate("_fileType").toLowerCase(), 
+			energyUnits : ENERGY_EV,
+			strUnitEnergy : "e",
+			hasInputModel : false,
+			haveSpecData : false,
+			geomData    : [],
+			freqInfo 	: [],
+			freqData	: [],
+			vibLine		: [],
+			counterFreq : 0,
+			counterMD 	: 0
+	};
 	resetGraphs();
 	counterFreq = 0;
-	InfoFreq = null;
 	extractAuxiliaryJmol();
-	setFlags(type);
+	setFlags(_fileData.fileType);
 	setFileName();
 	getUnitcell(1);
 	runJmolScriptWait('unitcell on');
 	cleanAndReloadForm();
 	setFileName();
-	if (!_fileIsReload) {
+	if (!_fileIsReload)
 		grpDisp(0);
-	}
 	_fileIsReload = false;
-	// specialized finalization based on file type
-	// all such methods must call load
-	if (window[type+"Done"])
-		window[type+"Done"]();
-	else
-		loadDone();
+	file_method("loadDone", loadDone);
 }
 
 loadDone = function() {
@@ -584,7 +612,6 @@ setFlags = function(type) {
 		flagCastep = true;
 		break;
 	}
-	symmetryModeAdd_type = self["symmetryModeAdd_" + type];
 }
 
 var sampleOptionArr = ["Load a Sample File", 
@@ -1034,149 +1061,8 @@ function setUnitCellOrigin(value) {
 	setValue("par_z", eval(aval[2]));
 }
 
-function getSymInfo() { //parses data file and provides symmetry operations
 
-	// update all of the model-specific page items
 
-	SymInfo = {};
-	var s = "";
-	var info = jmolEvaluate('script("show spacegroup")');
-	if (info.indexOf("x,") < 0) {
-		s = "no space group";
-	} else {
-		var S = info.split("\n");
-		var hm = "?";
-		var itcnumber = "?";
-		var hallsym = "?";
-		var latticetype = "?";
-		var nop = 0;
-		var slist = "";
-		for (var i = 0; i < S.length; i++) {
-			var line = S[i].split(":");
-			if (line[0].indexOf("Hermann-Mauguin symbol") == 0)
-				s += "<br>"
-					+ S[i]
-			.replace(
-					/Hermann\-Mauguin/,
-			"<a href=http://en.wikipedia.org/wiki/Hermann%E2%80%93Mauguin_notation target=_blank>Hermann-Mauguin</a>");
-			else if (line[0].indexOf("international table number") == 0)
-				s += "<br>"
-					+ S[i]
-			.replace(
-					/international table number/,
-			"<a href=http://it.iucr.org/ target=_blank id='prova'>international table</a> number");
-			else if (line[0].indexOf("lattice type") == 0)
-				s += "<br>"
-					+ S[i]
-			.replace(
-					/lattice type/,
-			"<a href=http://cst-www.nrl.navy.mil/bind/static/lattypes.html target=_blank>lattice type</a>");
-			else if (line[0].indexOf(" symmetry operation") >= 0)
-				nop = parseInt(line[0]);
-			else if (nop > 0 && line[0].indexOf(",") >= 0)
-				slist += "\n" + S[i];
-
-		}
-
-		s += "<br> Symmetry operators: " + nop;
-
-		var S = slist.split("\n");
-		var n = 0;
-		var i = -1;
-		while (++i < S.length && S[i].indexOf(",") < 0) {
-		}
-		s += "<br><select id='symselect' onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\" class='select'><option value=0>select a symmetry operation</option>";
-		for (; i < S.length; i++)
-			if (S[i].indexOf("x") >= 0) {
-				var sopt = S[i].split("|")[0].split("\t");
-				SymInfo[sopt[1]] = S[i].replace(/\t/, ": ").replace(/\t/, "|");
-				sopt = sopt[0] + ": " + sopt[2] + " (" + sopt[1] + ")";
-				s += "<option value='" + parseInt(sopt) + "'>" + sopt
-				+ "</option>";
-			}
-		s += "</select>";
-
-		var info = jmolEvaluate('{*}.label("#%i %a {%[fxyz]/1}")').split("\n");
-		var nPoints = info.length;
-		var nBase = jmolEvaluate('{symop=1555}.length');
-		s += "<br><select id='atomselect' onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\"  class='select'><option value=0>base atoms</option>";
-		s += "<option value='{0 0 0}'>{0 0 0}</option>";
-		s += "<option value='{1/2 1/2 1/2}'>{1/2 1/2 1/2}</option>";
-		for (var i = 0; i < nPoints; i++)
-			s += "<option value=" + i + (i == 0 ? " selected" : "") + ">"
-			+ info[i] + "</option>";
-		s += "</select>";
-
-		s += "</br><input type=checkbox id=chkatoms onchange=getSelect() checked=true />superimpose atoms";
-		s += " opacity:<select id=selopacity onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\"  class='select'>"
-			+ "<option value=0.2 selected>20%</option>"
-			+ "<option value=0.4>40%</option>"
-			+ "<option value=0.6>60%</option>"
-			+ "<option value=1.0>100%</option>" + "</select>";
-
-	}
-	getbyID("syminfo").innerHTML = s;
-}
-
-function getSelect(symop) {
-	var d = getbyID("atomselect");
-	var atomi = d.selectedIndex;
-	var pt00 = d[d.selectedIndex].value;
-	var showatoms = (getbyID("chkatoms").checked || atomi == 0);
-	runJmolScriptWait("display " + (showatoms ? "all" : "none"));
-	var d = getbyID("symselect");
-	var iop = parseInt(d[d.selectedIndex].value);
-	// if (!iop && !symop) symop = getbyID("txtop").value
-	if (!symop) {
-		if (!iop) {
-			runJmolScriptWait("select *;color opaque;draw sym_* delete");
-			return
-
-		}
-		symop = d[d.selectedIndex].text.split("(")[1].split(")")[0];
-		// getbyID("txtop").value
-		// = symop
-	}
-	if (pt00.indexOf("{") < 0)
-		pt00 = "{atomindex=" + pt00 + "}";
-	var d = getbyID("selopacity");
-	var opacity = parseFloat(d[d.selectedIndex].value);
-	if (opacity < 0)
-		opacity = 1;
-	var script = "select *;color atoms translucent " + (1 - opacity);
-	script += ";draw symop \"" + symop + "\" " + pt00 + ";";
-	if (atomi == 0) {
-		script += ";select symop=1555 or symop=" + iop + "555;color opaque;";
-	} else if (atomi >= 3) {
-		script += ";pt1 = "
-			+ pt00
-			+ ";pt2 = all.symop(\""
-			+ symop
-			+ "\",pt1).uxyz.xyz;select within(0.2,pt1) or within(0.2, pt2);color opaque;";
-	}
-	secho = SymInfo[symop];
-	if (!secho) {
-		secho = jmolEvaluate("all.symop('" + symop + "',{0 0 0},'draw')")
-		.split("\n")[0];
-		if (secho.indexOf("//") == 0) {
-			secho = secho.substring(2);
-		} else {
-			secho = symop;
-		}
-	}
-	script = "set echo top right;echo " + secho + ";" + script;
-	runJmolScriptWait(script);
-}
-
-function deleteSymmetry() {
-	getbyID("syminfo").removeChild;
-}
-
-cellOperation = function(){
-	deleteSymmetry();
-	getSymInfo();
-	setUnitCell();
-}
 
 
 function createCellGrp() {
@@ -1294,9 +1180,6 @@ function createCellGrp() {
 		strCell += createLine('blue', '');
 	strCell += "</td></tr>\n";
 	strCell += "<tr><td colspan='2'> \n";
-	strCell += "Symmetry operators ";
-	strCell += "<div id='syminfo'></div>";
-	strCell += createLine('blue', '');
 	strCell += "</td></tr>\n";
 	strCell += "</table></FORM>\n";
 	return strCell;
@@ -2228,7 +2111,7 @@ function createOrientGrp() {
 	strOrient += createButton(
 			'c',
 			'c',
-			'runJmolScriptWait("moveto 1.0 front;var axisC = {0 0 1/1};var axisZ = {0 0 1};var rotAxisCZ = cross(axisC,axisZ);var rotAngleCZ = angle(axisC, {0 0 0}, rotAxisCZ, axisZ);moveto 1.0 @rotAxisCZ @{rotAngleCZ}")',
+			'runJmolScriptWait("moveto 1.0 front;var axisC = {0 0.0001 1/1};var axisZ = {0 0 1};var rotAxisCZ = cross(axisC,axisZ);var rotAngleCZ = angle(axisC, {0 0 0}, rotAxisCZ, axisZ);moveto 1.0 @rotAxisCZ @{rotAngleCZ}")',
 	'');
 	strOrient += createLine('blue', '');
 	strOrient += "</td></tr>\n";
@@ -2861,9 +2744,8 @@ function createOptimizeGrp() {
 
       		
 ///js// Js/_m_spectra.js /////
-/*  J-ICE library 
-
-    based on:
+/*
+ *   based on:
  *
  *  Copyright (C) 2010-2014 Pieremanuele Canepa http://j-ice.sourceforge.net/
  *
@@ -2887,12 +2769,24 @@ function createOptimizeGrp() {
 
 //This simulates the IR - Raman spectrum given an input 
 
+
+var _specData;
+
 function enterSpectra() {
-	if (!InfoFreq) {
-		getInfoFreq();
-		freqCount = (flagOutcar? freqData.length - 1 : flagGaussian ? freqGauss.length - 1 : InfoFreq.length);
-		setMaxMinPlot();
-		onClickModSpec();
+
+// from vaspoutcar
+//	if (fileData.vibLine) {
+//		var vib = getbyID('vib');
+//		for (var i = 1; i < _fileData.fileData.vibLine.length; i++) {
+//			 addOption(vib, _fileData.vibLine[i], i + 1);
+//		}
+//	}
+	
+	if (!_fileData.haveSpecData) {
+		_specData = null;
+		_fileData.haveSpecData = true;
+		symmetryModeAdd();	
+		onClickModSpec(true);
 	}
 }
 
@@ -2900,19 +2794,35 @@ function exitSpectra() {
 	runJmolScriptWait('vibration off; vectors off');
 }
 
-var intTot = [];
-var irFreq = [];
-var RamanFreq = [];
-var intTotNewboth = [];
-var newRamanInt = [];
-var newInt = [];
-var summedInt = [];
-var sortInt = [];
+function doSpectraNewWindow() {
+	// this opens the window that contains the spectrum
+	//var win = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=800,height=600,left=50";
+	var newwin = open("spectrum.html");
+}
 
-var irData, ramanData, unknownData;
+//This resets the frequency state
+function resetFreq() {
+	checkBox("radVibrationOff");
+	uncheckBox("vectors");
+}
 
-var freqCount;
 
+/////////LOAD FUNCTIONS
+
+function disableFreqOpts() {
+	for (var i = 0; i < document.modelsVib.modAct.length; i++)
+		document.modelsVib.modAct[i].disabled = true;
+	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
+		document.modelsVib.kindspectra[i].disabled = true;
+}
+
+function enableFreqOpts() {
+	for (var i = 0; i < document.modelsVib.modAct.length; i++)
+		document.modelsVib.modAct[i].disabled = false;
+	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
+		document.modelsVib.kindspectra[i].disabled = false;
+
+}
 
 function onClickSelectVib(value) {
 	showFrame(value);	
@@ -2920,436 +2830,425 @@ function onClickSelectVib(value) {
 }
 
 
-function onClickModSpec() {
-	// all, ir, or raman radio buttons
-	if (!InfoFreq[2] || !InfoFreq[2].modelProperties.Frequency) {
-		//errorMsg("No vibrations available")
+function onClickModSpec(isPageOpen) {
+	if (_fileData.freqData.length == 0) {
 		return;
 	}
+	simSpectrum(isPageOpen);
+}
 
-	cleanLists();
+function simSpectrum(isPageOpen) {
+	cleanList('vib');
 	resetFreq();
-	symmetryModeAdd();
-	var rad_val;
-	for (var i = 0; i < document.modelsVib.modSpec.length; i++) {
-		if (document.modelsVib.modSpec[i].checked) {
-			rad_val = document.modelsVib.modSpec[i].value;
-			break;
-		}
-	}	
-	var vib = getbyID('vib');	
-	//MP 09/19/18 Changed i+1 to InfoFreq[i].modelNumber		
-	switch (rad_val) {
-	case "all":
-		for (var i = 0; i < InfoFreq.length; i++) {
-			if (InfoFreq[i].modelProperties.Frequency != null) {
-				addOption(vib, i + " " + InfoFreq[i].name, InfoFreq[i].modelNumber);
-			}
-		}
-		break;	
+	var typeIRorRaman = getRadioSetValue(document.modelsVib.modSpec);
+	var typeConvolve = getRadioSetValue(document.modelsVib.convol);
+	var irrep = getValueSel('sym');		
+	var specData = _specData = {
+			typeIRorRaman : typeIRorRaman, 
+			typeConvolve  : typeConvolve, 
+			irrep     : irrep,
+			sigma     : getValue('sigma'), 
+			rescale   : isChecked('rescaleSpectra'),
+			freqCount : _fileData.freqInfo.length,
+			freqInfo  : [],
+			irInt     : [],
+			irFreq    : [],
+			ramanInt  : [],
+			ramanFreq : [],
+			sortInt   : [],
+			specIR    : [],
+			specRaman : []
+	};
+	setFrequencyList(specData);
+	switch (typeIRorRaman) {
 	case "ir":
-		for (var i = 0; i < InfoFreq.length; i++) {
-			if (InfoFreq[i].modelProperties.Frequency != null) {
-				if (InfoFreq[i].modelProperties.IRactivity == "A") {
-					addOption(vib, i + " " + InfoFreq[i].name, InfoFreq[i].modelNumber);
-				}
-			}
-		}
-		break;	
+		extractIRData(specData);
+		break;
 	case "raman":
-		for (var i = 0; i < InfoFreq.length; i++) {
-			if (InfoFreq[i].modelProperties.Frequency != null) {
-				if (InfoFreq[i].modelProperties.Ramanactivity == "A") {
-					addOption(vib, i + " " + InfoFreq[i].name, InfoFreq[i].modelNumber);
-				}
-			}
-		}
+		extractRamanData(specData);
+		break;
+	default:
+		extractIRData(specData);
+		extractRamanData(specData);
 		break;
 	}
-	plotFrequencies(true);
-}
+	if (isPageOpen)
+		setMaxMinPlot(specData);
+	specData.minX = getValue("nMin");
+	specData.maxX = getValue("nMax");
 
-function getKindSpectrum() {
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++) {
-		if (document.modelsVib.kindspectra[i].checked)
-			return document.modelsVib.kindspectra[i].value;
-	}
-}
+	var create = (typeConvolve == "stick" ? createStickSpectrum : createCoolSpectrum);
 
-function getConvolve() {
-	for (var i = 0; i < document.modelsVib.convol.length; i++) {
-		if (document.modelsVib.convol[i].checked)
-			return document.modelsVib.convol[i].value;
-	}	
-}
-
-function simSpectrum() {
-	var win = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=800,height=600,left=50";
-	var irInt = [];
-	var RamanInt = [];
-	var freqTot = [];
-	var convoluzione = getConvolve();
-	var radvalue = getKindSpectrum();
-	var drawGaussian = true;
-	var sigma = getValue("sigma");
-	intTot = [];
-	var sortInt = [];
-	var rescale = isChecked("rescaleSpectra");
-	switch (convoluzione) {
-	case "stick":
-		switch (radvalue) {
-		case "ir": // IR + Raman
-			irInt = extractFreqData(freqCount, null, null, sortInt);
-			var maxInt = maxValue(sortInt);
-			var max0 = (maxInt == 0);
-			if (max0) {
-				maxInt = 200;
-				rescale = true;
-			}
-			for (var i = 0; i < 4000; i++) {
-				if (intTot[i] == null)
-					intTot[i] = 0.000;
-				else {
-					if (max0 && intTot[i] == 0)
-						intTot[i] = maxInt / 2; 
-					if (rescale) {
-						if (intTot[i] != 0.00)
-							intTot[i] = (intTot[i] / maxInt) * 100.00;
-					}
-				}
-			}
-			break;
-		case "raman":// Raman
-			RamanInt = extractRamanData(freqCount);
-			for (var i = 0; i < 4000; i++) {
-				for (var k = 0; k < freqCount - 1; k++) {
-					if (RamanFreq[k] == i)
-						intTot[i] = 100;
-				}
-				if (intTot[i] == null)
-					intTot[i] = 0;
-			}
-			break;
-		case "both":
-			irInt = extractFreqData(freqCount, null, null, sortInt);
-			if (flagCrystal) {
-				RamanInt = extractRamanData(freqCount);
-				var maxInt = maxValue(sortInt);
-				var max0 = (maxInt == 0);
-				if (max0) {
-					maxInt = 200;
-					rescale = true;
-				}
-				for (var i = 0; i < 4000; i++) {
-
-					if (newRamanInt[i] == null)
-						newRamanInt[i] = 0;
-
-					if (intTot[i] == null)
-						intTot[i] = 0.000;
-					else {
-						if (max0 && intTot[i] == 0)
-							intTot[i] = maxInt / 2; 
-						if (rescale) {
-							if (intTot[i] != 0.00)
-								intTot[i] = (intTot[i] / maxInt) * 100.00;
-						}						
-					}
-					intTot[i] = newRamanInt[i] + intTot[i];
-				}
-
-			} else if (flagOutcar) {
-				var maxInt = 100.00;
-				for (var i = 0; i < 4000; i++) {
-					newInt[i] = 100.00;
-					if (intTot[i] == null)
-						intTot[i] = 0.000;
-
-					if (rescale) {
-						if (intTot[i] != 0.00)
-							intTot[i] = (intTot[i] / maxInt) * 100.00;
-					}
-
-					intTot[i] = intTot[i];
-
-				}
-
-			} else if (flagDmol) {
-				var maxInt = 100.00;
-				for (var i = 0; i < 4000; i++) {
-					newInt[i] = 100.00;
-					if (intTot[i] == null)
-						intTot[i] = 0.000;
-
-					if (rescale) {
-						if (intTot[i] != 0.00)
-							intTot[i] = (intTot[i] / maxInt) * 100.00;
-					}
-
-					intTot[i] = intTot[i];
-
-				}
-			} else if (flagGaussian) {
-				var maxInt = 100.00;
-				for (var i = 0; i < 4000; i++) {
-					if (intTot[i] == null)
-						intTot[i] = 0.000;
-
-					if (rescale) {
-						if (intTot[i] != 0.00)
-							intTot[i] = (intTot[i] / maxInt) * 100.00;
-					}
-					intTot[i] = intTot[i];
-				}
-			}
-			break;
-		} 
+	switch (typeIRorRaman) {
+	case "ir":
+		create(specData, "ir");
 		break;
-	case "gaus":
-		createSpectrum(radvalue, freqCount, sigma, true);
+	case "raman":
+		create(specData, "raman");
 		break;
-	case "lor":
-		createSpectrum(radvalue, freqCount, sigma, false);
+	default:
+		create(specData, "ir");
+		create(specData, "raman");
 		break;
 	}
 
-	// this opens the window that contains the spectrum
-	var newwin = open("spectrum.html");
-
+	showFreqGraph(specData);
 }
 
-function createSpectrum(radvalue, freqCount, sigma, drawGaussian) {
-		var RamanInt = [];
-		var sortInt = [];
-		var irInt = extractFreqData(freqCount, null, null, sortInt);
-		var maxInt;
-		if (flagCrystal) {
-			RamanInt = extractRamanData(freqCount);
-		 	maxInt = maxValue(sortInt);
-			if (maxInt == 0)
-				maxInt = 200;
-		} else if (flagOutcar) {
-		 	maxInt = 100.00;
-		} else if (flagGaussian || flagDmol) {
-			maxInt = maxR;
-		} else {
-			return;
-		}
-		defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
-					drawGaussian);
-}
+function setFrequencyList(specData) {
+	var vib = getbyID('vib');			
+	var vibLinesFromIrrep = getVibLinesFromIrrep(specData);
+	var prop = (specData.typeIRorRaman == "ir" ? "IRactivity" 
+			: specData.typeIRorRaman == "raman" ? "Ramanactivity" 
+			: null);
 
-//
-//function extractIrData(freqCount) {
-//	var irInt = [];
-//	for (var i = 0; i < freqCount - 1; i++) { // populate IR array
-//		if (Info[i].name != null) {
-//			if (Info[i].modelProperties.IRactivity == "A") {
-//				irFreq[i] = roundoff(
-//						substringFreqToFloat(Info[i].modelProperties.Frequency),
-//						0);
-//				irInt[i] = roundoff(
-//						substringIntFreqToFloat(Info[i].modelProperties.IRintensity),
-//						0);
-//				sortInt[i] = roundoff(
-//						substringIntFreqToFloat(Info[i].modelProperties.IRintensity),
-//						0);
-//				intTot[irFreq[i]] = roundoff(
-//						substringIntFreqToFloat(Info[i].modelProperties.IRintensity),
-//						0);
-//				intTotNewboth[irFreq[i]] = roundoff(
-//						substringIntFreqToFloat(Info[i].modelProperties.IRintensity),
-//						0);
-//				// if(irInt[i]== 0.0){
-//				// irInt[i] = 100.00;
-//				// intTot[irFreq[i]]= 100.00;
-//				// intTotNewboth[irFreq[i]] = 100.00;
-//				// }
-//			}
-//		}
-//	}
-//	return irInt;
-//}
-
-function extractFreqData(freqCount, intData, unknownData, sortInt) {
-	var irInt = [];
-	if (flagCrystal) {
-		for (var i = 0; i < freqCount - 1; i++) { // populate IR array
-			irFreq[i] = Math.round(substringFreqToFloat(InfoFreq[i].modelProperties.Frequency));
-			var int = InfoFreq[i].modelProperties.IRintensity;
-			irInt[i] = Math.round(substringIntFreqToFloat(int));
-			if (intData && (irInt[i] || irInt[i]==0)) {
-				intData[0].push(irFreq[i]);
-				intData[1].push(irInt[i]);
-			}
-			sortInt[i] = irInt[i];
-			intTot[irFreq[i]] = irInt[i];
-		}
-	} else if (flagOutcar) {
-		for (var i = 0; i < freqCount; i++) {
-			irFreq[i] = Math.round(substringFreqToFloat(freqData[i]));
-			if (unknownData) {
-				unknownData[0].push(irFreq[i]);
-				unknownData[1].push(100);
-			}
-			intTot[irFreq[i]] = 100.00;
-			irInt[i] = 100.00;
-			if (i == 0)
-				irInt[i] = 0.00;
-		}
-	} else if (flagGaussian) {
-		for (var i = 0; i < freqCount; i++) {
-			irFreq[i] = Math.round(substringFreqToFloat(freqGauss[i]));
-			intTot[irFreq[i]] = freqIntensGauss[i].substring(1,
-					freqIntensGauss[i].indexOf("K") - 1);
-			irInt[i] = freqIntensGauss[i].substring(1, freqIntensGauss[i].indexOf("K") - 1);
-			if (unknownData && (irInt[i] || irInt[i]==0)) {
-				unknownData[0].push(irFreq[i]);
-				unknownData[1].push(irInt[i]);				
-			}
+	for (var i = 0; i < specData.freqCount; i++) {
+		var label = null;
+		if ((vibLinesFromIrrep == null || (label = vibLinesFromIrrep[i]))
+			  && (prop == null || _fileData.freqInfo[i].modelProperties[prop] == "A")) {
+			specData.freqInfo.push(_fileData.freqInfo[i]);
+			addOption(vib, (label || i + " " + _fileData.freqInfo[i].name), _fileData.freqInfo[i].modelNumber);
 		}
 	}
-	return irInt;
 }
 
-function extractRamanData(freqCount, RamanData) {
-	var RamanInt = [];
-	for (var i = 0, freq; i < (freqCount - 1); i++) {
-		if (Info[i].name != null) {
-			RamanInt[i] = 0.000;
-			if (Info[i].modelProperties.Ramanactivity == "A") {
-				RamanFreq[i] = roundoff(freq = substringFreqToFloat(Info[i].modelProperties.Frequency), 0);
-				RamanInt[i] = 100.00;
-				RamanData && (RamanData.push([freq, 100]));
-				newRamanInt[RamanFreq[i]] = 100;
-			}
-		}
-	}
-	return RamanInt;
-}
-
-function defineSpectrum(radvalue, freqCount, irInt, RamanInt, maxInt, sigma,
-		drawGaussian) {
-	var rescale = isChecked("rescaleSpectra");
-	var max0 = (maxInt == 0);
-	var sp = 0.000;
-	// Gaussian Convolution
-	var cx = 4 * Math.LN2;
-	var ssa = sigma * sigma / cx;
-	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI));
-
-	// Lorentzian Convolution
-	var xgamma = sigma;
-	var ssc = xgamma * 0.5 / Math.PI; // old ss1
-	var ssd = (xgamma * 0.5) ^ 2; // old ss2
-	var radvalue;
-	var summInt = [];
-	sortInt = [];
-	if (drawGaussian) {
-		for (var i = 0; i < 4000; i++) {
-			sp = 0.000;
-			if (intTot[i] == null)
-				intTot[i] = 0;
-			else if (max0 && intTot[i] == 0)
-				intTot[i] = maxInt / 2; 
-			for (var k = 0; k < freqCount - 1; k++) {
-				switch (radvalue) {
-				case "ir":
-					if (irInt[k] == null)
-						irInt[k] == 0.00;
-					summInt[k] = irInt[k];
-					break;
-				case "raman":
-					if (RamanInt[k] == null)
-						RamanInt[k] == 0.00;
-					summInt[k] = RamanInt[k];
-					break;
-				case "both":
-					if (irInt[k] == null)
-						irInt[k] == 0.00;
-					if (flagCrystal) { // CRYSTAL
-						if (RamanInt[k] == null)
-							RamanInt[k] == 0.00;
-						summInt[k] = irInt[k] + RamanInt[k];
-					} else if (flagOutcar || flagGaussian) {
-						summInt[k] = irInt[k]
-						// OUTCAR
-						// or
-						// GAUSSIAN
-						// summInt[k]
-						// =
-						// irInt[k];
-					}
-
-					break;
-				} // end switch
-				if (irFreq[k] != null) {
-					var xnn = i - irFreq[k];
-					var f1 = Math.exp(-xnn * xnn / ssa) * summInt[k] * sb;
-					if (rescale == true)
-						var f1 = Math.exp(-xnn * xnn / ssa) * summInt[k]
-					/ maxInt * 100 * sb;
-					sp = sp + f1;
-
-				}
-
-			}
-			intTot[i] = sp;
+function getVibLinesFromIrrep(specData) {
+	var vibLinesFromIrrep = [];
+	var irep = specData.irrep;
+	if (irep == "any")
+		return null;
+	if (_fileData.freqSymm) {
+		// gaussian
+		for (var i = 0, val; i < _fileData.freqSymm.length; i++) {
+			if (irep == _fileData.freqSymm[i])
+				vibLinesFromIrrep[i] = 
+					i + " " + irep + " "+ _fileData.freqData[i] 
+					+ (_fileData.freqIntens[i] ? " (" + _fileData.freqIntens[i] + ")" : "");
 		}
 	} else {
+		for (var i = 1, val; i < _fileData.freqInfo.length; i++) {
+			if (irep == _fileData.freqInfo[i].modelProperties.vibrationalSymmetry)
+				vibLinesFromIrrep[i] = i + " " + _fileData.freqInfo[i].name;
+		}
+	}
+	return vibLinesFromIrrep;
+}
 
-		for (var i = 0; i < 4000; i++) {
-			sp = 0.000;
-			if (intTot[i] == null)
-				intTot[i] = 0;
-			for (var k = 0; k < freqCount - 1; k++) {
-				switch (radvalue) {
-				case "ir":
-					if (irInt[k] == null)
-						irInt[k] == 0.00;
-					summInt[k] = irInt[k];
-					break;
-				case "raman":
-					if (RamanInt[k] == null)
-						RamanInt[k] == 0.00;
-					summInt[k] = RamanInt[k];
-					break;
-				case "both":
-					if (irInt[k] == null)
-						irInt[k] == 0.00;
-					if (flagCrystal) {
-						if (RamanInt[k] == null)
-							RamanInt[k] == 0.00;
-						summInt[k] = irInt[k] + RamanInt[k];
-					} else if (flagOutcar || flagGaussian) { // VASP
-						// OUTCAR
-						// or
-						// GAUSSIAN
-						summInt[k] = irInt[k]
-					}
-					break;
-				} // end switch
-				if (irFreq[k] != null) {
-					var xnn = i - irFreq[k];
-					var f1 = ssc * summInt[k] / (xnn * xnn + ssd);
-					if (rescale == true)
-						var f1 = ssc * summInt[k] / maxInt * 100
-						/ (xnn * xnn + ssd);
-					sp = sp + f1;
-				}
+function extractIRData(specData) {
+ return file_method("extractIRData", function() {return {}}, [specData]);
+}
 
-				intTot[i] = sp;
+function extractIRData_crystal(specData) {
+	var n = specData.freqInfo.length;
+	for (var i = 0; i < n; i++) {
+		if (specData.freqInfo[i].modelProperties.IRactivity != "A") 
+			continue;
+		specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
+		var int = specData.freqInfo[i].modelProperties.IRintensity;
+		specData.irInt[i] = Math.round(substringIntFreqToFloat(int));
+		specData.sortInt[i] = specData.irInt[i];
+		specData.specIR[specData.irFreq[i]] = specData.irInt[i];
+	}
+	System.out.println("crystal extractIRData");
+}
+
+function extractIRData_vaspoutcar(specData) {
+	var n = specData.freqInfo.length;
+	for (var i = 0; i < n; i++) {
+		specData.irFreq[i] = Math.round(substringFreqToFloat(_fileData.freqData[i]));
+		specData.specIR[specData.irFreq[i]] = 100;
+		specData.irInt[i] = 100;
+		if (i == 0)
+			specData.irInt[i] = 0;
+	}
+}
+
+function extractIRData_gaussian(specData) {
+	var n = specData.freqInfo.length;
+	for (var i = 0; i < n; i++) {
+		specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqData[i]));
+		specData.specIR[specData.irFreq[i]] = specData.irInt[i] = rtrim(specData.freqIntens[i], 1, "K", 1);
+	}
+}
+
+function rtrim(s, i0, char, i1) {
+	return s.substring(i0,s.indexOf("K") - i1);
+}
+
+function extractRamanData(specData) {
+	var n = specData.freqInfo.length;
+	for (var i = 0; i < n; i++) {
+		if (specData.freqInfo[i].modelProperties.Ramanactivity == "A") {
+			specData.ramanFreq[i] = roundoff(substringFreqToFloat(Info[i].modelProperties.Frequency), 0);
+			specData.ramanInt[i] = 100;
+			specData.specRaman[specData.ramanFreq[i]] = 100;
+		} else {
+			specData.ramanInt[i] = 0;
+		}
+	}
+	return specData;
+}
+
+function createStickSpectrum(specData, type) {
+	var rescale = specData.rescale;
+	var spec = (type == "ir" ? specData.specIR : specData.specRaman);
+	var maxInt = maxValue(spec);
+	var allZero = (maxInt == 0);
+	if (allZero) {
+		maxInt = 200;
+		rescale = true;
+	}
+	for (var i = 0; i < 4000; i++) {
+		if (spec[i] == null) {
+			spec[i] = 0;
+		} else {
+			if (allZero && spec[i] == 0)
+				spec[i] = maxInt / 2; 
+			if (rescale) {
+				if (spec[i] != 0)
+					spec[i] = (spec[i] / maxInt) * 100;
 			}
 		}
 	}
 }
+
+function createCoolSpectrum(specData, type) {
+		var maxInt;
+		if (specData.sortInt) {
+		 	maxInt = maxValue(specData.sortInt);
+		} else if (specData.maxR) {
+			maxint = specData.maxR;
+		} else {
+			maxInt = 100;
+		}
+		if (maxInt == 0)
+			maxInt = 200;
+		specData.maxInt = maxInt;
+		
+		createConvolvedSpectrum(specData, type);
+}
+
+function getPlotIntArray() {
+	alert("_m_spectra.js#getPlotIntArray has not been implemented.");
+}
+
+function createConvolvedSpectrum(specData, type) {
+
+	var isGaussian = (specData.typeConvolve == "gaus");
+	var spec = (type == "ir" ? specData.specIR : specData.specRaman);
+	var freqCount = specData.freqCount;
+	var irInt = specData.irInt;
+	var irFreq = specData.irFreq;
+	var ramanInt = specData.ramanInt;
+	var ramanFreq = specData.ramanFreq;
+	var sigma = specData.sigma;	
+	var maxInt = specData.maxInt;
+
+	var allZero = (maxValue(spec) == 0);
+	var fscale = (specData.rescale && !allZero ? 100 * 0.3 / maxInt : 1);
+
+	if (!isGaussian)
+		fscale *= 100;
+	
+	// Gaussian Convolution
+	var cx = 4 * Math.LN2;
+	// Lorentzian Convolution
+	var xgamma = specData.sigma;
+	var ssc = xgamma * 0.5 / Math.PI;
+	var ssd = (xgamma * 0.5) * (xgamma * 0.5);
+	
+	var ssa = sigma * sigma / cx;	
+	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI)) * fscale;
+	var freq = (type == "ir" ? irFreq : ramanFreq);
+	var int = (type == "ir" ? irInt : ramanInt);
+	for (var i = 0; i < 4000; i++) {
+		var sp = 0;
+		for (var k = 0, n = freqCount; k < n; k++) {
+			// discard translation
+			if (!freq[k]) 
+				continue;
+			int[k] || (int[k] = 0);
+			v = (allZero ? maxInt / 4 : int[k]);
+			var xnn = i - freq[k];
+			sp += (isGaussian ? Math.exp(-xnn * xnn / ssa) : ssc / (xnn * xnn + ssd)) * v * sb;
+		}
+		spec[i] = sp;
+	}
+}
+
+function showFreqGraph(specData) {
+	var A = specData.specIR, B = specData.specRaman;	
+	var nplots = (B && B.length && A && A.length ? 2 : 1);
+	var minY = 999999;
+	var maxY = 0;
+	for (var i = 0; i < A.length; i++) {
+		if (A[i] > maxY)
+			maxY = A[i];
+		if (A[i] < minY)
+			minY = A[i];
+	}
+	for (var i = 0; i < B.length; i++) {
+		if (B[i] > maxY)
+			maxY = B[i];	
+		if (B[i] < minY)
+			minY = B[i];
+	}
+	if (minY == maxY)
+		maxY = (maxY == 0 ? 200 : maxY * 2);
+	maxY *= 1.2;
+	
+	var options = {
+      series:{
+    	  	lines: { show: true, fill: false }
+      },
+      xaxis: { 
+    	  min : specData.minX, 
+    	  max : specData.maxX, 
+    	  ticks : 10, 
+    	  tickDecimals: 0 
+      },
+      yaxis: { ticks: 0,tickDecimals: 0, min: -0.1, max: maxY },
+      selection: { 
+    	  	mode: (nplots == 1 ? "x" : "xy"), 
+    	  	hoverMode: (nplots == 1 ? "x" : "xy") 
+      },
+      grid: { 
+			hoverable: true, 
+			clickable: true, 
+			hoverDelay: 10, 
+		    autoHighlight: false,
+			hoverDelayDefault: 10
+      }
+	};
+	
+	var ir = [];
+	var raman = [];
+	for (var i = specData.minX, pt = 0; i < specData.maxX; i++, pt++) {
+		if (A.length)
+			ir[pt] = [i, A[i]];
+		if (B.length)
+			raman[pt] = [i, B[i]];		
+	}
+	if (A.length && B.length) {
+		theplot = $.plot($("#plotareafreq"), [{label:"IR", data:ir}, {label:"Raman", data: raman}], options)
+	} else if (A.length) {
+		theplot = $.plot($("#plotareafreq"), [{data: ir}], options)
+	} else if (B.length) {
+		theplot = $.plot($("#plotareafreq"), [{data: raman}], options)
+	}
+	
+	previousPointFreq = null;
+	
+	$("#plotareafreq").unbind("plothover plotclick", null)
+	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
+	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
+	//itemFreq = {datapoint: A.length ? ir[0] : raman[0]}
+	//setTimeout('plotClickCallbackFreq(null,null,itemFreq)',100);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// this was the old spectrum plot
+
+var nullValues;
+
+function plotFrequencies(forceNew){
+	if (haveGraphSpectra && !forceNew)
+		return;
+	if (!flagCrystal && !flagOutcar && !flagGaussian)
+		return;
+	haveGraphSpectra = true;
+	var data = [];
+	var data2 =[];
+	var A = [];
+	var B = [];
+	var nplots = 1;
+	var modelCount = Info.length;
+	var irFreq, irInt, freqValue, ramanFreq, ramanInt, isRaman;
+	var labelIR, labelRaman, modelNumber;
+	
+	var stringa = Info[4].name;
+	
+	if(flagCrystal){
+		if(counterFreq != 0){
+			stringa = Info[counterFreq + 1].name;
+			if (stringa == null)
+				stringa = Info[counterFreq + 2].name;
+		}
+		if(stringa.search(/Energy/i) < 0){
+			nullValues = countNullModel(Info);
+			for (var i = (counterFreq == 0 ? 0 : counterFreq + 1); i < modelCount; i++) {
+				modelnumber = Info[i].modelNumber - nullValues -1;
+				if (Info[i].name == null)
+					continue;
+				freqValue = substringFreqToFloat(Info[i].modelProperties.Frequency);
+				intValue = substringIntFreqToFloat(Info[i].modelProperties.IRintensity);
+				isRaman = (intValue == 0);
+ 				if(!isRaman){
+					irFreq = freqValue;
+					irInt = intValue;
+					isRaman = (Info[i].modelProperties.Ramanactivity == "A");
+					labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
+					A.push([irFreq,irInt,modelnumber,labelIR]);
+ 				}
+ 				if (isRaman) {
+					ramanFreq =  freqValue;
+					ramanInt = [100];
+					labelRaman = 'Model = Frequency ' +   ramanFreq  + ', Intensity = ' + ramanInt + ' kmMol^-1';
+					B.push([ramanFreq,ramanInt,modelnumber,labelRaman]);
+				}
+			}			
+		}
+	} else if (flagOutcar) {
+		stringa = Info[4].name
+		if(counterFreq != 0){
+			stringa = Info[counterFreq + 1].name;
+			if (stringa == null)
+				stringa = Info[counterFreq + 2].name;
+		}
+		if(stringa.search(/G =/i) == -1){
+			nullValues = countNullModel(Info);
+		}
+		for (var i = 0; i < freqData.length; i++) {
+			if(Info[i].name != null){
+				irFreq = substringFreqToFloat(freqData[i]);
+				irInt = [0];
+				modelnumber = Info[i].modelNumber + counterFreq  - nullValues -1 
+				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
+				A.push([irFreq,irInt,modelnumber,labelIR]);
+			}
+		}
+	} else if (flagGaussian){
+		for (var i = 0; i < freqGauss.length; i++) {
+			if(Info[i].name != null){
+				irFreq = substringFreqToFloat(freqGauss[i]);
+				irInt = substringIntGaussToFloat(freqIntensGauss[i]);
+				modelnumber = counterGauss + i; 
+				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
+				A.push([irFreq,irInt,modelnumber,labelIR]);
+			}
+		}
+	}
+
+	showFrequencyGraph(A, B);
+}
+
 
 /*
  * function scaleSpectrum(){
  * 
- * var vecorFreq = []; var vecorChk = []; var counter; for(var
- * i =0 ; i < Info.length; i++){ vecorFreq[i] = Info[i].name; vecorChk[i] = 0
- * if(i == 0) vecorChk[i] = 1 counter++ }
+ * var vecorFreq = []; var vecorChk = []; var counter; for(var i =0 ; i <
+ * Info.length; i++){ vecorFreq[i] = Info[i].name; vecorChk[i] = 0 if(i == 0)
+ * vecorChk[i] = 1 counter++ }
  * 
  * var s = " Shift spectrum "; s+= createSelect("Frequencies", "", 0, 1, counter ,
  * vecorFreq, vecorFreq, vecorChk) + "" s+=
@@ -3362,37 +3261,56 @@ function sortNumber(a, b) {
 }
 
 function maxValue(a) {
-	// BH 2018
-	a.sort(sortNumber);
-	var n = 0;
-	while (a.length > 0 && isNaN(n = parseInt(a[a.length - 1]))){
-		a.pop();
+	var max = 0;
+	for (var i = a.length; --i >= 0;) {
+		if (a[i] > max)
+			max = a[i];
 	}
-	return (isNaN(n) ? 0 : n);
+	return max;
 }
 
 function minValue(irInt) {
 	return parseInt(irInt.sort(sortNumber)[0]);
 }
 
-function symmetryModeAdd() { //extracts vibrational symmetry modes from Info array and lets one get symmetry operations by ID
+function symmetryModeAdd() { // extracts vibrational symmetry modes from Info
+								// array and lets one get symmetry operations by
+								// ID
 	cleanList('sym');
+	var sym = getbyID('sym');
 	if (Info[3].modelProperties) {
-		if (symmetryModeAdd_type)
-			return symmetryModeAdd_type();
-		var symm = [];
-		for (var i = 1; i < Info.length; i++)
-			if (Info[i].name != null)
-				symm[i] = Info[i].modelProperties.vibrationalSymmetry;
-	
-		var sortedSymm = unique(symm);
-		for (var i = 0; i < sortedSymm.length; i++) {
-			if (sortedSymm[i] != null)
-				addOption(getbyID('sym'), sortedSymm[i], sortedSymm[i])
+		var symm = _fileData.freqSymm;
+		if (!symm) {
+			var symm = [];
+			for (var i = 1; i < Info.length; i++)
+				if (Info[i].name)
+					symm[i] = Info[i].modelProperties.vibrationalSymmetry;
 		}
-	}
-	
+		var sortedSymm = unique(symm);
+		addOption(sym, "any", "any");
+		for (var i = 0; i < sortedSymm.length; i++) {
+			var label = sortedSymm[i]; 
+			if (label)
+				addOption(sym, label, label);
+		}
+	}	
 }
+
+function unique(a) {
+	// this function removes duplicates
+	var r = [];
+	var list = "";
+	for (var i = 0, n = a.length; i < n; i++) {
+		var item = a[i];
+		var key = ";" + item + ";";
+		if (list.indexOf(key) >= 0)
+			continue;
+		list += key;
+		r.push(item);
+	}
+	return r;
+}
+
 
 function setVibrationOn(isON) {
 	if (isON)
@@ -3419,147 +3337,103 @@ function updateJmolForFreqParams() {
 	runJmolScriptWait(script)
 }
 
-//function onClickVibrate(select) {
-//	switch (radioval) {
-//	case "on":
-//		// TODO
-//		runJmolScriptWait("vibration on; vectors SCALE 3; vector 5; vibration SCALE 1;");
-//		break;
-//	case "off":
-//		runJmolScriptWait("vibration off;");
-//		break;
-//	}
-//}
-
-//This listens the action change the irep
-function onChangeListSym(irep) {
-	resetFreq();
-	cleanLists()
-	if (flagGaussian) {
-		changeIrepGauss(irep);
-	} else {
-		for (var i = 1; i < Info.length; i++) {
-			if (Info[i].modelProperties.vibrationalSymmetry != null) {
-				var value = Info[i].modelProperties.vibrationalSymmetry;
-				if (irep == value)
-					addOption(getbyID('vib'), i + " " + Info[i].name, i + 1);
-			}
-		}
-	}
-}
-
-//This resets the frequency state
-function resetFreq() {
-	checkBox("radVibrationOff");
-	uncheckBox("vectors");
-}
-
-var maxR = 0;
-function setMaxMinPlot() {
-	var localFreqCount = InfoFreq.length
-	var irFrequency = [];	
+function setMaxMinPlot(specData) {
+	var n = specData.freqCount;
+	var sum = 0;
 	try { 
-		for (var i = 0; i < localFreqCount; i++) { // populate IR array
-			if (InfoFreq[i].modelProperties && InfoFreq[i].modelProperties.Frequency) {
-				irFrequency[i] = roundoff(substringFreqToFloat(InfoFreq[i].modelProperties.Frequency), 0);
-			}
+		for (var i = 0; i < n; i++) {
+			
+			System.out.println(i + " " + specData.freqInfo[i].modelProperties.Frequency);
+			
+			sum += roundoff(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency), 0);
 		}
-		maxR = maxValue(irFrequency);
+		specData.maxR = (isNaN(sum) ? 3700 : sum / n);
+
 	} catch (err){
-			maxR = 3700
+			specData.maxR = 3700;
 	}
 	
-	var max = maxR + 300;
-	min = 0;
-	setValue("nMax", max)
-	setValue("nMin", min)
+	
+	specData.maxX = specData.maxR + 300;
+	specData.minX = 0;
+	
+	setValue("nMax", specData.maxX);
+	setValue("nMin", specData.minX);
 }
-//Creates the frequency menu on the web applet 
+
+// Creates the frequency menu on the web applet
 function createFreqGrp() { 
 	var vibAmplitudeValue = new Array("", "vibration Scale 1",
-			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7", "vibration Scale 10");
+			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7", "vibration Scale 10"); 
 	var vecscaleValue = new Array("", "vectors SCALE 1", "vectors SCALE 3",
 			"vectors SCALE 5", "vectors SCALE 7", "vectors SCALE 10",
 			"vectors SCALE 15", "vectors SCALE 19");
-	var vecsizeValue = new Array("", "vectors 1", "vectors  3", "vectors  5",
+	var vecwidthValue = new Array("", "vectors 1", "vectors  3", "vectors  5",
 			"vectors  7", "vectors 10", "vectors 15", "vectors  19");
 	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
-	var strFreq = "<table class='contents'><tr><td valign='top'><form autocomplete='nope'  id='freqGroup' name='modelsVib' style='display:none'>";
-	strFreq += "<h2>IR-Raman Frequencies</h2>\n";
-	strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=15 style='width:120px; overflow: auto;'></select>";
-	strFreq += "<BR>\n";
-	strFreq += createRadio("modSpec", "Both", "onClickModSpec()", 0, 1, "",
-	"all");
-	strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "",
-	"ir");
-	strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "",
-	"raman");
-	strFreq += "<BR>\n";
-	strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onChangeListSym(value)' onkeypress='onChangeListSym()' CLASS='select' >";
-	strFreq += "</select> ";
-	strFreq += "<BR>\n";
-	strFreq += "vibration ";
-	strFreq += createRadio("vibration", "on", 'onClickFreqParams()', 0, 1,
-			"radVibrationOn", "on");
-	strFreq += createRadio("vibration", "off", 'onClickFreqParams()', 0, 0,
-			"radVibrationOff", "off");
-	strFreq += "<BR>\n";
-	strFreq += createSelect("vecsamplitude", "onClickFreqParams()", 0, 1,
-			vibAmplitudeValue, vibAmplitudeText,[0,1])
-			+ " vib. amplitude";
-	strFreq += "<BR>\n";
-	strFreq += createCheck("vectors", "view vectors",
-			"onClickFreqParams()", 0, 1, "vectors");
-	strFreq += "<BR>\n";
-	strFreq += createSelect("vecscale", "onClickFreqParams()", 0, 1, vecscaleValue,
-			vecscaleText,[0,0,1])
-			+ " vector scale";
-	strFreq += "<BR>\n";
-	strFreq += createSelect("sizevec", "onClickFreqParams()", 0, 1, vecsizeValue,
-			vecscaleText,[0,0,0,1])
-			+ " vector width";
-	strFreq += "<BR>\n";
-	strFreq += "<table class='contents'> <tr><td>vector color</td> <td><script>jmolColorPickerBox([setColorWhat,'vectors'],[255,255,255],'vectorColorPicker')</script></td>";
-	strFreq += "</tr><tr><td>"
-		+ createButton("vibVectcolor", "Default color",
-				'onClickFreqParams()', 0) + "</td></tr></table>";
-	strFreq += "</td><td valign='top'><div id='freqdiv' style='display:none'>\n";
-	strFreq += createDiv("graphfreqdiv", //making small graph
-	"width:200px;height:200px;background-color:#EFEFEF; margin-left:5px; display:none")
-	+ "\n";
-	strFreq += createDiv("plottitlefreq", ";display:none")
-	+ "IR - Raman  dispersion </div>\n";
-	strFreq += createDiv("plotareafreq",
-	"width:210px;height:210px;background-color:#EFEFEF;display:none")
-	+ "</div>\n";
-	strFreq += "Raman intensities set to 0.0 kmMol<sup>-1</sup>";
-	strFreq += "<br>\n";
-	strFreq += createLine('blue', '');
-	strFreq += "Simulate spectrum<br>";
-	strFreq += createRadio("kindspectra", "IR", '', 0, 1, "", "ir");//could add in Onclickgraphparams to change graph immediately 
-	strFreq += createRadio("kindspectra", "Raman", '', 0, 1, "", "raman");//will try to consolidate
-	strFreq += createRadio("kindspectra", "Both", '', 0, 1, "", "both");
-	strFreq += "<br>Convolution with<br>";
-	strFreq += createRadio("convol", "Stick", '', 0, 1, "", "stick");//add new function to change immediately (third param)
-	strFreq += createRadio("convol", "Gaussian", '', 0, 0, "", "gaus");
-	strFreq += createRadio("convol", "Lorentzian", '', 0, 0, "", "lor");
-	strFreq += "<br>Specrum setting <br>\n";
-	strFreq += "band width " + createText2("sigma", "15", "3", "")
-	+ " (cm<sup>-1</sup>)<br>";
-	strFreq += "Min freq. " + createText2("nMin", "", "4", "");
-	strFreq += " Max " + createText2("nMax", "", "4", "")
-	+ "(cm<sup>-1</sup>)<br>";
-	strFreq += createButton("simSpectra", "Simulate spectrum", "simSpectrum()",
-			0)
-			+ " ";
-	strFreq += createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "");
-	strFreq += "</div></div>\n";
-	strFreq += "</form></td></tr></table>";
+	var smallGraph = createDiv("plottitlefreq", ";background:green;display:none", "IR - Raman  dispersion")			
+					+ createDiv("plotareafreq", "background:blue;width:350px;height:180px;background-color:#EFEFEF","");  
+	
+	var simPanel = createDiv("simPanel", "", "Raman intensities set to 0.0 kmMol<sup>-1</sup>"
+		+ "<br>\n"
+		+ createLine('blue', '')
+		+ "<br>"
+		+ "Band width " + createText2("sigma", "15", "3", "") + " (cm<sup>-1</sup>)" 
+		+ "&nbsp;"
+		+ "Min freq. " + createText2("nMin", "", "4", "")
+		+ " Max " + createText2("nMax", "", "4", "") + "(cm<sup>-1</sup>)"
+		+ createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "") + "<br>"
+		+ createRadio("convol", "Stick", 'onClickModSpec()', 0, 1, "", "stick")
+		+ createRadio("convol", "Gaussian", 'onClickModSpec()', 0, 0, "", "gaus")
+		+ createRadio("convol", "Lorentzian", 'onClickModSpec()', 0, 0, "", "lor") 
+		+ "&nbsp;" + "&nbsp;" + "&nbsp;"
+		+ createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
+
+	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib' style='display:none'>";
+		strFreq += "<table border=0 class='contents'><tr><td valign='top'>";
+			strFreq += "<h2>IR-Raman Frequencies</h2>\n";
+			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=11 style='width:200px; overflow: auto;'></select>";	
+		strFreq += "</td>"; // end of the first column
+		strFreq += "<td valign='top'>";
+		strFreq += createRadio("modSpec", "Both", "onClickModSpec()", 0, 1, "", "all");
+			strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "", "ir");
+			strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "", "raman");
+			strFreq += "<BR>\n";
+		strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeypress='onClickModSpec()' CLASS='select' >";
+			strFreq += "</select> ";
+			strFreq += "<BR>\n";
+			strFreq += "vibration ";
+			strFreq += createRadio("vibration", "on", 'onClickFreqParams()', 0, 1, "radVibrationOn", "on");
+			strFreq += createRadio("vibration", "off", 'onClickFreqParams()', 0, 0, "radVibrationOff", "off");
+			strFreq += "<BR>\n";
+			strFreq += createSelect("vecsamplitude", "onClickFreqParams()", 0, 1,
+					vibAmplitudeValue, vibAmplitudeText,[0,1])
+					+ " vib. amplitude"; 
+			strFreq += "<BR>\n";
+			strFreq += createCheck("vectors", "view vectors", "onClickFreqParams()", 0, 1, "vectors");
+			strFreq += "<BR>\n";
+			strFreq += createSelect("vecscale", "onClickFreqParams()", 0, 1, vecscaleValue, vecscaleText, [0,0,1]) + " vector scale"; 																									// scale
+			strFreq += "<BR>\n";
+			strFreq += createSelect("widthvec", "onClickFreqParams()", 0, 1, vecwidthValue, vecscaleText,[0,0,0,1]) + " vector width";
+			strFreq += "<BR>\n";
+			strFreq += "<table border=0 class='contents'> <tr>";
+				strFreq += "<td>vector color</td> <td><script>jmolColorPickerBox([setColorWhat,'vectors'],[255,255,255],'vectorColorPicker')</script></td>";
+				strFreq += "</tr><tr><td>" + createButton("vibVectcolor", "Default color", 'onClickFreqParams()', 0) + "</td>";
+			strFreq += "</tr></table>";					
+		strFreq += "</td></tr>";
+		strFreq += "<tr><td colspan=2>";
+		strFreq += createDiv("graphfreqdiv", // making small graph
+				"width:350px;height:200px;background-color:#EFEFEF;margin-left:5px;display:inline", smallGraph + simPanel);
+		strFreq += "</td></tr>";
+	strFreq += "</table></form> ";
 
 	return strFreq;
 }
+
+
+
       		
 ///js// Js/_m_elec.js /////
 function enterElec() {
@@ -3808,11 +3682,8 @@ function myMeasuramentCallback(app, msg, type, state, value) {
 }
 
 myLoadStructCallback = function(applet,filePath,c,d) {
-	if (!filePath)
-		return;
-	// run xxxDone() if it exists, otherwise just loadDone()
-	var type = jmolEvaluate("_fileType").toLowerCase();
-	postLoad(type, filePath);
+	if (filePath)
+		file_loadedCallback(filePath);
 }
 
 myErrorCallback = function(applet, b, msg, d) {
@@ -3866,6 +3737,12 @@ myMinimizationCallback = function(applet,b,c,d) {
 
 
 var version = "3.0.0"; // BH 2018
+
+
+ENERGY_EV      = 0;
+ENERGY_HARTREE = 1;
+ENERGY_RYDBERG = 2;
+
 
 var eleSymb = [];
 eleSymb[0] = "select";
@@ -4336,6 +4213,56 @@ function substringEnergyToFloat(value) {
 	return grab;
 }
 
+function substringEnergyGulpToFloat(value) {
+	if (value != null) {
+		var grab = parseFloat(
+				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
+				.toPrecision(8); // E = 100000.0000 eV
+		grab = grab * 96.48;
+		// http://web.utk.edu/~rcompton/constants
+		grab = Math.round(grab * 100000000) / 100000000;
+	}
+	return grab;
+}
+
+function substringEnergyVaspToFloat(value) {
+	if (value != null) {
+		var grab = parseFloat(
+				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
+				.toPrecision(8); // Enthaply = -26.45132096 eV
+		grab = grab * 96.485; // constant from
+		// http://web.utk.edu/~rcompton/constants
+		grab = Math.round(grab * 100000000) / 100000000;
+	}
+	return grab;
+}
+
+
+function substringEnergyCastepToFloat(value) {
+	if (value != null) {
+		var grab = parseFloat(
+				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
+				.toPrecision(8); // Enthaply = -26.45132096 eV
+		grab = grab * 96.485; // constant from
+		// http://web.utk.edu/~rcompton/constants
+		grab = Math.round(grab * 100000000) / 100000000;
+		//alert(grab)
+	}
+	return grab;
+}
+
+function substringEnergyQuantumToFloat(value) {
+	if (value != null) {
+		var grab = parseFloat(
+				value.substring(value.indexOf('=') + 1, value.indexOf('R') - 1))
+				.toPrecision(8); // E = 100000.0000 Ry
+		grab = grab * 96.485 * 0.5; // constant from
+		// http://web.utk.edu/~rcompton/constants
+		grab = Math.round(grab * 100000000) / 100000000;
+	}
+	return grab;
+}
+
 function substringFreqToFloat(value) {
 	if (value != null) {
 		var grab = parseFloat(value.substring(0, value.indexOf('c') - 1));
@@ -4408,77 +4335,180 @@ function convertPlot(value) {
 	// ////var vecUnitEnergyVal = new Array ("h", "e", "r", "kj", "kc");
 	setconversionParam();
 	switch (unitEnergy) {
-
 	case "h": // Hartree
 		finalGeomUnit = " Hartree";
-		if (flagQuantumEspresso) {
+		switch (_fileData.energyUnits) {
+		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtohartree);
-		} else if (!flagCrystal || flagOutcar || flagGulp) {
+			break;
+		case ENERGY_EV:
 			convertGeomData(fromevToHartree);
-		} else if (flagCrystal || flagDmol) {
+			break;
+		case ENERGY_HARTREE:
 			convertGeomData(fromHartreetoHartree);
+			break;
 		}
 		break;
 	case "e": // eV
 		finalGeomUnit = " eV";
-		if (flagCrystal || flagDmol) {
+		switch (_fileData.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtoEV);
+			break;
+		case ENERGY_EV:
+			convertGeomData(fromevToev);
+			break;
+		case ENERGY_HARTREE:
 			convertGeomData(fromHartreetoEv);
-		} else if (flagQuantumEspresso) {
-			convertGeomData(fromRydbergtoEv);
-		} else if (!flagCrystal || flagOutcar || flagGulp) {
-			convertGeomData(fromevtoev);
+			break;
 		}
-
 		break;
 
 	case "r": // Rydberg
 		finalGeomUnit = " Ry";
-		if (flagCrystal || flagDmol) {
-			convertGeomData(fromHartreetoRydberg);
-		} else if (!flagCrystal || flagOutcar || flagGulp) {
+		switch (_fileData.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtorydberg);
+			break;
+		case ENERGY_EV:
 			convertGeomData(fromevTorydberg);
-		} else if (flagQuantumEspresso) {
-			convertGeomData(fromRydbergTorydberg);
+			break;
+		case ENERGY_HARTREE:
+			convertGeomData(fromHartreetoRydberg);
+			break;
 		}
 		break;
 
 	case "kj": // Kj/mol
 		finalGeomUnit = " kJ/mol"
-
-			if (flagCrystal || flagDmol) {
-				convertGeomData(fromHartreetokJ);
-			} else if (!flagCrystal || flagOutcar || flagGulp) {
+			switch (_fileData.energyUnits) {
+			case ENERGY_RYDBERG:
+				convertGeomData(fromRydbergtoKj);
+				break;
+			case ENERGY_EV:
 				convertGeomData(fromevTokJ);
-			} else if (flagQuantumEspresso) {
-				convertGeomData(fromRydbergToKj);
+				break;
+			case ENERGY_HARTREE:
+				convertGeomData(fromHartreetoKj);
+				break;
 			}
 		break;
 
 	case "kc": // Kcal*mol
-		finalGeomUnit = " kcal/mol"
-			
-			if (flagCrystal || flagDmol) {
-				convertGeomData(fromHartreetokcalmol);
-			} else if (!flagCrystal || flagOutcar || flagGulp) {
-				convertGeomData(fromevtokcalmol);
-			} else if (flagQuantumEspresso) {
-				convertGeomData(fromRytokcalmol);
-			}
+		finalGeomUnit = " kcal/mol"			
+		switch (_fileData.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtokcalmol);
+			break;
+		case ENERGY_EV:
+			convertGeomData(fromevTokcalmol);
+			break;
+		case ENERGY_HARTREE:
+			convertGeomData(fromHartreetokcalmol);
+			break;
+		}
 		break;
 	}
 }
 
 function setconversionParam() {
-	if (flagCrystal || flagDmol) {
-		unitGeomEnergy = "H"; // Hartree
-	} else if ((!flagCrystal && !flagQuantumEspresso) || (flagOutcar && !flagQuantumEspresso)) {
-		unitGeomEnergy = "e"; // VASP
-	} else if (flagGulp) {
-		unitGeomEnergy = "k";
-	} else if (flagQuantumEspresso || !flagOutcar) {
+	unitGeomEnergy = _fileData.unitGeomEnergy;
+	switch (_fileData.energyUnits) {
+	case ENERGY_RYDBERG:
 		unitGeomEnergy = "R";
+		break;
+	case ENERGY_EV:
+		unitGeomEnergy = "e";
+		break;
+	case ENERGY_HARTREE:
+		unitGeomEnergy = "H";
+		break;
+// TODO: why 'k'
+//	case ENERGY_KJ_PER_MOLE:
+//		unitGeomEnergy = "k";
 	}
 }
+
+
+//function convertPlot(value) {
+//	var unitEnergy = value;
+//
+//	// ////var vecUnitEnergyVal = new Array ("h", "e", "r", "kj", "kc");
+//	setconversionParam();
+//	switch (unitEnergy) {
+//
+//	case "h": // Hartree
+//		finalGeomUnit = " Hartree";
+//		if (flagQuantumEspresso) {
+//			convertGeomData(fromRydbergtohartree);
+//		} else if (!flagCrystal || flagOutcar || flagGulp) {
+//			convertGeomData(fromevToHartree);
+//		} else if (flagCrystal || flagDmol) {
+//			convertGeomData(fromHartreetoHartree);
+//		}
+//		break;
+//	case "e": // eV
+//		finalGeomUnit = " eV";
+//		if (flagCrystal || flagDmol) {
+//			convertGeomData(fromHartreetoEv);
+//		} else if (flagQuantumEspresso) {
+//			convertGeomData(fromRydbergtoEv);
+//		} else if (!flagCrystal || flagOutcar || flagGulp) {
+//			convertGeomData(fromevtoev);
+//		}
+//
+//		break;
+//
+//	case "r": // Rydberg
+//		finalGeomUnit = " Ry";
+//		if (flagCrystal || flagDmol) {
+//			convertGeomData(fromHartreetoRydberg);
+//		} else if (!flagCrystal || flagOutcar || flagGulp) {
+//			convertGeomData(fromevTorydberg);
+//		} else if (flagQuantumEspresso) {
+//			convertGeomData(fromRydbergTorydberg);
+//		}
+//		break;
+//
+//	case "kj": // Kj/mol
+//		finalGeomUnit = " kJ/mol"
+//
+//			if (flagCrystal || flagDmol) {
+//				convertGeomData(fromHartreetokJ);
+//			} else if (!flagCrystal || flagOutcar || flagGulp) {
+//				convertGeomData(fromevTokJ);
+//			} else if (flagQuantumEspresso) {
+//				convertGeomData(fromRydbergToKj);
+//			}
+//		break;
+//
+//	case "kc": // Kcal*mol
+//		finalGeomUnit = " kcal/mol"
+//			
+//			if (flagCrystal || flagDmol) {
+//				convertGeomData(fromHartreetokcalmol);
+//			} else if (!flagCrystal || flagOutcar || flagGulp) {
+//				convertGeomData(fromevtokcalmol);
+//			} else if (flagQuantumEspresso) {
+//				convertGeomData(fromRytokcalmol);
+//			}
+//		break;
+//	}
+//}
+//
+//function setconversionParam() {
+//	if (flagCrystal || flagDmol) {
+//		unitGeomEnergy = "H"; // Hartree
+//	} else if ((!flagCrystal && !flagQuantumEspresso) || (flagOutcar && !flagQuantumEspresso)) {
+//		unitGeomEnergy = "e"; // VASP
+//	} else if (flagGulp) {
+//		unitGeomEnergy = "k";
+//	} else if (flagQuantumEspresso || !flagOutcar) {
+//		unitGeomEnergy = "R";
+//	}
+//}
+
+
 
 function convertGeomData(f) {
 	// The required value is the end of the string Energy = -123.456 Hartree.
@@ -4486,16 +4516,14 @@ function convertGeomData(f) {
 	if (geom != null)
 		cleanList('geom');
 
-	var arraynewUnit = [];
+	var val = 0;
 
-	var n = 0;
-	if (flagQuantumEspresso)
-		n = 1;
+	var n = (_fileData.hasInputModel ? 1 : 0);
 	for (var i = n; i < geomData.length; i++) {
-		var data = geomData[i];
-		arraynewUnit[i] = f(data.substring(data.indexOf('=') + 1, 
+		var data = _fileInfo.geomData[i];
+		val = f(data.substring(data.indexOf('=') + 1, 
 				data.indexOf(unitGeomEnergy) - 1));
-		addOption(geom, i + " E = " + arraynewUnit[i] + finalGeomUnit, i + 1);
+		addOption(geom, i + " E = " + val + finalGeomUnit, i + 1);
 	}
 
 }
@@ -5151,6 +5179,15 @@ function resetValue(form) {
 	return element;
 }
 
+function getRadioSetValue(radios) {
+	// BH -- switched to top radios -- for frequency list as well as spectrum
+	for (var i = 0; i < radios.length; i++) {
+		if (radios[i].checked) {
+			return radios[i].value;
+		}
+	}
+}
+
 function makeDisable(element) {
 	// BH 2018
 	var d = getbyID(element);
@@ -5241,21 +5278,6 @@ function getbyName(na) {
 	return document.getElementsByName(na);
 }
 
-function unique(a) {
-	//this function removes duplicates
-	var r = [];
-	var list = "";
-	for (var i = 0, n = a.length; i < n; i++) {
-		var item = a[i];
-		var key = ";" + item + ";";
-		if (list.indexOf(key) >= 0)
-			continue;
-		list += key;
-		r.push(item);
-	}
-	return r;
-}
-
 //This is meant to add new element to a list
 function addOption(selectbox, text, value) {
 	var optn = document.createElement("OPTION");
@@ -5270,9 +5292,6 @@ function cleanList(listname) {
 		for (var i = d.options.length; --i >= 0;)
 			d.remove(i);
 }
-
-
-
 
 function selectListItem(list, itemToSelect) {
 	// Loop through all the items
@@ -5330,7 +5349,7 @@ function showFrame(model) {
 }
       		
 ///js// Js/info.js /////
-var Info, InfoFreq;
+var Info;
 
 function extractInfoJmol(whatToExtract) {
 	return jmolGetPropertyAsArray(whatToExtract);
@@ -5353,13 +5372,6 @@ function getElementList(arr) {
 	return arr;
 }
 
-function getInfoFreq() {
-	InfoFreq = [];
-	for (var i = 0; i < Info.length; i++)
-		if (Info[i] && Info[i].modelProperties 
-				&& Info[i].modelProperties.PATH == "Frequencies")
-			InfoFreq.push(Info[i]);	
-}
 
       		
 ///js// Js/menu.js /////
@@ -5387,26 +5399,7 @@ function getInfoFreq() {
  *  02111-1307  USA.
  */
 
-function createAllMenus() {
-	var s = createFileGrp()
-		+ createShowGrp()
-		+ createEditGrp()
-		//+ createBuildGrp()
-		+ createMeasureGrp()
-		+ createOrientGrp()
-		+ createCellGrp()
-		+ createPolyGrp()
-		+ createIsoGrp()
-		+ createOptimizeGrp()
-		+ createFreqGrp()
-		+ createElecpropGrp()
-		+ createOtherGrp()
-		/* createSymmetryGrp() */
-		+ addCommandBox()
-		//+ createHistGrp()
-		;
-	return s
-}
+
 
 addCommandBox = function() {
 	// see debug.js
@@ -5426,7 +5419,6 @@ addCommandBox = function() {
 function cleanLists() {
 	// was "removeAll()"
 	cleanList('geom');
-	cleanList('vib');
 	cleanList('colourbyElementList');
 	// cleanList('colourbyAtomList');
 	cleanList('polybyElementList');
@@ -5632,8 +5624,6 @@ function pickDistanceCallback() {
 //}
 
 
-var iamready = false;
-
 var itemEnergy
 var previousPoint = null
 var itemForce
@@ -5706,18 +5696,18 @@ function plotEnergies(){
 		}
 	} else {
 		// Gaussian
-		last = energyGauss.length;
+		last = _fileData.energy.length;
 		for (var i = 1; i < last; i++) {
-			var name = energyGauss[i];
+			var name = _fileData.energy[i];
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = energyGauss.length - 1;// BH ??? reall??? next-to-last model?		
+			var modelnumber = _fileData.energy.length - 1;		
 			if(i > 0 && i < Info.length)
 				var previous = i - 1;
 			var e = fromHartreetokJ(name);
 			var e1;
 //			if(i == 0 || (e1 = energyGauss[i - 1]) == null) {
-				energy = Math.abs(e - fromHartreetokJ(energyGauss[last]));
+				energy = Math.abs(e - fromHartreetokJ(_fileData.energy[last]));
 //			} else if (previous > 0) {
 //				if (e != e1)
 //					energy = Math.abs(e - e1);
@@ -5741,7 +5731,6 @@ function plotEnergies(){
 	$("#plotarea").bind("plothover", plotHoverCallback);
 	$("#plotarea").bind("plotclick", plotClickCallback);
 	itemEnergy = {datapoint:A[0]}
-	iamready = true;
 	setTimeout('plotClickCallback(null,null,itemEnergy)',100);
 
 	//function plotGradient(){
@@ -5797,7 +5786,6 @@ function plotEnergies(){
 	$("#plotarea1").bind("plothover", plotHoverCallbackforce);
 	$("#plotarea1").bind("plotclick", plotClickCallbackForce);
 	itemForce = { datapoint:A[0] };
-	iamready = true;
 	setTimeout('plotClickCallbackForce(null,null,itemForce)',100);
 }
 
@@ -5927,7 +5915,6 @@ function plotFrequencies(forceNew){
 	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
 	itemFreq = {datapoint: A[0] || B[0]}
 	setTimeout('plotClickCallbackFreq(null,null,itemFreq)',100);
-	iamready = true;
 }
 
 function plotClickCallback(event, pos, itemEnergy) {
@@ -6116,51 +6103,60 @@ function countNullModel(arrayX) {
 	return valueNullelement;
 }
 
+//for spectrum.html or new dynamic cool spectrum simulation
 
+var plotOptionsHTML = {
+		   series: { lines: { show: true, fill: false } },
+		   xaxis: { ticks: 10, tickDecimals: 0 },
+		   yaxis: { ticks: 0, tickDecimals: 0 },
+		   grid: { hoverable: true, autoHighlight: false},
+		   //crosshair: { mode: "x" }
+		};
 
-
-//for spectrum.html
-
-function plotSpectrumHTML() {
-	var Min = parseInt(opener.getValue("nMin")); 
-	var Max = parseInt(opener.getValue("nMax"));
-	setValue("minValue", Min);
-	setValue("maxValue", Max); 
-	var intArray= opener.intTot;
-	var dataSpectrum = [];
-	var spectrum =[];
+function plotSpectrum(div, openerOrSelf) {
+	var isNewWindow = !!openerOrSelf;
+	var intArray = openerOrSelf.getPlotIntArray();
+	openerOrSelf || (openerOrSelf = self);
+	var options = (isNewWindow ? openerOrSelf.plotOptionsHTML : opener.plotOptions);
+	var min = parseInt(openerOrSelf.getValue("nMin")); 
+	var max = parseInt(openerOrSelf.getValue("nMax"));
+	if (isNewWindow) {
+		setValue("minValue", min);
+		setValue("maxValue", max); 
+	}
 	
-	var options ={
-	   series:{
-		      lines: { show: true, fill: false }
-	   },
-	   xaxis: { ticks: 10, tickDecimals: 0 },
-	   yaxis: { ticks: 0,tickDecimals: 0 },
-	   grid: { hoverable: true, autoHighlight: false},
-	   //crosshair: { mode: "x" }
-	};
-	var numberPlots = 1; //old plot
-	var plot = null; 
-	dataSpectrum = [];
-	spectrum = [];
-	var legends = $("#plotSpectrum .legendLabel");
+//	var options ={
+//	   series:{
+//		      lines: { show: true, fill: false }
+//	   },
+//	   xaxis: { ticks: 10, tickDecimals: 0 },
+//	   yaxis: { ticks: 0,tickDecimals: 0 },
+//	   grid: { hoverable: true, autoHighlight: false},
+//	   //crosshair: { mode: "x" }
+//	};
+
+	var legends = $("#" + div + " .legendLabel");
 	 legends.each(function () {
 	    // fix the widths so they don't jump around
 	     $(this).css('width', $(this).width());});
 	
-	for(var i=Min; i < Max; i++){
+	var dataSpectrum = [];
+	var spectrum = [];
+	for(var i = min; i < max; i++){
 	 spectrum.push([i,intArray[i]]);
 	}
 	//dataSpectrum.push(spectrum);
-	plot = $.plot($('#plotSpectrum'), [{label:"Spectrum", data:  spectrum }], options);
-	
-	var updateLegendTimeout = null;
-	var latestPosition = null; 
-	 $("#plotSpectrum").bind("plothover",  function (event, pos, item) {
-	     latestPosition = pos;
-	     if (!updateLegendTimeout)
-	         updateLegendTimeout = setTimeout(function() { legends.text(latestPosition.x.toFixed(2)); }, 50);
-	 });
+	var plot = $.plot($('#' + div), [{label:(isNewPage ? "Spectrum" : null), data:  spectrum }], options);
+
+	if (isNewPage) {
+		var updateLegendTimeout = null;
+		var latestPosition = null; 
+		 $("#plotSpectrum").bind("plothover",  function (event, pos, item) {
+		     latestPosition = pos;
+		     if (!updateLegendTimeout)
+		         updateLegendTimeout = setTimeout(function() { legends.text(latestPosition.x.toFixed(2)); }, 50);
+		 });
+	}
 }    
 
 function replotSpectrumHTML(){
@@ -6176,9 +6172,9 @@ function replotSpectrumHTML(){
 	   grid: { hoverable: true, autoHighlight: false},
 	   //crosshair: { mode: "x" }
 	};
-	dataSpectrum = [];
-	spectrum = [];
-	var intArray= opener.intTot;
+	var dataSpectrum = [];
+	var spectrum = [];
+	var intArray= opener._specData.intTot;
 	for(var i = Min; i < Max ; i++){
 	  spectrum.push([i,intArray[i]]);
 	}
@@ -6745,81 +6741,33 @@ function prepareCoordinateblockCastep() {
 
 // /// FUNCTION LOAD
 
-castepDone = function() {
-	var counterFreq = 0;
-	var counterMD = 0;
-	//cleanAndReloadForm();
-	getUnitcell("1");
-	setFrameValues("1");
-
-	for (i = 0; i < Info.length; i++) {
+loadDone_castep = function() {
+	_fileData.energyUnits = ENERGY_EV;
+	_fileData.counterFreq = 0;
+	_fileData.counterMD = 0;
+	for (var i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
 			var line = Info[i].name;
-			// alert(line)
 			if (line.search(/Energy =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				geomData[i] = line;
-				counterFreq++;
+				_fileData.geomData[i] = line;
+				_fileData.counterFreq++;
 			} else if (line.search(/cm-1/i) != -1) {
-				freqData[i - counterFreq] = line;
-				counterMD++;
+				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
+				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqData.push(line);
+				_fileData.vibLine.push(i + " A " + data + " cm^-1");
+				_fileData.counterMD++;
 			}
 		}
 	}
-
-	if (freqData != null) {
-		var vib = getbyID('vib');
-		for (i = 1; i < freqData.length; i++) {
-			if (freqData[i] != null)
-				var data = parseFloat(freqData[i].substring(0, freqData[i]
-						.indexOf("c") - 1));
-			addOption(vib, i + " A " + data + " cm^-1", i
-					+ counterFreq + 1);
-		}
-	}
+	getUnitcell("1");
+	setFrameValues("1");
 	disableFreqOpts();
 	getSymInfo();
 	loadDone();
 }
 
-// ///////LOAD FUNCTIONS
-
-function disableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = true;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = true;
-
-	// getbyID("modAct").enable = false;
-	// makeDisable("modAct");
-	// makeDisable("vibSym");
-	// makeDisable("reload");
-}
-
-function enableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = false;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = false;
-
-}
-
-// /// COVERT FUNCTION
-
-function substringEnergyCastepToFloat(value) {
-	if (value != null) {
-		var grab = parseFloat(
-				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
-				.toPrecision(8); // Enthaply = -26.45132096 eV
-		grab = grab * 96.485; // constant from
-		// http://web.utk.edu/~rcompton/constants
-		grab = Math.round(grab * 100000000) / 100000000;
-		//alert(grab)
-	}
-	return grab;
-}
-
-/////END FUNCTIONS
       		
 ///js// Js/adapters/crystal.js /////
 /*  J-ICE library 
@@ -7011,52 +6959,51 @@ function savCRYSTALSpace() {
 /////////////////////////
 ///////////////////////// LOAD & ON LOAD functions
 
-function setGeomAndFreqData() {
-	counterFreq = 0;
+loadDone_crystal = function() {
+	_fileData.energyUnits = ENERGY_HARTREE;
+	_fileData.StrUnitEnergy = "H";
 	var vib = getbyID('vib');
-	for (i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
+	for (var i = 0; i < Info.length; i++) {
+		var line = Info[i].name;
+		if (line != null) {
 			if (line.search(/Energy/i) != -1) { // Energy
-				if (i > 0 && i < Info.length)
-					var previous = substringEnergyToFloat(Info[i - 1].name);
-				if (Info[i].name != null) {
-					addOption(getbyID('geom'), i + " " + Info[i].name, i + 1);
-					geomData[i] = Info[i].name;
-					counterFreq++;
-				}
+//				if (i > 0 && i < Info.length)
+//					var previous = substringEnergyToFloat(Info[i - 1].name);
+//				if (Info[i].name != null) {
+				addOption(getbyID('geom'), i + " " + line, i + 1);
+				_fileData.geomData[i] = line;
+				_fileData.counterFreq++;
+//				}
 			} else if (line.search(/cm/i) != -1) {
-				addOption(vib, (i + counterFreq +1) + " " + Info[i].name, i + 1);
-				if (line.search(/LO/) == -1)
-					freqData[i - counterFreq] = Info[i].name;
+				if (line.search(/LO/) == -1) {
+					_fileData.freqInfo.push(Info[i]);
+					_fileData.vibLine.push((i - _fileData.counterFreq) + " " + line); 
+					_fileData.freqData.push(line);
+				}
 			}
 	
 		}
 	} 
-}
-
-crystalDone = function() {
 	getUnitcell("1");
 	runJmolScriptWait("echo");
-	setGeomAndFreqData();
 	setTitleEcho();
 	loadDone();
 }
 
-// this method was called when the Geometry Optimize and Spectra tabs
-// were clicked via a complex sequence of callbacks
-// but that is not done now, because all this should be done from a loadStructCallback.
-function reloadFastModels() {
-	setDefaultJmolSettings();
-	if (flagCryVasp) {
-		getUnitcell("1");
-		runJmolScriptWait("echo");
-		setTitleEcho();
-		setGeomAndFreqData();
-		enableFreqOpts();
-		//getSymInfo();
-	}
-}
+//// this method was called when the Geometry Optimize and Spectra tabs
+//// were clicked via a complex sequence of callbacks
+//// but that is not done now, because all this should be done from a loadStructCallback.
+//function reloadFastModels() {
+//	setDefaultJmolSettings();
+//	if (flagCryVasp) {
+//		getUnitcell("1");
+//		runJmolScriptWait("echo");
+//		setTitleEcho();
+//		setGeomAndFreqData();
+//		enableFreqOpts();
+//		//getSymInfo();
+//	}
+//}
 
       		
 ///js// Js/adapters/dmol.js /////
@@ -7086,41 +7033,28 @@ function reloadFastModels() {
 
 //3rd-Sept-2010 CANEPA
 
-var counterFreq = 0;
-
-dmolDone = function() {
-	//cleanAndReloadForm();
-	getUnitcell("1");
-	setFrameValues("1");
-	var counterMD = 0;
-	counterFreq = 0;
-	for (i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
-			// alert(line)
+loadDone_dmol = function() {
+	_fileData.energyUnits = ENERGY_HARTREE;
+	_fileData.StrUnitEnergy = "H";
+	for (var i = 0; i < Info.length; i++) {
+		var line = Info[i].name;
+		if (line != null) {
 			if (line.search(/E =/i) != -1) {
-				// alert("geometry")
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				geomData[i] = line;
-				counterFreq++;
+				_fileData.geomData[i] = line;
+				_fileData.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				freqData[i - counterFreq] = line;
-				counterMD++;
+				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqData.push(line);
+				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
+				_fileData.vibLine.push(i + " A " + data + " cm^-1");
+				_fileData.counterMD++;
 			}
 		}
 	}
 
-	if (freqData != null) {
-		var vib = getbyID('vib');
-		for (i = 1; i < freqData.length; i++) {
-			if (freqData[i] != null)
-				var data = parseFloat(freqData[i].substring(0, freqData[i]
-						.indexOf("c") - 1));
-			addOption(vib, i + " A " + data + " cm^-1", i
-					+ counterFreq + 1);
-		}
-	}
-	// These are in the vaspfunctions.js
+	getUnitcell("1");
+	setFrameValues("1");
 	disableFreqOpts();
 	getSymInfo();
 	loadDone();
@@ -7151,79 +7085,40 @@ dmolDone = function() {
  *  02111-1307  USA.
  */
 
-var geomGauss = new Array;
-var freqSymmGauss = new Array;
-var freqIntensGauss = new Array;
-var freqGauss = new Array;
-var energyGauss = new Array;
-var counterGauss = 0;
+loadDone_gaussian = function() {
 
-gaussianDone = function() {
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
-	// Reset program and set filename if available
-	// This also extract the auxiliary info
-	initializeJiceGauss();
+
+	_fileData.energyUnits = ENERGY_HARTREE;
+	_fileData.StrUnitEnergy = "H";
+
+	setTitleEcho();
+	setFrameValues("1");
+	disableFreqOpts();
+
 	var geom = getbyID('geom');
 	var vib = getbyID('vib');
-	for (i = 0; i < Info.length; i++) {
+	for (var i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
 			var line = Info[i].name;
 			// alert(line)
 			if (line.search(/E/i) != -1) {
-				// alert("geometry")
-				addOption(geom, i + " " + Info[i].name, i + 1);
-				geomGauss[i] = Info[i].name;
+				_fileData.geom[i] = Info[i].name;
+				addOption(geom, i + " " + _fileData.geom[i], i + 1);
 				if (Info[i].modelProperties.Energy != null
 						|| Info[i].modelProperties.Energy != "")
-					energyGauss[i] = Info[i].modelProperties.Energy;
-				//alert(energyGauss[i])
-				counterGauss++;
+					_fileData.energy[i] = Info[i].modelProperties.Energy;
+				_fileData.counterGauss++;
 			} else if (line.search(/cm/i) != -1) {
-				// alert("vibration")
-				addOption(vib, i + " " + Info[i].name + " ("
-						+ Info[i].modelProperties.IRIntensity + ")", i);
-				freqGauss[i - counterGauss] = Info[i].modelProperties.Frequency;
-				freqSymmGauss[i - counterGauss] = Info[i].modelProperties.FrequencyLabel;
-				freqIntensGauss[i - counterGauss] = Info[i].modelProperties.IRIntensity;
+				_fileData.vibLine.push(i + " " + Info[i].name + " (" + Info[i].modelProperties.IRIntensity + ")");
+				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqData.push(Info[i].modelProperties.Frequency);
+				_fileData.freqSymm.push(Info[i].modelProperties.FrequencyLabel);
+				_fileData.freqIntens.push(Info[i].modelProperties.IRIntensity);
 			}
 		}
 	}
 	loadDone();
-}
-
-function initializeJiceGauss() {
-	setTitleEcho();
-	setFrameValues("1");
-	cleanArrayGauss();
-	disableFreqOpts();
-}
-
-function cleanArrayGauss() {
-	geomGauss = [];
-	freqSymmGauss = [];
-	freqIntensGauss = [];
-	counterGauss = 0;
-}
-
-function symmetryModeAdd_gaussian() {
-	// this method is called using self["symmetryModeAdd_" + type]
-	var sym = getbyID('sym');
-	var sortedSymm = unique(freqSymmGauss);
-	for (var i = 0; i < freqSymmGauss.length; i++) {
-		if (sortedSymm[i] != null)
-			addOption(sym, freqSymmGauss[i], freqSymmGauss[i])
-	}
-}
-
-function changeIrepGauss(irep) {
-	var vib = getbyID('vib');
-	for (var i = 0; i < freqGauss.length; i++) {
-		var value = freqSymmGauss[i];
-		if (irep == value)
-			addOption(vib, i + " " + freqSymmGauss[i] + " "
-					+ freqGauss[i] + " (" + freqIntensGauss[i] + ")", i
-					+ counterGauss + 1);
-	}
 }
 
       		
@@ -7478,39 +7373,27 @@ function setPotentialgulp() {
 
 // ////////////GULP READER
 
-function gulpDone() {
-	runJmolScriptWait("script scripts/gulp_name.spt"); 
-	var counterFreq = 0;
-	getUnitcell("1");
-	setFrameValues("1");
-	var counterMD = 0;
-	counterFreq = 0;
-	for (i = 0; i < Info.length; i++) {
+loadDone_gulp = function() {
+	_fileData.energyUnits = ENERGY_EV;
+	_fileData.StrUnitEnergy = "e";
+	_fileData.counterFreq = 0;
+	for (var i = 0; i < Info.length; i++) {
 		var line = Info[i].name;
 		if (i == 0) {
 			line = "Intial";
 		}
-
 		addOption(getbyID('geom'), i + " " + line, i + 1);
-		geomData[i] = line;
-		counterFreq++;
-
+		_fileData.geomData[i] = line;
+		_fileData.counterFreq++;
 	}
+
+	runJmolScriptWait("script scripts/gulp_name.spt"); 
+	getUnitcell("1");
+	setFrameValues("1");
 	getSymInfo();
 	loadDone();
 }
 
-function substringEnergyGulpToFloat(value) {
-	if (value != null) {
-		var grab = parseFloat(
-				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
-				.toPrecision(8); // E = 100000.0000 eV
-		grab = grab * 96.48;
-		// http://web.utk.edu/~rcompton/constants
-		grab = Math.round(grab * 100000000) / 100000000;
-	}
-	return grab;
-}
       		
 ///js// Js/adapters/molden.js /////
 /*  J-ICE library 
@@ -7539,28 +7422,24 @@ function substringEnergyGulpToFloat(value) {
 
 var counterFreq = 0;
 
-moldenDone = function(msg) {
-	var counterMD = 0;
-	counterFreq = 0;
-	for (i = 0; i < Info.length; i++) {
+loadDone_molden = function(msg) {
+
+	_fileData.energyUnits = ENERGY_EV;
+	_fileData.StrUnitEnergy = "e";
+	
+	for (var i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
 			var line = Info[i].name;
 			if (line.search(/cm/i) != -1) {
-				freqData[i] = line;
-				counterMD++;
+				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
+				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqData.push(line);
+				_fileData.vibLine.push(i + " A " + data + " cm^-1");
+				_fileData.counterMD++;
 			}
 		}
 	}
 
-	if (freqData != null) {
-		var vib = getbyID('vib');
-		for (i = 1; i < freqData.length; i++) {
-			var data = parseFloat(freqData[i].substring(0, freqData[i]
-					.indexOf("c") - 1));
-			addOption(vib, i + " A " + data + " cm^-1", i
-					+ counterFreq + 1);
-		}
-	}
 	disableFreqOpts();
 	getSymInfo();
 	loadDone();
@@ -7905,34 +7784,24 @@ function symmetryQuantum() {
 
 ///// QUANTUM ESPRESSO READER
 
-espressoDone = function() {
-	var counterFreq = 0;
-	getUnitcell("1");
-	setFrameValues("1");
-	var counterMD = 0;
+loadDone_espresso = function() {
+	
+	_fileData.energyUnits = ENERGY_RYDBERG;
+	_fileData.StrUnitEnergy = "R";
+	_fileData.hasInputModel = true;
 
-	flagQuantumEspresso = true;
-	flagOutcar = false;
-
-	for (i = 0; i < Info.length; i++) {
+	for (var i = 0; i < Info.length; i++) {
 		var line = Info[i].name;
 
 		if (i == 0) {
-			line = "Initial";
-			addOption(getbyID('geom'), i + " " + line, i + 1);
-			geomData[0] = Info[0].name;
+			_fileData.geomData[0] = line;
+			addOption(getbyID('geom'), "0 initial", 1);
 		}
-
-		// alert(line)
 		if (line != null) {
-
-			// alert(line)
 			if (line.search(/E =/i) != -1) {
-				// alert("geometry")
 				addOption(getbyID('geom'), i + 1 + " " + line, i + 1);
-				geomData[i + 1] = Info[i].name;
-
-				counterFreq++;
+				_fileData.geomData[i + 1] = line;
+				_fileData.counterFreq++;
 			} /*
 			 * else if (line.search(/cm/i) != -1) { // alert("vibration")
 			 * freqData[i - counterFreq] = Info[i].name; counterMD++; } else
@@ -7942,27 +7811,18 @@ espressoDone = function() {
 		}
 	}
 	/*
-	 * if (freqData != null) { for (i = 1; i < freqData.length; i++) { if
+	 * if (freqData != null) { for (var i = 1; i < freqData.length; i++) { if
 	 * (freqData[i] != null) var data =
 	 * parseFloat(freqData[i].substring(0,freqData[i].indexOf("c") - 1));
 	 * addOption(getbyID('vib'), i + " A " + data + " cm^-1", i + counterFreq +
 	 * 1 ); } }
 	 */
+	getUnitcell("1");
+	setFrameValues("1");
 	getSymInfo();
 	loadDone();
 }
 
-function substringEnergyQuantumToFloat(value) {
-	if (value != null) {
-		var grab = parseFloat(
-				value.substring(value.indexOf('=') + 1, value.indexOf('R') - 1))
-				.toPrecision(8); // E = 100000.0000 Ry
-		grab = grab * 96.485 * 0.5; // constant from
-		// http://web.utk.edu/~rcompton/constants
-		grab = Math.round(grab * 100000000) / 100000000;
-	}
-	return grab;
-}
       		
 ///js// Js/adapters/siesta.js /////
 /*  J-ICE library 
@@ -7991,84 +7851,40 @@ function substringEnergyQuantumToFloat(value) {
 
 //24th May 2011 P. Canepa
 
-var geomSiesta = new Array;
-var freqSymmSiesta = new Array;
-var freqIntensSiesta = new Array;
-var freqSiesta = new Array;
-var energySiesta = new Array;
-var counterSiesta = 0;
 
-siestaDone = function(msg) {
+loadDone_siesta = function(msg) {
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
 	// Reset program and set filename if available
 	// This also extract the auxiliary info
-	initializeJiceSiesta();
-	var vib = getbyID('vib');
-	for (i = 0; i < Info.length; i++) {
+
+	_fileData.energyUnits = ENERGY_RYDBERG;
+	_fileData.StrUnitEnergy = "R";
+	for (var i = 0; i < Info.length; i++) {
 		var line = Info[i].name;
 		if (line != null) {
 			if (line.search(/E/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				geomSiesta[i] = line;
+				_fileData.geomSiesta[i] = line;
 				if (Info[i].modelProperties.Energy != null
 						|| Info[i].modelProperties.Energy != "")
-					energySiesta[i] = Info[i].modelProperties.Energy;
-				counterSiesta++;
+					_fileData.energy[i] = Info[i].modelProperties.Energy;
+				_fileData.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				addOption(vib, i + " " + line + " ("
-						+ Info[i].modelProperties.IRIntensity + ")", i);
-				freqSiesta[i - counterSiesta] = Info[i].modelProperties.Frequency;
-				freqSymmSiesta[i - counterSiesta] = Info[i].modelProperties.FrequencyLabel;
-				freqIntensSiesta[i - counterSiesta] = Info[i].modelProperties.IRIntensity;
+				_fileData.vibLine.push(i + " " + line + " ("
+						+ Info[i].modelProperties.IRIntensity + ")");
+				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqData.push(Info[i].modelProperties.Frequency);
+				_fileData.freqSymm.push(Info[i].modelProperties.FrequencyLabel);
+				_fileData.freqIntens.push(Info[i].modelProperties.IRIntensity);
 			}
 		}
 	}
+	setFrameValues("1");
+	setTitleEcho();
+	disableFreqOpts();
 	loadDone();
 }
 
-function initializeJiceSiesta() {
-	setFrameValues("1");
-	setTitleEcho();
-	cleanArraySiesta();
-	disableFreqOpts();
-}
-
-function cleanArraySiesta() {
-	geomSiesta = [];
-	freqSymmSiesta = [];
-	freqIntensSiesta = [];
-	counterSiesta = 0;
-}
-
-function symmetryModeAdd_siesta() {
-	// this method is called using self["symmetryModeAdd_" + type]
-	var sortedSymm = unique(freqSymmSiesta);
-	for (var i = 0; i < freqSymmSiesta.length; i++) {
-		if (sortedSymm[i] != null)
-			addOption(getbyID('sym'), freqSymmSiesta[i], freqSymmSiesta[i])
-	}
-}
-
-function changeIrepSiesta(irep) {
-	var vib = getbyID('vib');
-	for (var i = 0; i < freqSiesta.length; i++) {
-		var value = freqSymmSiesta[i];
-		if (irep == value)
-			addOption(vib, i + " " + freqSymmSiesta[i] + " "
-					+ freqSiesta[i] + " (" + freqIntensSiesta[i] + ")", i
-					+ counterSiesta + 1);
-	}
-}
-
-//function reLoadSiestaFreq() {
-//	var vib = getbyID('vib');
-//	if (getbyID('vib') != null)
-//		cleanList('vib');
-//	for (var i = 0; i < freqSiesta.length; i++)
-//		addOption(getbyID('vib'), i + " " + freqSymmSiesta[i] + " "
-//				+ freqSiesta[i] + " (" + freqIntensSiesta[i] + ")", i
-//				+ counterSiesta + 1);
-//}
       		
 ///js// Js/adapters/vasp.js /////
 /*  J-ICE library 
@@ -8095,12 +7911,12 @@ function changeIrepSiesta(irep) {
  *  02111-1307  USA.
  */
 
-xmlvaspDone = function() {
-	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
-	getUnitcell("1");
-	//cleanAndReloadForm();
-	setTitleEcho();
+loadDone_xmlvasp = function() {
 
+	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
+
+	// _fileData.... ? 
+	
 	for (var i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
 			var valueEnth = Info[i].name.substring(11, 24);
@@ -8111,19 +7927,9 @@ xmlvaspDone = function() {
 			addOption(getbyID('geom'), i + " " + stringa, i + 1);
 		}
 	}
+	getUnitcell("1");
+	setTitleEcho();
 	loadDone();
-}
-
-function substringEnergyVaspToFloat(value) {
-	if (value != null) {
-		var grab = parseFloat(
-				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
-				.toPrecision(8); // Enthaply = -26.45132096 eV
-		grab = grab * 96.485; // constant from
-		// http://web.utk.edu/~rcompton/constants
-		grab = Math.round(grab * 100000000) / 100000000;
-	}
-	return grab;
 }
 
 ////EXPORT FUNCTIONS
@@ -8221,60 +8027,35 @@ function exportVASP() {
 
 /////////// IMPORT OUTCAR
 
-var counterFreq = 0;
 
-vaspoutcarDone = function() {
-	//cleanAndReloadForm();
-	getUnitcell("1");
-	setFrameValues("1");
-	var counterMD = 0;
-	counterFreq = 1;
-	for (i = 0; i < Info.length; i++) {
+
+loadDone_vaspoutcar = function() {
+	_fileData.energyUnits = ENERGY_EV;
+	_fileData.StrUnitEnergy = "e";
+	_fileData.counterFreq = 1; 
+	for (var i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
 			var line = Info[i].name;
 			if (line.search(/G =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				geomData[i] = line;
-				counterFreq++;
+				_fileData.geomData[i] = line;
+				_fileData.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				freqData[i - counterFreq] = line;
-				counterMD++;
+				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));	
+				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqData.push(line);
+				_fileData.vibLine.push(i + " A " + data + " cm^-1");
+				_fileData.counterMD++;
 			} else if (line.search(/Temp/i) != -1) {
-				addOption(getbyID('geom'), (i - counterMD) + " " + line, i + 1);
+				addOption(getbyID('geom'), (i - _fileData.counterMD) + " " + line, i + 1);
 			}
 		}
 	}
 
-	if (freqData != null) {
-		var vib = getbyID('vib');
-		for (i = 1; i < freqData.length; i++) {
-			if (freqData[i] != null)
-				var data = parseFloat(freqData[i].substring(0, freqData[i]
-				.indexOf("c") - 1));
-			 addOption(vib, i + counterFreq  + " A " + data + " cm^-1", i +
-			 counterFreq + 1 );
-		}
-	}
+	getUnitcell("1");
+	setFrameValues("1");
 	disableFreqOpts();
 	getSymInfo();
 	loadDone();
 }
 
-/////////LOAD FUNCTIONS
-
-function disableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = true;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = true;
-}
-
-function enableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = false;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = false;
-
-}
-
-/////END FUNCTIONS
