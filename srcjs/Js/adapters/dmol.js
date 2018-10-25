@@ -24,41 +24,28 @@
 
 //3rd-Sept-2010 CANEPA
 
-var counterFreq = 0;
-
-dmolDone = function() {
-	//cleanAndReloadForm();
-	getUnitcell("1");
-	setFrameValues("1");
-	var counterMD = 0;
-	counterFreq = 0;
-	for (i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
-			// alert(line)
+loadDone_dmol = function() {
+	_fileData.energyUnits = ENERGY_HARTREE;
+	_fileData.StrUnitEnergy = "H";
+	for (var i = 0; i < Info.length; i++) {
+		var line = Info[i].name;
+		if (line != null) {
 			if (line.search(/E =/i) != -1) {
-				// alert("geometry")
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				geomData[i] = line;
-				counterFreq++;
+				_fileData.geomData[i] = line;
+				_fileData.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				freqData[i - counterFreq] = line;
-				counterMD++;
+				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqData.push(line);
+				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
+				_fileData.vibLine.push(i + " A " + data + " cm^-1");
+				_fileData.counterMD++;
 			}
 		}
 	}
 
-	if (freqData != null) {
-		var vib = getbyID('vib');
-		for (i = 1; i < freqData.length; i++) {
-			if (freqData[i] != null)
-				var data = parseFloat(freqData[i].substring(0, freqData[i]
-						.indexOf("c") - 1));
-			addOption(vib, i + " A " + data + " cm^-1", i
-					+ counterFreq + 1);
-		}
-	}
-	// These are in the vaspfunctions.js
+	getUnitcell("1");
+	setFrameValues("1");
 	disableFreqOpts();
 	getSymInfo();
 	loadDone();
