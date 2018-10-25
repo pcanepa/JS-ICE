@@ -22,12 +22,12 @@
  *  02111-1307  USA.
  */
 
-xmlvaspDone = function() {
-	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
-	getUnitcell("1");
-	//cleanAndReloadForm();
-	setTitleEcho();
+loadDone_xmlvasp = function() {
 
+	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
+
+	// _fileData.... ? 
+	
 	for (var i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
 			var valueEnth = Info[i].name.substring(11, 24);
@@ -38,19 +38,9 @@ xmlvaspDone = function() {
 			addOption(getbyID('geom'), i + " " + stringa, i + 1);
 		}
 	}
+	getUnitcell("1");
+	setTitleEcho();
 	loadDone();
-}
-
-function substringEnergyVaspToFloat(value) {
-	if (value != null) {
-		var grab = parseFloat(
-				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
-				.toPrecision(8); // Enthaply = -26.45132096 eV
-		grab = grab * 96.485; // constant from
-		// http://web.utk.edu/~rcompton/constants
-		grab = Math.round(grab * 100000000) / 100000000;
-	}
-	return grab;
 }
 
 ////EXPORT FUNCTIONS
@@ -148,60 +138,35 @@ function exportVASP() {
 
 /////////// IMPORT OUTCAR
 
-var counterFreq = 0;
 
-vaspoutcarDone = function() {
-	//cleanAndReloadForm();
-	getUnitcell("1");
-	setFrameValues("1");
-	var counterMD = 0;
-	counterFreq = 1;
-	for (i = 0; i < Info.length; i++) {
+
+loadDone_vaspoutcar = function() {
+	_fileData.energyUnits = ENERGY_EV;
+	_fileData.StrUnitEnergy = "e";
+	_fileData.counterFreq = 1; 
+	for (var i = 0; i < Info.length; i++) {
 		if (Info[i].name != null) {
 			var line = Info[i].name;
 			if (line.search(/G =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				geomData[i] = line;
-				counterFreq++;
+				_fileData.geomData[i] = line;
+				_fileData.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				freqData[i - counterFreq] = line;
-				counterMD++;
+				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));	
+				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqData.push(line);
+				_fileData.vibLine.push(i + " A " + data + " cm^-1");
+				_fileData.counterMD++;
 			} else if (line.search(/Temp/i) != -1) {
-				addOption(getbyID('geom'), (i - counterMD) + " " + line, i + 1);
+				addOption(getbyID('geom'), (i - _fileData.counterMD) + " " + line, i + 1);
 			}
 		}
 	}
 
-	if (freqData != null) {
-		var vib = getbyID('vib');
-		for (i = 1; i < freqData.length; i++) {
-			if (freqData[i] != null)
-				var data = parseFloat(freqData[i].substring(0, freqData[i]
-				.indexOf("c") - 1));
-			 addOption(vib, i + counterFreq  + " A " + data + " cm^-1", i +
-			 counterFreq + 1 );
-		}
-	}
+	getUnitcell("1");
+	setFrameValues("1");
 	disableFreqOpts();
 	getSymInfo();
 	loadDone();
 }
 
-/////////LOAD FUNCTIONS
-
-function disableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = true;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = true;
-}
-
-function enableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = false;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = false;
-
-}
-
-/////END FUNCTIONS

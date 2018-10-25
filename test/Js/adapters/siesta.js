@@ -24,81 +24,37 @@
 
 //24th May 2011 P. Canepa
 
-var geomSiesta = new Array;
-var freqSymmSiesta = new Array;
-var freqIntensSiesta = new Array;
-var freqSiesta = new Array;
-var energySiesta = new Array;
-var counterSiesta = 0;
 
-siestaDone = function(msg) {
+loadDone_siesta = function(msg) {
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
 	// Reset program and set filename if available
 	// This also extract the auxiliary info
-	initializeJiceSiesta();
-	var vib = getbyID('vib');
-	for (i = 0; i < Info.length; i++) {
+
+	_fileData.energyUnits = ENERGY_RYDBERG;
+	_fileData.StrUnitEnergy = "R";
+	for (var i = 0; i < Info.length; i++) {
 		var line = Info[i].name;
 		if (line != null) {
 			if (line.search(/E/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				geomSiesta[i] = line;
+				_fileData.geomSiesta[i] = line;
 				if (Info[i].modelProperties.Energy != null
 						|| Info[i].modelProperties.Energy != "")
-					energySiesta[i] = Info[i].modelProperties.Energy;
-				counterSiesta++;
+					_fileData.energy[i] = Info[i].modelProperties.Energy;
+				_fileData.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				addOption(vib, i + " " + line + " ("
-						+ Info[i].modelProperties.IRIntensity + ")", i);
-				freqSiesta[i - counterSiesta] = Info[i].modelProperties.Frequency;
-				freqSymmSiesta[i - counterSiesta] = Info[i].modelProperties.FrequencyLabel;
-				freqIntensSiesta[i - counterSiesta] = Info[i].modelProperties.IRIntensity;
+				_fileData.vibLine.push(i + " " + line + " ("
+						+ Info[i].modelProperties.IRIntensity + ")");
+				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqData.push(Info[i].modelProperties.Frequency);
+				_fileData.freqSymm.push(Info[i].modelProperties.FrequencyLabel);
+				_fileData.freqIntens.push(Info[i].modelProperties.IRIntensity);
 			}
 		}
 	}
+	setFrameValues("1");
+	setTitleEcho();
+	disableFreqOpts();
 	loadDone();
 }
 
-function initializeJiceSiesta() {
-	setFrameValues("1");
-	setTitleEcho();
-	cleanArraySiesta();
-	disableFreqOpts();
-}
-
-function cleanArraySiesta() {
-	geomSiesta = [];
-	freqSymmSiesta = [];
-	freqIntensSiesta = [];
-	counterSiesta = 0;
-}
-
-function symmetryModeAdd_siesta() {
-	// this method is called using self["symmetryModeAdd_" + type]
-	var sortedSymm = unique(freqSymmSiesta);
-	for (var i = 0; i < freqSymmSiesta.length; i++) {
-		if (sortedSymm[i] != null)
-			addOption(getbyID('sym'), freqSymmSiesta[i], freqSymmSiesta[i])
-	}
-}
-
-function changeIrepSiesta(irep) {
-	var vib = getbyID('vib');
-	for (var i = 0; i < freqSiesta.length; i++) {
-		var value = freqSymmSiesta[i];
-		if (irep == value)
-			addOption(vib, i + " " + freqSymmSiesta[i] + " "
-					+ freqSiesta[i] + " (" + freqIntensSiesta[i] + ")", i
-					+ counterSiesta + 1);
-	}
-}
-
-//function reLoadSiestaFreq() {
-//	var vib = getbyID('vib');
-//	if (getbyID('vib') != null)
-//		cleanList('vib');
-//	for (var i = 0; i < freqSiesta.length; i++)
-//		addOption(getbyID('vib'), i + " " + freqSymmSiesta[i] + " "
-//				+ freqSiesta[i] + " (" + freqIntensSiesta[i] + ")", i
-//				+ counterSiesta + 1);
-//}

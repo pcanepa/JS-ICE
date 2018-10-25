@@ -183,36 +183,24 @@ function setPotentialgulp() {
 
 // ////////////GULP READER
 
-function gulpDone() {
-	runJmolScriptWait("script scripts/gulp_name.spt"); 
-	var counterFreq = 0;
-	getUnitcell("1");
-	setFrameValues("1");
-	var counterMD = 0;
-	counterFreq = 0;
-	for (i = 0; i < Info.length; i++) {
+loadDone_gulp = function() {
+	_fileData.energyUnits = ENERGY_EV;
+	_fileData.StrUnitEnergy = "e";
+	_fileData.counterFreq = 0;
+	for (var i = 0; i < Info.length; i++) {
 		var line = Info[i].name;
 		if (i == 0) {
 			line = "Intial";
 		}
-
 		addOption(getbyID('geom'), i + " " + line, i + 1);
-		geomData[i] = line;
-		counterFreq++;
-
+		_fileData.geomData[i] = line;
+		_fileData.counterFreq++;
 	}
+
+	runJmolScriptWait("script scripts/gulp_name.spt"); 
+	getUnitcell("1");
+	setFrameValues("1");
 	getSymInfo();
 	loadDone();
 }
 
-function substringEnergyGulpToFloat(value) {
-	if (value != null) {
-		var grab = parseFloat(
-				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
-				.toPrecision(8); // E = 100000.0000 eV
-		grab = grab * 96.48;
-		// http://web.utk.edu/~rcompton/constants
-		grab = Math.round(grab * 100000000) / 100000000;
-	}
-	return grab;
-}

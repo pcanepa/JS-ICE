@@ -35,8 +35,6 @@
 //}
 
 
-var iamready = false;
-
 var itemEnergy
 var previousPoint = null
 var itemForce
@@ -109,18 +107,18 @@ function plotEnergies(){
 		}
 	} else {
 		// Gaussian
-		last = energyGauss.length;
+		last = _fileData.energy.length;
 		for (var i = 1; i < last; i++) {
-			var name = energyGauss[i];
+			var name = _fileData.energy[i];
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = energyGauss.length - 1;// BH ??? reall??? next-to-last model?		
+			var modelnumber = _fileData.energy.length - 1;		
 			if(i > 0 && i < Info.length)
 				var previous = i - 1;
 			var e = fromHartreetokJ(name);
 			var e1;
 //			if(i == 0 || (e1 = energyGauss[i - 1]) == null) {
-				energy = Math.abs(e - fromHartreetokJ(energyGauss[last]));
+				energy = Math.abs(e - fromHartreetokJ(_fileData.energy[last]));
 //			} else if (previous > 0) {
 //				if (e != e1)
 //					energy = Math.abs(e - e1);
@@ -144,7 +142,6 @@ function plotEnergies(){
 	$("#plotarea").bind("plothover", plotHoverCallback);
 	$("#plotarea").bind("plotclick", plotClickCallback);
 	itemEnergy = {datapoint:A[0]}
-	iamready = true;
 	setTimeout('plotClickCallback(null,null,itemEnergy)',100);
 
 	//function plotGradient(){
@@ -200,7 +197,6 @@ function plotEnergies(){
 	$("#plotarea1").bind("plothover", plotHoverCallbackforce);
 	$("#plotarea1").bind("plotclick", plotClickCallbackForce);
 	itemForce = { datapoint:A[0] };
-	iamready = true;
 	setTimeout('plotClickCallbackForce(null,null,itemForce)',100);
 }
 
@@ -330,7 +326,6 @@ function plotFrequencies(forceNew){
 	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
 	itemFreq = {datapoint: A[0] || B[0]}
 	setTimeout('plotClickCallbackFreq(null,null,itemFreq)',100);
-	iamready = true;
 }
 
 function plotClickCallback(event, pos, itemEnergy) {
@@ -519,51 +514,60 @@ function countNullModel(arrayX) {
 	return valueNullelement;
 }
 
+//for spectrum.html or new dynamic cool spectrum simulation
 
+var plotOptionsHTML = {
+		   series: { lines: { show: true, fill: false } },
+		   xaxis: { ticks: 10, tickDecimals: 0 },
+		   yaxis: { ticks: 0, tickDecimals: 0 },
+		   grid: { hoverable: true, autoHighlight: false},
+		   //crosshair: { mode: "x" }
+		};
 
-
-//for spectrum.html
-
-function plotSpectrumHTML() {
-	var Min = parseInt(opener.getValue("nMin")); 
-	var Max = parseInt(opener.getValue("nMax"));
-	setValue("minValue", Min);
-	setValue("maxValue", Max); 
-	var intArray= opener.intTot;
-	var dataSpectrum = [];
-	var spectrum =[];
+function plotSpectrum(div, openerOrSelf) {
+	var isNewWindow = !!openerOrSelf;
+	var intArray = openerOrSelf.getPlotIntArray();
+	openerOrSelf || (openerOrSelf = self);
+	var options = (isNewWindow ? openerOrSelf.plotOptionsHTML : opener.plotOptions);
+	var min = parseInt(openerOrSelf.getValue("nMin")); 
+	var max = parseInt(openerOrSelf.getValue("nMax"));
+	if (isNewWindow) {
+		setValue("minValue", min);
+		setValue("maxValue", max); 
+	}
 	
-	var options ={
-	   series:{
-		      lines: { show: true, fill: false }
-	   },
-	   xaxis: { ticks: 10, tickDecimals: 0 },
-	   yaxis: { ticks: 0,tickDecimals: 0 },
-	   grid: { hoverable: true, autoHighlight: false},
-	   //crosshair: { mode: "x" }
-	};
-	var numberPlots = 1; //old plot
-	var plot = null; 
-	dataSpectrum = [];
-	spectrum = [];
-	var legends = $("#plotSpectrum .legendLabel");
+//	var options ={
+//	   series:{
+//		      lines: { show: true, fill: false }
+//	   },
+//	   xaxis: { ticks: 10, tickDecimals: 0 },
+//	   yaxis: { ticks: 0,tickDecimals: 0 },
+//	   grid: { hoverable: true, autoHighlight: false},
+//	   //crosshair: { mode: "x" }
+//	};
+
+	var legends = $("#" + div + " .legendLabel");
 	 legends.each(function () {
 	    // fix the widths so they don't jump around
 	     $(this).css('width', $(this).width());});
 	
-	for(var i=Min; i < Max; i++){
+	var dataSpectrum = [];
+	var spectrum = [];
+	for(var i = min; i < max; i++){
 	 spectrum.push([i,intArray[i]]);
 	}
 	//dataSpectrum.push(spectrum);
-	plot = $.plot($('#plotSpectrum'), [{label:"Spectrum", data:  spectrum }], options);
-	
-	var updateLegendTimeout = null;
-	var latestPosition = null; 
-	 $("#plotSpectrum").bind("plothover",  function (event, pos, item) {
-	     latestPosition = pos;
-	     if (!updateLegendTimeout)
-	         updateLegendTimeout = setTimeout(function() { legends.text(latestPosition.x.toFixed(2)); }, 50);
-	 });
+	var plot = $.plot($('#' + div), [{label:(isNewPage ? "Spectrum" : null), data:  spectrum }], options);
+
+	if (isNewPage) {
+		var updateLegendTimeout = null;
+		var latestPosition = null; 
+		 $("#plotSpectrum").bind("plothover",  function (event, pos, item) {
+		     latestPosition = pos;
+		     if (!updateLegendTimeout)
+		         updateLegendTimeout = setTimeout(function() { legends.text(latestPosition.x.toFixed(2)); }, 50);
+		 });
+	}
 }    
 
 function replotSpectrumHTML(){
@@ -579,9 +583,9 @@ function replotSpectrumHTML(){
 	   grid: { hoverable: true, autoHighlight: false},
 	   //crosshair: { mode: "x" }
 	};
-	dataSpectrum = [];
-	spectrum = [];
-	var intArray= opener.intTot;
+	var dataSpectrum = [];
+	var spectrum = [];
+	var intArray= opener._specData.intTot;
 	for(var i = Min; i < Max ; i++){
 	  spectrum.push([i,intArray[i]]);
 	}

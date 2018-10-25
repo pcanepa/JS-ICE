@@ -22,26 +22,7 @@
  *  02111-1307  USA.
  */
 
-function createAllMenus() {
-	var s = createFileGrp()
-		+ createShowGrp()
-		+ createEditGrp()
-		//+ createBuildGrp()
-		+ createMeasureGrp()
-		+ createOrientGrp()
-		+ createCellGrp()
-		+ createPolyGrp()
-		+ createIsoGrp()
-		+ createOptimizeGrp()
-		+ createFreqGrp()
-		+ createElecpropGrp()
-		+ createOtherGrp()
-		/* createSymmetryGrp() */
-		+ addCommandBox()
-		//+ createHistGrp()
-		;
-	return s
-}
+
 
 addCommandBox = function() {
 	// see debug.js
@@ -61,7 +42,6 @@ addCommandBox = function() {
 function cleanLists() {
 	// was "removeAll()"
 	cleanList('geom');
-	cleanList('vib');
 	cleanList('colourbyElementList');
 	// cleanList('colourbyAtomList');
 	cleanList('polybyElementList');
