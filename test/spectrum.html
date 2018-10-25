@@ -12,11 +12,13 @@
 <body style="height:100%">
 <script>
 docWriteSpectrumHeader();
-$(function(){plotSpectrumHTML()})
+$(function(){
+	plotSpectrumHTML("plotSpectrum", opener);
+});
 </script>
 
 <div id="scalespectrum" class="contents_spectrum"></div>
-<div id="plotSpectrum"
+<div id="plotSpectrumDiv"
 	style="width: 800px; height: 400px; background-color: white; text-color: white;"></div>
 </body>
 </html>
