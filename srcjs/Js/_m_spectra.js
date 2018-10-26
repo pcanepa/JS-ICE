@@ -24,8 +24,6 @@
 //This simulates the IR - Raman spectrum given an input 
 
 
-var _specData;
-
 function enterSpectra() {
 
 // from vaspoutcar
