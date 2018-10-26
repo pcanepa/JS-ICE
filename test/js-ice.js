@@ -1,5 +1,23 @@
 
       		
+///js// JS/global.js /////
+// global variables used in JS-ICE
+// Geoff van Dover 2018.10.26
+
+// from _m_spectra.js
+
+var _specData;
+
+// from _m_file.js
+
+var _fileData = {};
+var _fileIsReload = false;
+
+// from symmetry.js
+
+var prevframeSelection = null;
+var prevFrame = null;
+      		
 ///js// Js/init.js /////
 // note that JmolColorPicker is customized -- BH 2018
 
@@ -168,16 +186,16 @@ MENU_FILE     = 0;
 MENU_CELL     = 1;
 MENU_SHOW     = 2;
 MENU_EDIT     = 3;
-//MENU_BUILD    = x;
-MENU_MEASURE  = 4;
-MENU_ORIENT   = 5;
-MENU_POLY     = 6;
-MENU_SURFACE  = 7;
-MENU_OPTIMIZE = 8;
-MENU_SPECTRA  = 9;
-MENU_EM       =10;
-MENU_OTHER    =11;
-MENU_SYM      =12;
+MENU_SYM      = 4;
+//MENU_BUILD  = x;
+MENU_MEASURE  = 5;
+MENU_ORIENT   = 6;
+MENU_POLY     = 7;
+MENU_SURFACE  = 8;
+MENU_OPTIMIZE = 9;
+MENU_SPECTRA  = 10;
+MENU_EM       = 11;
+MENU_OTHER    = 12;
 
 var TAB_OVER  = 0;
 var TAB_CLICK = 1;
@@ -188,9 +206,9 @@ var tabTimeouts = [];
 var tabDelayMS = 100;
 
 var menuNames = [
-	"File", "Cell", "Show" ,"Edit" /*, "Build"*/, 
+	"File", "Cell", "Show" ,"Edit" /*, "Build"*/, "Symmetry",
 	"Measure", "Orient", "Polyhedra", "Surface", 
-	"Optimize", "Spectra", "Elec", "Other", "Symmetry" 
+	"Optimize", "Spectra", "Elec", "Other",
 	];
 
 function defineMenu() {
@@ -199,21 +217,23 @@ function defineMenu() {
 	/* 2 */ addTab("Show", "showGroup", "Change atom, bond colours, and dimensions.");
 	/* 3 */ addTab("Edit", "editGroup", "Change connectivity and remove atoms.");
 	/* x */ //addTab("Build", "builGroup", "Modify and optimize structure.");
-	/* 4 */ addTab("Measure", "measureGroup", "Measure bond distances, angles, and torsionals.");
-	/* 5 */ addTab("Orient", "orientGroup", "Change orientation and views.");
-	/* 6 */ addTab("Poly", "polyGroup", "Create polyhedra.");
-	/* 7 */ addTab("Surface", "isoGroup", "Modify and create isosurface maps.");
-	/* 8 */ addTab("Optimize", "geometryGroup", "Geometry optimizations.");
-	/* 9 */ addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
-	/* 10 */ addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
-	/* 11 */ addTab("Other", "otherpropGroup", "Change background, light settings and other.");
-	/* 12 */  addTab("Sym Build", "symmetryGroup", "Add atoms to structure following rules of symmetry."); 
+	/* 4 */ addTab("Sym Build", "symmetryGroup", "Add atoms to structure following rules of symmetry.");
+	/* 5 */ addTab("Measure", "measureGroup", "Measure bond distances, angles, and torsionals.");
+	/* 6 */ addTab("Orient", "orientGroup", "Change orientation and views.");
+	/* 7 */ addTab("Poly", "polyGroup", "Create polyhedra.");
+	/* 8 */ addTab("Surface", "isoGroup", "Modify and create isosurface maps.");
+	/* 9 */ addTab("Optimize", "geometryGroup", "Geometry optimizations.");
+	/* 10 */ addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
+	/* 11 */ addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
+	/* 12 */ addTab("Other", "otherpropGroup", "Change background, light settings and other.");
+  
 }
 
 function createAllMenus() {
 	var s = createFileGrp()
 		+ createShowGrp()
 		+ createEditGrp()
+		+ createSymmetryGrp() 
 		//+ createBuildGrp()
 		+ createMeasureGrp()
 		+ createOrientGrp()
@@ -224,7 +244,6 @@ function createAllMenus() {
 		+ createFreqGrp()
 		+ createElecpropGrp()
 		+ createOtherGrp()
-		+ createSymmetryGrp() 
 		+ addCommandBox()
 		//+ createHistGrp()
 		;
@@ -327,6 +346,68 @@ function createMenuCell(i) {
 
       		
 ///js// Js/_m_file.js /////
+var flagCif = false; 
+var flagCrystal = false; 
+var flagGromos = false;
+var flagGulp = false;
+var flagOutcar = false;
+var flagGaussian = false;
+var flagQuantumEspresso = false;
+var flagSiesta = false;
+var flagDmol = false;
+var flagMolden = false;
+var flagCastep = false;
+
+var quantumEspresso = false;
+
+
+var sampleOptionArr = ["Load a Sample File", 
+	"MgO slab", 
+	"urea single-point calculation", 
+	"benzene single-point calculation", 
+	"NH3 geometry optimization", 
+	"NH3 vibrations", 
+	"quartz CIF", 
+	"ice.out", 
+	"=AMS/rutile (11 models)"
+]
+
+function onChangeLoadSample(value) {
+	var fname = null;
+	switch(value) {
+	case "=AMS/rutile (11 models)":
+		fname = "output/rutile.cif";
+		break;
+	case "quartz CIF":
+		fname = "output/quartz.cif";
+		break;
+	case "ice.out":
+		fname = "output/ice.out";
+		break;
+	case "MgO slab":
+		fname = "output/cube_mgo_slab/mgo_slab_100_5l.out";
+		break;
+	case "urea single-point calculation":
+		fname = "output/cube_urea_diff/urea-test12.out";
+		break;
+	case "benzene single-point calculation":
+		fname = "output/single-point/c6h6_b3_631gdp.out";
+		break;
+	case "NH3 geometry optimization":
+		fname = "output/geom-opt/nh3_pbe_631gdp_opt.out";
+		break;
+	case "NH3 vibrations":
+		fname = "output/vib-freq/nh3_pbe_631gdp_freq.out";
+		break;
+	}
+	if (fname) {
+		runJmolScriptWait("zap;set echo top left; echo loading " + fname +"...");
+		runJmolScript("load '" + fname + "' " + getValue("modelNo") + " packed");
+	}
+}
+
+
+
 function enterFile() {
 	
 }
@@ -342,24 +423,6 @@ file_method = function(methodName, defaultMethod, params) {
 	var f = self[methodName] || defaultmethod;
 	return (f && f.apply(null, params));
 }
-
-var _fileData = {};
-
-var _fileIsReload = false;
-
-
-var flagCif = false; 
-var flagCrystal = false; 
-var flagGromos = false;
-var flagGulp = false;
-var flagOutcar = false;
-var flagGaussian = false;
-var flagQuantumEspresso = false;
-var flagSiesta = false;
-var flagDmol = false;
-var flagMolden = false;
-var flagCastep = false;
-
 
 reload = function(packing, filter, more) {	
 	// no ZAP here
@@ -614,52 +677,6 @@ setFlags = function(type) {
 	}
 }
 
-var sampleOptionArr = ["Load a Sample File", 
-	"MgO slab", 
-	"urea single-point calculation", 
-	"benzene single-point calculation", 
-	"NH3 geometry optimization", 
-	"NH3 vibrations", 
-	"quartz CIF", 
-	"ice.out", 
-	"=AMS/rutile (11 models)"
-]
-
-function onChangeLoadSample(value) {
-	var fname = null;
-	switch(value) {
-	case "=AMS/rutile (11 models)":
-		fname = "output/rutile.cif";
-		break;
-	case "quartz CIF":
-		fname = "output/quartz.cif";
-		break;
-	case "ice.out":
-		fname = "output/ice.out";
-		break;
-	case "MgO slab":
-		fname = "output/cube_mgo_slab/mgo_slab_100_5l.out";
-		break;
-	case "urea single-point calculation":
-		fname = "output/cube_urea_diff/urea-test12.out";
-		break;
-	case "benzene single-point calculation":
-		fname = "output/single-point/c6h6_b3_631gdp.out";
-		break;
-	case "NH3 geometry optimization":
-		fname = "output/geom-opt/nh3_pbe_631gdp_opt.out";
-		break;
-	case "NH3 vibrations":
-		fname = "output/vib-freq/nh3_pbe_631gdp_freq.out";
-		break;
-	}
-	if (fname) {
-		runJmolScriptWait("zap;set echo top left; echo loading " + fname +"...");
-		runJmolScript("load '" + fname + "' " + getValue("modelNo") + " packed");
-	}
-}
-
-var quantumEspresso = false;
 function onChangeSave(save) {
 	// see menu.js
 	switch (save) {
@@ -2770,8 +2787,6 @@ function createOptimizeGrp() {
 //This simulates the IR - Raman spectrum given an input 
 
 
-var _specData;
-
 function enterSpectra() {
 
 // from vaspoutcar
@@ -2850,6 +2865,8 @@ function simSpectrum(isPageOpen) {
 			sigma     : getValue('sigma'), 
 			rescale   : isChecked('rescaleSpectra'),
 			freqCount : _fileData.freqInfo.length,
+			minX      : 0,
+			maxX      : 4000,
 			freqInfo  : [],
 			irInt     : [],
 			irFreq    : [],
@@ -2874,6 +2891,7 @@ function simSpectrum(isPageOpen) {
 	}
 	if (isPageOpen)
 		setMaxMinPlot(specData);
+	
 	specData.minX = getValue("nMin");
 	specData.maxX = getValue("nMax");
 
@@ -2917,8 +2935,11 @@ function getVibLinesFromIrrep(specData) {
 	var irep = specData.irrep;
 	if (irep == "any")
 		return null;
+	
+	// check for F, E, or A irreducible representations
+	
 	if (_fileData.freqSymm) {
-		// gaussian
+		// gaussian and others
 		for (var i = 0, val; i < _fileData.freqSymm.length; i++) {
 			if (irep == _fileData.freqSymm[i])
 				vibLinesFromIrrep[i] = 
@@ -2935,7 +2956,7 @@ function getVibLinesFromIrrep(specData) {
 }
 
 function extractIRData(specData) {
- return file_method("extractIRData", function() {return {}}, [specData]);
+ return file_method("extractIRData", function() {}, [specData]);
 }
 
 function extractIRData_crystal(specData) {
@@ -2944,8 +2965,7 @@ function extractIRData_crystal(specData) {
 		if (specData.freqInfo[i].modelProperties.IRactivity != "A") 
 			continue;
 		specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
-		var int = specData.freqInfo[i].modelProperties.IRintensity;
-		specData.irInt[i] = Math.round(substringIntFreqToFloat(int));
+		specData.irInt[i] = Math.round(substringIntFreqToFloat(specData.freqInfo[i].modelProperties.IRintensity));
 		specData.sortInt[i] = specData.irInt[i];
 		specData.specIR[specData.irFreq[i]] = specData.irInt[i];
 	}
@@ -3052,15 +3072,18 @@ function createConvolvedSpectrum(specData, type) {
 	
 	// Gaussian Convolution
 	var cx = 4 * Math.LN2;
+	var ssa = sigma * sigma / cx;	
+
 	// Lorentzian Convolution
 	var xgamma = specData.sigma;
 	var ssc = xgamma * 0.5 / Math.PI;
 	var ssd = (xgamma * 0.5) * (xgamma * 0.5);
 	
-	var ssa = sigma * sigma / cx;	
 	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI)) * fscale;
+
 	var freq = (type == "ir" ? irFreq : ramanFreq);
 	var int = (type == "ir" ? irInt : ramanInt);
+	
 	for (var i = 0; i < 4000; i++) {
 		var sp = 0;
 		for (var k = 0, n = freqCount; k < n; k++) {
@@ -3076,7 +3099,14 @@ function createConvolvedSpectrum(specData, type) {
 	}
 }
 
-function showFreqGraph(specData) {
+function showFreqGraph(specData, specMinX, specMaxX) {
+	if (specData) {
+		specMinX = specData.minX;
+		specMaxX = specData.maxX;
+	} else {
+		specData = opener._specData;
+	}
+	
 	var A = specData.specIR, B = specData.specRaman;	
 	var nplots = (B && B.length && A && A.length ? 2 : 1);
 	var minY = 999999;
@@ -3102,12 +3132,12 @@ function showFreqGraph(specData) {
     	  	lines: { show: true, fill: false }
       },
       xaxis: { 
-    	  min : specData.minX, 
-    	  max : specData.maxX, 
+    	  min : specMinX, 
+    	  max : specMaxX, 
     	  ticks : 10, 
     	  tickDecimals: 0 
       },
-      yaxis: { ticks: 0,tickDecimals: 0, min: -0.1, max: maxY },
+      yaxis: { ticks: 0, tickDecimals: 0, min: -0.1, max: maxY },
       selection: { 
     	  	mode: (nplots == 1 ? "x" : "xy"), 
     	  	hoverMode: (nplots == 1 ? "x" : "xy") 
@@ -3142,8 +3172,6 @@ function showFreqGraph(specData) {
 	$("#plotareafreq").unbind("plothover plotclick", null)
 	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
 	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
-	//itemFreq = {datapoint: A.length ? ir[0] : raman[0]}
-	//setTimeout('plotClickCallbackFreq(null,null,itemFreq)',100);
 }
 
 
@@ -3382,8 +3410,8 @@ function createFreqGrp() {
 		+ "<br>"
 		+ "Band width " + createText2("sigma", "15", "3", "") + " (cm<sup>-1</sup>)" 
 		+ "&nbsp;"
-		+ "Min freq. " + createText2("nMin", "", "4", "")
-		+ " Max " + createText2("nMax", "", "4", "") + "(cm<sup>-1</sup>)"
+		+ "Min freq. " + createText2("nMin", "onClickModSpec()", "4", "")
+		+ " Max " + createText2("nMax", "onClickModSpec()", "4", "") + "(cm<sup>-1</sup>)"
 		+ createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "") + "<br>"
 		+ createRadio("convol", "Stick", 'onClickModSpec()', 0, 1, "", "stick")
 		+ createRadio("convol", "Gaussian", 'onClickModSpec()', 0, 0, "", "gaus")
@@ -3660,6 +3688,274 @@ function createOtherGrp() {
 }
 
 
+
+
+      		
+///js// Js/_m_symmetry.js /////
+// not implemented
+
+function enterSymmetry() {
+	
+}
+
+function exitSymmetry() {
+}
+
+//creates symmetry menu 
+// doesn't really work yet-A.S. 10.10.18
+function getSymInfo() { //parses data file and provides symmetry operations
+
+	// update all of the model-specific page items
+
+	SymInfo = {};
+	var s = "";
+	var info = jmolEvaluate('script("show spacegroup")');
+	if (info.indexOf("x,") < 0) {
+		s = "no space group";
+	} else {
+		var S = info.split("\n");
+		var hm = "?";
+		var itcnumber = "?";
+		var hallsym = "?";
+		var latticetype = "?";
+		var nop = 0;
+		var slist = "";
+		for (var i = 0; i < S.length; i++) {
+			var line = S[i].split(":");
+			if (line[0].indexOf("Hermann-Mauguin symbol") == 0)
+				s += "<br>"
+					+ S[i]
+			.replace(
+					/Hermann\-Mauguin/,
+			"<a href=http://en.wikipedia.org/wiki/Hermann%E2%80%93Mauguin_notation target=_blank>Hermann-Mauguin</a>");
+			else if (line[0].indexOf("international table number") == 0)
+				s += "<br>"
+					+ S[i]
+			.replace(
+					/international table number/,
+			"<a href=http://it.iucr.org/ target=_blank id='prova'>international table</a> number");
+			else if (line[0].indexOf("lattice type") == 0)
+				s += "<br>"
+					+ S[i]
+			.replace(
+					/lattice type/,
+			"<a href=http://cst-www.nrl.navy.mil/bind/static/lattypes.html target=_blank>lattice type</a>");
+			else if (line[0].indexOf(" symmetry operation") >= 0)
+				nop = parseInt(line[0]);
+			else if (nop > 0 && line[0].indexOf(",") >= 0)
+				slist += "\n" + S[i];
+
+		}
+
+		s += "<br> Symmetry operators: " + nop;
+
+		var S = slist.split("\n");
+		var n = 0;
+		var i = -1;
+		while (++i < S.length && S[i].indexOf(",") < 0) {
+		}
+		s += "<br><select id='symselect' onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\" class='select'><option value=0>select a symmetry operation</option>";
+		for (; i < S.length; i++)
+			if (S[i].indexOf("x") >= 0) {
+				var sopt = S[i].split("|")[0].split("\t");
+				SymInfo[sopt[1]] = S[i].replace(/\t/, ": ").replace(/\t/, "|");
+				sopt = sopt[0] + ": " + sopt[2] + " (" + sopt[1] + ")";
+				s += "<option value='" + parseInt(sopt) + "'>" + sopt
+				+ "</option>";
+			}
+		s += "</select>";
+
+		var info = jmolEvaluate('{*}.label("#%i %a {%[fxyz]/1}")').split("\n");
+		var nPoints = info.length;
+		var nBase = jmolEvaluate('{symop=1555}.length');
+		s += "<br><select id='atomselect' onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\"  class='select'><option value=0>base atoms</option>";
+		s += "<option value='{0 0 0}'>{0 0 0}</option>";
+		s += "<option value='{1/2 1/2 1/2}'>{1/2 1/2 1/2}</option>";
+		for (var i = 0; i < nPoints; i++)
+			s += "<option value=" + i + (i == 0 ? " selected" : "") + ">"
+			+ info[i] + "</option>";
+		s += "</select>";
+
+		s += "</br><input type=checkbox id=chkatoms onchange=getSelect() checked=true />superimpose atoms";
+		s += " opacity:<select id=selopacity onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\"  class='select'>"
+			+ "<option value=0.2 selected>20%</option>"
+			+ "<option value=0.4>40%</option>"
+			+ "<option value=0.6>60%</option>"
+			+ "<option value=1.0>100%</option>" + "</select>";
+
+	}
+	getbyID("syminfo").innerHTML = s;
+}
+function getSelect(symop) {
+	var d = getbyID("atomselect");
+	var atomi = d.selectedIndex;
+	var pt00 = d[d.selectedIndex].value;
+	var showatoms = (getbyID("chkatoms").checked || atomi == 0);
+	runJmolScriptWait("display " + (showatoms ? "all" : "none"));
+	var d = getbyID("symselect");
+	var iop = parseInt(d[d.selectedIndex].value);
+	// if (!iop && !symop) symop = getbyID("txtop").value
+	if (!symop) {
+		if (!iop) {
+			runJmolScriptWait("select *;color opaque;draw sym_* delete");
+			return
+
+		}
+		symop = d[d.selectedIndex].text.split("(")[1].split(")")[0];
+		// getbyID("txtop").value
+		// = symop
+	}
+	if (pt00.indexOf("{") < 0)
+		pt00 = "{atomindex=" + pt00 + "}";
+	var d = getbyID("selopacity");
+	var opacity = parseFloat(d[d.selectedIndex].value);
+	if (opacity < 0)
+		opacity = 1;
+	var script = "select *;color atoms translucent " + (1 - opacity);
+	script += ";draw symop \"" + symop + "\" " + pt00 + ";";
+	if (atomi == 0) {
+		script += ";select symop=1555 or symop=" + iop + "555;color opaque;";
+	} else if (atomi >= 3) {
+		script += ";pt1 = "
+			+ pt00
+			+ ";pt2 = all.symop(\""
+			+ symop
+			+ "\",pt1).uxyz.xyz;select within(0.2,pt1) or within(0.2, pt2);color opaque;";
+	}
+	secho = SymInfo[symop];
+	if (!secho) {
+		secho = jmolEvaluate("all.symop('" + symop + "',{0 0 0},'draw')")
+		.split("\n")[0];
+		if (secho.indexOf("//") == 0) {
+			secho = secho.substring(2);
+		} else {
+			secho = symop;
+		}
+	}
+	script = "set echo top right;echo " + secho + ";" + script;
+	runJmolScriptWait(script);
+}
+
+function deleteSymmetry() {
+	getbyID("syminfo").removeChild;
+}
+
+cellOperation = function(){
+	deleteSymmetry();
+	getSymInfo();
+	setUnitCell();
+}
+
+function createSymmetryGrp() {
+	var strSymmetry = "<form autocomplete='nope'  id='symmetryGroup' name='symmetryGroup' style='display:none'>\n";
+	strSymmetry += "<table class='contents'>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "Symmetry operators ";
+	strSymmetry += "<div id='syminfo'></div>";
+	strSymmetry += createLine('blue', '');
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "</td></tr></table> \n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += createCheck("symLock", "Lock Added Atoms to Symmetry Operation?",
+			0, 0, 1, 0);
+	strSymmetry += "</td></tr>\n";	
+	strSymmetry += "<BR>\n"; 
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += createCheck("copyOpaque", "Make atom copies opaque?",
+			0, 0, 1, 0);
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n"; 
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "Add element:"
+	//strSymmetry +=  createSelect();
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "</form>\n";
+	return strSymmetry;
+}
+// gets and returns the symmetry operation names (e.g. "identity") 
+function readSymmetryNames() {
+	var allSymopInfo = getProperty("spacegroupInfo.operations");
+	var numSymops = allSymopInfo.length;
+	var symopNameArray = [];
+	for (i = 1; i< numSymops+1;i++){
+		var symopCurrent = allSymopInfo[i];
+		var currentName = symopCurrent[3];
+		symopNameArray[i] = currentName;
+	}
+	return symopNameArray
+}
+// gets and returns the symmetry operation vector names 
+function readSymmetryVectors() {
+	var allSymopInfo = getProperty("spacegroupInfo.operations");
+	var numSymops = allSymopInfo.length;
+	var symopVectorArray = [];
+	for (i = 1; i< numSymops+1;i++){
+		var symopCurrent = allSymopInfo[i];
+		var currentName = symopCurrent[2];
+		symopNameArray[i] = currentName;
+	}
+	return symopVectorArray
+}
+// draws the axis lines for rotation axes and mirror planes for mirror symops  
+function displaySymmetryDrawObjects(symopNumber){
+	var i = symopNumber
+	symopNameArray = readSymmetryVectors();
+	if (symopNameArray[i].includes("identity")){
+		runJmolScriptWait("draw symop \{i}"); 
+	}
+	else if (symopNameArray[i].includes("axis")){
+		//INSERT CODE HERE
+	}
+	else if (symopNameArray[i].includes("mirror")){
+		runJmolScriptWait("draw symop \{i}") ;
+	}
+} 
+// returns the points given after performing a symmetry operation a chosen number of times (one point per operation
+function getSymmetricAtomArray(symopSelected,point,iterations){
+	var symAtomArray = [];
+	for (i = 1; i<= iterations;i++) {
+		if (i=1){
+			var output = all.symop(symopSelected,point)
+			symAtomArray[i] =  output; 
+			}
+		else {
+			var output = all.symop(symopSelected[i-1],point)
+			symAtomArray[i] = output;
+		}	
+
+	}
+	return symAtomArray 
+
+}
+// adds new element by appending a hydrogen, deleting the bond to the hydrogen, and then changing the hydrogen to chosen element
+// needs significant work such that elements that should be strings are strings and that code runs out of javascript and not just jmol script editor
+// A.S. 10.24.18 
+//
+/*
+function appendNewAtom(elementName, point) {
+	assign atom ({0}) "H" pointValue;
+	bondNumber =  getProperty("modelInfo.models[1].bondCount")-1;
+	atomNumber = getProperty("modelInfo.models[1].atomCount")-1; 
+	assign bond [{bondNumber}] "0";
+	{atomNumber}.element = elementName;
+} 
+// takes a given point and add the elements provided to it by a symmetry operation
+// symmetry operations with multiple outputs (e.g. C3) will produce multiple symmetry atoms 
+function appendSymmetricAtoms(elementName, point,symopNumber,symopNameArray){
+	symopName = symopNameArray[symopNumber];
+	iterations = 1 
+	if (symopName.includes("C") {
+		indexOfC = symopName.indexOf("C");
+		iterationString = symopName.substring(indexOfC,indexOfC+1) ;
+		iterations = parseInt(iterationString)	
+	}
+	newAtomArray = getSymmetricAtomArray(symopNumber,point,iterations) ;
+	numberOfNewAtoms = newAtomArray.length(); 
+	for (i = 1; i <= numberOfNewAtoms; i++){
+		appendNewAtom(elementName, newAtomArray[i];
+	}
+}
+*/
 
 
       		
@@ -6350,8 +6646,7 @@ loadSliders = function() {
       		
 ///js// Js/symmetry.js /////
 //prevframeSelection needs because of the conventional
-var prevframeSelection = null;
-var prevFrame = null;
+
 function figureOutSpaceGroup() {
 	saveStateAndOrientation_a();
 	prevframeSelection = frameSelection;
