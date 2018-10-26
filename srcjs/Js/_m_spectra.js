@@ -104,6 +104,8 @@ function simSpectrum(isPageOpen) {
 			sigma     : getValue('sigma'), 
 			rescale   : isChecked('rescaleSpectra'),
 			freqCount : _fileData.freqInfo.length,
+			minX      : 0,
+			maxX      : 4000,
 			freqInfo  : [],
 			irInt     : [],
 			irFreq    : [],
@@ -128,6 +130,7 @@ function simSpectrum(isPageOpen) {
 	}
 	if (isPageOpen)
 		setMaxMinPlot(specData);
+	
 	specData.minX = getValue("nMin");
 	specData.maxX = getValue("nMax");
 
@@ -171,8 +174,11 @@ function getVibLinesFromIrrep(specData) {
 	var irep = specData.irrep;
 	if (irep == "any")
 		return null;
+	
+	// check for F, E, or A irreducible representations
+	
 	if (_fileData.freqSymm) {
-		// gaussian
+		// gaussian and others
 		for (var i = 0, val; i < _fileData.freqSymm.length; i++) {
 			if (irep == _fileData.freqSymm[i])
 				vibLinesFromIrrep[i] = 
@@ -189,7 +195,7 @@ function getVibLinesFromIrrep(specData) {
 }
 
 function extractIRData(specData) {
- return file_method("extractIRData", function() {return {}}, [specData]);
+ return file_method("extractIRData", function() {}, [specData]);
 }
 
 function extractIRData_crystal(specData) {
@@ -198,8 +204,7 @@ function extractIRData_crystal(specData) {
 		if (specData.freqInfo[i].modelProperties.IRactivity != "A") 
 			continue;
 		specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
-		var int = specData.freqInfo[i].modelProperties.IRintensity;
-		specData.irInt[i] = Math.round(substringIntFreqToFloat(int));
+		specData.irInt[i] = Math.round(substringIntFreqToFloat(specData.freqInfo[i].modelProperties.IRintensity));
 		specData.sortInt[i] = specData.irInt[i];
 		specData.specIR[specData.irFreq[i]] = specData.irInt[i];
 	}
@@ -306,15 +311,18 @@ function createConvolvedSpectrum(specData, type) {
 	
 	// Gaussian Convolution
 	var cx = 4 * Math.LN2;
+	var ssa = sigma * sigma / cx;	
+
 	// Lorentzian Convolution
 	var xgamma = specData.sigma;
 	var ssc = xgamma * 0.5 / Math.PI;
 	var ssd = (xgamma * 0.5) * (xgamma * 0.5);
 	
-	var ssa = sigma * sigma / cx;	
 	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI)) * fscale;
+
 	var freq = (type == "ir" ? irFreq : ramanFreq);
 	var int = (type == "ir" ? irInt : ramanInt);
+	
 	for (var i = 0; i < 4000; i++) {
 		var sp = 0;
 		for (var k = 0, n = freqCount; k < n; k++) {
@@ -330,7 +338,14 @@ function createConvolvedSpectrum(specData, type) {
 	}
 }
 
-function showFreqGraph(specData) {
+function showFreqGraph(specData, specMinX, specMaxX) {
+	if (specData) {
+		specMinX = specData.minX;
+		specMaxX = specData.maxX;
+	} else {
+		specData = opener._specData;
+	}
+	
 	var A = specData.specIR, B = specData.specRaman;	
 	var nplots = (B && B.length && A && A.length ? 2 : 1);
 	var minY = 999999;
@@ -356,12 +371,12 @@ function showFreqGraph(specData) {
     	  	lines: { show: true, fill: false }
       },
       xaxis: { 
-    	  min : specData.minX, 
-    	  max : specData.maxX, 
+    	  min : specMinX, 
+    	  max : specMaxX, 
     	  ticks : 10, 
     	  tickDecimals: 0 
       },
-      yaxis: { ticks: 0,tickDecimals: 0, min: -0.1, max: maxY },
+      yaxis: { ticks: 0, tickDecimals: 0, min: -0.1, max: maxY },
       selection: { 
     	  	mode: (nplots == 1 ? "x" : "xy"), 
     	  	hoverMode: (nplots == 1 ? "x" : "xy") 
@@ -396,8 +411,6 @@ function showFreqGraph(specData) {
 	$("#plotareafreq").unbind("plothover plotclick", null)
 	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
 	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
-	//itemFreq = {datapoint: A.length ? ir[0] : raman[0]}
-	//setTimeout('plotClickCallbackFreq(null,null,itemFreq)',100);
 }
 
 
@@ -636,8 +649,8 @@ function createFreqGrp() {
 		+ "<br>"
 		+ "Band width " + createText2("sigma", "15", "3", "") + " (cm<sup>-1</sup>)" 
 		+ "&nbsp;"
-		+ "Min freq. " + createText2("nMin", "", "4", "")
-		+ " Max " + createText2("nMax", "", "4", "") + "(cm<sup>-1</sup>)"
+		+ "Min freq. " + createText2("nMin", "onClickModSpec()", "4", "")
+		+ " Max " + createText2("nMax", "onClickModSpec()", "4", "") + "(cm<sup>-1</sup>)"
 		+ createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "") + "<br>"
 		+ createRadio("convol", "Stick", 'onClickModSpec()', 0, 1, "", "stick")
 		+ createRadio("convol", "Gaussian", 'onClickModSpec()', 0, 0, "", "gaus")
