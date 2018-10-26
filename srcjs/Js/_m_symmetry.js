@@ -183,7 +183,7 @@ function readSymmetryNames() {
 	var allSymopInfo = getProperty("spacegroupInfo.operations");
 	var numSymops = allSymopInfo.length;
 	var symopNameArray = [];
-	for (i = 1; i< numSymops+1;i++){
+	for (var i = 1; i< numSymops+1;i++){
 		var symopCurrent = allSymopInfo[i];
 		var currentName = symopCurrent[3];
 		symopNameArray[i] = currentName;
@@ -195,7 +195,7 @@ function readSymmetryVectors() {
 	var allSymopInfo = getProperty("spacegroupInfo.operations");
 	var numSymops = allSymopInfo.length;
 	var symopVectorArray = [];
-	for (i = 1; i< numSymops+1;i++){
+	for (var i = 1; i< numSymops+1;i++){
 		var symopCurrent = allSymopInfo[i];
 		var currentName = symopCurrent[2];
 		symopNameArray[i] = currentName;
@@ -219,7 +219,7 @@ function displaySymmetryDrawObjects(symopNumber){
 // returns the points given after performing a symmetry operation a chosen number of times (one point per operation
 function getSymmetricAtomArray(symopSelected,point,iterations){
 	var symAtomArray = [];
-	for (i = 1; i<= iterations;i++) {
+	for (var i = 1; i<= iterations;i++) {
 		if (i=1){
 			var output = all.symop(symopSelected,point)
 			symAtomArray[i] =  output; 
