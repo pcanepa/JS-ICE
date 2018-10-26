@@ -1,3 +1,65 @@
+var flagCif = false; 
+var flagCrystal = false; 
+var flagGromos = false;
+var flagGulp = false;
+var flagOutcar = false;
+var flagGaussian = false;
+var flagQuantumEspresso = false;
+var flagSiesta = false;
+var flagDmol = false;
+var flagMolden = false;
+var flagCastep = false;
+
+var quantumEspresso = false;
+
+
+var sampleOptionArr = ["Load a Sample File", 
+	"MgO slab", 
+	"urea single-point calculation", 
+	"benzene single-point calculation", 
+	"NH3 geometry optimization", 
+	"NH3 vibrations", 
+	"quartz CIF", 
+	"ice.out", 
+	"=AMS/rutile (11 models)"
+]
+
+function onChangeLoadSample(value) {
+	var fname = null;
+	switch(value) {
+	case "=AMS/rutile (11 models)":
+		fname = "output/rutile.cif";
+		break;
+	case "quartz CIF":
+		fname = "output/quartz.cif";
+		break;
+	case "ice.out":
+		fname = "output/ice.out";
+		break;
+	case "MgO slab":
+		fname = "output/cube_mgo_slab/mgo_slab_100_5l.out";
+		break;
+	case "urea single-point calculation":
+		fname = "output/cube_urea_diff/urea-test12.out";
+		break;
+	case "benzene single-point calculation":
+		fname = "output/single-point/c6h6_b3_631gdp.out";
+		break;
+	case "NH3 geometry optimization":
+		fname = "output/geom-opt/nh3_pbe_631gdp_opt.out";
+		break;
+	case "NH3 vibrations":
+		fname = "output/vib-freq/nh3_pbe_631gdp_freq.out";
+		break;
+	}
+	if (fname) {
+		runJmolScriptWait("zap;set echo top left; echo loading " + fname +"...");
+		runJmolScript("load '" + fname + "' " + getValue("modelNo") + " packed");
+	}
+}
+
+
+
 function enterFile() {
 	
 }
@@ -13,24 +75,6 @@ file_method = function(methodName, defaultMethod, params) {
 	var f = self[methodName] || defaultmethod;
 	return (f && f.apply(null, params));
 }
-
-var _fileData = {};
-
-var _fileIsReload = false;
-
-
-var flagCif = false; 
-var flagCrystal = false; 
-var flagGromos = false;
-var flagGulp = false;
-var flagOutcar = false;
-var flagGaussian = false;
-var flagQuantumEspresso = false;
-var flagSiesta = false;
-var flagDmol = false;
-var flagMolden = false;
-var flagCastep = false;
-
 
 reload = function(packing, filter, more) {	
 	// no ZAP here
@@ -285,52 +329,6 @@ setFlags = function(type) {
 	}
 }
 
-var sampleOptionArr = ["Load a Sample File", 
-	"MgO slab", 
-	"urea single-point calculation", 
-	"benzene single-point calculation", 
-	"NH3 geometry optimization", 
-	"NH3 vibrations", 
-	"quartz CIF", 
-	"ice.out", 
-	"=AMS/rutile (11 models)"
-]
-
-function onChangeLoadSample(value) {
-	var fname = null;
-	switch(value) {
-	case "=AMS/rutile (11 models)":
-		fname = "output/rutile.cif";
-		break;
-	case "quartz CIF":
-		fname = "output/quartz.cif";
-		break;
-	case "ice.out":
-		fname = "output/ice.out";
-		break;
-	case "MgO slab":
-		fname = "output/cube_mgo_slab/mgo_slab_100_5l.out";
-		break;
-	case "urea single-point calculation":
-		fname = "output/cube_urea_diff/urea-test12.out";
-		break;
-	case "benzene single-point calculation":
-		fname = "output/single-point/c6h6_b3_631gdp.out";
-		break;
-	case "NH3 geometry optimization":
-		fname = "output/geom-opt/nh3_pbe_631gdp_opt.out";
-		break;
-	case "NH3 vibrations":
-		fname = "output/vib-freq/nh3_pbe_631gdp_freq.out";
-		break;
-	}
-	if (fname) {
-		runJmolScriptWait("zap;set echo top left; echo loading " + fname +"...");
-		runJmolScript("load '" + fname + "' " + getValue("modelNo") + " packed");
-	}
-}
-
-var quantumEspresso = false;
 function onChangeSave(save) {
 	// see menu.js
 	switch (save) {

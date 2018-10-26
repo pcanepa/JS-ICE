@@ -1,6 +1,5 @@
 //prevframeSelection needs because of the conventional
-var prevframeSelection = null;
-var prevFrame = null;
+
 function figureOutSpaceGroup() {
 	saveStateAndOrientation_a();
 	prevframeSelection = frameSelection;
