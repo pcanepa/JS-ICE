@@ -7,8 +7,7 @@ function enterSymmetry() {
 function exitSymmetry() {
 }
 
-//creates symmetry menu 
-// doesn't really work yet-A.S. 10.10.18
+
 function getSymInfo() { //parses data file and provides symmetry operations
 
 	// update all of the model-specific page items
@@ -151,7 +150,8 @@ cellOperation = function(){
 	getSymInfo();
 	setUnitCell();
 }
-
+//creates symmetry menu 
+// minor functionality A.S. 10.26.18 
 function createSymmetryGrp() {
 	var strSymmetry = "<form autocomplete='nope'  id='symmetryGroup' name='symmetryGroup' style='display:none'>\n";
 	strSymmetry += "<table class='contents'>\n";
