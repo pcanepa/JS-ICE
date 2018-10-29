@@ -423,7 +423,7 @@ function showFreqGraph(specData, specMinX, specMaxX) {
 
 
 // this was the old spectrum plot
-
+/*
 var nullValues;
 
 function plotFrequencies(forceNew){
@@ -507,7 +507,7 @@ function plotFrequencies(forceNew){
 	showFrequencyGraph(A, B);
 }
 
-
+*/
 /*
  * function scaleSpectrum(){
  * 
@@ -638,8 +638,7 @@ function createFreqGrp() {
 	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
-	var smallGraph = createDiv("plottitlefreq", ";background:green;display:none", "IR - Raman  dispersion")			
-					+ createDiv("plotareafreq", "background:blue;width:350px;height:180px;background-color:#EFEFEF","");  
+	var smallGraph =  createDiv("plotareafreq", "background:blue;width:350px;height:180px;background-color:#EFEFEF","");  
 	
 	var simPanel = createDiv("simPanel", "", "Raman intensities set to 0.0 kmMol<sup>-1</sup>"
 		+ "<br>\n"
