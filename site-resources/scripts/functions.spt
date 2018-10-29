@@ -23,7 +23,7 @@ function readSymmetryVectors() {
 	}
 	return @symopVectorArray
 }
-// draws the axis lines for rotation axes and mirror planes for mirror symops  
+ 
 
 // returns the points given after performing a symmetry operation a chosen number of times (one point per operation
 function getSymmetricAtomArray(symopSelected,point,iterations){
@@ -50,7 +50,7 @@ function appendNewAtom(elementName, point) {
 	assign atom ({0}) @elementName @point; //appends new atom, connected to a base atom in original structure 
 	var bondNumber =  getProperty("modelInfo.models[1].bondCount");
 	var bondNumberString  = "[{"+bondNumber+"}]";
-	assign bond @bondNumberString "0"; //removes just-added bond--might have unintended consequences 
+	assign bond @bondNumberString "0"; //removes just-added bond--has unintended consequences 
 } 
 // takes a given point and add the elements provided to it by a symmetry operation
 // symmetry operations with multiple outputs (e.g. C3) will produce multiple symmetry atoms 

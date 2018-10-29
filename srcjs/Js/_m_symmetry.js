@@ -178,6 +178,7 @@ function createSymmetryGrp() {
 	strSymmetry += "</form>\n";
 	return strSymmetry;
 }
+// draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symopNumber){
 	symopNameArray = readSymmetryVectors();
 	if (symopNameArray[i].includes("identity")){
@@ -206,4 +207,3 @@ function appendSymmetricAtoms(elementName, point,symopNumber,symopNameArray){
 }
 
 
-}
