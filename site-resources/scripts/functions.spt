@@ -11,7 +11,7 @@ function readSymmetryNames() {
 	}
 	return @symopNameArray
 }
-// gets and returns the symmetry operation vector names 
+// gets and returns the symmetry operation vector (as in "x,y,z" for identity are so forth) names 
 function readSymmetryVectors() {
 	var allSymopInfo = getProperty("spacegroupInfo.operations");
 	var numSymops = allSymopInfo.length;

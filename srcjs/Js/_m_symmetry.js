@@ -179,16 +179,15 @@ function createSymmetryGrp() {
 	return strSymmetry;
 }
 function displaySymmetryDrawObjects(symopNumber){
-	var symNum = symopNumber;
 	symopNameArray = readSymmetryVectors();
 	if (symopNameArray[i].includes("identity")){
-		runJmolScriptWait("draw symop @"+symNum); 
+		runJmolScriptWait("draw symop @"+symNumber); 
 	}
 	else if (symopNameArray[i].includes("axis")){
 		//INSERT CODE HERE
 	}
 	else if (symopNameArray[i].includes("mirror")){
-		runJmolScriptWait("draw symop @"+symNum) ;
+		runJmolScriptWait("draw symop @"+symNumber) ;
 	}
 } 
 function appendSymmetricAtoms(elementName, point,symopNumber,symopNameArray){
@@ -202,6 +201,9 @@ function appendSymmetricAtoms(elementName, point,symopNumber,symopNameArray){
 	newAtomArray = getSymmetricAtomArray(symopNumber,point,iterations) ;
 	numberOfNewAtoms = newAtomArray.length(); 
 	for (i = 1; i <= numberOfNewAtoms; i++){
-		appendNewAtom(elementName, newAtomArray[i]);
+		appendNewAtom(elementName, newAtomArray[i]); //this is a jmol script in functions.spt
 	}
+}
+
+
 }
