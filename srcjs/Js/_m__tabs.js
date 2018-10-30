@@ -31,8 +31,6 @@ function Menu(name, grp, link) {
 	this.link = link;
 }
 
-var tabMenu = [];
-
 function addTab(name, group, link) {
 	tabMenu.push(new Menu(name, group, link));
 }
@@ -54,19 +52,6 @@ MENU_SPECTRA  = 10;
 MENU_EM       = 11;
 MENU_OTHER    = 12;
 
-var TAB_OVER  = 0;
-var TAB_CLICK = 1;
-var TAB_OUT   = 2;
-
-var thisMenu = -1;
-var tabTimeouts = [];
-var tabDelayMS = 100;
-
-var menuNames = [
-	"File", "Cell", "Show" ,"Edit" /*, "Build"*/, "Symmetry",
-	"Measure", "Orient", "Polyhedra", "Surface", 
-	"Optimize", "Spectra", "Elec", "Other",
-	];
 
 function defineMenu() {
 	/* 0 */ addTab("File", "fileGroup", "Import, Export files.");

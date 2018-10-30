@@ -1,6 +1,5 @@
 function enterElec() {
 //	saveOrientation_e();
-
 }
 
 function exitElec() {
@@ -18,11 +17,11 @@ function setColorMulliken(value) {
 //}
 
 function removeCharges() {
-
+}
 // BH TODO - need to clear this without reloading
 //runJmolScriptWait('script scripts/reload.spt');
 //restoreOrientation_e();
-}
+
 
 
 function createElecpropGrp() {
@@ -30,7 +29,7 @@ function createElecpropGrp() {
 	var colSchemeName = new Array("Rainbow (default)", "Black & White",
 			"Blue-White-Red", "Red-Green", "Green-Blue");
 	var colSchemeValue = new Array('roygb', 'bw', 'bwr', 'low', 'high');
-	var strElec = "<form autocomplete='nope'  id='elecGroup' name='elecGroup' style='display:none'>\n";
+	var strElec = "<form autocomplete='nope'  id='elecGroup' name='elecGroup'";
 	strElec += "<table class='contents'><tr><td ><h2>Electronic - Magnetic properties</h2> \n";
 	strElec += "</td></tr>\n";
 	strElec += "<tr><td>\n";
@@ -55,8 +54,8 @@ function createElecpropGrp() {
 	strElec += createButton("spinup", "&#8593",
 			'runJmolScriptWait("display property_spin >= 0")', 0);
 	// strElec+=createButton("magneticMoment","magn. Moment",'',0);
-	strElec += "</td></tr>\n";
-	strElec += "<tr><td>\n";
+	//strElec += "</td></tr>\n";
+	//strElec += "<tr><td>\n";
 	strElec += createLine('blue', '');
 	strElec += createButton("Removeall", "Remove", 'removeCharges()', 0);
 	strElec += "</td></tr>\n";
