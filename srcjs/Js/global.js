@@ -20,3 +20,18 @@ var _fileIsReload = false;
 var prevframeSelection = null;
 var prevFrame = null;
 
+// from _m__tabs
+
+var TAB_OVER  = 0;
+var TAB_CLICK = 1;
+var TAB_OUT   = 2;
+
+var thisMenu = -1;
+var tabTimeouts = [];
+var tabDelayMS = 100;
+
+var menuNames = [
+	"File", "Cell", "Show" ,"Edit" /*, "Build"*/, "Symmetry",
+	"Measure", "Orient", "Polyhedra", "Surface", 
+	"Optimize", "Spectra", "Elec", "Other",
+	];
