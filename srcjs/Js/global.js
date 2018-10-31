@@ -16,9 +16,4 @@ var _fileIsReload = false;
 var prevframeSelection = null;
 var prevFrame = null;
 
-// from _m__tabs
-
-var thisMenu = -1;
-var tabTimeouts = [];
-var tabDelayMS = 100;
-
+

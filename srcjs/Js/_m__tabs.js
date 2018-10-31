@@ -32,7 +32,12 @@ var TAB_OVER  = 0;
 var TAB_CLICK = 1;
 var TAB_OUT   = 2;
 
+var TAB_DELAY_MS = 100;
+
 // This list controls the placement of the menu item on the menu.
+
+var tabs_thisMenu = -1;
+var tabs_timeouts = [];
 
 var MENU_FILE     = 0;
 var MENU_CELL     = 1;
@@ -63,6 +68,7 @@ function addTab(index, jsName, menuName, group, link) {
 	tabs_jsNames[index] = jsName;
 	
 }
+
 function defineMenu() {
 	addTab(MENU_FILE, "File", "File", "fileGroup", "Import, Export files.");
 	addTab(MENU_CELL, "Cell", "Cell", "cellGroup", "Modify cell features and symmetry.");
@@ -101,9 +107,9 @@ function createAllMenus() {
 	return s
 }
 var showMenu = function(menu) {
-	if (thisMenu >= 0)
+	if (tabs_thisMenu >= 0)
 		self["exit" + tabs_jsNames[menu]]();
-	thisMenu = menu;
+	tabs_thisMenu = menu;
 	exitTab();
 //	hideArrays(menu);
 	self["enter" + tabs_jsNames[menu]]();
@@ -121,17 +127,17 @@ function grpDisp(n) {
 }
 
 var grpDispDelayed = function(n, mode) {
-	for (var i = tabTimeouts.length; --i >= 0;) {
-		if (tabTimeouts[i])
-			clearTimeout(tabTimeouts[i]);
-		tabTimeouts = [];
+	for (var i = tabs_timeouts.length; --i >= 0;) {
+		if (tabs_timeouts[i])
+			clearTimeout(tabs_timeouts[i]);
+		tabs_timeouts = [];
 	}	
 	for (var i = 0; i < tabs_menu.length; i++){
 		$("#menu"+i).removeClass("picked");
 	}
 	switch(mode) {
 	case TAB_OVER:
-		tabTimeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},tabDelayMS);
+		tabs_timeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},TAB_DELAY_MS);
 		
 		break;
 	case TAB_CLICK:
@@ -147,8 +153,8 @@ var grpDispDelayed = function(n, mode) {
 	case TAB_OUT:
 		break;
 	}
-	if (thisMenu >= 0) {
-		$("#menu"+thisMenu).addClass("picked");
+	if (tabs_thisMenu >= 0) {
+		$("#menu"+tabs_thisMenu).addClass("picked");
 	}
 }
 
