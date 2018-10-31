@@ -191,18 +191,12 @@ function displaySymmetryDrawObjects(symopNumber){
 		runJmolScriptWait("draw symop @"+symNumber) ;
 	}
 } 
-function appendSymmetricAtoms(elementName, point,symopNumber,symopNameArray){
-	symopName = symopNameArray[symopNumber];
-	iterations = 1 
-	if (symopName.includes("C")) {
-		indexOfC = symopName.indexOf("C");
-		iterationString = symopName.substring(indexOfC,indexOfC+1) ;
-		iterations = parseInt(iterationString)	
-	}
-	newAtomArray = getSymmetricAtomArray(symopNumber,point,iterations) ;
-	numberOfNewAtoms = newAtomArray.length(); 
+function appendSymmetricAtoms(elementName,point,symopSelected){
+	iterations = 1 ;
+	newAtomArray = runJmolScriptWait("getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
+	numberOfNewAtoms = newAtomArray.length; 
 	for (i = 1; i <= numberOfNewAtoms; i++){
-		appendNewAtom(elementName, newAtomArray[i]); //this is a jmol script in functions.spt
+		runJmolScriptWait("appendNewAtom('"+elementName+"', "+newAtomArray[i]+")"); //this is a jmol script in functions.spt
 	}
 }
 
