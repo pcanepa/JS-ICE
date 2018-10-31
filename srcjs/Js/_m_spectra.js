@@ -656,18 +656,19 @@ function createFreqGrp() {
 		+ createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
 
 	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib' style='display:none'>";
-		strFreq += "<table border=0 class='contents'><tr><td valign='top'>";
+		strFreq += "<table border=0 class='contents'><tr><td valign='bottom'>";
 			strFreq += "<h2>IR-Raman Frequencies</h2>\n";
-			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=11 style='width:200px; overflow: auto;'></select>";	
-		strFreq += "</td>"; // end of the first column
-		strFreq += "<td valign='top'>";
-		strFreq += createRadio("modSpec", "Both", "onClickModSpec()", 0, 1, "", "all");
+			strFreq += createRadio("modSpec", "Both", "onClickModSpec()", 0, 1, "", "all");
 			strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "", "ir");
 			strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "", "raman");
 			strFreq += "<BR>\n";
-		strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeypress='onClickModSpec()' CLASS='select' >";
+			strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeypress='onClickModSpec()' CLASS='select' >";
 			strFreq += "</select> ";
 			strFreq += "<BR>\n";
+			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
+		strFreq += "</td>"; // end of the first column
+		strFreq += "<td valign='bottom'>";
+		strFreq +="<BR>\n" + "<BR>\n";
 			strFreq += "vibration ";
 			strFreq += createRadio("vibration", "on", 'onClickFreqParams()', 0, 1, "radVibrationOn", "on");
 			strFreq += createRadio("vibration", "off", 'onClickFreqParams()', 0, 0, "radVibrationOff", "off");
