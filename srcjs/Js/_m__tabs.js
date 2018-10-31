@@ -53,6 +53,15 @@ MENU_EM       = 11;
 MENU_OTHER    = 12;
 
 
+var TAB_OVER  = 0;
+var TAB_CLICK = 1;
+var TAB_OUT   = 2;
+
+var menuNames = [
+	"File", "Cell", "Show" ,"Edit" /*, "Build"*/, "Symmetry",
+	"Measure", "Orient", "Polyhedra", "Surface", 
+	"Optimize", "Spectra", "Elec", "Other",
+	];
 function defineMenu() {
 	/* 0 */ addTab("File", "fileGroup", "Import, Export files.");
 	/* 1 */ addTab("Cell", "cellGroup", "Modify cell features and symmetry.");
