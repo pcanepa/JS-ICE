@@ -63,6 +63,7 @@ function addTab(index, jsName, menuName, group, link) {
 	tabs_jsNames[index] = jsName;
 	
 }
+
 function defineMenu() {
 	addTab(MENU_FILE, "File", "File", "fileGroup", "Import, Export files.");
 	addTab(MENU_CELL, "Cell", "Cell", "cellGroup", "Modify cell features and symmetry.");
