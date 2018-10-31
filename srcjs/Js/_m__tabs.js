@@ -36,9 +36,6 @@ var TAB_DELAY_MS = 100;
 
 // This list controls the placement of the menu item on the menu.
 
-var tabs_thisMenu = -1;
-var tabs_timeouts = [];
-
 var MENU_FILE     = 0;
 var MENU_CELL     = 1;
 var MENU_SHOW     = 2;
@@ -54,8 +51,12 @@ var MENU_SPECTRA  = 10;
 var MENU_EM       = 11;
 var MENU_OTHER    = 12;
 
-var tabs_jsNames = [];
-var tabs_menu = [];
+// local variables 
+
+var tabs_thisMenu = -1;
+var tabs_jsNames  = [];
+var tabs_menu     = [];
+var tabs_timeouts = [];
 
 function Menu(name, grp, link) {
 	this.name = name;
@@ -106,16 +107,15 @@ function createAllMenus() {
 		;
 	return s
 }
+
 var showMenu = function(menu) {
 	if (tabs_thisMenu >= 0)
 		self["exit" + tabs_jsNames[menu]]();
 	tabs_thisMenu = menu;
 	exitTab();
-//	hideArrays(menu);
 	self["enter" + tabs_jsNames[menu]]();
 	$("#menu"+menu).addClass("picked");
 }
-
 
 var exitTab = function() {
 	cancelPicking();
@@ -157,28 +157,6 @@ var grpDispDelayed = function(n, mode) {
 		$("#menu"+tabs_thisMenu).addClass("picked");
 	}
 }
-
-//var arrayGeomObjects = new Array(
-//		"appletdiv", 
-//		"graphdiv", 
-//		"plottitle",
-//		"plotarea", 
-//		"appletdiv1", 
-//		"graphdiv1", 
-//		"plottitle1", 
-//		"plotarea1");
-//var arrayFreqObjects = new Array(
-//		"freqdiv", 
-//		"graphfreqdiv", 
-//		"plottitlefreq",
-//		"plotareafreq");
-//
-//var hideArrays = function(menu) {
-//	for (var i = 0; i < arrayGeomObjects.length; i++)
-//		getbyID(arrayGeomObjects[i]).style.display = (menu == MENU_OPTIMIZE ? "block" : "none");
-//	for (var j = 0; j < arrayFreqObjects.length; j++)
-//		getbyID(arrayFreqObjects[j]).style.display = (menu == MENU_SPECTRA ? "block" : "none");
-//}
 
 function createTabMenu() {
 	var strMenu = "<ul class='menu' id='menu'>";
