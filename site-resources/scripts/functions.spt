@@ -20,19 +20,35 @@ function readSymmetryVectors() {
 		{symopVectorArray = _M.fileSymmetryOperations 
 	}
 	else {
-		var symopArray = _M.getProperty("spacegroupInfo.symmetryInfo");
-		var totalChars = symopVectorArray.length;
-		var currentSymop = 1;
-		for (var i = 1; i<= totalChars-2; i++){
-			currentSymopName = currentSymop+"";
-			if (currentSymopName == symopArray[i] && "\t" == symopArray[i+1]){
-				var vectorString = symopArray[i+2]+symopArray[i+3]+symopArray[i+4]+symopArray[i+5]+symopArray[i+6]+symopArray[i+7]+symopArray[i+8]+symopArray[i+9]+symopArray[i+10]+symopArray[i+11]+symopArray[i+12]+symopArray[i+13]+symopArray[i+14]+symopArray[i+15]
-				vectorString = vectorString.substring(0,vectorString.indexOf(" "))
-				symopVectorArray[currentSymop] = vectorString;
-				currentSymop = currentSymop + 1;
+		var symopCharArray = _M.getProperty("spacegroupInfo.symmetryInfo")
+		var totalChars = symopCharArray.length
+		var allElementsArray = []
+		var elementCounter = 1
+		for (var i = 1; i <= totalChars;i++){
+			if (symopCharArray[i] == "\t" || symopCharArray[i] == " "){
+				allElementsArray[elementCounter] = elementString
+				var elementString = ""
+				elementCounter += 1 
+			}
+			if (symopCharArray[i] != "\t" && symopCharArray[i] != " "){
+				elementString += symopCharArray[i]
 			}
 		}
-	}	
+		var vectorCounter = 1
+		var totalElements = allElementsArray.length
+		for (var i = 1; i <= elementCounter; i++) {
+			var elementString = ""+allElementsArray[i]
+			var strLength  = elementString.length
+			for (var j = 1; j<= strLength; j++) {
+				if  (elementString[j] == ","){
+					symopVectorArray[vectorCounter] = allElementsArray[i];
+					vectorCounter += 1 
+					break
+				}
+			}
+		}
+	}
+
 	return symopVectorArray
 }
  
