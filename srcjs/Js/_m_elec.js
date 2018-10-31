@@ -29,7 +29,7 @@ function createElecpropGrp() {
 	var colSchemeName = new Array("Rainbow (default)", "Black & White",
 			"Blue-White-Red", "Red-Green", "Green-Blue");
 	var colSchemeValue = new Array('roygb', 'bw', 'bwr', 'low', 'high');
-	var strElec = "<form autocomplete='nope'  id='elecGroup' name='elecGroup'";
+	var strElec = "<form autocomplete='nope' style='display:none' id='elecGroup' name='elecGroup'";
 	strElec += "<table class='contents'><tr><td ><h2>Electronic - Magnetic properties</h2> \n";
 	strElec += "</td></tr>\n";
 	strElec += "<tr><td>\n";
