@@ -1,7 +1,9 @@
+
 // functions for JS-ICE
 // gets and returns the symmetry operation names (e.g. "identity") 
 //not really necessary for current functionality but nice to have 
 //only functional in jsmol as jsice cannot read spacegroupInfo.operations
+
 function readSymmetryNames() {
 	var allSymopInfo = _M.getProperty("spacegroupInfo.operations");
 	var numSymops = allSymopInfo.length;
@@ -53,16 +55,17 @@ function readSymmetryVectors() {
 }
  
 
-// returns the points given after performing a symmetry operation a chosen number of times (one point per operation
-function getSymmetricAtomArray(symopSelected,point,iterations){
+// returns the points given after performing a symmetry operation a chosen number of times (one point per operation)
+
+function getSymmetricAtomArray(symopSelected,pointt,iterations){
 	var symAtomArray = [];
 	for (var i = 1; i<= iterations;i++) {
 		if (i=1){
-			var output = all.symop(symopSelected,point)
+			var output = all.symop(symopSelected,pointt)
 			symAtomArray[i] = output; 
 			}
 		else {
-			var output = all.symop(symopSelected[i-1],point)
+			var output = all.symop(symopSelected[i-1],pointt)
 			symAtomArray[i] = output;
 		}	
 
@@ -83,7 +86,6 @@ function appendNewAtom(elementName, point) {
 } 
 // takes a given point and add the elements provided to it by a symmetry operation
 // symmetry operations with multiple outputs (e.g. C3) will produce multiple symmetry atoms 
-
 
 
 

@@ -7,8 +7,7 @@ set history 2;
 stereo OFF; 
 spin off; 
 set perspectiveDepth OFF;
-
-script scripts/functions.spt
+script "scripts/functions.spt"
 
 // don't know what this was -- BH
 //javascript(makeDisable("filename"));
