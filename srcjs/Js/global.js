@@ -1,6 +1,11 @@
 // global variables used in JS-ICE
 // Geoff van Dover 2018.10.26
 
+// from _m__tabs.js
+
+var tabMenu = [];
+
+
 // from _m_spectra.js
 
 var _specData;
@@ -14,3 +19,4 @@ var _fileIsReload = false;
 
 var prevframeSelection = null;
 var prevFrame = null;
+
