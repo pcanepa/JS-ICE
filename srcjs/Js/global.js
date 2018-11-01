@@ -16,4 +16,23 @@ var _fileIsReload = false;
 var prevframeSelection = null;
 var prevFrame = null;
 
-
+// from _m_build.js
+var counterClicZ = 0;
+
+var distanceZ, angleZ, torsionalZ
+var arrayAtomZ = new Array(3);
+
+var makeCrystalSpaceGroup = null;
+
+// from _m_cell.js
+
+var aCell, bCell, cCell, alpha, beta, gamma, typeSystem; 
+
+// from _m_edit.js
+
+var deleteMode = "";
+var hideMode = "";
+var displayMode = "";
+var firstTimeEdit = true;
+
+var radBondRange;

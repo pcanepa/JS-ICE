@@ -23,7 +23,6 @@ function saveFractionalCoordinate() {
 }
 
 //This reads out cell parameters given astructure.
-var aCell, bCell, cCell, alpha, beta, gamma, typeSystem;
 function getUnitcell(i) {
 	// document.cellGroup.reset();
 	typeSystem = "";

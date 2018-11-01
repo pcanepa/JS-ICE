@@ -30,12 +30,6 @@ function showPickPlaneCallback() {
 }
 
 
-var deleteMode = "";
-var hideMode = "";
-var displayMode = "";
-
-var firstTimeEdit = true;
-
 function setRadiiConnectMessage(r) {
 	getbyID('radiiConnectMsg').innerHTML = " " + r.toPrecision(2) + " &#197";
 }
@@ -193,7 +187,6 @@ function deleteBond() {
 	}
 }
 
-var radbondVal;
 function checkBondStatus(radval) {
 	runJmolScriptWait("select *; halos off; label off; select none;");
 	radbondVal = radval;
@@ -220,7 +213,6 @@ function checkBondStatus(radval) {
 
 }
 
-var radBondRange;
 function checkWhithin(radVal) {
 	radBondRange = radVal;
 	if (radBondRange == "just") {

@@ -120,7 +120,6 @@ function loadScriptZMatrix() {
 			+ 'rotate Selected molecular @b @a @tor @newAtom \n' + '}');
 }
 
-var counterClicZ = 0;
 function selectElementZmatrix(form) {
 
 	if (form.checked) {
@@ -143,8 +142,6 @@ function selectElementZmatrix(form) {
 	}
 }
 
-var distanceZ, angleZ, torsionalZ
-var arrayAtomZ = new Array(3);
 function pickZmatrixCallback(b, c, d, e) {
 	if (counterClicZ == 0) { // distance
 		var valuedist = prompt(
@@ -197,7 +194,6 @@ function createCrystalStr(form) {
 	}
 }
 
-var makeCrystalSpaceGroup = null;
 function checkIfThreeD(value) {
 	makeEnablePeriodicityMol()
 	if (value == "crystal") {
