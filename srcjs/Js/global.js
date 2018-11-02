@@ -36,3 +36,34 @@ var displayMode = "";
 var firstTimeEdit = true;
 
 var radBondRange;
+
+// from _m_measure.js
+
+var kindCoord;
+var measureCoord = false;
+var unitMeasure = "";
+var mesCount = 0;
+
+// from _m_orient.js
+
+var motion = "";
+
+// from _m_show.js
+
+var firstTimeBond = true;
+var colorWhat = "";
+
+// from > callback.js
+
+var fPick = null;
+
+// from constant.js
+
+var version = "3.0.0"; // BH 2018
+
+// from conversion.js
+
+var finalGeomUnit = ""
+var unitGeomEnergy = "";
+
+var radiant = Math.PI / 180;

@@ -6,8 +6,6 @@ function exitMeasure() {
 	measureCoord = false;
 }
 
-var kindCoord;
-var measureCoord = false;
 function viewCoord(value) {
 	kindCoord = value;
 	measureCoord = true;
@@ -27,7 +25,7 @@ function showCoord() {
 		}
 	}
 }
-var unitMeasure = "";
+
 function setMeasureUnit(value) {
 	unitMeasure = value;
 	runJmolScriptWait("set measurements " + value);
@@ -37,7 +35,6 @@ function setMeasurement() {
 	runJmolScriptWait("set measurements ON");
 }
 
-var mesCount = 0;
 function checkMeasure(value) {
 	var radiobutton = value;
 	var unit = getbyID('measureDist').value;
