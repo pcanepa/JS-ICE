@@ -209,7 +209,7 @@ function extractIRData_crystal(specData) {
 		specData.sortInt[i] = specData.irInt[i];
 		specData.specIR[specData.irFreq[i]] = specData.irInt[i];
 		specData.model[specData.irFreq[i]] = specData.freqInfo[i].modelNumber;
-		specData.freqs[i] = specData.freqInfo[i].modelProperties.Frequency;
+		specData.freqs[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
 	}
 	System.out.println("crystal extractIRData");
 }
@@ -220,7 +220,7 @@ function extractIRData_vaspoutcar(specData) {
 		specData.irFreq[i] = Math.round(substringFreqToFloat(_fileData.freqData[i]));
 		specData.specIR[specData.irFreq[i]] = 100;
 		specData.model[specData.irFreq[i]] = specData.freqInfo[i].modelNumber;
-		specData.freqs[i] = specData.freqInfo[i].modelProperties.Frequency;
+		specData.freqs[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
 		specData.irInt[i] = 100;
 		if (i == 0)
 			specData.irInt[i] = 0;
@@ -233,7 +233,7 @@ function extractIRData_gaussian(specData) {
 		specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqData[i]));
 		specData.specIR[specData.irFreq[i]] = specData.irInt[i] = rtrim(specData.freqIntens[i], 1, "K", 1);
 		specData.model[specData.irFreq[i]] = specData.freqInfo[i].modelNumber;
-		specData.freqs[i] = specData.freqInfo[i].modelProperties.Frequency;
+		specData.freqs[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
 	}
 }
 
@@ -249,7 +249,7 @@ function extractRamanData(specData) {
 			specData.ramanInt[i] = 100;
 			specData.specRaman[specData.ramanFreq[i]] = 100;
 			specData.model[specData.ramanFreq[i]] = specData.freqInfo[i].modelNumber;
-			specData.freqs[i] = specData.freqInfo[i].modelProperties.Frequency;
+			specData.freqs[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
 		} else {
 			specData.ramanInt[i] = 0;
 		}
@@ -265,9 +265,9 @@ function getModelForSpec(specData){
 	n = specData.freqs.length;
 	for (var i = 0; i < n; i++) { 
 		if (specData.modelNumber !=0) {
-			specData.ranges.push[Math.max(x1, freqs[i] - (sigma/2)), Math.min(x2, freqs[i] + (sigma/2)), modelNumber];
+			specData.ranges.push(Math.max(x1, freqs[i] - (sigma/2)), Math.min(x2, freqs[i] + (sigma/2)), modelNumber);
 		} else {
-			-1
+			specData.ranges.push(-1);
 		}
 	}
 }	
