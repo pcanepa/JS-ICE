@@ -76,6 +76,9 @@ function getSymmetricAtomArray(symopSelected,pointt,iterations){
 // needs significant work such that elements that should be strings are strings and that code runs out of javascript and not just jmol script editor
 // A.S. 10.24.18 
 //
+//p1 = $draw_object_name[0]  ; p2 = $draw_object_name[1]
+function drawCleanSymmetryAxisVectors(){
+} 
 
 function appendNewAtom(elementName, point) {
 	model last;
