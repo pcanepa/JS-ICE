@@ -1,5 +1,19 @@
+
 function enterEdit() {
+
+	radiiConnectSlider.recalculate();
+
+	setRadiiConnectMessage(radiiConnectSlider.getValue());
 	
+	// BH 2018: Disabled -- unexpected behavior should not be on tab entry
+//	if (firstTimeEdit) {
+//		radiiConnectSlider.setValue(50);
+//		runJmolScriptWait("set forceAutoBond ON; set bondMode AND");
+//	}
+//	getbyID("radiiConnectMsg").innerHTML = " " + 2.5 + " &#197";
+//	setTimeout("runJmolScriptWait(\"restore BONDS bondEdit\");", 400);
+//	firstTimeEdit = false;
+
 }
 
 function exitEdit() {
@@ -16,26 +30,13 @@ function showPickPlaneCallback() {
 }
 
 
-var deleteMode = "";
-var hideMode = "";
-var displayMode = "";
-
-var firstTimeEdit = true;
-function enterEdit() {
-	// BH 2018: Disabled -- unexpected behavior should not be on tab entry
-//	if (firstTimeEdit) {
-//		radiiConnectSlider.setValue(50);
-//		runJmolScriptWait("set forceAutoBond ON; set bondMode AND");
-//	}
-//	getbyID("radiiConnectMsg").innerHTML = " " + 2.5 + " &#197";
-//	setTimeout("runJmolScriptWait(\"restore BONDS bondEdit\");", 400);
-//	firstTimeEdit = false;
+function setRadiiConnectMessage(r) {
+	getbyID('radiiConnectMsg').innerHTML = " " + r.toPrecision(2) + " &#197";
 }
 
-
 function applyConnect(r) {
-	if (firstTime) {
-		runJmolScriptWait("connect (*) (*) DELETE; connect 2.0 (*) (*) single ModifyOrCreate;");
+	if (firstTimeEdit) {
+//		runJmolScriptWait("connect (*) (*) DELETE; connect 2.0 (*) (*) single ModifyOrCreate;");
 	} else {
 		var flagBond = checkBoxX("allBondconnect");
 		// alert(flagBond);
@@ -57,7 +58,7 @@ function applyConnect(r) {
 		}
 		runJmolScriptWait("save BONDS bondEdit");
 	}
-	getbyID('radiiConnectMsg').innerHTML = " " + r.toPrecision(2) + " &#197";
+	setRadiiConnectMessage(r);
 }
 
 function deleteAtom() {
@@ -186,7 +187,6 @@ function deleteBond() {
 	}
 }
 
-var radbondVal;
 function checkBondStatus(radval) {
 	runJmolScriptWait("select *; halos off; label off; select none;");
 	radbondVal = radval;
@@ -213,7 +213,6 @@ function checkBondStatus(radval) {
 
 }
 
-var radBondRange;
 function checkWhithin(radVal) {
 	radBondRange = radVal;
 	if (radBondRange == "just") {

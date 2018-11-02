@@ -24,7 +24,7 @@ myErrorCallback = function(applet, b, msg, d) {
 	errorMsg(msg);
 }
 
-var fPick = null;
+
 
 setPickingCallbackFunction = function(f) {
 	fPick = f;

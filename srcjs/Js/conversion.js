@@ -24,10 +24,6 @@
 
 //////////////////////////////////////VALUE conversion AND ROUNDOFF
 
-var finalGeomUnit = ""
-var unitGeomEnergy = "";
-
-var radiant = Math.PI / 180;
 
 function substringEnergyToFloat(value) {
 	if (value != null) {

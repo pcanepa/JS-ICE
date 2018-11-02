@@ -21,9 +21,6 @@ function showPickPlaneCallback() {
 	}
 }
 
-var firstTimeBond = true;
-
-var colorWhat = "";
 
 
 function setColorWhat(rgb, colorscript) {

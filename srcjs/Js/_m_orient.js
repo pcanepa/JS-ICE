@@ -38,7 +38,6 @@ function toggleSlab() {
 }
 
 //This controls the refined motion of the structure
-var motion = "";
 function setKindMotion(valueList) {
 	motion = valueList;
 	if (motion == "select")
