@@ -67,3 +67,57 @@ var finalGeomUnit = ""
 var unitGeomEnergy = "";
 
 var radiant = Math.PI / 180;
+
+// from frame.js
+
+var frameSelection = null;
+var frameNum = null;
+var frameValue = null;
+
+//from pick.js
+
+var pickingEnabled = false;
+var counterHide = 0;
+var selectedAtoms = [];
+var sortquestion = null;
+var selectCheckbox = null;
+var menuCallback = null;
+
+// from plotgraph.js
+
+var itemEnergy
+var previousPoint = null
+var itemForce
+var previousPointForce = null
+var itemFreq
+var previousPointFreq = null
+
+var theplot; // global, mostly for testing.
+
+var haveGraphSpectra, haveGraphOptimize;
+
+var energy = 0;
+	var label = "";
+	var previous = 0;
+	var last = modelCount - 1;
+	
+	var data = [];
+    var A = [];
+    var nplots = 1;
+    var modelCount = Info.length;
+    var stringa = Info[3].name;
+    
+    var nullValues;
+    
+    var minY = 999999;
+
+    var dataSpectrum = [];
+	var spectrum = [];
+	
+// from uff.js
+
+var counterUff = 0
+
+// from windows.js
+
+var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50";

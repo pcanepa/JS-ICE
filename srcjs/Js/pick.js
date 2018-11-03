@@ -62,12 +62,6 @@ function setPickingHide(form) {
  * select within(0,plane, $plane1)
  */
 
-var pickingEnabled = false;
-var counterHide = 0;
-var selectedAtoms = [];
-var sortquestion = null;
-var selectCheckbox = null;
-var menuCallback = null;
 
 function onClickPickPlane(checkbox, callback) {
 	menuCallback = callback;
