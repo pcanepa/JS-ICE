@@ -1,7 +1,9 @@
+
 // functions for JS-ICE
 // gets and returns the symmetry operation names (e.g. "identity") 
 //not really necessary for current functionality but nice to have 
 //only functional in jsmol as jsice cannot read spacegroupInfo.operations
+
 function readSymmetryNames() {
 	var allSymopInfo = _M.getProperty("spacegroupInfo.operations");
 	var numSymops = allSymopInfo.length;
@@ -53,16 +55,17 @@ function readSymmetryVectors() {
 }
  
 
-// returns the points given after performing a symmetry operation a chosen number of times (one point per operation
-function getSymmetricAtomArray(symopSelected,point,iterations){
+// returns the points given after performing a symmetry operation a chosen number of times (one point per operation)
+
+function getSymmetricAtomArray(symopSelected,pointt,iterations){
 	var symAtomArray = [];
 	for (var i = 1; i<= iterations;i++) {
 		if (i=1){
-			var output = all.symop(symopSelected,point)
+			var output = all.symop(symopSelected,pointt)
 			symAtomArray[i] = output; 
 			}
-		else {
-			var output = all.symop(symopSelected[i-1],point)
+		if (i>= 2) {
+			var output = all.symop(symopSelected,symAtomArray[i-1])
 			symAtomArray[i] = output;
 		}	
 
@@ -73,17 +76,20 @@ function getSymmetricAtomArray(symopSelected,point,iterations){
 // needs significant work such that elements that should be strings are strings and that code runs out of javascript and not just jmol script editor
 // A.S. 10.24.18 
 //
+//p1 = $draw_object_name[0]  ; p2 = $draw_object_name[1]
+function drawCleanSymmetryAxisVectors(){
+} 
 
 function appendNewAtom(elementName, point) {
-	assign atom ({0}) @elementName @point //appends new atom, connected to a base atom in original structure 
-	connect @{{*}[0]} delete
+	model last;
+	assign atom @elementName @point //appends new atom, connected to a base atom in original structure 
+// connect @{{*}[0]} delete
 //	var bondNumber =  getProperty("modelInfo.models[1].bondCount")
 //	var bondNumberString  = "[{"+bondNumber+"}]"
 //	assign bond @bondNumberString "0" //removes just-added bond--has unintended consequences 
 } 
 // takes a given point and add the elements provided to it by a symmetry operation
 // symmetry operations with multiple outputs (e.g. C3) will produce multiple symmetry atoms 
-
 
 
 
