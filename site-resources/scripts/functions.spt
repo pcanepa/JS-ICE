@@ -76,8 +76,22 @@ function getSymmetricAtomArray(symopSelected,pointt,iterations){
 // needs significant work such that elements that should be strings are strings and that code runs out of javascript and not just jmol script editor
 // A.S. 10.24.18 
 //
+//function dragAtomConstrained
+// set picking dragatom 
+//
 //p1 = $draw_object_name[0]  ; p2 = $draw_object_name[1]
-function drawCleanSymmetryAxisVectors(){
+function drawCleanSymmetryAxisVectors(symOperation, axisFactor){
+	draw symop @symOperation
+	point1 = $sym_rotvector1[0]
+	point2 = $sym_rotvector1[1]
+	point3 = $sym_rotvector2[0]
+	point4 = $sym_rotvector2[1]
+	point1 = point1*axisFactor
+	point3 = point3*axisFactor
+	//need to clear symop draw objects
+	//need to draw two vectors at same time
+	draw vector @point2 @point1 
+	draw vector @point4 @point3
 } 
 
 function appendNewAtom(elementName, point) {
@@ -92,5 +106,5 @@ function appendNewAtom(elementName, point) {
 // symmetry operations with multiple outputs (e.g. C3) will produce multiple symmetry atoms 
 
 
-
+//IDEA: constraint menu? 
 
