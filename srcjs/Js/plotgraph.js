@@ -35,16 +35,6 @@
 //}
 
 
-var itemEnergy
-var previousPoint = null
-var itemForce
-var previousPointForce = null
-var itemFreq
-var previousPointFreq = null
-
-var theplot; // global, mostly for testing.
-
-var haveGraphSpectra, haveGraphOptimize;
 
 function resetGraphs() {
 	haveGraphSpectra = false;
@@ -83,10 +73,7 @@ function plotEnergies(){
 	} else {
 		f = substringEnergyVaspToFloat;
 	}
-	var energy = 0;
-	var label = "";
-	var previous = 0;
-	var last = modelCount - 1;
+	
 	if (f) {
 		// not Gaussian
 		for (var i = 0; i < last; i++) {
@@ -146,11 +133,6 @@ function plotEnergies(){
 
 	//function plotGradient(){
 
-	var data = [];
-    var A = [];
-    var nplots = 1;
-    var modelCount = Info.length;
-    var stringa = Info[3].name;
 
 	if(!flagCrystal)
 		return;
@@ -200,7 +182,6 @@ function plotEnergies(){
 	setTimeout('plotClickCallbackForce(null,null,itemForce)',100);
 }
 
-var nullValues;
 
 function plotFrequencies(forceNew){
 	if (haveGraphSpectra && !forceNew)
@@ -283,8 +264,6 @@ function plotFrequencies(forceNew){
 	// data.push(A)
 	// data.push(B)
 	
-	var minY = 999999;
-	var maxY = 0;
 	for (var i = 0; i < A.length; i++) {
 		if (A[i][1] > maxY)
 			maxY = A[i][1];
@@ -551,8 +530,6 @@ function plotSpectrum(div, openerOrSelf) {
 	    // fix the widths so they don't jump around
 	     $(this).css('width', $(this).width());});
 	
-	var dataSpectrum = [];
-	var spectrum = [];
 	for(var i = min; i < max; i++){
 	 spectrum.push([i,intArray[i]]);
 	}

@@ -23,7 +23,6 @@
  */
 
 //////////Following functions control the structural optimization of a structure using the embedded uff of Jmol
-var counterUff = 0
 function minimizeStructure() {
 	var optCriterion = parseFloat(getValue("optciteria"));
 	var optSteps = parseInt(getValue("maxsteps"));
