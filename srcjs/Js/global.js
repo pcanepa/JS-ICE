@@ -90,7 +90,6 @@ var previousPoint = null
 var itemForce
 var previousPointForce = null
 var itemFreq
-var previousPointFreq = null
 
 var theplot; // global, mostly for testing.
 
@@ -121,3 +120,15 @@ var counterUff = 0
 // from windows.js
 
 var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50";
+
+
+// for citations:
+
+var citations = ['J-ICE: a new Jmol interface for handling and visualizing Crystallographic and Electronic properties.', ['P. Canepa', 'R.M. Hanson', 'P. Ugliengo', 'M. Alfredsson', 'A. Salij', 'M. Peterson', 'G. vanDover'], 'J.Appl. Cryst. 44, 225 (2011)';
+
+var createCitation = function() {
+	return citations 
+}
+ var getCredits = function() {
+ 	return citations [1]
+ }
