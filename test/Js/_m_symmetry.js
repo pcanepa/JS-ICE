@@ -7,8 +7,7 @@ function enterSymmetry() {
 function exitSymmetry() {
 }
 
-//creates symmetry menu 
-// doesn't really work yet-A.S. 10.10.18
+
 function getSymInfo() { //parses data file and provides symmetry operations
 
 	// update all of the model-specific page items
@@ -151,7 +150,26 @@ cellOperation = function(){
 	getSymInfo();
 	setUnitCell();
 }
-
+chosenSymElement = ""; 
+function setSymElement(elementName){
+	chosenSymElement = elementName;
+}
+chosenSymop = "";
+function setSymop(symop){
+	chosenSymop = symop;
+}
+symopSet = [];
+function createSymopSet(){
+	var allSymopsString = jmolEvaluate('script("print readSymmetryVectors()")'); 
+	var totalSymops = allSymopsString.match(/\n/g).length-1; //this should work in all cases
+	for (i = 1; i<= totalSymops;i++){
+		console.log(i);
+		symopSetIndex = i-1;
+		symopSet[symopSetIndex] = jmolEvaluate('script("var info = readSymmetryVectors();print info["+i+"];")');//THIS LINE IS NOT WORKING-ASK BH
+	}
+}
+//creates symmetry menu 
+// minor functionality A.S. 10.26.18 
 function createSymmetryGrp() {
 	var strSymmetry = "<form autocomplete='nope'  id='symmetryGroup' name='symmetryGroup' style='display:none'>\n";
 	strSymmetry += "<table class='contents'>\n";
@@ -173,94 +191,49 @@ function createSymmetryGrp() {
 	strSymmetry += "<BR>\n"; 
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += "Add element:"
+	strSymmetry += createSelect('addSymEle', 'setSymElement(value)', 0, 1,
+			eleSymb);
 	//strSymmetry +=  createSelect();
 	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "Enter initial point:";
+	strSymmetry += "<input type='text'  name='initPoint' id='initPoint' size='10' class='text'>";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "Choose symmetry operation:";
+//	strSymmetry += createSelect('addSymSymop', 'setSymop(value)', 0, 1,
+//			jmolEvaluate('script("print readSymmetryVectors()")'));
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	//strSymmetry += createCheck("copyOpaque", "Activate applied symmetry:",
+//			appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop), 0, 1, 0);
+//	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</form>\n";
 	return strSymmetry;
 }
-// gets and returns the symmetry operation names (e.g. "identity") 
-function readSymmetryNames() {
-	var allSymopInfo = getProperty("spacegroupInfo.operations");
-	var numSymops = allSymopInfo.length;
-	var symopNameArray = [];
-	for (i = 1; i< numSymops+1;i++){
-		var symopCurrent = allSymopInfo[i];
-		var currentName = symopCurrent[3];
-		symopNameArray[i] = currentName;
-	}
-	return symopNameArray
-}
-// gets and returns the symmetry operation vector names 
-function readSymmetryVectors() {
-	var allSymopInfo = getProperty("spacegroupInfo.operations");
-	var numSymops = allSymopInfo.length;
-	var symopVectorArray = [];
-	for (i = 1; i< numSymops+1;i++){
-		var symopCurrent = allSymopInfo[i];
-		var currentName = symopCurrent[2];
-		symopNameArray[i] = currentName;
-	}
-	return symopVectorArray
-}
-// draws the axis lines for rotation axes and mirror planes for mirror symops  
+// draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symopNumber){
-	var i = symopNumber
 	symopNameArray = readSymmetryVectors();
 	if (symopNameArray[i].includes("identity")){
-		runJmolScriptWait("draw symop \{i}"); 
+		runJmolScriptWait("draw symop @"+symNumber); 
 	}
 	else if (symopNameArray[i].includes("axis")){
 		//INSERT CODE HERE
 	}
 	else if (symopNameArray[i].includes("mirror")){
-		runJmolScriptWait("draw symop \{i}") ;
+		runJmolScriptWait("draw symop @"+symNumber) ;
 	}
 } 
-// returns the points given after performing a symmetry operation a chosen number of times (one point per operation
-function getSymmetricAtomArray(symopSelected,point,iterations){
-	var symAtomArray = [];
-	for (i = 1; i<= iterations;i++) {
-		if (i=1){
-			var output = all.symop(symopSelected,point)
-			symAtomArray[i] =  output; 
-			}
-		else {
-			var output = all.symop(symopSelected[i-1],point)
-			symAtomArray[i] = output;
-		}	
-
-	}
-	return symAtomArray 
-
-}
-// adds new element by appending a hydrogen, deleting the bond to the hydrogen, and then changing the hydrogen to chosen element
-// needs significant work such that elements that should be strings are strings and that code runs out of javascript and not just jmol script editor
-// A.S. 10.24.18 
-//
-/*
-function appendNewAtom(elementName, point) {
-	assign atom ({0}) "H" pointValue;
-	bondNumber =  getProperty("modelInfo.models[1].bondCount")-1;
-	atomNumber = getProperty("modelInfo.models[1].atomCount")-1; 
-	assign bond [{bondNumber}] "0";
-	{atomNumber}.element = elementName;
-} 
-// takes a given point and add the elements provided to it by a symmetry operation
-// symmetry operations with multiple outputs (e.g. C3) will produce multiple symmetry atoms 
-function appendSymmetricAtoms(elementName, point,symopNumber,symopNameArray){
-	symopName = symopNameArray[symopNumber];
-	iterations = 1 
-	if (symopName.includes("C") {
-		indexOfC = symopName.indexOf("C");
-		iterationString = symopName.substring(indexOfC,indexOfC+1) ;
-		iterations = parseInt(iterationString)	
-	}
-	newAtomArray = getSymmetricAtomArray(symopNumber,point,iterations) ;
-	numberOfNewAtoms = newAtomArray.length(); 
+function appendSymmetricAtoms(elementName,point,symopSelected){
+	iterations = 1 ;
+	newAtomArray = runJmolScriptWait("getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
+	numberOfNewAtoms = newAtomArray.length; 
 	for (i = 1; i <= numberOfNewAtoms; i++){
-		appendNewAtom(elementName, newAtomArray[i];
+		runJmolScriptWait("appendNewAtom('"+elementName+"', "+newAtomArray[i]+")"); //this is a jmol script in functions.spt
 	}
 }
-*/
 
 

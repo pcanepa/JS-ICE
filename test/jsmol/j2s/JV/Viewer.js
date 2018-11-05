@@ -6469,6 +6469,7 @@ self.Jmol && Jmol.extend && Jmol.extend("vwr",
 JV.Viewer.prototype);
 }}Clazz.defineStatics (c$,
 "isJS", false,
+"isSwingJS", false,
 "isWebGL", false,
 "appletDocumentBase", "",
 "appletCodeBase", "",

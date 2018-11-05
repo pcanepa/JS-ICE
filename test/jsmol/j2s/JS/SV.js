@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JS");
-Clazz.load (["javajs.api.JSONEncodable", "JS.T", "JU.P3"], "JS.SV", ["java.lang.Boolean", "$.Float", "java.util.Arrays", "$.Collections", "$.Hashtable", "$.Map", "JU.AU", "$.BArray", "$.BS", "$.Base64", "$.Lst", "$.M3", "$.M34", "$.M4", "$.Measure", "$.P4", "$.PT", "$.Quat", "$.SB", "$.T3", "$.V3", "JM.BondSet", "JS.ScriptContext", "JU.BSUtil", "$.Escape"], function () {
+Clazz.load (["javajs.api.JSONEncodable", "JS.T", "JU.P3"], "JS.SV", ["java.lang.Boolean", "$.Float", "java.util.Arrays", "$.Collections", "$.Hashtable", "$.Map", "JU.AU", "$.BArray", "$.BS", "$.Base64", "$.Lst", "$.M3", "$.M34", "$.M4", "$.Measure", "$.P4", "$.PT", "$.Quat", "$.SB", "$.T3", "$.V3", "JM.BondSet", "JS.ScriptContext", "JU.BSUtil", "$.Escape", "JV.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.index = 2147483647;
 this.myName = null;
@@ -115,7 +115,7 @@ if (Clazz.instanceOf (x, java.util.Map)) return JS.SV.getVariableMap (x);
 if (Clazz.instanceOf (x, JU.Lst)) return JS.SV.getVariableList (x);
 if (Clazz.instanceOf (x, JU.BArray)) return JS.SV.newV (15, x);
 if (Clazz.instanceOf (x, JS.ScriptContext)) return JS.SV.newV (14, x);
-if (Clazz.instanceOf (x, Array)) return JS.SV.getVariableAV (x);
+if (JS.SV.isASV (x)) return JS.SV.getVariableAV (x);
 if (JU.AU.isAI (x)) return JS.SV.getVariableAI (x);
 if (JU.AU.isAB (x)) return JS.SV.getVariableAB (x);
 if (JU.AU.isAF (x)) return JS.SV.getVariableAF (x);
@@ -128,6 +128,13 @@ if (JU.AU.isASS (x)) return JS.SV.getVariableASS (x);
 if (JU.AU.isADD (x)) return JS.SV.getVariableADD (x);
 if (JU.AU.isAFloat (x)) return JS.SV.newV (13, x);
 return JS.SV.newJSVar (x);
+}, "~O");
+c$.isASV = Clazz.defineMethod (c$, "isASV", 
+ function (x) {
+if (!JV.Viewer.isSwingJS) {
+{
+return x && x[0] && x[0].__CLASS_NAME__ == "JS.SV";
+}}return Clazz.instanceOf (x, Array);
 }, "~O");
 c$.newJSVar = Clazz.defineMethod (c$, "newJSVar", 
  function (x) {

@@ -4,6 +4,7 @@
 // global variables used in JS-ICE
 // Geoff van Dover 2018.10.26
 
+
 // from _m_spectra.js
 
 var _specData;
@@ -17,6 +18,111 @@ var _fileIsReload = false;
 
 var prevframeSelection = null;
 var prevFrame = null;
+
+// from _m_build.js
+var counterClicZ = 0;
+
+var distanceZ, angleZ, torsionalZ
+var arrayAtomZ = new Array(3);
+
+var makeCrystalSpaceGroup = null;
+
+// from _m_cell.js
+
+var aCell, bCell, cCell, alpha, beta, gamma, typeSystem; 
+
+// from _m_edit.js
+
+var deleteMode = "";
+var hideMode = "";
+var displayMode = "";
+var firstTimeEdit = true;
+
+var radBondRange;
+
+// from _m_measure.js
+
+var kindCoord;
+var measureCoord = false;
+var unitMeasure = "";
+var mesCount = 0;
+
+// from _m_orient.js
+
+var motion = "";
+
+// from _m_show.js
+
+var firstTimeBond = true;
+var colorWhat = "";
+
+// from > callback.js
+
+var fPick = null;
+
+// from constant.js
+
+var version = "3.0.0"; // BH 2018
+
+// from conversion.js
+
+var finalGeomUnit = ""
+var unitGeomEnergy = "";
+
+var radiant = Math.PI / 180;
+
+// from frame.js
+
+var frameSelection = null;
+var frameNum = null;
+var frameValue = null;
+
+//from pick.js
+
+var pickingEnabled = false;
+var counterHide = 0;
+var selectedAtoms = [];
+var sortquestion = null;
+var selectCheckbox = null;
+var menuCallback = null;
+
+// from plotgraph.js
+
+var itemEnergy
+var previousPoint = null
+var itemForce
+var previousPointForce = null
+var itemFreq
+
+var theplot; // global, mostly for testing.
+
+var haveGraphSpectra, haveGraphOptimize;
+
+var energy = 0;
+	var label = "";
+	var previous = 0;
+	var last = modelCount - 1;
+	
+	var data = [];
+    var A = [];
+    var nplots = 1;
+    var modelCount = Info.length;
+    var stringa = Info[3].name;
+    
+    var nullValues;
+    
+    var minY = 999999;
+
+    var dataSpectrum = [];
+	var spectrum = [];
+	
+// from uff.js
+
+var counterUff = 0
+
+// from windows.js
+
+var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50";
       		
 ///js// Js/init.js /////
 // note that JmolColorPicker is customized -- BH 2018
@@ -64,11 +170,12 @@ createApplet = function() {
 	Jmol.Info || (Jmol.Info = {});
 	Jmol.Info.serverUrl = "https://chemapps.stolaf.edu/jmol/jsmol/php/jmol.php"
 	jmolSetAppletColor("white");
-	jmolApplet(
-			[ "570", "570" ],
-			"script scripts/init.spt;"
+	var script = "script scripts/init.spt;"
 			+ getCallbackSettings()
 			+ ";script scripts/reset.spt;"
+	jmolApplet(
+			[ "570", "570" ],
+			script 
 			);
 }
 
@@ -164,69 +271,70 @@ function docWriteSpectrumHeader() {
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *  02111-1307  USA.
  */
-
+ 
 //tabmenus.js includes older tabs.js and menu.js
 //last modified 16th Mar 2011 
 ///////////////////////////////// menu object definition
+
+// This list is used by callbacks
+
+var TAB_OVER  = 0;
+var TAB_CLICK = 1;
+var TAB_OUT   = 2;
+
+var TAB_DELAY_MS = 100;
+
+// This list controls the placement of the menu item on the menu.
+
+var MENU_FILE     = 0;
+var MENU_CELL     = 1;
+var MENU_SHOW     = 2;
+var MENU_EDIT     = 3;
+var MENU_SYM      = 4;
+//var MENU_BUILD  = x;
+var MENU_MEASURE  = 5;
+var MENU_ORIENT   = 6;
+var MENU_POLY     = 7;
+var MENU_SURFACE  = 8;
+var MENU_OPTIMIZE = 9;
+var MENU_SPECTRA  = 10;
+var MENU_EM       = 11;
+var MENU_OTHER    = 12;
+
+// local variables 
+
+var tabs_thisMenu = -1;
+var tabs_jsNames  = [];
+var tabs_menu     = [];
+var tabs_timeouts = [];
+
 function Menu(name, grp, link) {
 	this.name = name;
 	this.grp = grp;
 	this.link = link;
 }
 
-var tabMenu = [];
-
-function addTab(name, group, link) {
-	tabMenu.push(new Menu(name, group, link));
+function addTab(index, jsName, menuName, group, link) {
+	tabs_menu[index] = new Menu(menuName, group, link);
+	tabs_jsNames[index] = jsName;
+	
 }
 
-// Note: These numbers must reflect the order of addition in defineMenu()
-
-MENU_FILE     = 0;
-MENU_CELL     = 1;
-MENU_SHOW     = 2;
-MENU_EDIT     = 3;
-MENU_SYM      = 4;
-//MENU_BUILD  = x;
-MENU_MEASURE  = 5;
-MENU_ORIENT   = 6;
-MENU_POLY     = 7;
-MENU_SURFACE  = 8;
-MENU_OPTIMIZE = 9;
-MENU_SPECTRA  = 10;
-MENU_EM       = 11;
-MENU_OTHER    = 12;
-
-var TAB_OVER  = 0;
-var TAB_CLICK = 1;
-var TAB_OUT   = 2;
-
-var thisMenu = -1;
-var tabTimeouts = [];
-var tabDelayMS = 100;
-
-var menuNames = [
-	"File", "Cell", "Show" ,"Edit" /*, "Build"*/, "Symmetry",
-	"Measure", "Orient", "Polyhedra", "Surface", 
-	"Optimize", "Spectra", "Elec", "Other",
-	];
-
 function defineMenu() {
-	/* 0 */ addTab("File", "fileGroup", "Import, Export files.");
-	/* 1 */ addTab("Cell", "cellGroup", "Modify cell features and symmetry.");
-	/* 2 */ addTab("Show", "showGroup", "Change atom, bond colours, and dimensions.");
-	/* 3 */ addTab("Edit", "editGroup", "Change connectivity and remove atoms.");
-	/* x */ //addTab("Build", "builGroup", "Modify and optimize structure.");
-	/* 4 */ addTab("Sym Build", "symmetryGroup", "Add atoms to structure following rules of symmetry.");
-	/* 5 */ addTab("Measure", "measureGroup", "Measure bond distances, angles, and torsionals.");
-	/* 6 */ addTab("Orient", "orientGroup", "Change orientation and views.");
-	/* 7 */ addTab("Poly", "polyGroup", "Create polyhedra.");
-	/* 8 */ addTab("Surface", "isoGroup", "Modify and create isosurface maps.");
-	/* 9 */ addTab("Optimize", "geometryGroup", "Geometry optimizations.");
-	/* 10 */ addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
-	/* 11 */ addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
-	/* 12 */ addTab("Other", "otherpropGroup", "Change background, light settings and other.");
-  
+	addTab(MENU_FILE, "File", "File", "fileGroup", "Import, Export files.");
+	addTab(MENU_CELL, "Cell", "Cell", "cellGroup", "Modify cell features and symmetry.");
+	addTab(MENU_SHOW, "Show", "Show", "showGroup", "Change atom, bond colours, and dimensions.");
+	addTab(MENU_EDIT, "Edit", "Edit", "editGroup", "Change connectivity and remove atoms.");
+	//addTab(MENU_BUILD, "Build", "Build", "builGroup", "Modify and optimize structure.");
+	addTab(MENU_SYM, "Symmetry", "Sym Build", "symmetryGroup", "Add atoms to structure following rules of symmetry.");
+	addTab(MENU_MEASURE, "Measure", "Measure", "measureGroup", "Measure bond distances, angles, and torsionals.");
+	addTab(MENU_ORIENT, "Orient", "Orient", "orientGroup", "Change orientation and views.");
+	addTab(MENU_POLY, "Polyhedra", "Poly", "polyGroup", "Create polyhedra.");
+	addTab(MENU_SURFACE, "Surface", "Surface", "isoGroup", "Modify and create isosurface maps.");
+	addTab(MENU_OPTIMIZE, "Optimize", "Optimize", "geometryGroup", "Geometry optimizations.");
+	addTab(MENU_SPECTRA, "Spectra", "Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
+	addTab(MENU_EM, "Elec", "E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
+	addTab(MENU_OTHER, "Other", "Other", "otherpropGroup", "Change background, light settings and other.");
 }
 
 function createAllMenus() {
@@ -249,16 +357,15 @@ function createAllMenus() {
 		;
 	return s
 }
+
 var showMenu = function(menu) {
-	if (thisMenu >= 0)
-		self["exit" + menuNames[menu]]();
-	thisMenu = menu;
+	if (tabs_thisMenu >= 0)
+		self["exit" + tabs_jsNames[menu]]();
+	tabs_thisMenu = menu;
 	exitTab();
-//	hideArrays(menu);
-	self["enter" + menuNames[menu]]();
+	self["enter" + tabs_jsNames[menu]]();
 	$("#menu"+menu).addClass("picked");
 }
-
 
 var exitTab = function() {
 	cancelPicking();
@@ -270,62 +377,40 @@ function grpDisp(n) {
 }
 
 var grpDispDelayed = function(n, mode) {
-	for (var i = tabTimeouts.length; --i >= 0;) {
-		if (tabTimeouts[i])
-			clearTimeout(tabTimeouts[i]);
-		tabTimeouts = [];
+	for (var i = tabs_timeouts.length; --i >= 0;) {
+		if (tabs_timeouts[i])
+			clearTimeout(tabs_timeouts[i]);
+		tabs_timeouts = [];
 	}	
-	for (var i = 0; i < tabMenu.length; i++){
+	for (var i = 0; i < tabs_menu.length; i++){
 		$("#menu"+i).removeClass("picked");
 	}
 	switch(mode) {
 	case TAB_OVER:
-		tabTimeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},tabDelayMS);
+		tabs_timeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},TAB_DELAY_MS);
 		
 		break;
 	case TAB_CLICK:
-		for (var i = 0; i < tabMenu.length; i++) {
-			getbyID(tabMenu[i].grp).style.display = "none";
-			tabMenu[i].disp = 0;
+		for (var i = 0; i < tabs_menu.length; i++) {
+			getbyID(tabs_menu[i].grp).style.display = "none";
+			tabs_menu[i].disp = 0;
 		}
-		getbyID(tabMenu[n].grp).style.display = "inline";
-		tabMenu[n].disp = 1;
+		getbyID(tabs_menu[n].grp).style.display = "inline";
+		tabs_menu[n].disp = 1;
 		showMenu(n);
 		
 		break;
 	case TAB_OUT:
 		break;
 	}
-	if (thisMenu >= 0) {
-		$("#menu"+thisMenu).addClass("picked");
+	if (tabs_thisMenu >= 0) {
+		$("#menu"+tabs_thisMenu).addClass("picked");
 	}
 }
 
-//var arrayGeomObjects = new Array(
-//		"appletdiv", 
-//		"graphdiv", 
-//		"plottitle",
-//		"plotarea", 
-//		"appletdiv1", 
-//		"graphdiv1", 
-//		"plottitle1", 
-//		"plotarea1");
-//var arrayFreqObjects = new Array(
-//		"freqdiv", 
-//		"graphfreqdiv", 
-//		"plottitlefreq",
-//		"plotareafreq");
-//
-//var hideArrays = function(menu) {
-//	for (var i = 0; i < arrayGeomObjects.length; i++)
-//		getbyID(arrayGeomObjects[i]).style.display = (menu == MENU_OPTIMIZE ? "block" : "none");
-//	for (var j = 0; j < arrayFreqObjects.length; j++)
-//		getbyID(arrayFreqObjects[j]).style.display = (menu == MENU_SPECTRA ? "block" : "none");
-//}
-
 function createTabMenu() {
 	var strMenu = "<ul class='menu' id='menu'>";
-	for (var menuIndex = 0; menuIndex < tabMenu.length; menuIndex++) {
+	for (var menuIndex = 0; menuIndex < tabs_menu.length; menuIndex++) {
 		strMenu += createMenuCell(menuIndex);
 	}
 	strMenu += "</ul>";
@@ -338,8 +423,8 @@ function createMenuCell(i) {
 	sTab += "class = 'menu' ";
 	sTab += ">";
 	sTab += "<a class = 'menu'>";
-	sTab += tabMenu[i].name;
-	sTab += "<span>" + tabMenu[i].link + "</span>"
+	sTab += tabs_menu[i].name;
+	sTab += "<span>" + tabs_menu[i].link + "</span>"
 	sTab += "</a></li>"
 		return sTab;
 }
@@ -420,7 +505,7 @@ file_method = function(methodName, defaultMethod, params) {
 	// loadDone_crystal
 	params || (params = []);
 	methodName += "_" + _fileData.fileType;
-	var f = self[methodName] || defaultmethod;
+	var f = self[methodName] || defaultMethod;
 	return (f && f.apply(null, params));
 }
 
@@ -838,7 +923,6 @@ function saveFractionalCoordinate() {
 }
 
 //This reads out cell parameters given astructure.
-var aCell, bCell, cCell, alpha, beta, gamma, typeSystem;
 function getUnitcell(i) {
 	// document.cellGroup.reset();
 	typeSystem = "";
@@ -1227,9 +1311,6 @@ function showPickPlaneCallback() {
 	}
 }
 
-var firstTimeBond = true;
-
-var colorWhat = "";
 
 
 function setColorWhat(rgb, colorscript) {
@@ -1452,8 +1533,22 @@ function createShowGrp() {
 
       		
 ///js// Js/_m_edit.js /////
+
 function enterEdit() {
+
+	radiiConnectSlider.recalculate();
+
+	setRadiiConnectMessage(radiiConnectSlider.getValue());
 	
+	// BH 2018: Disabled -- unexpected behavior should not be on tab entry
+//	if (firstTimeEdit) {
+//		radiiConnectSlider.setValue(50);
+//		runJmolScriptWait("set forceAutoBond ON; set bondMode AND");
+//	}
+//	getbyID("radiiConnectMsg").innerHTML = " " + 2.5 + " &#197";
+//	setTimeout("runJmolScriptWait(\"restore BONDS bondEdit\");", 400);
+//	firstTimeEdit = false;
+
 }
 
 function exitEdit() {
@@ -1470,26 +1565,13 @@ function showPickPlaneCallback() {
 }
 
 
-var deleteMode = "";
-var hideMode = "";
-var displayMode = "";
-
-var firstTimeEdit = true;
-function enterEdit() {
-	// BH 2018: Disabled -- unexpected behavior should not be on tab entry
-//	if (firstTimeEdit) {
-//		radiiConnectSlider.setValue(50);
-//		runJmolScriptWait("set forceAutoBond ON; set bondMode AND");
-//	}
-//	getbyID("radiiConnectMsg").innerHTML = " " + 2.5 + " &#197";
-//	setTimeout("runJmolScriptWait(\"restore BONDS bondEdit\");", 400);
-//	firstTimeEdit = false;
+function setRadiiConnectMessage(r) {
+	getbyID('radiiConnectMsg').innerHTML = " " + r.toPrecision(2) + " &#197";
 }
 
-
 function applyConnect(r) {
-	if (firstTime) {
-		runJmolScriptWait("connect (*) (*) DELETE; connect 2.0 (*) (*) single ModifyOrCreate;");
+	if (firstTimeEdit) {
+//		runJmolScriptWait("connect (*) (*) DELETE; connect 2.0 (*) (*) single ModifyOrCreate;");
 	} else {
 		var flagBond = checkBoxX("allBondconnect");
 		// alert(flagBond);
@@ -1511,7 +1593,7 @@ function applyConnect(r) {
 		}
 		runJmolScriptWait("save BONDS bondEdit");
 	}
-	getbyID('radiiConnectMsg').innerHTML = " " + r.toPrecision(2) + " &#197";
+	setRadiiConnectMessage(r);
 }
 
 function deleteAtom() {
@@ -1640,7 +1722,6 @@ function deleteBond() {
 	}
 }
 
-var radbondVal;
 function checkBondStatus(radval) {
 	runJmolScriptWait("select *; halos off; label off; select none;");
 	radbondVal = radval;
@@ -1667,7 +1748,6 @@ function checkBondStatus(radval) {
 
 }
 
-var radBondRange;
 function checkWhithin(radVal) {
 	radBondRange = radVal;
 	if (radBondRange == "just") {
@@ -1852,8 +1932,6 @@ function exitMeasure() {
 	measureCoord = false;
 }
 
-var kindCoord;
-var measureCoord = false;
 function viewCoord(value) {
 	kindCoord = value;
 	measureCoord = true;
@@ -1873,7 +1951,7 @@ function showCoord() {
 		}
 	}
 }
-var unitMeasure = "";
+
 function setMeasureUnit(value) {
 	unitMeasure = value;
 	runJmolScriptWait("set measurements " + value);
@@ -1883,7 +1961,6 @@ function setMeasurement() {
 	runJmolScriptWait("set measurements ON");
 }
 
-var mesCount = 0;
 function checkMeasure(value) {
 	var radiobutton = value;
 	var unit = getbyID('measureDist').value;
@@ -2043,7 +2120,6 @@ function toggleSlab() {
 }
 
 //This controls the refined motion of the structure
-var motion = "";
 function setKindMotion(valueList) {
 	motion = valueList;
 	if (motion == "select")
@@ -2867,6 +2943,7 @@ function simSpectrum(isPageOpen) {
 			freqCount : _fileData.freqInfo.length,
 			minX      : 0,
 			maxX      : 4000,
+			previousPointFreq : -1,
 			freqInfo  : [],
 			irInt     : [],
 			irFreq    : [],
@@ -2874,7 +2951,10 @@ function simSpectrum(isPageOpen) {
 			ramanFreq : [],
 			sortInt   : [],
 			specIR    : [],
-			specRaman : []
+			specRaman : [],
+			model     : [],
+			freqs     : [],
+			ranges    : [] 
 	};
 	setFrequencyList(specData);
 	switch (typeIRorRaman) {
@@ -2964,10 +3044,12 @@ function extractIRData_crystal(specData) {
 	for (var i = 0; i < n; i++) {
 		if (specData.freqInfo[i].modelProperties.IRactivity != "A") 
 			continue;
-		specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
+		specData.freqs[i] = specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
 		specData.irInt[i] = Math.round(substringIntFreqToFloat(specData.freqInfo[i].modelProperties.IRintensity));
 		specData.sortInt[i] = specData.irInt[i];
 		specData.specIR[specData.irFreq[i]] = specData.irInt[i];
+		specData.model[specData.irFreq[i]] = specData.freqInfo[i].modelNumber;
+		
 	}
 	System.out.println("crystal extractIRData");
 }
@@ -2975,8 +3057,9 @@ function extractIRData_crystal(specData) {
 function extractIRData_vaspoutcar(specData) {
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
-		specData.irFreq[i] = Math.round(substringFreqToFloat(_fileData.freqData[i]));
+		specData.freqs[i] = specData.irFreq[i] = Math.round(substringFreqToFloat(_fileData.freqData[i]));
 		specData.specIR[specData.irFreq[i]] = 100;
+		specData.model[specData.irFreq[i]] = specData.freqInfo[i].modelNumber;
 		specData.irInt[i] = 100;
 		if (i == 0)
 			specData.irInt[i] = 0;
@@ -2986,8 +3069,9 @@ function extractIRData_vaspoutcar(specData) {
 function extractIRData_gaussian(specData) {
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
-		specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqData[i]));
+		specData.freqs[i] = specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqData[i]));
 		specData.specIR[specData.irFreq[i]] = specData.irInt[i] = rtrim(specData.freqIntens[i], 1, "K", 1);
+		specData.model[specData.irFreq[i]] = specData.freqInfo[i].modelNumber;
 	}
 }
 
@@ -2999,15 +3083,40 @@ function extractRamanData(specData) {
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
 		if (specData.freqInfo[i].modelProperties.Ramanactivity == "A") {
-			specData.ramanFreq[i] = roundoff(substringFreqToFloat(Info[i].modelProperties.Frequency), 0);
+			specData.freqs[i] = specData.ramanFreq[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
 			specData.ramanInt[i] = 100;
 			specData.specRaman[specData.ramanFreq[i]] = 100;
+			specData.model[specData.ramanFreq[i]] = specData.freqInfo[i].modelNumber;
 		} else {
 			specData.ramanInt[i] = 0;
 		}
 	}
 	return specData;
 }
+
+function getModelForSpec(specData) {
+	var freqs = specData.freqs
+	var sigma = specData.sigma;
+	n = specData.freqs.length;
+	
+	for (var i = 0, x1, x2, last=n-1; i <= last; i++) { 
+		switch (i) {
+		case 0:
+			x1 = specData.minX;
+			x2 = (freqs[i] + freqs[i + 1])/2;
+			break;
+		case last:
+			x1 = (freqs[i] + freqs[i - 1])/2;
+			x2 = specData.maxX;
+			break;
+		default:
+			x1 = (freqs[i] + freqs[i - 1])/2;
+			x2 = (freqs[i] + freqs[i + 1])/2;
+			break;
+		}
+		specData.ranges.push([Math.max(x1, freqs[i] - sigma/2), Math.min(x2, freqs[i] + sigma/2), freqs[i], i]);
+	}
+}	
 
 function createStickSpectrum(specData, type) {
 	var rescale = specData.rescale;
@@ -3018,6 +3127,7 @@ function createStickSpectrum(specData, type) {
 		maxInt = 200;
 		rescale = true;
 	}
+	spec[0]= null
 	for (var i = 0; i < 4000; i++) {
 		if (spec[i] == null) {
 			spec[i] = 0;
@@ -3106,8 +3216,9 @@ function showFreqGraph(specData, specMinX, specMaxX) {
 	} else {
 		specData = opener._specData;
 	}
-	
+	getModelForSpec(specData);
 	var A = specData.specIR, B = specData.specRaman;	
+	var model = specData.model;
 	var nplots = (B && B.length && A && A.length ? 2 : 1);
 	var minY = 999999;
 	var maxY = 0;
@@ -3155,9 +3266,9 @@ function showFreqGraph(specData, specMinX, specMaxX) {
 	var raman = [];
 	for (var i = specData.minX, pt = 0; i < specData.maxX; i++, pt++) {
 		if (A.length)
-			ir[pt] = [i, A[i]];
+			ir[pt] = [i, A[i], model[i]];
 		if (B.length)
-			raman[pt] = [i, B[i]];		
+			raman[pt] = [i, B[i], model[i]];		
 	}
 	if (A.length && B.length) {
 		theplot = $.plot($("#plotareafreq"), [{label:"IR", data:ir}, {label:"Raman", data: raman}], options)
@@ -3167,107 +3278,52 @@ function showFreqGraph(specData, specMinX, specMaxX) {
 		theplot = $.plot($("#plotareafreq"), [{data: raman}], options)
 	}
 	
-	previousPointFreq = null;
+	_specData.previousPointFreq = -1;
 	
 	$("#plotareafreq").unbind("plothover plotclick", null)
 	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
 	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-// this was the old spectrum plot
-
-var nullValues;
-
-function plotFrequencies(forceNew){
-	if (haveGraphSpectra && !forceNew)
+function plotClickCallbackFreq(event, pos, itemFreq) {
+	if (!itemFreq) return
+	// itemFreq is [x,y] so [freq,int]
+	var range = getFreqForClick(itemFreq.datapoint);
+	// range is [min,max,freq,i]
+	if (!range)
 		return;
-	if (!flagCrystal && !flagOutcar && !flagGaussian)
-		return;
-	haveGraphSpectra = true;
-	var data = [];
-	var data2 =[];
-	var A = [];
-	var B = [];
-	var nplots = 1;
-	var modelCount = Info.length;
-	var irFreq, irInt, freqValue, ramanFreq, ramanInt, isRaman;
-	var labelIR, labelRaman, modelNumber;
+	var freq = range[2];
+	var listIndex = range[3];	
+	var model = _specData.model[freq];
+	var vibrationProp = 'vibration on; ' +  getValue("vecscale") + '; '+ getValue("vectors") + ';  '+ getValue("vecsamplitude"); 
+	var script = ' model '+ model +  '; ' + vibrationProp;  // 'set
+	runJmolScriptWait(script);
+//	setVibrationOn(true);
+	getbyID('vib').options[listIndex].selected = true;
 	
-	var stringa = Info[4].name;
-	
-	if(flagCrystal){
-		if(counterFreq != 0){
-			stringa = Info[counterFreq + 1].name;
-			if (stringa == null)
-				stringa = Info[counterFreq + 2].name;
-		}
-		if(stringa.search(/Energy/i) < 0){
-			nullValues = countNullModel(Info);
-			for (var i = (counterFreq == 0 ? 0 : counterFreq + 1); i < modelCount; i++) {
-				modelnumber = Info[i].modelNumber - nullValues -1;
-				if (Info[i].name == null)
-					continue;
-				freqValue = substringFreqToFloat(Info[i].modelProperties.Frequency);
-				intValue = substringIntFreqToFloat(Info[i].modelProperties.IRintensity);
-				isRaman = (intValue == 0);
- 				if(!isRaman){
-					irFreq = freqValue;
-					irInt = intValue;
-					isRaman = (Info[i].modelProperties.Ramanactivity == "A");
-					labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-					A.push([irFreq,irInt,modelnumber,labelIR]);
- 				}
- 				if (isRaman) {
-					ramanFreq =  freqValue;
-					ramanInt = [100];
-					labelRaman = 'Model = Frequency ' +   ramanFreq  + ', Intensity = ' + ramanInt + ' kmMol^-1';
-					B.push([ramanFreq,ramanInt,modelnumber,labelRaman]);
-				}
-			}			
-		}
-	} else if (flagOutcar) {
-		stringa = Info[4].name
-		if(counterFreq != 0){
-			stringa = Info[counterFreq + 1].name;
-			if (stringa == null)
-				stringa = Info[counterFreq + 2].name;
-		}
-		if(stringa.search(/G =/i) == -1){
-			nullValues = countNullModel(Info);
-		}
-		for (var i = 0; i < freqData.length; i++) {
-			if(Info[i].name != null){
-				irFreq = substringFreqToFloat(freqData[i]);
-				irInt = [0];
-				modelnumber = Info[i].modelNumber + counterFreq  - nullValues -1 
-				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-				A.push([irFreq,irInt,modelnumber,labelIR]);
-			}
-		}
-	} else if (flagGaussian){
-		for (var i = 0; i < freqGauss.length; i++) {
-			if(Info[i].name != null){
-				irFreq = substringFreqToFloat(freqGauss[i]);
-				irInt = substringIntGaussToFloat(freqIntensGauss[i]);
-				modelnumber = counterGauss + i; 
-				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-				A.push([irFreq,irInt,modelnumber,labelIR]);
-			}
-		}
+}
+
+function plotHoverCallbackFreq(event, pos, itemFreq) {
+	hideTooltip();
+	if(!itemFreq)return
+	if (_specData.previousPointFreq != itemFreq.datapoint) {
+		previousPointFreq = itemFreq.datapoint;
+		var range = getFreqForClick(itemFreq.datapoint);
+		if (!range)
+			return;
+		var freq = range[2];
+		var listIndex = range[3];	
+		var model = _specData.model[freq];
+		
+		var x = roundoff(itemFreq.datapoint[0],2);
+		var y = roundoff(itemFreq.datapoint[1],1);
+		var model = itemFreq.datapoint[2];
+
+		label = getbyID('vib').options[listIndex].text;
+
+		showTooltipFreq(itemFreq.pageX, itemFreq.pageY + 10, label, pos);
 	}
-
-	showFrequencyGraph(A, B);
+	if (pos.canvasY > 350)plotClickCallbackFreq(event, pos, itemFreq);
 }
 
 
@@ -3401,8 +3457,7 @@ function createFreqGrp() {
 	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
-	var smallGraph = createDiv("plottitlefreq", ";background:green;display:none", "IR - Raman  dispersion")			
-					+ createDiv("plotareafreq", "background:blue;width:350px;height:180px;background-color:#EFEFEF","");  
+	var smallGraph =  createDiv("plotareafreq", "background:blue;width:350px;height:180px;background-color:#EFEFEF","");  
 	
 	var simPanel = createDiv("simPanel", "", "Raman intensities set to 0.0 kmMol<sup>-1</sup>"
 		+ "<br>\n"
@@ -3420,18 +3475,19 @@ function createFreqGrp() {
 		+ createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
 
 	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib' style='display:none'>";
-		strFreq += "<table border=0 class='contents'><tr><td valign='top'>";
+		strFreq += "<table border=0 class='contents'><tr><td valign='bottom'>";
 			strFreq += "<h2>IR-Raman Frequencies</h2>\n";
-			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=11 style='width:200px; overflow: auto;'></select>";	
-		strFreq += "</td>"; // end of the first column
-		strFreq += "<td valign='top'>";
-		strFreq += createRadio("modSpec", "Both", "onClickModSpec()", 0, 1, "", "all");
+			strFreq += createRadio("modSpec", "Both", "onClickModSpec()", 0, 1, "", "all");
 			strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "", "ir");
 			strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "", "raman");
 			strFreq += "<BR>\n";
-		strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeypress='onClickModSpec()' CLASS='select' >";
+			strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeypress='onClickModSpec()' CLASS='select' >";
 			strFreq += "</select> ";
 			strFreq += "<BR>\n";
+			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
+		strFreq += "</td>"; // end of the first column
+		strFreq += "<td valign='bottom'>";
+		strFreq +="<BR>\n" + "<BR>\n";
 			strFreq += "vibration ";
 			strFreq += createRadio("vibration", "on", 'onClickFreqParams()', 0, 1, "radVibrationOn", "on");
 			strFreq += createRadio("vibration", "off", 'onClickFreqParams()', 0, 0, "radVibrationOff", "off");
@@ -3460,13 +3516,27 @@ function createFreqGrp() {
 	return strFreq;
 }
 
+function getFreqForClick(p) {
+	var freq = p[0];
+	var int = p[1];
+	var listIndex = -1;
+	
+	for (var i = 0; i < _specData.ranges.length; i++) {
+		var range = _specData.ranges[i];
+		if (freq >= range[0] && freq <= range[1]) {
+			return range;
+		}
+	}
+	return null;
+}
+
+
 
 
       		
 ///js// Js/_m_elec.js /////
 function enterElec() {
 //	saveOrientation_e();
-
 }
 
 function exitElec() {
@@ -3484,11 +3554,11 @@ function setColorMulliken(value) {
 //}
 
 function removeCharges() {
-
+}
 // BH TODO - need to clear this without reloading
 //runJmolScriptWait('script scripts/reload.spt');
 //restoreOrientation_e();
-}
+
 
 
 function createElecpropGrp() {
@@ -3496,7 +3566,7 @@ function createElecpropGrp() {
 	var colSchemeName = new Array("Rainbow (default)", "Black & White",
 			"Blue-White-Red", "Red-Green", "Green-Blue");
 	var colSchemeValue = new Array('roygb', 'bw', 'bwr', 'low', 'high');
-	var strElec = "<form autocomplete='nope'  id='elecGroup' name='elecGroup' style='display:none'>\n";
+	var strElec = "<form autocomplete='nope' style='display:none' id='elecGroup' name='elecGroup'";
 	strElec += "<table class='contents'><tr><td ><h2>Electronic - Magnetic properties</h2> \n";
 	strElec += "</td></tr>\n";
 	strElec += "<tr><td>\n";
@@ -3521,8 +3591,8 @@ function createElecpropGrp() {
 	strElec += createButton("spinup", "&#8593",
 			'runJmolScriptWait("display property_spin >= 0")', 0);
 	// strElec+=createButton("magneticMoment","magn. Moment",'',0);
-	strElec += "</td></tr>\n";
-	strElec += "<tr><td>\n";
+	//strElec += "</td></tr>\n";
+	//strElec += "<tr><td>\n";
 	strElec += createLine('blue', '');
 	strElec += createButton("Removeall", "Remove", 'removeCharges()', 0);
 	strElec += "</td></tr>\n";
@@ -3701,8 +3771,7 @@ function enterSymmetry() {
 function exitSymmetry() {
 }
 
-//creates symmetry menu 
-// doesn't really work yet-A.S. 10.10.18
+
 function getSymInfo() { //parses data file and provides symmetry operations
 
 	// update all of the model-specific page items
@@ -3845,7 +3914,26 @@ cellOperation = function(){
 	getSymInfo();
 	setUnitCell();
 }
-
+chosenSymElement = ""; 
+function setSymElement(elementName){
+	chosenSymElement = elementName;
+}
+chosenSymop = "";
+function setSymop(symop){
+	chosenSymop = symop;
+}
+symopSet = [];
+function createSymopSet(){
+	var allSymopsString = jmolEvaluate('script("print readSymmetryVectors()")'); 
+	var totalSymops = allSymopsString.match(/\n/g).length-1; //this should work in all cases
+	for (i = 1; i<= totalSymops;i++){
+		console.log(i);
+		symopSetIndex = i-1;
+		symopSet[symopSetIndex] = jmolEvaluate('script("var info = readSymmetryVectors();print info["+i+"];")');//THIS LINE IS NOT WORKING-ASK BH
+	}
+}
+//creates symmetry menu 
+// minor functionality A.S. 10.26.18 
 function createSymmetryGrp() {
 	var strSymmetry = "<form autocomplete='nope'  id='symmetryGroup' name='symmetryGroup' style='display:none'>\n";
 	strSymmetry += "<table class='contents'>\n";
@@ -3867,95 +3955,50 @@ function createSymmetryGrp() {
 	strSymmetry += "<BR>\n"; 
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += "Add element:"
+	strSymmetry += createSelect('addSymEle', 'setSymElement(value)', 0, 1,
+			eleSymb);
 	//strSymmetry +=  createSelect();
 	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "Enter initial point:";
+	strSymmetry += "<input type='text'  name='initPoint' id='initPoint' size='10' class='text'>";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "Choose symmetry operation:";
+//	strSymmetry += createSelect('addSymSymop', 'setSymop(value)', 0, 1,
+//			jmolEvaluate('script("print readSymmetryVectors()")'));
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	//strSymmetry += createCheck("copyOpaque", "Activate applied symmetry:",
+//			appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop), 0, 1, 0);
+//	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</form>\n";
 	return strSymmetry;
 }
-// gets and returns the symmetry operation names (e.g. "identity") 
-function readSymmetryNames() {
-	var allSymopInfo = getProperty("spacegroupInfo.operations");
-	var numSymops = allSymopInfo.length;
-	var symopNameArray = [];
-	for (i = 1; i< numSymops+1;i++){
-		var symopCurrent = allSymopInfo[i];
-		var currentName = symopCurrent[3];
-		symopNameArray[i] = currentName;
-	}
-	return symopNameArray
-}
-// gets and returns the symmetry operation vector names 
-function readSymmetryVectors() {
-	var allSymopInfo = getProperty("spacegroupInfo.operations");
-	var numSymops = allSymopInfo.length;
-	var symopVectorArray = [];
-	for (i = 1; i< numSymops+1;i++){
-		var symopCurrent = allSymopInfo[i];
-		var currentName = symopCurrent[2];
-		symopNameArray[i] = currentName;
-	}
-	return symopVectorArray
-}
-// draws the axis lines for rotation axes and mirror planes for mirror symops  
+// draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symopNumber){
-	var i = symopNumber
 	symopNameArray = readSymmetryVectors();
 	if (symopNameArray[i].includes("identity")){
-		runJmolScriptWait("draw symop \{i}"); 
+		runJmolScriptWait("draw symop @"+symNumber); 
 	}
 	else if (symopNameArray[i].includes("axis")){
 		//INSERT CODE HERE
 	}
 	else if (symopNameArray[i].includes("mirror")){
-		runJmolScriptWait("draw symop \{i}") ;
+		runJmolScriptWait("draw symop @"+symNumber) ;
 	}
 } 
-// returns the points given after performing a symmetry operation a chosen number of times (one point per operation
-function getSymmetricAtomArray(symopSelected,point,iterations){
-	var symAtomArray = [];
-	for (i = 1; i<= iterations;i++) {
-		if (i=1){
-			var output = all.symop(symopSelected,point)
-			symAtomArray[i] =  output; 
-			}
-		else {
-			var output = all.symop(symopSelected[i-1],point)
-			symAtomArray[i] = output;
-		}	
-
-	}
-	return symAtomArray 
-
-}
-// adds new element by appending a hydrogen, deleting the bond to the hydrogen, and then changing the hydrogen to chosen element
-// needs significant work such that elements that should be strings are strings and that code runs out of javascript and not just jmol script editor
-// A.S. 10.24.18 
-//
-/*
-function appendNewAtom(elementName, point) {
-	assign atom ({0}) "H" pointValue;
-	bondNumber =  getProperty("modelInfo.models[1].bondCount")-1;
-	atomNumber = getProperty("modelInfo.models[1].atomCount")-1; 
-	assign bond [{bondNumber}] "0";
-	{atomNumber}.element = elementName;
-} 
-// takes a given point and add the elements provided to it by a symmetry operation
-// symmetry operations with multiple outputs (e.g. C3) will produce multiple symmetry atoms 
-function appendSymmetricAtoms(elementName, point,symopNumber,symopNameArray){
-	symopName = symopNameArray[symopNumber];
-	iterations = 1 
-	if (symopName.includes("C") {
-		indexOfC = symopName.indexOf("C");
-		iterationString = symopName.substring(indexOfC,indexOfC+1) ;
-		iterations = parseInt(iterationString)	
-	}
-	newAtomArray = getSymmetricAtomArray(symopNumber,point,iterations) ;
-	numberOfNewAtoms = newAtomArray.length(); 
+function appendSymmetricAtoms(elementName,point,symopSelected){
+	iterations = 1 ;
+	newAtomArray = runJmolScriptWait("getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
+	numberOfNewAtoms = newAtomArray.length; 
 	for (i = 1; i <= numberOfNewAtoms; i++){
-		appendNewAtom(elementName, newAtomArray[i];
+		runJmolScriptWait("appendNewAtom('"+elementName+"', "+newAtomArray[i]+")"); //this is a jmol script in functions.spt
 	}
 }
-*/
 
 
       		
@@ -3986,7 +4029,7 @@ myErrorCallback = function(applet, b, msg, d) {
 	errorMsg(msg);
 }
 
-var fPick = null;
+
 
 setPickingCallbackFunction = function(f) {
 	fPick = f;
@@ -4032,7 +4075,6 @@ myMinimizationCallback = function(applet,b,c,d) {
  */
 
 
-var version = "3.0.0"; // BH 2018
 
 
 ENERGY_EV      = 0;
@@ -4493,10 +4535,6 @@ eleSymbMass[99] = 252.00;
 
 //////////////////////////////////////VALUE conversion AND ROUNDOFF
 
-var finalGeomUnit = ""
-var unitGeomEnergy = "";
-
-var radiant = Math.PI / 180;
 
 function substringEnergyToFloat(value) {
 	if (value != null) {
@@ -5619,9 +5657,6 @@ function selectListItem(list, itemToSelect) {
 
       		
 ///js// Js/frame.js /////
-var frameSelection = null;
-var frameNum = null;
-var frameValue = null;
 
 function setFrameValues(i) {
 	frameSelection = null;
@@ -5788,12 +5823,6 @@ function setPickingHide(form) {
  * select within(0,plane, $plane1)
  */
 
-var pickingEnabled = false;
-var counterHide = 0;
-var selectedAtoms = [];
-var sortquestion = null;
-var selectCheckbox = null;
-var menuCallback = null;
 
 function onClickPickPlane(checkbox, callback) {
 	menuCallback = callback;
@@ -5920,16 +5949,6 @@ function pickDistanceCallback() {
 //}
 
 
-var itemEnergy
-var previousPoint = null
-var itemForce
-var previousPointForce = null
-var itemFreq
-var previousPointFreq = null
-
-var theplot; // global, mostly for testing.
-
-var haveGraphSpectra, haveGraphOptimize;
 
 function resetGraphs() {
 	haveGraphSpectra = false;
@@ -5968,10 +5987,7 @@ function plotEnergies(){
 	} else {
 		f = substringEnergyVaspToFloat;
 	}
-	var energy = 0;
-	var label = "";
-	var previous = 0;
-	var last = modelCount - 1;
+	
 	if (f) {
 		// not Gaussian
 		for (var i = 0; i < last; i++) {
@@ -6031,11 +6047,6 @@ function plotEnergies(){
 
 	//function plotGradient(){
 
-	var data = [];
-    var A = [];
-    var nplots = 1;
-    var modelCount = Info.length;
-    var stringa = Info[3].name;
 
 	if(!flagCrystal)
 		return;
@@ -6085,133 +6096,130 @@ function plotEnergies(){
 	setTimeout('plotClickCallbackForce(null,null,itemForce)',100);
 }
 
-var nullValues;
 
-function plotFrequencies(forceNew){
-	if (haveGraphSpectra && !forceNew)
-		return;
-	if (!flagCrystal && !flagOutcar && !flagGaussian)
-		return;
-	haveGraphSpectra = true;
-	var data = [];
-	var data2 =[];
-	var A = [];
-	var B = [];
-	var nplots = 1;
-	var modelCount = Info.length;
-	var irFreq, irInt, freqValue, ramanFreq, ramanInt, isRaman;
-	var labelIR, labelRaman, modelNumber;
-	
-	var stringa = Info[4].name;
-	
-	if(flagCrystal){
-		if(counterFreq != 0){
-			stringa = Info[counterFreq + 1].name;
-			if (stringa == null)
-				stringa = Info[counterFreq + 2].name;
-		}
-		if(stringa.search(/Energy/i) < 0){
-			nullValues = countNullModel(Info);
-			for (var i = (counterFreq == 0 ? 0 : counterFreq + 1); i < modelCount; i++) {
-				modelnumber = Info[i].modelNumber - nullValues -1;
-				if (Info[i].name == null)
-					continue;
-				freqValue = substringFreqToFloat(Info[i].modelProperties.Frequency);
-				intValue = substringIntFreqToFloat(Info[i].modelProperties.IRintensity);
-				isRaman = (intValue == 0);
- 				if(!isRaman){
-					irFreq = freqValue;
-					irInt = intValue;
-					isRaman = (Info[i].modelProperties.Ramanactivity == "A");
-					labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-					A.push([irFreq,irInt,modelnumber,labelIR]);
- 				}
- 				if (isRaman) {
-					ramanFreq =  freqValue;
-					ramanInt = [100];
-					labelRaman = 'Model = Frequency ' +   ramanFreq  + ', Intensity = ' + ramanInt + ' kmMol^-1';
-					B.push([ramanFreq,ramanInt,modelnumber,labelRaman]);
-				}
-			}			
-		}
-	} else if (flagOutcar) {
-		stringa = Info[4].name
-		if(counterFreq != 0){
-			stringa = Info[counterFreq + 1].name;
-			if (stringa == null)
-				stringa = Info[counterFreq + 2].name;
-		}
-		if(stringa.search(/G =/i) == -1){
-			nullValues = countNullModel(Info);
-		}
-		for (var i = 0; i < freqData.length; i++) {
-			if(Info[i].name != null){
-				irFreq = substringFreqToFloat(freqData[i]);
-				irInt = [0.00];
-				modelnumber = Info[i].modelNumber + counterFreq  - nullValues -1 
-				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-				A.push([irFreq,irInt,modelnumber,labelIR]);
-			}
-		}
-	} else if (flagGaussian){
-		for (var i = 0; i < freqGauss.length; i++) {
-			if(Info[i].name != null){
-				irFreq = substringFreqToFloat(freqGauss[i]);
-				irInt = substringIntGaussToFloat(freqIntensGauss[i]);
-				modelnumber = counterGauss + i; 
-				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-				A.push([irFreq,irInt,modelnumber,labelIR]);
-			}
-		}
-	}
-
-	// data.push(A)
-	// data.push(B)
-	
-	var minY = 999999;
-	var maxY = 0;
-	for (var i = 0; i < A.length; i++) {
-		if (A[i][1] > maxY)
-			maxY = A[i][1];
-		if (A[i][1] < minY)
-			minY = A[i][1];
-	}
-	for (var i = 0; i < B.length; i++) {
-		if (B[i][1] > maxY)
-			maxY = B[i][1];	
-		if (B[i][1] < minY)
-			minY = B[i][1];
-	}
-	if (minY == maxY)
-		maxY = (maxY == 0 ? 100 : maxY * 2);
-	var options = {
-			lines: { show: false },
-			points: {show: true, fill: true},
-			xaxis: { ticks: 8, tickDecimals: 0 },
-			yaxis: { ticks: 6,tickDecimals: 0, max:maxY },
-			selection: { mode: (nplots == 1 ? "x" : "xy"), hoverMode: (nplots == 1 ? "x" : "xy") },
-			grid: { 
-				hoverable: true, 
-				clickable: true, 
-				hoverDelay: 10, 
-				hoverDelayDefault: 10
-			}
-	}
-
-	if (flagCrystal) {
-		theplot = $.plot($("#plotareafreq"), [{label:"IR", data: A}, {label:"Raman", data: B}] , options)
-	} else {
-		theplot = $.plot($("#plotareafreq"), [{label:"IR-Raman", data: A}], options)
-	}
-
-	previousPointFreq = null;
-
-	$("#plotareafreq").unbind("plothover plotclick", null)
-	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
-	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
-	itemFreq = {datapoint: A[0] || B[0]}
-	setTimeout('plotClickCallbackFreq(null,null,itemFreq)',100);
-}
+//function plotFrequencies(forceNew){
+//	if (haveGraphSpectra && !forceNew)
+//		return;
+//	if (!flagCrystal && !flagOutcar && !flagGaussian)
+//		return;
+//	haveGraphSpectra = true;
+//	var data = [];
+//	var data2 =[];
+//	var A = [];
+//	var B = [];
+//	var nplots = 1;
+//	var modelCount = Info.length;
+//	var irFreq, irInt, freqValue, ramanFreq, ramanInt, isRaman;
+//	var labelIR, labelRaman, modelNumber;
+//	
+//	var stringa = Info[4].name;
+//	
+//	if(flagCrystal){
+//		if(counterFreq != 0){
+//			stringa = Info[counterFreq + 1].name;
+//			if (stringa == null)
+//				stringa = Info[counterFreq + 2].name;
+//		}
+//		if(stringa.search(/Energy/i) < 0){
+//			nullValues = countNullModel(Info);
+//			for (var i = (counterFreq == 0 ? 0 : counterFreq + 1); i < modelCount; i++) {
+//				modelnumber = Info[i].modelNumber - nullValues -1;
+//				if (Info[i].name == null)
+//					continue;
+//				freqValue = substringFreqToFloat(Info[i].modelProperties.Frequency);
+//				intValue = substringIntFreqToFloat(Info[i].modelProperties.IRintensity);
+//				isRaman = (intValue == 0);
+// 				if(!isRaman){
+//					irFreq = freqValue;
+//					irInt = intValue;
+//					isRaman = (Info[i].modelProperties.Ramanactivity == "A");
+//					labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
+//					A.push([irFreq,irInt,modelnumber,labelIR]);
+// 				}
+// 				if (isRaman) {
+//					ramanFreq =  freqValue;
+//					ramanInt = [100];
+//					labelRaman = 'Model = Frequency ' +   ramanFreq  + ', Intensity = ' + ramanInt + ' kmMol^-1';
+//					B.push([ramanFreq,ramanInt,modelnumber,labelRaman]);
+//				}
+//			}			
+//		}
+//	} else if (flagOutcar) {
+//		stringa = Info[4].name
+//		if(counterFreq != 0){
+//			stringa = Info[counterFreq + 1].name;
+//			if (stringa == null)
+//				stringa = Info[counterFreq + 2].name;
+//		}
+//		if(stringa.search(/G =/i) == -1){
+//			nullValues = countNullModel(Info);
+//		}
+//		for (var i = 0; i < freqData.length; i++) {
+//			if(Info[i].name != null){
+//				irFreq = substringFreqToFloat(freqData[i]);
+//				irInt = [0.00];
+//				modelnumber = Info[i].modelNumber + counterFreq  - nullValues -1 
+//				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
+//				A.push([irFreq,irInt,modelnumber,labelIR]);
+//			}
+//		}
+//	} else if (flagGaussian){
+//		for (var i = 0; i < freqGauss.length; i++) {
+//			if(Info[i].name != null){
+//				irFreq = substringFreqToFloat(freqGauss[i]);
+//				irInt = substringIntGaussToFloat(freqIntensGauss[i]);
+//				modelnumber = counterGauss + i; 
+//				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
+//				A.push([irFreq,irInt,modelnumber,labelIR]);
+//			}
+//		}
+//	}
+//
+//	// data.push(A)
+//	// data.push(B)
+//	
+//	for (var i = 0; i < A.length; i++) {
+//		if (A[i][1] > maxY)
+//			maxY = A[i][1];
+//		if (A[i][1] < minY)
+//			minY = A[i][1];
+//	}
+//	for (var i = 0; i < B.length; i++) {
+//		if (B[i][1] > maxY)
+//			maxY = B[i][1];	
+//		if (B[i][1] < minY)
+//			minY = B[i][1];
+//	}
+//	if (minY == maxY)
+//		maxY = (maxY == 0 ? 100 : maxY * 2);
+//	var options = {
+//			lines: { show: false },
+//			points: {show: true, fill: true},
+//			xaxis: { ticks: 8, tickDecimals: 0 },
+//			yaxis: { ticks: 6,tickDecimals: 0, max:maxY },
+//			selection: { mode: (nplots == 1 ? "x" : "xy"), hoverMode: (nplots == 1 ? "x" : "xy") },
+//			grid: { 
+//				hoverable: true, 
+//				clickable: true, 
+//				hoverDelay: 10, 
+//				hoverDelayDefault: 10
+//			}
+//	}
+//
+//	if (flagCrystal) {
+//		theplot = $.plot($("#plotareafreq"), [{label:"IR", data: A}, {label:"Raman", data: B}] , options)
+//	} else {
+//		theplot = $.plot($("#plotareafreq"), [{label:"IR-Raman", data: A}], options)
+//	}
+//
+//	previousPointFreq = null;
+//
+//	$("#plotareafreq").unbind("plothover plotclick", null)
+//	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
+//	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
+//	itemFreq = {datapoint: A[0] || B[0]}
+//	setTimeout('plotClickCallbackFreq(null,null,itemFreq)',100);
+//}
 
 function plotClickCallback(event, pos, itemEnergy) {
 
@@ -6234,30 +6242,6 @@ function plotClickCallbackForce(event, pos, itemForce) {
 	// This select the element from the list of the geometry models
 	// +1 keeps the right numeration of models
 	getbyID('geom').value = model + 1;
-
-}
-
-function plotClickCallbackFreq(event, pos, itemFreq) {
-	if (!itemFreq) return
-	var model = itemFreq.datapoint[2];
-	var label = itemFreq.datapoint[3];
-	var vibrationProp = 'vibration on; ' +  getValue("vecscale") + '; '+ getValue("vectors") + ';  '+ getValue("vecsamplitude"); 
-	if (flagCrystal){
-		var script = ' model '+ (model + nullValues ) +  '; ' + vibrationProp;  // 'set
-		if(counterFreq != 0)
-			var script = ' model '+ (model + nullValues +1 ) +  '; ' + vibrationProp;  // 'set
-	}else{
-		var script = ' model '+ ( model + 1 ) +  '; ' + vibrationProp;  // 'set
-	}
-	runJmolScriptWait(script);
-	setVibrationOn(true);
-	// This select the element from the list of the geometry models
-	// +1 keeps the right numeration of models
-	if(counterFreq != 0 && flagCrystal){
-		getbyID('vib').value = model + counterFreq - nullValues ;
-	}else {
-		getbyID('vib').value = model + 1;
-	}
 
 }
 
@@ -6286,23 +6270,6 @@ function plotHoverCallbackforce(event, pos, itemForce) {
 		showTooltipForce(itemForce.pageX, itemForce.pageY + 10, label, pos);
 	}
 	if (pos.canvasY > 350)plotClickCallback(event, pos, itemForce);
-}
-
-function plotHoverCallbackFreq(event, pos, itemFreq) {
-	hideTooltip();
-	if(!itemFreq)return
-	if (previousPointFreq != itemFreq.datapoint) {
-		previousPointFreq = itemFreq.datapoint ;
-		var x = roundoff(itemFreq.datapoint[0],2);
-		var y = roundoff(itemFreq.datapoint[1],1);
-		var model = itemFreq.datapoint[2];
-		var n = model;
-		if (flagCrystal)
-		  n += nullValues + (counterFreq == 0 ? 3 : 1 - counterFreq);
-		var label = "&nbsp;&nbsp;Model "+ n  + ", Freq (cm^-1) " + x + ", Int. (kmMol^-1) " + y;
-		showTooltipFreq(itemFreq.pageX, itemFreq.pageY + 10, label, pos);
-	}
-	if (pos.canvasY > 350)plotClickCallbackFreq(event, pos, itemFreq);
 }
 
 function hideTooltip() {
@@ -6436,8 +6403,6 @@ function plotSpectrum(div, openerOrSelf) {
 	    // fix the widths so they don't jump around
 	     $(this).css('width', $(this).width());});
 	
-	var dataSpectrum = [];
-	var spectrum = [];
 	for(var i = min; i < max; i++){
 	 spectrum.push([i,intArray[i]]);
 	}
@@ -6846,7 +6811,6 @@ function findCellParameters() {
  */
 
 //////////Following functions control the structural optimization of a structure using the embedded uff of Jmol
-var counterUff = 0
 function minimizeStructure() {
 	var optCriterion = parseFloat(getValue("optciteria"));
 	var optSteps = parseInt(getValue("maxsteps"));
@@ -6901,7 +6865,6 @@ function scriptUffCallback(b, step, d, e, f, g) {
 }
       		
 ///js// Js/windows.js /////
-var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50";
 function newAppletWindow() {
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);

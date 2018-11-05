@@ -1,4 +1,3 @@
-var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50";
 function newAppletWindow() {
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);

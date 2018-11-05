@@ -64,9 +64,9 @@
 ){
 var $t$;
 //var c$;
-Jmol.___JmolDate="$Date: 2018-10-13 23:02:01 -0500 (Sat, 13 Oct 2018) $"
+Jmol.___JmolDate="$Date: 2018-10-31 18:38:25 -0500 (Wed, 31 Oct 2018) $"
 Jmol.___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-Jmol.___JmolVersion="14.29.27"
+Jmol.___JmolVersion="14.29.28"
 // JSmolJavaExt.js
  
 
@@ -26227,7 +26227,7 @@ return this.message;
 });
 });
 Clazz_declarePackage ("JS");
-Clazz_load (["javajs.api.JSONEncodable", "JS.T", "JU.P3"], "JS.SV", ["java.lang.Boolean", "$.Float", "java.util.Arrays", "$.Collections", "$.Hashtable", "$.Map", "JU.AU", "$.BArray", "$.BS", "$.Base64", "$.Lst", "$.M3", "$.M34", "$.M4", "$.Measure", "$.P4", "$.PT", "$.Quat", "$.SB", "$.T3", "$.V3", "JM.BondSet", "JS.ScriptContext", "JU.BSUtil", "$.Escape"], function () {
+Clazz_load (["javajs.api.JSONEncodable", "JS.T", "JU.P3"], "JS.SV", ["java.lang.Boolean", "$.Float", "java.util.Arrays", "$.Collections", "$.Hashtable", "$.Map", "JU.AU", "$.BArray", "$.BS", "$.Base64", "$.Lst", "$.M3", "$.M34", "$.M4", "$.Measure", "$.P4", "$.PT", "$.Quat", "$.SB", "$.T3", "$.V3", "JM.BondSet", "JS.ScriptContext", "JU.BSUtil", "$.Escape", "JV.Viewer"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.index = 2147483647;
 this.myName = null;
@@ -26343,7 +26343,7 @@ if (Clazz_instanceOf (x, java.util.Map)) return JS.SV.getVariableMap (x);
 if (Clazz_instanceOf (x, JU.Lst)) return JS.SV.getVariableList (x);
 if (Clazz_instanceOf (x, JU.BArray)) return JS.SV.newV (15, x);
 if (Clazz_instanceOf (x, JS.ScriptContext)) return JS.SV.newV (14, x);
-if (Clazz_instanceOf (x, Array)) return JS.SV.getVariableAV (x);
+if (JS.SV.isASV (x)) return JS.SV.getVariableAV (x);
 if (JU.AU.isAI (x)) return JS.SV.getVariableAI (x);
 if (JU.AU.isAB (x)) return JS.SV.getVariableAB (x);
 if (JU.AU.isAF (x)) return JS.SV.getVariableAF (x);
@@ -26356,6 +26356,13 @@ if (JU.AU.isASS (x)) return JS.SV.getVariableASS (x);
 if (JU.AU.isADD (x)) return JS.SV.getVariableADD (x);
 if (JU.AU.isAFloat (x)) return JS.SV.newV (13, x);
 return JS.SV.newJSVar (x);
+}, "~O");
+c$.isASV = Clazz_defineMethod (c$, "isASV", 
+ function (x) {
+if (!JV.Viewer.isSwingJS) {
+{
+return x && x[0] && x[0].__CLASS_NAME__ == "JS.SV";
+}}return Clazz_instanceOf (x, Array);
 }, "~O");
 c$.newJSVar = Clazz_defineMethod (c$, "newJSVar", 
  function (x) {
@@ -38348,7 +38355,7 @@ this.am = newModels;
 this.mc = newModelCount;
 }, "~N");
 Clazz_defineMethod (c$, "assignAtom", 
-function (atomIndex, type, autoBond) {
+function (atomIndex, type, autoBond, addHsAndBond) {
 this.clearDB (atomIndex);
 if (type == null) type = "C";
 var atom = this.at[atomIndex];
@@ -38357,9 +38364,9 @@ var wasH = (atom.getElementNumber () == 1);
 var atomicNumber = JU.Elements.elementNumberFromSymbol (type, true);
 var isDelete = false;
 if (atomicNumber > 0) {
-this.setElement (atom, atomicNumber, false);
+this.setElement (atom, atomicNumber, !addHsAndBond);
 this.vwr.shm.setShapeSizeBs (0, 0, this.vwr.rd, JU.BSUtil.newAndSetBit (atomIndex));
-this.setAtomName (atomIndex, type + atom.getAtomNumber (), false);
+this.setAtomName (atomIndex, type + atom.getAtomNumber (), !addHsAndBond);
 if (this.vwr.getBoolean (603979883)) this.am[atom.mi].isModelKit = true;
 if (!this.am[atom.mi].isModelKit) this.taintAtom (atomIndex, 0);
 } else if (type.equals ("Pl")) {
@@ -38370,7 +38377,8 @@ atom.setFormalCharge (atom.getFormalCharge () - 1);
 isDelete = true;
 } else if (!type.equals (".")) {
 return;
-}this.removeUnnecessaryBonds (atom, isDelete);
+}if (!addHsAndBond) return;
+this.removeUnnecessaryBonds (atom, isDelete);
 var dx = 0;
 if (atom.getCovalentBondCount () == 1) if (wasH) {
 dx = 1.50;
@@ -38392,7 +38400,7 @@ bs = this.vwr.getModelUndeletedAtomsBitSet (atom.mi);
 bs.andNot (this.getAtomBitsMDa (1612709900, null,  new JU.BS ()));
 this.makeConnections2 (0.1, 1.8, 1, 1073741904, bsA, bs, null, false, false, 0);
 }this.vwr.addHydrogens (bsA, false, true);
-}, "~N,~S,~B");
+}, "~N,~S,~B,~B");
 Clazz_defineMethod (c$, "deleteAtoms", 
 function (bs) {
 this.averageAtomPoint = null;
@@ -41071,7 +41079,7 @@ if (JU.AU.isAS (info)) {
 sb.append ("[");
 var imax = (info).length;
 for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.esc ((info)[i]));
+sb.append (sep).append (JU.Escape.toReadable (null, (info)[i]));
 sep = ",";
 }
 sb.append ("]");
@@ -59581,6 +59589,7 @@ self.Jmol && Jmol.extend && Jmol.extend("vwr",
 JV.Viewer.prototype);
 }}Clazz_defineStatics (c$,
 "isJS", false,
+"isSwingJS", false,
 "isWebGL", false,
 "appletDocumentBase", "",
 "appletCodeBase", "",

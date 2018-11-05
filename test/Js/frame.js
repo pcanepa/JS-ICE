@@ -1,6 +1,3 @@
-var frameSelection = null;
-var frameNum = null;
-var frameValue = null;
 
 function setFrameValues(i) {
 	frameSelection = null;

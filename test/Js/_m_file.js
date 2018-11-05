@@ -72,7 +72,7 @@ file_method = function(methodName, defaultMethod, params) {
 	// loadDone_crystal
 	params || (params = []);
 	methodName += "_" + _fileData.fileType;
-	var f = self[methodName] || defaultmethod;
+	var f = self[methodName] || defaultMethod;
 	return (f && f.apply(null, params));
 }
 
