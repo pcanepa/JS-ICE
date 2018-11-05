@@ -183,129 +183,129 @@ function plotEnergies(){
 }
 
 
-function plotFrequencies(forceNew){
-	if (haveGraphSpectra && !forceNew)
-		return;
-	if (!flagCrystal && !flagOutcar && !flagGaussian)
-		return;
-	haveGraphSpectra = true;
-	var data = [];
-	var data2 =[];
-	var A = [];
-	var B = [];
-	var nplots = 1;
-	var modelCount = Info.length;
-	var irFreq, irInt, freqValue, ramanFreq, ramanInt, isRaman;
-	var labelIR, labelRaman, modelNumber;
-	
-	var stringa = Info[4].name;
-	
-	if(flagCrystal){
-		if(counterFreq != 0){
-			stringa = Info[counterFreq + 1].name;
-			if (stringa == null)
-				stringa = Info[counterFreq + 2].name;
-		}
-		if(stringa.search(/Energy/i) < 0){
-			nullValues = countNullModel(Info);
-			for (var i = (counterFreq == 0 ? 0 : counterFreq + 1); i < modelCount; i++) {
-				modelnumber = Info[i].modelNumber - nullValues -1;
-				if (Info[i].name == null)
-					continue;
-				freqValue = substringFreqToFloat(Info[i].modelProperties.Frequency);
-				intValue = substringIntFreqToFloat(Info[i].modelProperties.IRintensity);
-				isRaman = (intValue == 0);
- 				if(!isRaman){
-					irFreq = freqValue;
-					irInt = intValue;
-					isRaman = (Info[i].modelProperties.Ramanactivity == "A");
-					labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-					A.push([irFreq,irInt,modelnumber,labelIR]);
- 				}
- 				if (isRaman) {
-					ramanFreq =  freqValue;
-					ramanInt = [100];
-					labelRaman = 'Model = Frequency ' +   ramanFreq  + ', Intensity = ' + ramanInt + ' kmMol^-1';
-					B.push([ramanFreq,ramanInt,modelnumber,labelRaman]);
-				}
-			}			
-		}
-	} else if (flagOutcar) {
-		stringa = Info[4].name
-		if(counterFreq != 0){
-			stringa = Info[counterFreq + 1].name;
-			if (stringa == null)
-				stringa = Info[counterFreq + 2].name;
-		}
-		if(stringa.search(/G =/i) == -1){
-			nullValues = countNullModel(Info);
-		}
-		for (var i = 0; i < freqData.length; i++) {
-			if(Info[i].name != null){
-				irFreq = substringFreqToFloat(freqData[i]);
-				irInt = [0.00];
-				modelnumber = Info[i].modelNumber + counterFreq  - nullValues -1 
-				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-				A.push([irFreq,irInt,modelnumber,labelIR]);
-			}
-		}
-	} else if (flagGaussian){
-		for (var i = 0; i < freqGauss.length; i++) {
-			if(Info[i].name != null){
-				irFreq = substringFreqToFloat(freqGauss[i]);
-				irInt = substringIntGaussToFloat(freqIntensGauss[i]);
-				modelnumber = counterGauss + i; 
-				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-				A.push([irFreq,irInt,modelnumber,labelIR]);
-			}
-		}
-	}
-
-	// data.push(A)
-	// data.push(B)
-	
-	for (var i = 0; i < A.length; i++) {
-		if (A[i][1] > maxY)
-			maxY = A[i][1];
-		if (A[i][1] < minY)
-			minY = A[i][1];
-	}
-	for (var i = 0; i < B.length; i++) {
-		if (B[i][1] > maxY)
-			maxY = B[i][1];	
-		if (B[i][1] < minY)
-			minY = B[i][1];
-	}
-	if (minY == maxY)
-		maxY = (maxY == 0 ? 100 : maxY * 2);
-	var options = {
-			lines: { show: false },
-			points: {show: true, fill: true},
-			xaxis: { ticks: 8, tickDecimals: 0 },
-			yaxis: { ticks: 6,tickDecimals: 0, max:maxY },
-			selection: { mode: (nplots == 1 ? "x" : "xy"), hoverMode: (nplots == 1 ? "x" : "xy") },
-			grid: { 
-				hoverable: true, 
-				clickable: true, 
-				hoverDelay: 10, 
-				hoverDelayDefault: 10
-			}
-	}
-
-	if (flagCrystal) {
-		theplot = $.plot($("#plotareafreq"), [{label:"IR", data: A}, {label:"Raman", data: B}] , options)
-	} else {
-		theplot = $.plot($("#plotareafreq"), [{label:"IR-Raman", data: A}], options)
-	}
-
-	previousPointFreq = null;
-
-	$("#plotareafreq").unbind("plothover plotclick", null)
-	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
-	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
-	itemFreq = {datapoint: A[0] || B[0]}
-	setTimeout('plotClickCallbackFreq(null,null,itemFreq)',100);
-}
+//function plotFrequencies(forceNew){
+//	if (haveGraphSpectra && !forceNew)
+//		return;
+//	if (!flagCrystal && !flagOutcar && !flagGaussian)
+//		return;
+//	haveGraphSpectra = true;
+//	var data = [];
+//	var data2 =[];
+//	var A = [];
+//	var B = [];
+//	var nplots = 1;
+//	var modelCount = Info.length;
+//	var irFreq, irInt, freqValue, ramanFreq, ramanInt, isRaman;
+//	var labelIR, labelRaman, modelNumber;
+//	
+//	var stringa = Info[4].name;
+//	
+//	if(flagCrystal){
+//		if(counterFreq != 0){
+//			stringa = Info[counterFreq + 1].name;
+//			if (stringa == null)
+//				stringa = Info[counterFreq + 2].name;
+//		}
+//		if(stringa.search(/Energy/i) < 0){
+//			nullValues = countNullModel(Info);
+//			for (var i = (counterFreq == 0 ? 0 : counterFreq + 1); i < modelCount; i++) {
+//				modelnumber = Info[i].modelNumber - nullValues -1;
+//				if (Info[i].name == null)
+//					continue;
+//				freqValue = substringFreqToFloat(Info[i].modelProperties.Frequency);
+//				intValue = substringIntFreqToFloat(Info[i].modelProperties.IRintensity);
+//				isRaman = (intValue == 0);
+// 				if(!isRaman){
+//					irFreq = freqValue;
+//					irInt = intValue;
+//					isRaman = (Info[i].modelProperties.Ramanactivity == "A");
+//					labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
+//					A.push([irFreq,irInt,modelnumber,labelIR]);
+// 				}
+// 				if (isRaman) {
+//					ramanFreq =  freqValue;
+//					ramanInt = [100];
+//					labelRaman = 'Model = Frequency ' +   ramanFreq  + ', Intensity = ' + ramanInt + ' kmMol^-1';
+//					B.push([ramanFreq,ramanInt,modelnumber,labelRaman]);
+//				}
+//			}			
+//		}
+//	} else if (flagOutcar) {
+//		stringa = Info[4].name
+//		if(counterFreq != 0){
+//			stringa = Info[counterFreq + 1].name;
+//			if (stringa == null)
+//				stringa = Info[counterFreq + 2].name;
+//		}
+//		if(stringa.search(/G =/i) == -1){
+//			nullValues = countNullModel(Info);
+//		}
+//		for (var i = 0; i < freqData.length; i++) {
+//			if(Info[i].name != null){
+//				irFreq = substringFreqToFloat(freqData[i]);
+//				irInt = [0.00];
+//				modelnumber = Info[i].modelNumber + counterFreq  - nullValues -1 
+//				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
+//				A.push([irFreq,irInt,modelnumber,labelIR]);
+//			}
+//		}
+//	} else if (flagGaussian){
+//		for (var i = 0; i < freqGauss.length; i++) {
+//			if(Info[i].name != null){
+//				irFreq = substringFreqToFloat(freqGauss[i]);
+//				irInt = substringIntGaussToFloat(freqIntensGauss[i]);
+//				modelnumber = counterGauss + i; 
+//				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
+//				A.push([irFreq,irInt,modelnumber,labelIR]);
+//			}
+//		}
+//	}
+//
+//	// data.push(A)
+//	// data.push(B)
+//	
+//	for (var i = 0; i < A.length; i++) {
+//		if (A[i][1] > maxY)
+//			maxY = A[i][1];
+//		if (A[i][1] < minY)
+//			minY = A[i][1];
+//	}
+//	for (var i = 0; i < B.length; i++) {
+//		if (B[i][1] > maxY)
+//			maxY = B[i][1];	
+//		if (B[i][1] < minY)
+//			minY = B[i][1];
+//	}
+//	if (minY == maxY)
+//		maxY = (maxY == 0 ? 100 : maxY * 2);
+//	var options = {
+//			lines: { show: false },
+//			points: {show: true, fill: true},
+//			xaxis: { ticks: 8, tickDecimals: 0 },
+//			yaxis: { ticks: 6,tickDecimals: 0, max:maxY },
+//			selection: { mode: (nplots == 1 ? "x" : "xy"), hoverMode: (nplots == 1 ? "x" : "xy") },
+//			grid: { 
+//				hoverable: true, 
+//				clickable: true, 
+//				hoverDelay: 10, 
+//				hoverDelayDefault: 10
+//			}
+//	}
+//
+//	if (flagCrystal) {
+//		theplot = $.plot($("#plotareafreq"), [{label:"IR", data: A}, {label:"Raman", data: B}] , options)
+//	} else {
+//		theplot = $.plot($("#plotareafreq"), [{label:"IR-Raman", data: A}], options)
+//	}
+//
+//	previousPointFreq = null;
+//
+//	$("#plotareafreq").unbind("plothover plotclick", null)
+//	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
+//	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
+//	itemFreq = {datapoint: A[0] || B[0]}
+//	setTimeout('plotClickCallbackFreq(null,null,itemFreq)',100);
+//}
 
 function plotClickCallback(event, pos, itemEnergy) {
 
@@ -328,30 +328,6 @@ function plotClickCallbackForce(event, pos, itemForce) {
 	// This select the element from the list of the geometry models
 	// +1 keeps the right numeration of models
 	getbyID('geom').value = model + 1;
-
-}
-
-function plotClickCallbackFreq(event, pos, itemFreq) {
-	if (!itemFreq) return
-	var model = itemFreq.datapoint[2];
-	var label = itemFreq.datapoint[3];
-	var vibrationProp = 'vibration on; ' +  getValue("vecscale") + '; '+ getValue("vectors") + ';  '+ getValue("vecsamplitude"); 
-	if (flagCrystal){
-		var script = ' model '+ (model + nullValues ) +  '; ' + vibrationProp;  // 'set
-		if(counterFreq != 0)
-			var script = ' model '+ (model + nullValues +1 ) +  '; ' + vibrationProp;  // 'set
-	}else{
-		var script = ' model '+ ( model + 1 ) +  '; ' + vibrationProp;  // 'set
-	}
-	runJmolScriptWait(script);
-	setVibrationOn(true);
-	// This select the element from the list of the geometry models
-	// +1 keeps the right numeration of models
-	if(counterFreq != 0 && flagCrystal){
-		getbyID('vib').value = model + counterFreq - nullValues ;
-	}else {
-		getbyID('vib').value = model + 1;
-	}
 
 }
 
@@ -380,23 +356,6 @@ function plotHoverCallbackforce(event, pos, itemForce) {
 		showTooltipForce(itemForce.pageX, itemForce.pageY + 10, label, pos);
 	}
 	if (pos.canvasY > 350)plotClickCallback(event, pos, itemForce);
-}
-
-function plotHoverCallbackFreq(event, pos, itemFreq) {
-	hideTooltip();
-	if(!itemFreq)return
-	if (previousPointFreq != itemFreq.datapoint) {
-		previousPointFreq = itemFreq.datapoint ;
-		var x = roundoff(itemFreq.datapoint[0],2);
-		var y = roundoff(itemFreq.datapoint[1],1);
-		var model = itemFreq.datapoint[2];
-		var n = model;
-		if (flagCrystal)
-		  n += nullValues + (counterFreq == 0 ? 3 : 1 - counterFreq);
-		var label = "&nbsp;&nbsp;Model "+ n  + ", Freq (cm^-1) " + x + ", Int. (kmMol^-1) " + y;
-		showTooltipFreq(itemFreq.pageX, itemFreq.pageY + 10, label, pos);
-	}
-	if (pos.canvasY > 350)plotClickCallbackFreq(event, pos, itemFreq);
 }
 
 function hideTooltip() {

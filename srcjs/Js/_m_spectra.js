@@ -104,6 +104,7 @@ function simSpectrum(isPageOpen) {
 			freqCount : _fileData.freqInfo.length,
 			minX      : 0,
 			maxX      : 4000,
+			previousPointFreq : -1,
 			freqInfo  : [],
 			irInt     : [],
 			irFreq    : [],
@@ -254,16 +255,29 @@ function extractRamanData(specData) {
 	return specData;
 }
 
-function getModelForSpec(specData){
+function getModelForSpec(specData) {
 	var freqs = specData.freqs
 	var sigma = specData.sigma;
 	n = specData.freqs.length;
-	for (var i = 1; i < n-1; i++) { 
-			var x1 = (freqs[i] + freqs[i - 1])/2;
-			var x2 = (freqs[i] + freqs[i + 1])/2;
-			specData.ranges.push([Math.max(x1, freqs[i] - sigma/2), Math.min(x2, freqs[i] + sigma/2)]);
+	
+	for (var i = 0, x1, x2, last=n-1; i <= last; i++) { 
+		switch (i) {
+		case 0:
+			x1 = specData.minX;
+			x2 = (freqs[i] + freqs[i + 1])/2;
+			break;
+		case last:
+			x1 = (freqs[i] + freqs[i - 1])/2;
+			x2 = specData.maxX;
+			break;
+		default:
+			x1 = (freqs[i] + freqs[i - 1])/2;
+			x2 = (freqs[i] + freqs[i + 1])/2;
+			break;
 		}
-	}	
+		specData.ranges.push([Math.max(x1, freqs[i] - sigma/2), Math.min(x2, freqs[i] + sigma/2), freqs[i], i]);
+	}
+}	
 
 function createStickSpectrum(specData, type) {
 	var rescale = specData.rescale;
@@ -363,7 +377,7 @@ function showFreqGraph(specData, specMinX, specMaxX) {
 	} else {
 		specData = opener._specData;
 	}
-	
+	getModelForSpec(specData);
 	var A = specData.specIR, B = specData.specRaman;	
 	var model = specData.model;
 	var nplots = (B && B.length && A && A.length ? 2 : 1);
@@ -425,13 +439,53 @@ function showFreqGraph(specData, specMinX, specMaxX) {
 		theplot = $.plot($("#plotareafreq"), [{data: raman}], options)
 	}
 	
-	previousPointFreq = null;
+	_specData.previousPointFreq = -1;
 	
 	$("#plotareafreq").unbind("plothover plotclick", null)
 	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
 	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
 }
 
+function plotClickCallbackFreq(event, pos, itemFreq) {
+	if (!itemFreq) return
+	// itemFreq is [x,y] so [freq,int]
+	var range = getFreqForClick(itemFreq.datapoint);
+	// range is [min,max,freq,i]
+	if (!range)
+		return;
+	var freq = range[2];
+	var listIndex = range[3];	
+	var model = _specData.model[freq];
+	var vibrationProp = 'vibration on; ' +  getValue("vecscale") + '; '+ getValue("vectors") + ';  '+ getValue("vecsamplitude"); 
+	var script = ' model '+ model +  '; ' + vibrationProp;  // 'set
+	runJmolScriptWait(script);
+//	setVibrationOn(true);
+	getbyID('vib').options[listIndex].selected = true;
+	
+}
+
+function plotHoverCallbackFreq(event, pos, itemFreq) {
+	hideTooltip();
+	if(!itemFreq)return
+	if (_specData.previousPointFreq != itemFreq.datapoint) {
+		previousPointFreq = itemFreq.datapoint;
+		var range = getFreqForClick(itemFreq.datapoint);
+		if (!range)
+			return;
+		var freq = range[2];
+		var listIndex = range[3];	
+		var model = _specData.model[freq];
+		
+		var x = roundoff(itemFreq.datapoint[0],2);
+		var y = roundoff(itemFreq.datapoint[1],1);
+		var model = itemFreq.datapoint[2];
+
+		label = getbyID('vib').options[listIndex].text;
+
+		showTooltipFreq(itemFreq.pageX, itemFreq.pageY + 10, label, pos);
+	}
+	if (pos.canvasY > 350)plotClickCallbackFreq(event, pos, itemFreq);
+}
 
 
 /*
@@ -622,6 +676,21 @@ function createFreqGrp() {
 
 	return strFreq;
 }
+
+function getFreqForClick(p) {
+	var freq = p[0];
+	var int = p[1];
+	var listIndex = -1;
+	
+	for (var i = 0; i < _specData.ranges.length; i++) {
+		var range = _specData.ranges[i];
+		if (freq >= range[0] && freq <= range[1]) {
+			return range;
+		}
+	}
+	return null;
+}
+
 
 
 
