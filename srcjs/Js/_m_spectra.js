@@ -204,12 +204,12 @@ function extractIRData_crystal(specData) {
 	for (var i = 0; i < n; i++) {
 		if (specData.freqInfo[i].modelProperties.IRactivity != "A") 
 			continue;
-		specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
+		specData.freqs[i] = specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
 		specData.irInt[i] = Math.round(substringIntFreqToFloat(specData.freqInfo[i].modelProperties.IRintensity));
 		specData.sortInt[i] = specData.irInt[i];
 		specData.specIR[specData.irFreq[i]] = specData.irInt[i];
 		specData.model[specData.irFreq[i]] = specData.freqInfo[i].modelNumber;
-		specData.freqs[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
+		
 	}
 	System.out.println("crystal extractIRData");
 }
@@ -217,10 +217,9 @@ function extractIRData_crystal(specData) {
 function extractIRData_vaspoutcar(specData) {
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
-		specData.irFreq[i] = Math.round(substringFreqToFloat(_fileData.freqData[i]));
+		specData.freqs[i] = specData.irFreq[i] = Math.round(substringFreqToFloat(_fileData.freqData[i]));
 		specData.specIR[specData.irFreq[i]] = 100;
 		specData.model[specData.irFreq[i]] = specData.freqInfo[i].modelNumber;
-		specData.freqs[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
 		specData.irInt[i] = 100;
 		if (i == 0)
 			specData.irInt[i] = 0;
@@ -230,10 +229,9 @@ function extractIRData_vaspoutcar(specData) {
 function extractIRData_gaussian(specData) {
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
-		specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqData[i]));
+		specData.freqs[i] = specData.irFreq[i] = Math.round(substringFreqToFloat(specData.freqData[i]));
 		specData.specIR[specData.irFreq[i]] = specData.irInt[i] = rtrim(specData.freqIntens[i], 1, "K", 1);
 		specData.model[specData.irFreq[i]] = specData.freqInfo[i].modelNumber;
-		specData.freqs[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
 	}
 }
 
@@ -245,11 +243,10 @@ function extractRamanData(specData) {
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
 		if (specData.freqInfo[i].modelProperties.Ramanactivity == "A") {
-			specData.ramanFreq[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
+			specData.freqs[i] = specData.ramanFreq[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
 			specData.ramanInt[i] = 100;
 			specData.specRaman[specData.ramanFreq[i]] = 100;
 			specData.model[specData.ramanFreq[i]] = specData.freqInfo[i].modelNumber;
-			specData.freqs[i] = Math.round(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency));
 		} else {
 			specData.ramanInt[i] = 0;
 		}
