@@ -150,6 +150,24 @@ cellOperation = function(){
 	getSymInfo();
 	setUnitCell();
 }
+chosenSymElement = ""; 
+function setSymElement(elementName){
+	chosenSymElement = elementName;
+}
+chosenSymop = "";
+function setSymop(symop){
+	chosenSymop = symop;
+}
+symopSet = [];
+function createSymopSet(){
+	var allSymopsString = jmolEvaluate('script("print readSymmetryVectors()")'); 
+	var totalSymops = allSymopsString.match(/\n/g).length-1; //this should work in all cases
+	for (i = 1; i<= totalSymops;i++){
+		console.log(i);
+		symopSetIndex = i-1;
+		symopSet[symopSetIndex] = jmolEvaluate('script("var info = readSymmetryVectors();print info["+i+"];")');//THIS LINE IS NOT WORKING-ASK BH
+	}
+}
 //creates symmetry menu 
 // minor functionality A.S. 10.26.18 
 function createSymmetryGrp() {
@@ -173,8 +191,26 @@ function createSymmetryGrp() {
 	strSymmetry += "<BR>\n"; 
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += "Add element:"
+	strSymmetry += createSelect('addSymEle', 'setSymElement(value)', 0, 1,
+			eleSymb);
 	//strSymmetry +=  createSelect();
 	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "Enter initial point:";
+	strSymmetry += "<input type='text'  name='initPoint' id='initPoint' size='10' class='text'>";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "Choose symmetry operation:";
+//	strSymmetry += createSelect('addSymSymop', 'setSymop(value)', 0, 1,
+//			jmolEvaluate('script("print readSymmetryVectors()")'));
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	//strSymmetry += createCheck("copyOpaque", "Activate applied symmetry:",
+//			appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop), 0, 1, 0);
+//	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</form>\n";
 	return strSymmetry;
 }
@@ -191,18 +227,12 @@ function displaySymmetryDrawObjects(symopNumber){
 		runJmolScriptWait("draw symop @"+symNumber) ;
 	}
 } 
-function appendSymmetricAtoms(elementName, point,symopNumber,symopNameArray){
-	symopName = symopNameArray[symopNumber];
-	iterations = 1 
-	if (symopName.includes("C")) {
-		indexOfC = symopName.indexOf("C");
-		iterationString = symopName.substring(indexOfC,indexOfC+1) ;
-		iterations = parseInt(iterationString)	
-	}
-	newAtomArray = getSymmetricAtomArray(symopNumber,point,iterations) ;
-	numberOfNewAtoms = newAtomArray.length(); 
+function appendSymmetricAtoms(elementName,point,symopSelected){
+	iterations = 1 ;
+	newAtomArray = runJmolScriptWait("getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
+	numberOfNewAtoms = newAtomArray.length; 
 	for (i = 1; i <= numberOfNewAtoms; i++){
-		appendNewAtom(elementName, newAtomArray[i]); //this is a jmol script in functions.spt
+		runJmolScriptWait("appendNewAtom('"+elementName+"', "+newAtomArray[i]+")"); //this is a jmol script in functions.spt
 	}
 }
 
