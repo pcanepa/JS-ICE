@@ -259,18 +259,14 @@ function extractRamanData(specData) {
 
 function getModelForSpec(specData){
 	var freqs = specData.freqs
-	var x1 = (freqs[i] + freqs[i - 1])/2;
-	var x2 = (freqs[i] + freqs[i + 1])/2;
 	var sigma = specData.sigma;
 	n = specData.freqs.length;
-	for (var i = 0; i < n; i++) { 
-		if (specData.modelNumber !=0) {
-			specData.ranges.push(Math.max(x1, freqs[i] - (sigma/2)), Math.min(x2, freqs[i] + (sigma/2)), modelNumber);
-		} else {
-			specData.ranges.push(-1);
+	for (var i = 1; i < n-1; i++) { 
+			var x1 = (freqs[i] + freqs[i - 1])/2;
+			var x2 = (freqs[i] + freqs[i + 1])/2;
+			specData.ranges.push([Math.max(x1, freqs[i] - sigma/2), Math.min(x2, freqs[i] + sigma/2)]);
 		}
-	}
-}	
+	}	
 
 function createStickSpectrum(specData, type) {
 	var rescale = specData.rescale;
