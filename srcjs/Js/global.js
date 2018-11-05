@@ -90,7 +90,6 @@ var previousPoint = null
 var itemForce
 var previousPointForce = null
 var itemFreq
-var previousPointFreq = null
 
 var theplot; // global, mostly for testing.
 
