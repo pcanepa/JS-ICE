@@ -1,8 +1,12 @@
 // not implemented
 
 function enterSymmetry() {
-	
-}
+	if (! _fileData.symmetryOperationList){
+	 	var symopSelection = createSelect('addSymSymop', 'setSymop(value)', 0, 1, createSymopSet());
+		 _fileData.symmetryOperationList = createSymopSet();
+		 getbyID("symmetryOperationSet").innerHTML = symopSelection;
+	}
+}	
 
 function exitSymmetry() {
 }
@@ -150,23 +154,26 @@ cellOperation = function(){
 	getSymInfo();
 	setUnitCell();
 }
-chosenSymElement = ""; 
+var chosenSymElement = ""; 
 function setSymElement(elementName){
 	chosenSymElement = elementName;
 }
-chosenSymop = "";
+var chosenSymop = "";
 function setSymop(symop){
 	chosenSymop = symop;
 }
-symopSet = [];
 function createSymopSet(){
+	var symopSet = [];
 	var allSymopsString = jmolEvaluate('script("print readSymmetryVectors()")'); 
 	var totalSymops = allSymopsString.match(/\n/g).length-1; //this should work in all cases
-	for (i = 1; i<= totalSymops;i++){
-		console.log(i);
-		symopSetIndex = i-1;
-		symopSet[symopSetIndex] = jmolEvaluate('script("var info = readSymmetryVectors();print info["+i+"];")');//THIS LINE IS NOT WORKING-ASK BH
+	for (var i = 1; i<= totalSymops;i++){
+		var symopInt = parseInt(i)+"";
+		var scriptToRun = 'script("var infor = readSymmetryVectors();print infor['+symopInt+']")';
+		var symopString = jmolEvaluate(scriptToRun);
+		symopString = symopString.trim();
+		symopSet[i-1] = symopString;
 	}
+	return symopSet
 }
 //creates symmetry menu 
 // minor functionality A.S. 10.26.18 
@@ -203,8 +210,8 @@ function createSymmetryGrp() {
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += "Choose symmetry operation:";
-//	strSymmetry += createSelect('addSymSymop', 'setSymop(value)', 0, 1,
-//			jmolEvaluate('script("print readSymmetryVectors()")'));
+	strSymmetry += "<div id='symmetryOperationSet'></div>";
+	
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
