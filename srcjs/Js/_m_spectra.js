@@ -100,7 +100,8 @@ function simSpectrum(isPageOpen) {
 			typeConvolve  : typeConvolve, 
 			irrep     : irrep,
 			sigma     : getValue('sigma'), 
-			rescale   : isChecked('rescaleSpectra'),
+			rescale   : true,
+			invertx   : isChecked('invertX'),
 			freqCount : _fileData.freqInfo.length,
 			minX      : 0,
 			maxX      : 4000,
@@ -407,6 +408,7 @@ function showFreqGraph(specData, specMinX, specMaxX) {
     	  min : specMinX, 
     	  max : specMaxX, 
     	  ticks : 10, 
+    	  invert : specData.invertx,
     	  tickDecimals: 0 
       },
       yaxis: { ticks: 0, tickDecimals: 0, min: -0.1, max: maxY },
@@ -455,12 +457,12 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 	var freq = range[2];
 	var listIndex = range[3];	
 	var model = _specData.model[freq];
-	var vibrationProp = 'vibration on; ' +  getValue("vecscale") + '; '+ getValue("vectors") + ';  '+ getValue("vecsamplitude"); 
-	var script = ' model '+ model +  '; ' + vibrationProp;  // 'set
+	// vibrationProp = 'vibration on; ' +  getValue("vecscale") + '; '+ getValue("vectors") + ';  '+ getValue("vecsamplitude"); 
+	var script = ' model '+ model +  '; ' //+ vibrationProp;  // 'set
 	runJmolScriptWait(script);
 //	setVibrationOn(true);
 	getbyID('vib').options[listIndex].selected = true;
-	
+	onClickFreqParams()
 }
 
 function plotHoverCallbackFreq(event, pos, itemFreq) {
@@ -623,11 +625,11 @@ function createFreqGrp() {
 		+ "<br>\n"
 		+ createLine('blue', '')
 		+ "<br>"
-		+ "Band width " + createText2("sigma", "15", "3", "") + " (cm<sup>-1</sup>)" 
+		+ "Band width " + createText2("sigma", "30", "3", "") + " (cm<sup>-1</sup>)" 
 		+ "&nbsp;"
 		+ "Min freq. " + createText2("nMin", "onClickModSpec()", "4", "")
 		+ " Max " + createText2("nMax", "onClickModSpec()", "4", "") + "(cm<sup>-1</sup>)"
-		+ createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "") + "<br>"
+		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "") + "<br>"
 		+ createRadio("convol", "Stick", 'onClickModSpec()', 0, 1, "", "stick")
 		+ createRadio("convol", "Gaussian", 'onClickModSpec()', 0, 0, "", "gaus")
 		+ createRadio("convol", "Lorentzian", 'onClickModSpec()', 0, 0, "", "lor") 
