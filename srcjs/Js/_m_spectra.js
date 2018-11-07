@@ -575,7 +575,7 @@ function updateJmolForFreqParams() {
 					+ ";vectors " + vectorsON
 					+ ";" + getValueSel("vecsamplitude")
 					+ ";" + getValueSel("vecscale")
-					+ ";color vectors " + (isChecked("vibVectcolor") ? "none" :  c);
+					+ ";color vectors " + (isChecked("vibVectcolor") ? "none" : "white");
 	if (vectorsON)
 		script += ";" + getValueSel("widthvec");
 	runJmolScriptWait(script)
