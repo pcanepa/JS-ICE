@@ -419,10 +419,9 @@ function showFreqGraph(specData, specMinX, specMaxX) {
 			clickable: true, 
 			hoverDelay: 10, 
 		    autoHighlight: false,
-			hoverDelayDefault: 10
+			hoverDelayDefault: 10,
       }
 	};
-	
 	var ir = [];
 	var raman = [];
 	for (var i = specData.minX, pt = 0; i < specData.maxX; i++, pt++) {
@@ -578,7 +577,7 @@ function updateJmolForFreqParams() {
 					+ ";" + getValueSel("vecscale")
 					+ ";color vectors " + (isChecked("vibVectcolor") ? "none" :  c);
 	if (vectorsON)
-		script += ";" + getValueSel("sizevec");
+		script += ";" + getValueSel("widthvec");
 	runJmolScriptWait(script)
 }
 
