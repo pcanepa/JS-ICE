@@ -1,9 +1,12 @@
 // not implemented
 
 function enterSymmetry() {
-	 var symopSelection = createSelect('addSymSymop', 'setSymop(value)', 0, 1, createSymopSet());
-	 getbyID("symmetryOperationSet").innerHTML = symopSelection;
-}
+	if (! _fileData.symmetryOperationList){
+	 	var symopSelection = createSelect('addSymSymop', 'setSymop(value)', 0, 1, createSymopSet());
+		 _fileData.symmetryOperationList = createSymopSet();
+		 getbyID("symmetryOperationSet").innerHTML = symopSelection;
+	}
+}	
 
 function exitSymmetry() {
 }
