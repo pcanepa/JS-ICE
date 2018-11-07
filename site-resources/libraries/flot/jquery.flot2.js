@@ -20,6 +20,9 @@
 
   modified for Jmol by Bob Hanson ("bh", below)
 
+
+ BH 11/7/2018  adds invert option for x axis. 
+
 	*/
 
 
@@ -47,6 +50,7 @@
                     backgroundOpacity: 0.85 // set to 0 to avoid background
                 },
                 xaxis: {
+			   invert:false, // BH 2018 
                     mode: null, // null or "time"
                     min: null, // min. value to show, null means set automatically
                     max: null, // max. value to show, null means set automatically
@@ -392,9 +396,9 @@
                 // add transformation helpers
                 if (axis == axes.xaxis || axis == axes.x2axis) {
                     // data point to canvas coordinate
-                    axis.p2c = function (p) { return (p - axis.min) * axis.scale; };
+                    axis.p2c = function (p) { return (options.invert ? axis.max - p : p - axis.min) * axis.scale; }; // BH 2018
                     // canvas coordinate to data point 
-                    axis.c2p = function (c) { return axis.min + c / axis.scale; };
+                    axis.c2p = function (c) { return (options.invert ? axis.max - c / axis.scale : axis.min + c / axis.scale); }; // BH 2018
                 }
                 else {
                     axis.p2c = function (p) { return (axis.max - p) * axis.scale; };
