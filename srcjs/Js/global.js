@@ -98,13 +98,13 @@ var haveGraphSpectra, haveGraphOptimize;
 var energy = 0;
 	var label = "";
 	var previous = 0;
-	var last = modelCount - 1;
+// var last = modelCount - 1;
 	
 	var data = [];
     var A = [];
     var nplots = 1;
-    var modelCount = Info.length;
-    var stringa = Info[3].name;
+// var modelCount = Info.length;
+//var stringa = Info[3].name;
     
     var nullValues;
     
@@ -120,3 +120,6 @@ var counterUff = 0
 // from windows.js
 
 var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50";
+
+// for citations:
+
