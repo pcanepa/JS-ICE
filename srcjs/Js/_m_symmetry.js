@@ -1,7 +1,8 @@
 // not implemented
 
 function enterSymmetry() {
-	
+	 var symopSelection = createSelect('addSymSymop', 'setSymop(value)', 0, 1, createSymopSet());
+	 getbyID("symmetryOperationSet").innerHTML = symopSelection;
 }
 
 function exitSymmetry() {
@@ -174,7 +175,6 @@ function createSymopSet(){
 //creates symmetry menu 
 // minor functionality A.S. 10.26.18 
 function createSymmetryGrp() {
-	
 	var strSymmetry = "<form autocomplete='nope'  id='symmetryGroup' name='symmetryGroup' style='display:none'>\n";
 	strSymmetry += "<table class='contents'>\n";
 	strSymmetry += "<tr><td>\n";
@@ -207,8 +207,8 @@ function createSymmetryGrp() {
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += "Choose symmetry operation:";
-	//strSymmetry += createSelect('addSymSymop', 'setSymop(value)', 0, 1,
-	//		symmetryOperationSet);
+	strSymmetry += "<div id='symmetryOperationSet'></div>";
+	
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
