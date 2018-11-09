@@ -7,7 +7,7 @@ function enterSymmetry() {
 		 getbyID("symmetryOperationSet").innerHTML = symopSelection;
 		 getSymInfo();
 	}
-	var activateSymmetry = createButton("activateSymmetryButton", "Activate applied symmetry:", 'appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop)', 0);
+	var activateSymmetry = createButton("activateSymmetryButton", "Activate applied symmetry:", 'appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop,getValue("symIterations"))', 0);
 	getbyID("activateSymmetryDiv").innerHTML = activateSymmetry; 
 }	
 
@@ -218,6 +218,10 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
+	strSymmetry += "<input type='text'  name='symIterations' id='symIterations' size='2' class='text'>";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
 	strSymmetry += "<div id='activateSymmetryDiv'></div>";
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</form>\n";
@@ -236,12 +240,11 @@ function displaySymmetryDrawObjects(symopNumber){
 		runJmolScriptWait("draw symop @"+symNumber) ;
 	}
 } 
-function appendSymmetricAtoms(elementName,point,symopSelected){
+function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 	if (elementName == ""){
 		console.log("ERROR: empty inputs");
 	}
 	else {
-		iterations = 1 ;
 		newAtomArray = Jmol.evaluateVar(jmolApplet0,"getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
 		numberOfNewAtoms = newAtomArray.length; 
 		for (i = 1; i <= numberOfNewAtoms; i++){
