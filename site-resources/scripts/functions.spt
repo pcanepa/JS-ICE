@@ -88,7 +88,7 @@ function drawCleanSymmetryAxisVectors(symOperation, axisFactor){
 	point4 = $sym_rotvector2[1]
 	point1 = point1*axisFactor
 	point3 = point3*axisFactor
-	//need to clear symop draw objects
+	draw s* off 
 	//need to draw two vectors at same time
 	draw vector @point2 @point1 
 	draw vector @point4 @point3

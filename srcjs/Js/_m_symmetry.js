@@ -218,7 +218,7 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-//	strSymmetry += "<div id='activateSymmetryDiv'></div>;
+	strSymmetry += "<div id='activateSymmetryDiv'></div>";
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</form>\n";
 	return strSymmetry;
@@ -245,7 +245,7 @@ function appendSymmetricAtoms(elementName,point,symopSelected){
 		newAtomArray = Jmol.evaluateVar(jmolApplet0,"getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
 		numberOfNewAtoms = newAtomArray.length; 
 		for (i = 1; i <= numberOfNewAtoms; i++){
-			runJmolScriptWait("appendNewAtom('"+elementName+"', "+newAtomArray[i]+")"); //this is a jmol script in functions.spt
+			runJmolScriptWait("appendNewAtom('"+elementName+"', {"+newAtomArray[i-1]+"})"); //this is a jmol script in functions.spt
 		}
 	}
 }
