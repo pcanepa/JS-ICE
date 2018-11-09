@@ -228,16 +228,16 @@ function createSymmetryGrp() {
 	return strSymmetry;
 }
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
-function displaySymmetryDrawObjects(symopNumber){
+function displaySymmetryDrawObjects(symop){
 	symopNameArray = readSymmetryVectors();
 	if (symopNameArray[i].includes("identity")){
-		runJmolScriptWait("draw symop @"+symNumber); 
+		runJmolScriptWait("draw symop @"+symop); 
 	}
 	else if (symopNameArray[i].includes("axis")){
-		//INSERT CODE HERE
+		runJmolScriptWait("drawCleanSymmetryAxisVectors('"+symop+"', 3)");
 	}
 	else if (symopNameArray[i].includes("mirror")){
-		runJmolScriptWait("draw symop @"+symNumber) ;
+		runJmolScriptWait("draw symop @"+symop) ;
 	}
 } 
 function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
