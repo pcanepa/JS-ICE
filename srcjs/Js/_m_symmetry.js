@@ -7,6 +7,8 @@ function enterSymmetry() {
 		 getbyID("symmetryOperationSet").innerHTML = symopSelection;
 		 getSymInfo();
 	}
+	var activateSymmetry = createCheck("activateSymmetryCheck", "Activate applied symmetry:", appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop), 0, 1, 0);
+	getbyID("activateSymmetryDiv") = activateSymmetry; 
 }	
 
 function exitSymmetry() {
@@ -184,17 +186,18 @@ function createSymmetryGrp() {
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += "Symmetry operators ";
 	strSymmetry += "<div id='syminfo'></div>";
+	
 	strSymmetry += createLine('blue', '');
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</td></tr></table> \n";
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += createCheck("symLock", "Lock Added Atoms to Symmetry Operation?",
-			0, 0, 1, 0);
+			0, 0, 0, 0);
 	strSymmetry += "</td></tr>\n";	
 	strSymmetry += "<BR>\n"; 
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += createCheck("copyOpaque", "Make atom copies opaque?",
-			0, 0, 1, 0);
+			0, 0, 0, 0);
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n"; 
 	strSymmetry += "<tr><td>\n";
@@ -216,9 +219,9 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-	//strSymmetry += createCheck("copyOpaque", "Activate applied symmetry:",
-//			appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop), 0, 1, 0);
-//	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<div id='activateSymmetryDiv'></div>;
+	
+	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</form>\n";
 	return strSymmetry;
 }
@@ -237,7 +240,7 @@ function displaySymmetryDrawObjects(symopNumber){
 } 
 function appendSymmetricAtoms(elementName,point,symopSelected){
 	iterations = 1 ;
-	newAtomArray = runJmolScriptWait("getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
+	newAtomArray = Jmol.evaluateVar("getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
 	numberOfNewAtoms = newAtomArray.length; 
 	for (i = 1; i <= numberOfNewAtoms; i++){
 		runJmolScriptWait("appendNewAtom('"+elementName+"', "+newAtomArray[i]+")"); //this is a jmol script in functions.spt
