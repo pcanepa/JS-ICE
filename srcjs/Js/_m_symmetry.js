@@ -191,13 +191,13 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</td></tr></table> \n";
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += createCheck("symLock", "Lock Added Atoms to Symmetry Operation?",
-			0, 0, 0, 0);
+	//strSymmetry += createCheck("symLock", "Lock Added Atoms to Symmetry Operation?",
+//			0, 0, 0, 0);
 	strSymmetry += "</td></tr>\n";	
 	strSymmetry += "<BR>\n"; 
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += createCheck("copyOpaque", "Make atom copies opaque?",
-			0, 0, 0, 0);
+//	strSymmetry += createCheck("copyOpaque", "Make atom copies opaque?",
+//			0, 0, 0, 0);
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n"; 
 	strSymmetry += "<tr><td>\n";
@@ -233,21 +233,21 @@ function createSymmetryGrp() {
 	return strSymmetry;
 }
 //checks to see if there is a symmetry axis currently drawn
-function hasAxis(symop){
-	runJmolScriptWait("firstPoint = $sym_rotvector1[0]");
-	if (Jmol.evaluateVar("firstPoint")){
-		runJmolScriptwait("secondPoint = $sym_rotvector2[0]");
-		if (Jmol.evaluateVar("secondPoint")){
-			return true 
-		}
-		else { 
-			return false
-		}
-	}
-	else {
-		return false
-	}
-}
+//function hasAxis(symop){
+//	runJmolScriptWait("firstPoint = $sym_rotvector1[0]");
+//	if (Jmol.evaluateVar(jmolApplet0,"firstPoint")){
+//		runJmolScriptwait("secondPoint = $sym_rotvector2[0]");
+//		if (Jmol.evaluateVar(jmolApplet0,"secondPoint")){
+//			return true 
+//		}
+//		else { 
+//			return false
+//		}
+//	}
+//	else {
+//		return false
+//	}
+//}
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
 	centerPoint = 	getValue("symCenterPoint") ;
@@ -255,10 +255,10 @@ function displaySymmetryDrawObjects(symop){
 		centerPoint= "{0 0 0}"; 
 	}
 	runJmolScriptWait("draw symop '"+symop+"' "+centerPoint); 
-	if(hasAxis(symop)){
-		runJmolScriptWait("select *;color opaque;draw sym_* delete");
-		runJmolScriptWait("drawCleanSymmetryAxisVectors('"+symop+"', 3)");
-	}
+//	if(hasAxis(symop)){
+//		runJmolScriptWait("select *;color opaque;draw sym_* delete");
+//		runJmolScriptWait("drawCleanSymmetryAxisVectors('"+symop+"', 3)");
+//	}
 } 
 function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 	if (elementName == ""){
