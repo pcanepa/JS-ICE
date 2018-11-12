@@ -40,6 +40,24 @@ function enterSpectra() {
 		symmetryModeAdd();	
 		onClickModSpec(true);
 	}
+	$("#nMin").keypress(function(event) {
+	if (event.which == 13) {
+		event.preventDefault();
+		onClickModSpec();
+		}
+	});
+	$("#nMax").keypress(function(event) {
+	if (event.which == 13) {
+		event.preventDefault();
+		onClickModSpec();
+		}
+	});
+	$("#sigma").keypress(function(event) {
+	if (event.which == 13) {
+		event.preventDefault();
+		onClickModSpec();
+		}
+	});
 }
 
 function exitSpectra() {
@@ -116,7 +134,8 @@ function simSpectrum(isPageOpen) {
 			specRaman : [],
 			model     : [],
 			freqs     : [],
-			ranges    : [] 
+			ranges    : [],
+			selectedfreq : [] 
 	};
 	setFrequencyList(specData);
 	switch (typeIRorRaman) {
@@ -432,12 +451,18 @@ function showFreqGraph(specData, specMinX, specMaxX) {
 		if (B.length)
 			raman[pt] = [i, B[i], model[i]];		
 	}
+	var cursor= [];
+	for(var i= 1; specData.freqs.length < i-n; i++){
+		var specfreqs= specData.freqs[i];
+		cursor = [[specfreqs[i],maxY*0.9],[specfreqs[i], maxY]];
+	}
+	
 	if (A.length && B.length) {
-		theplot = $.plot($("#plotareafreq"), [{label:"IR", data:ir}, {label:"Raman", data: raman}], options)
+		theplot = $.plot($("#plotareafreq"), [{label:"IR", data:ir}, {label:"Raman", data: raman}, {data: cursor, color:"red", linewidth:0.1}], options)
 	} else if (A.length) {
-		theplot = $.plot($("#plotareafreq"), [{data: ir}], options)
+		theplot = $.plot($("#plotareafreq"), [{data: ir}, {data: cursor}], options)
 	} else if (B.length) {
-		theplot = $.plot($("#plotareafreq"), [{data: raman}], options)
+		theplot = $.plot($("#plotareafreq"), [{data: raman}, {data: cursor}], options)
 	}
 	
 	_specData.previousPointFreq = -1;
@@ -646,7 +671,7 @@ function createFreqGrp() {
 			strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeypress='onClickModSpec()' CLASS='select' >";
 			strFreq += "</select> ";
 			strFreq += "<BR>\n";
-			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
+			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' onkeyup='onClickSelectVib(value)' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
 		strFreq += "</td>"; // end of the first column
 		strFreq += "<td valign='bottom'>";
 		strFreq +="<BR>\n" + "<BR>\n";
