@@ -1,19 +1,25 @@
-// not implemented
-
+//initialization upon entry into symmetry tab 
 function enterSymmetry() {
 	if (! _fileData.symmetryOperationList){
-	 	var symopSelection = createSelect('addSymSymop', 'setSymop(value);displaySymmetryDrawObjects(value)', 0, 1, createSymopSet());
+	 	var symopSelection = createSelect('addSymSymop', 'doSymopSelection(value)', 0, 1, createSymopSet());
 		 _fileData.symmetryOperationList = createSymopSet();
 		 getbyID("symmetryOperationSet").innerHTML = symopSelection;
 		 getSymInfo();
 	}
-	var activateSymmetry = createButton("activateSymmetryButton", "Activate applied symmetry:", 'appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop,getValue("symIterations"))', 0);
+	var activateSymmetry = createButton("activateSymmetryButton", "Activate applied symmetry:", 'doActivateSymmetry()', 0);
 	getbyID("activateSymmetryDiv").innerHTML = activateSymmetry; 
 }	
 
 function exitSymmetry() {
 }
 
+function doActivateSymmetry(){
+	appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop,getValue("symIterations"));
+}
+function doSymopSelection(symop){
+	setSymop(symop);
+	displaySymmetryDrawObjects(symop);
+}
 
 function getSymInfo() { //parses data file and provides symmetry operations
 
@@ -189,22 +195,12 @@ function createSymmetryGrp() {
 	
 	strSymmetry += createLine('blue', '');
 	strSymmetry += "</td></tr>\n";
-	strSymmetry += "</td></tr></table> \n";
-	strSymmetry += "<tr><td>\n";
-	//strSymmetry += createCheck("symLock", "Lock Added Atoms to Symmetry Operation?",
-//			0, 0, 0, 0);
-	strSymmetry += "</td></tr>\n";	
-	strSymmetry += "<BR>\n"; 
-	strSymmetry += "<tr><td>\n";
-//	strSymmetry += createCheck("copyOpaque", "Make atom copies opaque?",
-//			0, 0, 0, 0);
-	strSymmetry += "</td></tr>\n";
+	strSymmetry += "</td></tr></table> \n";	
 	strSymmetry += "<BR>\n"; 
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += "Add element:"
 	strSymmetry += createSelect('addSymEle', 'setSymElement(value)', 0, 1,
 			eleSymb);
-	//strSymmetry +=  createSelect();
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
@@ -232,22 +228,7 @@ function createSymmetryGrp() {
 	strSymmetry += "</form>\n";
 	return strSymmetry;
 }
-//checks to see if there is a symmetry axis currently drawn
-//function hasAxis(symop){
-//	runJmolScriptWait("firstPoint = $sym_rotvector1[0]");
-//	if (Jmol.evaluateVar(jmolApplet0,"firstPoint")){
-//		runJmolScriptwait("secondPoint = $sym_rotvector2[0]");
-//		if (Jmol.evaluateVar(jmolApplet0,"secondPoint")){
-//			return true 
-//		}
-//		else { 
-//			return false
-//		}
-//	}
-//	else {
-//		return false
-//	}
-//}
+
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
 	centerPoint = 	getValue("symCenterPoint") ;
@@ -272,5 +253,24 @@ function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 		}
 	}
 }
+
+//Additional functions: yet unused 
+
+//checks to see if there is a symmetry axis currently drawn
+//function hasAxis(symop){
+//	runJmolScriptWait("firstPoint = $sym_rotvector1[0]");
+//	if (Jmol.evaluateVar(jmolApplet0,"firstPoint")){
+//		runJmolScriptwait("secondPoint = $sym_rotvector2[0]");
+//		if (Jmol.evaluateVar(jmolApplet0,"secondPoint")){
+//			return true 
+//		}
+//		else { 
+//			return false
+//		}
+//	}
+//	else {
+//		return false
+//	}
+//}
 
 
