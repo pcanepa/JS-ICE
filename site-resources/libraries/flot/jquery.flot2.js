@@ -21,7 +21,7 @@
   modified for Jmol by Bob Hanson ("bh", below)
 
 
- BH 11/7/2018  adds invert option for x axis. 
+ BH 11/7/2018  adds invert option for x axis, series.antialiased  
 
 	*/
 
@@ -125,7 +125,8 @@
                     hoverMode: "xy", // or "x" or "y" //[[[BH]]]]
                     color: "#e8cfac"
                 },
-                shadowSize: 4
+                shadowSize: 0,       // bh 2018 was 4
+                antialiased: false   // bh 2018
             },
         canvas = null,      // the canvas for the plot itself
         overlay = null,     // canvas for interactive stuff on top of plot
@@ -1120,7 +1121,11 @@
             function plotLine(data, offset, axisx, axisy) {
                 var prev, cur = null, drawx = null, drawy = null;
                 
+                if (series.antialiased)  // bh 2018
+                	ctx.translate(0.5,0.5);
                 ctx.beginPath();
+                ctx.lineWidth = series.lines.lineWidth || series.lineWidth || 1;  // bh 2018
+                
                 for (var i = 0; i < data.length; ++i) {
                     prev = cur;
                     cur = data[i];
@@ -1196,6 +1201,8 @@
                     ctx.lineTo(drawx, drawy);
                 }
                 ctx.stroke();
+                if (series.antialiased)   // bh 2018
+                	ctx.translate(-0.5,-0.5);
             }
 
             function plotLineArea(data, axisx, axisy) {

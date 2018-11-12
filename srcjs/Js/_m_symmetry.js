@@ -2,12 +2,12 @@
 
 function enterSymmetry() {
 	if (! _fileData.symmetryOperationList){
-	 	var symopSelection = createSelect('addSymSymop', 'setSymop(value)', 0, 1, createSymopSet());
+	 	var symopSelection = createSelect('addSymSymop', 'setSymop(value);displaySymmetryDrawObjects(value)', 0, 1, createSymopSet());
 		 _fileData.symmetryOperationList = createSymopSet();
 		 getbyID("symmetryOperationSet").innerHTML = symopSelection;
 		 getSymInfo();
 	}
-	var activateSymmetry = createButton("activateSymmetryButton", "Activate applied symmetry:", 'appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop)', 0);
+	var activateSymmetry = createButton("activateSymmetryButton", "Activate applied symmetry:", 'appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop,getValue("symIterations"))', 0);
 	getbyID("activateSymmetryDiv").innerHTML = activateSymmetry; 
 }	
 
@@ -191,13 +191,13 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</td></tr></table> \n";
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += createCheck("symLock", "Lock Added Atoms to Symmetry Operation?",
-			0, 0, 0, 0);
+	//strSymmetry += createCheck("symLock", "Lock Added Atoms to Symmetry Operation?",
+//			0, 0, 0, 0);
 	strSymmetry += "</td></tr>\n";	
 	strSymmetry += "<BR>\n"; 
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += createCheck("copyOpaque", "Make atom copies opaque?",
-			0, 0, 0, 0);
+//	strSymmetry += createCheck("copyOpaque", "Make atom copies opaque?",
+//			0, 0, 0, 0);
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n"; 
 	strSymmetry += "<tr><td>\n";
@@ -218,34 +218,57 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-//	strSymmetry += "<div id='activateSymmetryDiv'></div>;
+	strSymmetry += "<input type='text'  name='symCenterPoint' id='symCenterPoint' size='10' class='text'>";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "Symmetry Iterations:"; 
+	strSymmetry += "<input type='text'  name='symIterations' id='symIterations' size='2' class='text'>";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "<div id='activateSymmetryDiv'></div>";
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "</form>\n";
 	return strSymmetry;
 }
+//checks to see if there is a symmetry axis currently drawn
+//function hasAxis(symop){
+//	runJmolScriptWait("firstPoint = $sym_rotvector1[0]");
+//	if (Jmol.evaluateVar(jmolApplet0,"firstPoint")){
+//		runJmolScriptwait("secondPoint = $sym_rotvector2[0]");
+//		if (Jmol.evaluateVar(jmolApplet0,"secondPoint")){
+//			return true 
+//		}
+//		else { 
+//			return false
+//		}
+//	}
+//	else {
+//		return false
+//	}
+//}
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
-function displaySymmetryDrawObjects(symopNumber){
-	symopNameArray = readSymmetryVectors();
-	if (symopNameArray[i].includes("identity")){
-		runJmolScriptWait("draw symop @"+symNumber); 
+function displaySymmetryDrawObjects(symop){
+	centerPoint = 	getValue("symCenterPoint") ;
+	if (! centerPoint){
+		centerPoint= "{0 0 0}"; 
 	}
-	else if (symopNameArray[i].includes("axis")){
-		//INSERT CODE HERE
-	}
-	else if (symopNameArray[i].includes("mirror")){
-		runJmolScriptWait("draw symop @"+symNumber) ;
-	}
+	runJmolScriptWait("draw symop '"+symop+"' "+centerPoint); 
+//	if(hasAxis(symop)){
+//		runJmolScriptWait("select *;color opaque;draw sym_* delete");
+//		runJmolScriptWait("drawCleanSymmetryAxisVectors('"+symop+"', 3)");
+//	}
 } 
-function appendSymmetricAtoms(elementName,point,symopSelected){
+function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 	if (elementName == ""){
 		console.log("ERROR: empty inputs");
 	}
 	else {
-		iterations = 1 ;
 		newAtomArray = Jmol.evaluateVar(jmolApplet0,"getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
 		numberOfNewAtoms = newAtomArray.length; 
 		for (i = 1; i <= numberOfNewAtoms; i++){
-			runJmolScriptWait("appendNewAtom('"+elementName+"', "+newAtomArray[i]+")"); //this is a jmol script in functions.spt
+			runJmolScriptWait("appendNewAtom('"+elementName+"', {"+newAtomArray[i-1]+"})"); //this is a jmol script in functions.spt
 		}
 	}
 }
