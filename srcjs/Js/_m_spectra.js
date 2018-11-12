@@ -451,20 +451,22 @@ function showFreqGraph(specData, specMinX, specMaxX) {
 		if (B.length)
 			raman[pt] = [i, B[i], model[i]];		
 	}
-	var cursor= [];
-	for(var i= 1; specData.freqs.length < i-n; i++){
-		var specfreqs= specData.freqs[i];
-		cursor = [[specfreqs[i],maxY*0.9],[specfreqs[i], maxY]];
-	}
-	
+
+	var cursor = [[1000, maxY*0.9], [1000, maxY]];
+	var data = [];
 	if (A.length && B.length) {
-		theplot = $.plot($("#plotareafreq"), [{label:"IR", data:ir}, {label:"Raman", data: raman}, {data: cursor, color:"red", linewidth:0.1}], options)
+		data.push({label:"IR", data:ir});
+		data.push({label:"Raman", data: raman});
 	} else if (A.length) {
-		theplot = $.plot($("#plotareafreq"), [{data: ir}, {data: cursor}], options)
+		data.push({label:"IR", data:ir});
 	} else if (B.length) {
-		theplot = $.plot($("#plotareafreq"), [{data: raman}, {data: cursor}], options)
+		data.push({label:"Raman", data: raman});
 	}
-	
+	for(var i= 0; specData.freqs.length > i; i++){
+		var specfreq= specData.freqs[i];
+		data.push({data: [[specfreq, maxY*0.9],[specfreq, maxY]], color:"red", lineWidth: 0.1});
+	}
+	$.plot($("#plotareafreq"), data, options);
 	_specData.previousPointFreq = -1;
 	
 	$("#plotareafreq").unbind("plothover plotclick", null)
