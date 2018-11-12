@@ -81,6 +81,7 @@ function getSymmetricAtomArray(symopSelected,pointt,iterations){
 //
 //p1 = $draw_object_name[0]  ; p2 = $draw_object_name[1]
 function drawCleanSymmetryAxisVectors(symOperation, axisFactor){
+	draw symAxis* off 
 	draw symop @symOperation
 	point1 = $sym_rotvector1[0]
 	point2 = $sym_rotvector1[1]
@@ -89,9 +90,8 @@ function drawCleanSymmetryAxisVectors(symOperation, axisFactor){
 	point1 = point1*axisFactor
 	point3 = point3*axisFactor
 	draw s* off 
-	//need to draw two vectors at same time
-	draw vector @point2 @point1 
-	draw vector @point4 @point3
+	draw ID "symAxis1" vector @point2 @point1 
+	draw ID "symAxis2" vector @point4 @point3
 } 
 
 function appendNewAtom(elementName, point) {

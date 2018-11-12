@@ -2,7 +2,7 @@
 
 function enterSymmetry() {
 	if (! _fileData.symmetryOperationList){
-	 	var symopSelection = createSelect('addSymSymop', 'setSymop(value)', 0, 1, createSymopSet());
+	 	var symopSelection = createSelect('addSymSymop', 'setSymop(value);displaySymmetryDrawObjects(value)', 0, 1, createSymopSet());
 		 _fileData.symmetryOperationList = createSymopSet();
 		 getbyID("symmetryOperationSet").innerHTML = symopSelection;
 		 getSymInfo();
@@ -218,6 +218,11 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
+	strSymmetry += "<input type='text'  name='symCenterPoint' id='symCenterPoint' size='10' class='text'>";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "Symmetry Iterations:"; 
 	strSymmetry += "<input type='text'  name='symIterations' id='symIterations' size='2' class='text'>";
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
@@ -227,17 +232,32 @@ function createSymmetryGrp() {
 	strSymmetry += "</form>\n";
 	return strSymmetry;
 }
+//checks to see if there is a symmetry axis currently drawn
+function hasAxis(symop){
+	runJmolScriptWait("firstPoint = $sym_rotvector1[0]");
+	if (Jmol.evaluateVar("firstPoint")){
+		runJmolScriptwait("secondPoint = $sym_rotvector2[0]");
+		if (Jmol.evaluateVar("secondPoint")){
+			return true 
+		}
+		else { 
+			return false
+		}
+	}
+	else {
+		return false
+	}
+}
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
-	symopNameArray = readSymmetryVectors();
-	if (symopNameArray[i].includes("identity")){
-		runJmolScriptWait("draw symop @"+symop); 
+	centerPoint = 	getValue("symCenterPoint") ;
+	if (! centerPoint){
+		centerPoint= "{0 0 0}"; 
 	}
-	else if (symopNameArray[i].includes("axis")){
+	runJmolScriptWait("draw symop '"+symop+"' "+centerPoint); 
+	if(hasAxis(symop)){
+		runJmolScriptWait("select *;color opaque;draw sym_* delete");
 		runJmolScriptWait("drawCleanSymmetryAxisVectors('"+symop+"', 3)");
-	}
-	else if (symopNameArray[i].includes("mirror")){
-		runJmolScriptWait("draw symop @"+symop) ;
 	}
 } 
 function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
