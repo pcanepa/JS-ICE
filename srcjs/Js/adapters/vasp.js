@@ -80,16 +80,16 @@ function exportVASP() {
 	saveStateAndOrientation_a();
 	// This if the file come from crystal output
 
-	var kindCoord = null;
+	var _measure.kindCoord = null;
 	var fractString = null;
 	var exportType = confirm("Would you like to export the structure in fractional coordinates? \n If you press Cancel those will be exported as normal Cartesian.");
 
 	if (exportType) {
-		kindCoord = "Direct"
+		_measure.kindCoord = "Direct"
 			fractString = "[fxyz]";
 		fractionalCoord = true;
 	} else {
-		kindCoord = "Cartesian"
+		_measure.kindCoord = "Cartesian"
 			fractString = "[xyz]";
 		fractionalCoord = false;
 	}
@@ -119,7 +119,7 @@ function exportVASP() {
 		+ "];"// imp
 		+ 'var listAtom  = listInpcar.join("  ");'
 		+ 'var cartString = "'
-		+ kindCoord
+		+ _measure.kindCoord
 		+ '";' // imp
 		+ 'var xyzCoord = '
 		+ frameSelection
