@@ -455,11 +455,28 @@ function createFileGrp() { // Here the order is crucial
 	strFile += createSelectmenu('Export File', 'onChangeSave(value)', 0, 1,
 			elSOptionArr, elSOptionText);
 	strFile += "<p ><img src='images/j-ice.png' alt='logo'/></p>";
-	strFile += "<div style='margin-top:50px;'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
-	strFile += "<blockquote>\"J-ICE: a new Jmol interface for handling<br> and visualizing Crystallographic<br> and Electronics properties.<br>"
-	strFile += "P. Canepa, R.M. Hanson, P. Ugliengo, M. Alfredsson, <br>  J. Appl. Cryst. 44, 225 (2011). <a href='http://dx.doi.org/10.1107/S0021889810049411' target'blank'>[doi]</a> \"</blockquote> </p></div>";
+	strFile += "<div style='margin-top:50px;width:350px'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
+	strFile += createCitations();
+	strFile += "</p></div>";
 	strFile += "</form>\n";
 	return strFile;
 }
+
+ 	createCitations = function() {
+		var citations = _global.citations; 
+		var s = "";
+		for (var i = 0; i < citations.length; i++) {
+			var cite = citations[i];
+			s += "<blockquote><b>";
+			s += cite.title;
+			s += "</b><br>";
+			s += cite.authors.join(", ");
+			s += " <br>";  
+			s+= cite.journal;
+			s += " <a href='" + cite.link + "' target='_blank'>[doi]</a>";
+			s += "</blockquote>"; 
+		};
+		return s
+	}
 
 
