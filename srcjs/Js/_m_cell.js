@@ -1,6 +1,6 @@
 function enterCell() {
 	getUnitcell(frameValue);
-	getSymInfo();
+//	getSymInfo();
 }
 
 function exitCell() {
@@ -369,7 +369,7 @@ function createCellGrp() {
 	strCell += "<i>&#946;</i> " + createText2("betaCell", "", 7, 1);
 	strCell += "<i>&#947;</i> " + createText2("gammaCell", "", 7, 1)
 	+ " degrees <br><br>\n";
-	strCell += "Voulme cell " + createText2("volumeCell", "", 10, 1)
+	strCell += "Volume cell " + createText2("volumeCell", "", 10, 1)
 	+ "  &#197<sup>3</sup><br><br>";
 //	strCell += createButton('advanceCell', '+',
 //			'toggleDivValue(true,"advanceCellDiv",this)', '')
