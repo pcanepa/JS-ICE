@@ -34,7 +34,27 @@
 //	if (!appletPrintable)$("#appletdiv").addClass("noprint"); 
 //}
 
+function arrayMax(a) {
+		if (a.length == 0)
+			return 0;
+		var max = -1e9;
+		var len = a.length;
+		for (var i = a.length; --i >= 0;)
+			if (a[i] > max)
+				max = a[i];
+		return max;
+}
 
+function arrayMin(a) {
+	if (a.length == 0)
+		return 0;
+	var min = 1e9;
+	var len = a.length;
+	for (var i = a.length; --i >= 0;)
+		if (a[i] < min)
+			min = a[i];
+	return min;
+}
 
 function resetGraphs() {
 	haveGraphSpectra = false;

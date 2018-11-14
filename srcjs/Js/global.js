@@ -37,12 +37,6 @@ var firstTimeEdit = true;
 
 var radBondRange;
 
-// from _m_measure.js
-
-var kindCoord;
-var measureCoord = false;
-var unitMeasure = "";
-var mesCount = 0;
 
 // from _m_orient.js
 
@@ -123,3 +117,14 @@ var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,h
 
 // for citations:
 
+var _global = {
+	citations : [
+	   { title:				
+		'J-ICE: a new Jmol interface for handling and visualizing crystallographic and electronic properties' 
+		, authors: ['P. Canepa', 'R.M. Hanson', 'P. Ugliengo', '& M. Alfredsson']
+		, journal: 'J.Appl. Cryst. 44, 225 (2011)' 
+		, link: 'http://dx.doi.org/10.1107/S0021889810049411'
+	   }
+	   
+	 ]  
+};

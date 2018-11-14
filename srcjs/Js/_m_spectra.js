@@ -40,6 +40,24 @@ function enterSpectra() {
 		symmetryModeAdd();	
 		onClickModSpec(true);
 	}
+	$("#nMin").keypress(function(event) {
+	if (event.which == 13) {
+		event.preventDefault();
+		onClickModSpec();
+		}
+	});
+	$("#nMax").keypress(function(event) {
+	if (event.which == 13) {
+		event.preventDefault();
+		onClickModSpec();
+		}
+	});
+	$("#sigma").keypress(function(event) {
+	if (event.which == 13) {
+		event.preventDefault();
+		onClickModSpec();
+		}
+	});
 }
 
 function exitSpectra() {
@@ -105,6 +123,7 @@ function simSpectrum(isPageOpen) {
 			freqCount : _fileData.freqInfo.length,
 			minX      : 0,
 			maxX      : 4000,
+			maxY      : 100,
 			previousPointFreq : -1,
 			freqInfo  : [],
 			irInt     : [],
@@ -116,7 +135,8 @@ function simSpectrum(isPageOpen) {
 			specRaman : [],
 			model     : [],
 			freqs     : [],
-			ranges    : [] 
+			ranges    : [],
+			selectedfreq : [] 
 	};
 	setFrequencyList(specData);
 	switch (typeIRorRaman) {
@@ -152,7 +172,7 @@ function simSpectrum(isPageOpen) {
 		break;
 	}
 
-	showFreqGraph(specData);
+	showFreqGraph("plotareafreq", specData);
 }
 
 function setFrequencyList(specData) {
@@ -162,14 +182,18 @@ function setFrequencyList(specData) {
 			: specData.typeIRorRaman == "raman" ? "Ramanactivity" 
 			: null);
 
+	var maxY = 0;
 	for (var i = 0; i < specData.freqCount; i++) {
 		var label = null;
+		if (_fileData.freqIntens && _fileData.freqIntens[i] > maxY)
+			maxY = _fileData.freqIntens[i];
 		if ((vibLinesFromIrrep == null || (label = vibLinesFromIrrep[i]))
 			  && (prop == null || _fileData.freqInfo[i].modelProperties[prop] == "A")) {
 			specData.freqInfo.push(_fileData.freqInfo[i]);
 			addOption(vib, (label || i + " " + _fileData.freqInfo[i].name), _fileData.freqInfo[i].modelNumber);
 		}
 	}
+	specData.maxY = maxY;
 }
 
 function getVibLinesFromIrrep(specData) {
@@ -341,7 +365,7 @@ function createConvolvedSpectrum(specData, type) {
 
 	if (!isGaussian)
 		fscale *= 100;
-	
+	fscale *= 10;
 	// Gaussian Convolution
 	var cx = 4 * Math.LN2;
 	var ssa = sigma * sigma / cx;	
@@ -371,35 +395,20 @@ function createConvolvedSpectrum(specData, type) {
 	}
 }
 
-function showFreqGraph(specData, specMinX, specMaxX) {
-	if (specData) {
-		specMinX = specData.minX;
-		specMaxX = specData.maxX;
-	} else {
-		specData = opener._specData;
-	}
+function showFreqGraph(plotDiv, specData) {
+	specData || (specData = opener._specData);
+	var specMinX = specData.minX;
+	var specMaxX = specData.maxX;
+	var maxY = specData.maxY;
+	if (maxY == 0)
+		maxY = 200;
+	maxY *= 1.2;
+
+	var plotArea = $("#" + plotDiv);
 	getModelForSpec(specData);
 	var A = specData.specIR, B = specData.specRaman;	
 	var model = specData.model;
 	var nplots = (B && B.length && A && A.length ? 2 : 1);
-	var minY = 999999;
-	var maxY = 0;
-	for (var i = 0; i < A.length; i++) {
-		if (A[i] > maxY)
-			maxY = A[i];
-		if (A[i] < minY)
-			minY = A[i];
-	}
-	for (var i = 0; i < B.length; i++) {
-		if (B[i] > maxY)
-			maxY = B[i];	
-		if (B[i] < minY)
-			minY = B[i];
-	}
-	if (minY == maxY)
-		maxY = (maxY == 0 ? 200 : maxY * 2);
-	maxY *= 1.2;
-	
 	var options = {
       series:{
     	  	lines: { show: true, fill: false }
@@ -411,7 +420,7 @@ function showFreqGraph(specData, specMinX, specMaxX) {
     	  invert : specData.invertx,
     	  tickDecimals: 0 
       },
-      yaxis: { ticks: 0, tickDecimals: 0, min: -0.1, max: maxY },
+      yaxis: { ticks: 0, tickDecimals: 0, min: -0.01*maxY, max: maxY },
       selection: { 
     	  	mode: (nplots == 1 ? "x" : "xy"), 
     	  	hoverMode: (nplots == 1 ? "x" : "xy") 
@@ -432,19 +441,26 @@ function showFreqGraph(specData, specMinX, specMaxX) {
 		if (B.length)
 			raman[pt] = [i, B[i], model[i]];		
 	}
+
+	var cursor = [[1000, maxY*0.9], [1000, maxY]];
+	var data = [];
 	if (A.length && B.length) {
-		theplot = $.plot($("#plotareafreq"), [{label:"IR", data:ir}, {label:"Raman", data: raman}], options)
+		data.push({label:"IR", data:ir, color:"orange"});
+		data.push({label:"Raman", data: raman, color:"blue"});
 	} else if (A.length) {
-		theplot = $.plot($("#plotareafreq"), [{data: ir}], options)
+		data.push({label:"IR", data:ir, color:"orange"});
 	} else if (B.length) {
-		theplot = $.plot($("#plotareafreq"), [{data: raman}], options)
+		data.push({label:"Raman", data: raman, color:"blue"});
 	}
-	
+	for(var i= 0; specData.freqs.length > i; i++){
+		var specfreq= specData.freqs[i];
+		data.push({data: [[specfreq, maxY*0.9],[specfreq, maxY]], color:"red", lineWidth:1});
+	}
+	plotArea.unbind("plothover plotclick", null)
+	plotArea.bind("plothover", plotHoverCallbackFreq);
+	plotArea.bind("plotclick", plotClickCallbackFreq);
+	$.plot(plotArea, data, options);	
 	_specData.previousPointFreq = -1;
-	
-	$("#plotareafreq").unbind("plothover plotclick", null)
-	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
-	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
 }
 
 function plotClickCallbackFreq(event, pos, itemFreq) {
@@ -646,7 +662,7 @@ function createFreqGrp() {
 			strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeypress='onClickModSpec()' CLASS='select' >";
 			strFreq += "</select> ";
 			strFreq += "<BR>\n";
-			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
+			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' onkeyup='onClickSelectVib(value)' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
 		strFreq += "</td>"; // end of the first column
 		strFreq += "<td valign='bottom'>";
 		strFreq +="<BR>\n" + "<BR>\n";
