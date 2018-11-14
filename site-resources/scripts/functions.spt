@@ -105,12 +105,12 @@ function getSymmetryAtomArrayAllSymops(point){
 	symopArray = readSymmetryVectors()
 	symAtomArrayAllSymops = []
 	numberSymops = symopArray.length
-	for (i = 1;i <= numberSymops; i++){
+	for (var i = 1;i <= numberSymops; i++){
 		currentSymop = symopArray[i]
 		symmetryAppliedPoint = all.symop(currentSymop,point)
 		symAtomArrayAllSymops[i] = symmetryAppliedPoint
 	}
-	return symmetryAtomArrayAllSymops
+	return symAtomArrayAllSymops
 }
 
 

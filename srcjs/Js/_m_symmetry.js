@@ -6,15 +6,24 @@ function enterSymmetry() {
 		 getbyID("symmetryOperationSet").innerHTML = symopSelection;
 	}
 	var activateSymmetry = createButton("activateSymmetryButton", "Activate applied symmetry:", 'doActivateSymmetry()', 0);
-	getbyID("activateSymmetryDiv").innerHTML = activateSymmetry; 
+	getbyID("activateSymmetryDiv").innerHTML = activateSymmetry;
+	var activateAllSymmetry = createButton("activateAllSymmetryButton", "Activate all symmetry:", 'doActivateAllSymmetry()', 0); 
+	getbyID("activateAllSymmetryDiv").innerHTML = activateAllSymmetry;
 }	
 
 function exitSymmetry() {
 }
 
+//this appends new atoms by chosen symop
 function doActivateSymmetry(){
 	appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop,getValue("symIterations"));
 }
+
+//this only shows every point for a given point for all symops 
+function doActivateAllSymmetry(){
+	drawAllSymmetricPoints(getValue("initPoint"));
+}
+
 function doSymopSelection(symop){
 	setSymop(symop);
 	displaySymmetryDrawObjects(symop);
@@ -97,18 +106,22 @@ function createSymmetryGrp() {
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += "<div id='activateSymmetryDiv'></div>";
 	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "<div id='activateAllSymmetryDiv'></div>";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
 	strSymmetry += "</form>\n";
 	strSymmetry += "set opacity:<select id=selopacity2 onchange=setOpacity() onkeypress=\"setTimeout('setOpacity()',50)\"  class='select'>"
 			+ "<option value=0.2 selected>20%</option>"
 			+ "<option value=0.4>40%</option>"
 			+ "<option value=0.6>60%</option>"
 			+ "<option value=1.0>100%</option>" + "</select>";
-	return strSymmetry;
+	return strSymmetry
 }
 
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
-	centerPoint = 	getValue("symCenterPoint") ;
+	var centerPoint = 	getValue("symCenterPoint") ;
 	if (! centerPoint){
 		centerPoint= "{0 0 0}"; 
 	}
@@ -126,13 +139,18 @@ function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 		console.log("ERROR: empty symmetry operation");
 	}
 	else {
-		newAtomArray = Jmol.evaluateVar(jmolApplet0,"getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
-		numberOfNewAtoms = newAtomArray.length; 
+		var newAtomArray = Jmol.evaluateVar(jmolApplet0,"getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
+		var numberOfNewAtoms = newAtomArray.length; 
 		for (i = 1; i <= numberOfNewAtoms; i++){
 			runJmolScriptWait("appendNewAtom('"+elementName+"', {"+newAtomArray[i-1]+"})"); //this is a jmol script in functions.spt
 		}
 	}
-
+}
+function drawAllSymmetricPoints(point){
+	var pointValue = point;
+	runJmolScriptWait("allSymPoints = getSymmetryAtomArrayAllSymops("+pointValue+")");
+	runJmolScriptWait("draw points @allSymPoints");
+}
 
 //Additional functions: yet unused 
 
@@ -163,6 +181,6 @@ function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 //		runJmolScriptWait("select *;color opaque;draw sym_* delete");
 //		runJmolScriptWait("drawCleanSymmetryAxisVectors('"+symop+"', 3)");
 //	}
-} 
+//} 
 
 
