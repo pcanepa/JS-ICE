@@ -139,7 +139,9 @@ function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 		console.log("ERROR: empty symmetry operation");
 	}
 	else {
+		point = point-getValue("symCenterPoint");
 		var newAtomArray = Jmol.evaluateVar(jmolApplet0,"getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
+		newAtomArray = newAtomArray+getValue("symCenterPoint");
 		var numberOfNewAtoms = newAtomArray.length; 
 		for (i = 1; i <= numberOfNewAtoms; i++){
 			runJmolScriptWait("appendNewAtom('"+elementName+"', {"+newAtomArray[i-1]+"})"); //this is a jmol script in functions.spt
@@ -148,7 +150,11 @@ function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 }
 function drawAllSymmetricPoints(point){
 	var pointValue = point;
+	if (getValue("symCenterPoint")){
+		var pointValue = pointValue-getValue("symCenterPoint")
+	}
 	runJmolScriptWait("allSymPoints = getSymmetryAtomArrayAllSymops("+pointValue+")");
+	runJmolScriptWait("allSymPoints = allSymPoints"+getValue('symCenterPoint'));
 	runJmolScriptWait("draw points @allSymPoints");
 }
 
