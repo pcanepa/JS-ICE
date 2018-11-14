@@ -141,10 +141,10 @@ function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 	else {
 		point = point-getValue("symCenterPoint");
 		var newAtomArray = Jmol.evaluateVar(jmolApplet0,"getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
-		newAtomArray = newAtomArray+getValue("symCenterPoint");
 		var numberOfNewAtoms = newAtomArray.length; 
 		for (i = 1; i <= numberOfNewAtoms; i++){
-			runJmolScriptWait("appendNewAtom('"+elementName+"', {"+newAtomArray[i-1]+"})"); //this is a jmol script in functions.spt
+			recenteredPosition = newAtomArray[i-1]+getValue("symCenterPoint");
+			runJmolScriptWait("appendNewAtom('"+elementName+"', {"+recenteredPosition+"})"); //this is a jmol script in functions.spt
 		}
 	}
 }
