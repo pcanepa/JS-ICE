@@ -101,7 +101,7 @@ function setYMax() {
 	var specData = setUpSpecData("all", "any"); 
 	setFrequencyList(specData, false);
 	createSpectrum(specData);
-	 _fileData.spectraYMax = Math.max(arrayMax(specData.irInt), arrayMax(specData.ramanInt));
+	 _fileData.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
 }
 function onClickModSpec(isPageOpen, doSetYMax) {
 	if (_fileData.freqData.length == 0) {
@@ -369,11 +369,7 @@ function createConvolvedSpectrum(specData, type) {
 	var maxInt = specData.maxInt;
 
 	var allZero = (maxValue(spec) == 0);
-	var fscale = (specData.rescale && !allZero ? 100 * 0.3 / maxInt : 1);
 
-	if (!isGaussian)
-		fscale *= 100;
-	fscale *= 10;
 	// Gaussian Convolution
 	var cx = 4 * Math.LN2;
 	var ssa = sigma * sigma / cx;	
@@ -383,7 +379,7 @@ function createConvolvedSpectrum(specData, type) {
 	var ssc = xgamma * 0.5 / Math.PI;
 	var ssd = (xgamma * 0.5) * (xgamma * 0.5);
 	
-	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI)) * fscale;
+	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI));
 
 	var freq = (type == "ir" ? irFreq : ramanFreq);
 	var int = (type == "ir" ? irInt : ramanInt);
@@ -395,7 +391,7 @@ function createConvolvedSpectrum(specData, type) {
 			if (!freq[k]) 
 				continue;
 			int[k] || (int[k] = 0);
-			v = (allZero ? maxInt / 4 : int[k]);
+			v = (allZero ? 100 : int[k]);
 			var xnn = i - freq[k];
 			sp += (isGaussian ? Math.exp(-xnn * xnn / ssa) : ssc / (xnn * xnn + ssd)) * v * sb;
 		}
@@ -428,7 +424,7 @@ function showFreqGraph(plotDiv, specData) {
     	  invert : specData.invertx,
     	  tickDecimals: 0 
       },
-      yaxis: { ticks: 0, tickDecimals: 0, min: -0.01*maxY, max: maxY },
+      yaxis: { ticks: 0, tickDecimals: 0, min: -0.05*maxY, max: maxY },
       selection: { 
     	  	mode: (nplots == 1 ? "x" : "xy"), 
     	  	hoverMode: (nplots == 1 ? "x" : "xy") 
