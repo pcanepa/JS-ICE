@@ -97,13 +97,21 @@ function drawCleanSymmetryAxisVectors(symOperation, axisFactor){
 function appendNewAtom(elementName, point) {
 	model last;
 	assign atom @elementName @point //appends new atom, connected to a base atom in original structure 
-// connect @{{*}[0]} delete
-//	var bondNumber =  getProperty("modelInfo.models[1].bondCount")
-//	var bondNumberString  = "[{"+bondNumber+"}]"
-//	assign bond @bondNumberString "0" //removes just-added bond--has unintended consequences 
+
 } 
-// takes a given point and add the elements provided to it by a symmetry operation
-// symmetry operations with multiple outputs (e.g. C3) will produce multiple symmetry atoms 
+
+function getSymmetryAtomArrayAllSymops(point){
+	getProperty spacegroupInfo.symmetryInfo
+	symopArray = readSymmetryVectors()
+	symAtomArrayAllSymops = []
+	numberSymops = symopArray.length
+	for (i = 1;i <= numberSymops; i++){
+		currentSymop = symopArray[i]
+		symmetryAppliedPoint = all.symop(currentSymop,point)
+		symAtomArrayAllSymops[i] = symmetryAppliedPoint
+	}
+	return symmetryAtomArrayAllSymops
+}
 
 
 //IDEA: constraint menu? 

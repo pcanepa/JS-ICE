@@ -114,6 +114,10 @@ function displaySymmetryDrawObjects(symop){
 	}
 	runJmolScriptWait("draw symop '"+symop+"' "+centerPoint); 
 } 
+
+// takes a given point and add the elements provided to it by a symmetry operation
+// symmetry operations with multiple outputs (e.g. C3) will produce multiple symmetry atoms 
+
 function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 	if (elementName == ""){
 		console.log("ERROR: empty element name");
