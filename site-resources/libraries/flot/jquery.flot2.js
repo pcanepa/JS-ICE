@@ -903,7 +903,25 @@
             
             return { from: from, to: to, axis: axis };
         }
-        
+
+        var drawLine = function(xrange, yrange, ctxstyle) {
+//            if (xrange.from == xrange.to || yrange.from == yrange.to) {
+//                // draw line
+//                ctx.strokeStyle = ctxstyle;
+//                ctx.lineWidth = m.lineWidth || options.grid.markingsLineWidth;
+//                ctx.moveTo(Math.floor(xrange.from), Math.floor(yrange.from));
+//                ctx.lineTo(Math.floor(xrange.to), Math.floor(yrange.to));
+//                ctx.stroke();
+//            }
+//            else {
+                // fill area
+                ctx.fillStyle = ctxstyle;
+                ctx.fillRect(Math.floor(xrange.from),
+                             Math.floor(yrange.to),
+                             Math.floor(xrange.to - xrange.from),
+                             Math.floor(yrange.from - yrange.to));
+//            }
+        }
         function drawGrid() {
             var i;
             
@@ -957,23 +975,7 @@
                     xrange.to = xrange.axis.p2c(xrange.to);
                     yrange.from = yrange.axis.p2c(yrange.from);
                     yrange.to = yrange.axis.p2c(yrange.to);
-                    
-                    if (xrange.from == xrange.to || yrange.from == yrange.to) {
-                        // draw line
-                        ctx.strokeStyle = m.color || options.grid.markingsColor;
-                        ctx.lineWidth = m.lineWidth || options.grid.markingsLineWidth;
-                        ctx.moveTo(Math.floor(xrange.from), Math.floor(yrange.from));
-                        ctx.lineTo(Math.floor(xrange.to), Math.floor(yrange.to));
-                        ctx.stroke();
-                    }
-                    else {
-                        // fill area
-                        ctx.fillStyle = m.color || options.grid.markingsColor;
-                        ctx.fillRect(Math.floor(xrange.from),
-                                     Math.floor(yrange.to),
-                                     Math.floor(xrange.to - xrange.from),
-                                     Math.floor(yrange.from - yrange.to));
-                    }
+                    drawLine(xrange, yrange, m.color || options.grid.markingsColor);
                 }
             }
             
@@ -1125,7 +1127,7 @@
                 	ctx.translate(0.5,0.5);
                 ctx.beginPath();
                 ctx.lineWidth = series.lines.lineWidth || series.lineWidth || 1;  // bh 2018
-                
+                ctx.lineWidth = 1;
                 for (var i = 0; i < data.length; ++i) {
                     prev = cur;
                     cur = data[i];
