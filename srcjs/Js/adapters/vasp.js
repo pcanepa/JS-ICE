@@ -80,7 +80,7 @@ function exportVASP() {
 	saveStateAndOrientation_a();
 	// This if the file come from crystal output
 
-	var _measure.kindCoord = null;
+	_measure.kindCoord = null;
 	var fractString = null;
 	var exportType = confirm("Would you like to export the structure in fractional coordinates? \n If you press Cancel those will be exported as normal Cartesian.");
 
