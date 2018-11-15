@@ -17,7 +17,7 @@ var prevframeSelection = null;
 var prevFrame = null;
 
 // from _m_build.js
-var counterClicZ = 0;
+var _build.counterClicZ = 0;
 
 var distanceZ, angleZ, torsionalZ
 var arrayAtomZ = new Array(3);

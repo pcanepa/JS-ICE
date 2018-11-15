@@ -1674,11 +1674,11 @@ function loadScriptZMatrix() {
 			+ 'rotate Selected molecular @b @a @tor @newAtom \n' + '}');
 }
 
-var counterClicZ = 0;
+var _build.counterClicZ = 0;
 function selectElementZmatrix(form) {
 
 	if (form.checked) {
-		counterClicZ = 0;
+		_build.counterClicZ = 0;
 		for ( var i = 0; i < 3; i++) {
 
 			if (i == 0) {
@@ -1686,9 +1686,9 @@ function selectElementZmatrix(form) {
 				messageMsg("Select the 1st atom where to attach the new atom.");
 			}
 
-			if (counterClicZ == 1) {
+			if (_build.counterClicZ == 1) {
 				messageMsg("Select the 2nd atom to form the angle.");
-			} else if (counterClicZ == 2) {
+			} else if (_build.counterClicZ == 2) {
 				messageMsg("Select the 3rd atom to form the torsional angle.");
 			}
 			setV("draw off; showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on; set PickCallback 'pickZmatrixCallback'");
@@ -1699,7 +1699,7 @@ function selectElementZmatrix(form) {
 var distanceZ, angleZ, torsionalZ
 var arrayAtomZ = new Array(3);
 function pickZmatrixCallback(a, b, c, d, e) {
-	if (counterClicZ == 0) { // distance
+	if (_build.counterClicZ == 0) { // distance
 		var valuedist = prompt(
 				"Now enter the distance (in \305) from which you want to add the new atom. \n Seletion is done by symply clikking ont the desire atom",
 		"1.0");
@@ -1708,7 +1708,7 @@ function pickZmatrixCallback(a, b, c, d, e) {
 				b.indexOf('.') - 2));
 
 	}
-	if (counterClicZ == 1) { // angle
+	if (_build.counterClicZ == 1) { // angle
 
 		var valueangle = prompt(
 				"Now the enter the angle (in degrees) formed between the new atom, the 1st and the 2nd ones. \n Seletion is done by symply clikking ont the desire atoms",
@@ -1718,7 +1718,7 @@ function pickZmatrixCallback(a, b, c, d, e) {
 				b.indexOf('.') - 2));
 
 	}
-	if (counterClicZ == 2) {// torsional
+	if (_build.counterClicZ == 2) {// torsional
 
 		var valuetorsion = prompt(
 				"Enter the torsional angle(in degrees) formed between the new atom, the 1st, the 2nd and the 3rd ones. \n Seletion is done by symply clikking ont the desire atoms",
@@ -1728,7 +1728,7 @@ function pickZmatrixCallback(a, b, c, d, e) {
 		arrayAtomZ[2] = parseInt(b.substring(b.indexOf('#') + 1,
 				b.indexOf('.') - 2));
 	}
-	counterClicZ++;
+	_build.counterClicZ++;
 }
 
 function elementZcallback(a, m) {
