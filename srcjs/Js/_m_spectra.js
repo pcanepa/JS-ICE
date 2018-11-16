@@ -112,7 +112,7 @@ function onClickModSpec(isPageOpen, doSetYMax) {
 	}
 	if (isPageOpen) {
 		checkBox("radVibrationOff");
-		uncheckBox("vectors");
+		uncheckBox("vectorsON");
 	}
 	var typeIRorRaman = getRadioSetValue(document.modelsVib.modSpec);
 	var irrep = getValueSel('sym');		
@@ -601,22 +601,13 @@ function unique(a) {
 	return r;
 }
 
-
-function setVibrationOn(isON) {
-	if (isON)
-		checkBox("radVibrationOn");
-	else
-		checkBox("radVibrationOff");
-	updateJmolForFreqParams();
-}
-
 function onClickFreqParams() {
 	updateJmolForFreqParams();
 }
 
 function updateJmolForFreqParams() {
 	var c = jmolColorPickerBoxes["vectorColorPicker"].getJmolColor();
-	var vectorsON = isChecked("vectors");
+	var vectorsON = isChecked("vectorsON");
 	var script = "vibration " + isChecked("radVibrationOn")
 					+ ";vectors " + vectorsON
 					+ ";" + getValueSel("vecsamplitude")
@@ -671,16 +662,18 @@ function createFreqGrp() {
 			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' onkeyup='onClickSelectVib(value)' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
 		strFreq += "</td>"; // end of the first column
 		strFreq += "<td valign='bottom'>";
-		strFreq +="<BR>\n" + "<BR>\n";
+		strFreq += "<BR>\n" + "<BR>\n";
 			strFreq += "vibration ";
 			strFreq += createRadio("vibration", "on", 'onClickFreqParams()', 0, 1, "radVibrationOn", "on");
 			strFreq += createRadio("vibration", "off", 'onClickFreqParams()', 0, 0, "radVibrationOff", "off");
 			strFreq += "<BR>\n";
+			strFreq += "view vectors ";
+			strFreq += createRadio("vectors", "on", 'onClickFreqParams()', 0, 1, "vectorsON", "on");
+			strFreq += createRadio("vectors", "off", 'onClickFreqParams()', 0,0, "vectorsOFF", "off");
+			strFreq += "<BR>\n";
 			strFreq += createSelect("vecsamplitude", "onClickFreqParams()", 0, 1,
 					vibAmplitudeValue, vibAmplitudeText,[0,1])
 					+ " vib. amplitude"; 
-			strFreq += "<BR>\n";
-			strFreq += createCheck("vectors", "view vectors", "onClickFreqParams()", 0, 1, "vectors");
 			strFreq += "<BR>\n";
 			strFreq += createSelect("vecscale", "onClickFreqParams()", 0, 1, vecscaleValue, vecscaleText, [0,0,1]) + " vector scale"; 																									// scale
 			strFreq += "<BR>\n";
