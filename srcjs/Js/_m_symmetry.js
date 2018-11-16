@@ -94,11 +94,6 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += "Symmetry Operation Origin:";
-	strSymmetry += "<input type='text'  name='symCenterPoint' id='symCenterPoint' size='10' class='text'>";
-	strSymmetry += "</td></tr>\n";
-	strSymmetry += "<BR>\n";
-	strSymmetry += "<tr><td>\n";
 	strSymmetry += "Symmetry Iterations:"; 
 	strSymmetry += "<input type='text'  name='symIterations' id='symIterations' size='2' class='text'>";
 	strSymmetry += "</td></tr>\n";
@@ -121,11 +116,7 @@ function createSymmetryGrp() {
 
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
-	var centerPoint = 	getValue("symCenterPoint") ;
-	if (! centerPoint){
-		centerPoint= "{0 0 0}"; 
-	}
-	runJmolScriptWait("draw symop '"+symop+"' "+centerPoint); 
+	runJmolScriptWait("draw symop '"+symop+"' "); 
 } 
 
 // takes a given point and add the elements provided to it by a symmetry operation
@@ -139,22 +130,17 @@ function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 		console.log("ERROR: empty symmetry operation");
 	}
 	else {
-		point = point-getValue("symCenterPoint");
 		var newAtomArray = Jmol.evaluateVar(jmolApplet0,"getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
 		var numberOfNewAtoms = newAtomArray.length; 
 		for (i = 1; i <= numberOfNewAtoms; i++){
-			recenteredPosition = newAtomArray[i-1]+getValue("symCenterPoint");
-			runJmolScriptWait("appendNewAtom('"+elementName+"', {"+recenteredPosition+"})"); //this is a jmol script in functions.spt
+			runJmolScriptWait("appendNewAtom('"+elementName+"', "+newAtomArray[i-1]")"); //this is a jmol script in functions.spt
 		}
 	}
 }
 function drawAllSymmetricPoints(point){
 	var pointValue = point;
-	if (getValue("symCenterPoint")){
-		var pointValue = pointValue-getValue("symCenterPoint")
-	}
 	runJmolScriptWait("allSymPoints = getSymmetryAtomArrayAllSymops("+pointValue+")");
-	runJmolScriptWait("allSymPoints = allSymPoints"+getValue('symCenterPoint'));
+	runJmolScriptWait("allSymPoints = allSymPoints");
 	runJmolScriptWait("draw points @allSymPoints");
 }
 
