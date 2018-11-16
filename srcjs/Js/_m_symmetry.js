@@ -110,12 +110,12 @@ function createSymmetryGrp() {
 	strSymmetry += "<div id='activateAllSymmetryDiv'></div>";
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
-	strSymmetry += "</form>\n";
 	strSymmetry += "set opacity:<select id=selopacity2 onchange=setOpacity() onkeypress=\"setTimeout('setOpacity()',50)\"  class='select'>"
 			+ "<option value=0.2 selected>20%</option>"
 			+ "<option value=0.4>40%</option>"
 			+ "<option value=0.6>60%</option>"
 			+ "<option value=1.0>100%</option>" + "</select>";
+	strSymmetry += "</form>\n";
 	return strSymmetry
 }
 
