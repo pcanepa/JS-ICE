@@ -217,7 +217,7 @@ return;
 this.pointScale = (value).floatValue ();
 this.pointsPolyhedra (bs, this.pointScale);
 return;
-}if (propertyName === "deleteModelAtoms") {
+}if (propertyName === "_edit.deleteModelAtoms") {
 var modelIndex = ((value)[2])[0];
 for (var i = this.polyhedronCount; --i >= 0; ) {
 var p = this.polyhedrons[i];

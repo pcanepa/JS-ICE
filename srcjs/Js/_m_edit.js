@@ -1,3 +1,10 @@
+_edit = {
+	deleteMode : "",
+	hideMode : "",
+	displayMode : "",
+	firstTimeEdit : true,
+	radBondRange : ""
+}
 
 function enterEdit() {
 
@@ -6,13 +13,13 @@ function enterEdit() {
 	setRadiiConnectMessage(radiiConnectSlider.getValue());
 	
 	// BH 2018: Disabled -- unexpected behavior should not be on tab entry
-//	if (firstTimeEdit) {
+//	if (_edit.firstTimeEdit) {
 //		radiiConnectSlider.setValue(50);
 //		runJmolScriptWait("set forceAutoBond ON; set bondMode AND");
 //	}
 //	getbyID("radiiConnectMsg").innerHTML = " " + 2.5 + " &#197";
 //	setTimeout("runJmolScriptWait(\"restore BONDS bondEdit\");", 400);
-//	firstTimeEdit = false;
+//	_edit.firstTimeEdit = false;
 
 }
 
@@ -23,8 +30,8 @@ function showPickPlaneCallback() {
 	var distance = prompt('Enter the distance (in \305) within you want to select atoms. \n Positive values mean from the upper face on, negative ones the opposite.', '1');
 	if (distance != null && distance != "") {
 		runJmolScriptWait('select within(' + distance + ',plane,$plane1)');
-//		hideMode = " hide selected";
-//		deleteMode = " delete selected";
+//		_edit.hideMode = " hide selected";
+//		_edit.deleteMode = " delete selected";
 //		colorWhat = "color atoms";
 	}
 }
@@ -35,7 +42,7 @@ function setRadiiConnectMessage(r) {
 }
 
 function applyConnect(r) {
-	if (firstTimeEdit) {
+	if (_edit.firstTimeEdit) {
 //		runJmolScriptWait("connect (*) (*) DELETE; connect 2.0 (*) (*) single ModifyOrCreate;");
 	} else {
 		var flagBond = checkBoxX("allBondconnect");
@@ -62,12 +69,12 @@ function applyConnect(r) {
 }
 
 function deleteAtom() {
-	runJmolScriptWait(deleteMode);
+	runJmolScriptWait(_edit.deleteMode);
 	runJmolScriptWait('draw off');
 }
 
 function hideAtom() {
-	runJmolScriptWait(hideMode);
+	runJmolScriptWait(_edit.hideMode);
 	runJmolScriptWait('draw off');
 }
 
@@ -79,7 +86,7 @@ function connectAtom() {
 	}
 
 	if (radbondVal == "all") {
-		if (radBondRange == "just") {
+		if (_edit.radBondRange == "just") {
 			var bondRadFrom = getValue("radiuscoonectFrom");
 			if (bondRadFrom == "") {
 				errorMsg("Please, check values entered in the textboxes");
@@ -106,7 +113,7 @@ function connectAtom() {
 	} else if (radbondVal == "atom") {
 		var atomFrom = getValue("connectbyElementList");
 		var atomTo = getValue("connectbyElementListone");
-		if (radBondRange == "just") {
+		if (_edit.radBondRange == "just") {
 			var bondRadFrom = getValue("radiuscoonectFrom");
 			if (bondRadFrom == "") {
 				errorMsg("Please, check values entered in the textboxes");
@@ -141,7 +148,7 @@ function deleteBond() {
 	var styleBond = getValue("setBondFashion");
 
 	if (radbondVal == "all") {
-		if (radBondRange == "just") {
+		if (_edit.radBondRange == "just") {
 			var bondRadFrom = getValue("radiuscoonectFrom");
 			if (bondRadFrom == "") {
 				runJmolScriptWait("connect (all) (all)  DELETE;");
@@ -162,7 +169,7 @@ function deleteBond() {
 	} else if (radbondVal == "atom") {
 		var atomFrom = getValue("connectbyElementList");
 		var atomTo = getValue("connectbyElementListone");
-		if (radBondRange == "just") {
+		if (_edit.radBondRange == "just") {
 			var bondRadFrom = getValue("radiuscoonectFrom");
 			if (bondRadFrom == "") {
 				runJmolScriptWait("connect (" + atomFrom + ") (" + atomTo + ") DELETE;");
@@ -214,8 +221,8 @@ function checkBondStatus(radval) {
 }
 
 function checkWhithin(radVal) {
-	radBondRange = radVal;
-	if (radBondRange == "just") {
+	_edit.radBondRange = radVal;
+	if (_edit.radBondRange == "just") {
 		getbyID("radiuscoonectFrom").disabled = false;
 		getbyID("radiuscoonectTo").disabled = true;
 	} else {
@@ -236,20 +243,20 @@ function changeElement(value) {
 
 function elementSelectedDelete(element) {
 	selectElement(element);
-	deleteMode = "delete _" + element;
-	return deleteMode;
+	_edit.deleteMode = "delete _" + element;
+	return _edit.deleteMode;
 }
 
 function elementSelectedHide(element) {
 	selectElement(element);
-	hideMode = "hide _" + element;
-	return hideMode;
+	_edit.hideMode = "hide _" + element;
+	return _edit.hideMode;
 }
 
 //function elementSelectedDisplay(element) {
 //	selectElement(element);
-//	displayMode = "display _" + element;
-//	return displayMode;
+//	_edit.displayMode = "display _" + element;
+//	return _edit.displayMode;
 //}
 
 function selectElement(element) {
@@ -265,14 +272,14 @@ function selectAll() {
 //	selectAll();
 //	// BH: REALLY?
 //	runJmolScriptWait("select *; halos on; label on;");
-//	deleteMode = "select *; delete; select none ; halos off; draw off;";
-//	return deleteMode;
+//	_edit.deleteMode = "select *; delete; select none ; halos off; draw off;";
+//	return _edit.deleteMode;
 //}
 //
 //function selectAllHide() {
 //	runJmolScriptWait("select *; halos on; label on;");
-//	hideMode = "select *; hide selected; select none; halos off; draw off;";
-//	return hideMode;
+//	_edit.hideMode = "select *; hide selected; select none; halos off; draw off;";
+//	return _edit.hideMode;
 //}
 
 

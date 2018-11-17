@@ -21,22 +21,22 @@ function atomSelectedColor(atom) {
 
 function atomSelectedDelete(atom) {
 	runJmolScriptWait("select {atomno=" + atom + "};");
-	deleteMode = "delete {atomno=" + atom + "}";
-	return deleteMode;
+	_edit.deleteMode = "delete {atomno=" + atom + "}";
+	return _edit.deleteMode;
 }
 
 function atomSelectedHide(atom) {
 	runJmolScriptWait("select {atomno=" + atom + "};");
-	hideMode = "hide {atomno=" + atom + "}";
-	return hideMode;
+	_edit.hideMode = "hide {atomno=" + atom + "}";
+	return _edit.hideMode;
 }
 
 
 function atomSelectedDisplay(atom) {
 	runJmolScriptWait("select all; halo off; label off");
 	runJmolScriptWait("select {atomno=" + atom + "}; halo on; label on");
-	displayMode = "display {atomno=" + atom + "}";
-	return displayMode;
+	_edit.displayMode = "display {atomno=" + atom + "}";
+	return _edit.displayMode;
 }
 
 function addAtomfrac() {

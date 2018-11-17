@@ -24,16 +24,9 @@ var makeCrystalSpaceGroup = null;
 
 // from _m_cell.js
 
-var aCell, bCell, cCell, alpha, beta, gamma, typeSystem; 
+var aCell, bCell, cCell, alpha, beta, gamma, typeSystem
 
 // from _m_edit.js
-
-var deleteMode = "";
-var hideMode = "";
-var displayMode = "";
-var firstTimeEdit = true;
-
-var radBondRange;
 
 
 // from _m_orient.js

@@ -1346,13 +1346,13 @@ info.put ("firstModelIndex", Integer.$valueOf (am.firstFrameIndex));
 info.put ("lastModelIndex", Integer.$valueOf (am.lastFrameIndex));
 info.put ("animationDirection", Integer.$valueOf (am.animationDirection));
 info.put ("currentDirection", Integer.$valueOf (am.currentDirection));
-info.put ("displayModelIndex", Integer.$valueOf (am.cmi));
+info.put ("_edit.displayModelIndex", Integer.$valueOf (am.cmi));
 if (am.animationFrames != null) {
 info.put ("isMovie", Boolean.TRUE);
 info.put ("frames", JU.Escape.eAI (am.animationFrames));
 info.put ("currentAnimationFrame", Integer.$valueOf (am.caf));
-}info.put ("displayModelNumber", this.vwr.getModelNumberDotted (am.cmi));
-info.put ("displayModelName", (am.cmi >= 0 ? this.vwr.getModelName (am.cmi) : ""));
+}info.put ("_edit.displayModelNumber", this.vwr.getModelNumberDotted (am.cmi));
+info.put ("_edit.displayModelName", (am.cmi >= 0 ? this.vwr.getModelName (am.cmi) : ""));
 info.put ("animationFps", Integer.$valueOf (am.animationFps));
 info.put ("animationReplayMode", JS.T.nameOf (am.animationReplayMode));
 info.put ("firstFrameDelay", Float.$valueOf (am.firstFrameDelay));

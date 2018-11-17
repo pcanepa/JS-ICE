@@ -48,7 +48,7 @@ return;
 this.labelFormat = value;
 if (this.labelFormat != null && this.labelFormat.length == 0) this.labelFormat = null;
 return;
-}if (propertyName === "deleteModelAtoms") {
+}if (propertyName === "_edit.deleteModelAtoms") {
 if (this.atomFormats != null) {
 var firstAtomDeleted = ((value)[2])[1];
 var nAtomsDeleted = ((value)[2])[2];

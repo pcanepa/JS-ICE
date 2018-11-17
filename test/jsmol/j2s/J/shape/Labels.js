@@ -217,7 +217,7 @@ return;
 }if ("pymolLabels" === propertyName) {
 this.setPymolLabels (value, bsSelected);
 return;
-}if (propertyName === "deleteModelAtoms") {
+}if (propertyName === "_edit.deleteModelAtoms") {
 this.labelBoxes = null;
 var firstAtomDeleted = ((value)[2])[1];
 var nAtomsDeleted = ((value)[2])[2];

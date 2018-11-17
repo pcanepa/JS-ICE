@@ -765,12 +765,12 @@ function onChangeSave(save) {
 ///////////////
 
 function deleteAtom() {
-	setV(deleteMode);
+	setV(_edit.deleteMode);
 	setV('draw off');
 }
 
 function hideAtom() {
-	setV(hideMode);
+	setV(_edit.hideMode);
 	setV('draw off');
 }
 
@@ -782,7 +782,7 @@ function connectAtom() {
 	}
 
 	if (radbondVal == "all") {
-		if (radBondRange == "just") {
+		if (_edit.radBondRange == "just") {
 			var bondRadFrom = getValue("radiuscoonectFrom");
 			if (bondRadFrom == "") {
 				errorMsg("Please, check values entered in the textboxes");
@@ -809,7 +809,7 @@ function connectAtom() {
 	} else if (radbondVal == "atom") {
 		var atomFrom = getValue("connectbyElementList");
 		var atomTo = getValue("connectbyElementListone");
-		if (radBondRange == "just") {
+		if (_edit.radBondRange == "just") {
 			var bondRadFrom = getValue("radiuscoonectFrom");
 			if (bondRadFrom == "") {
 				errorMsg("Please, check values entered in the textboxes");
@@ -844,7 +844,7 @@ function deleteBond() {
 	var styleBond = getValue("setBondFashion");
 
 	if (radbondVal == "all") {
-		if (radBondRange == "just") {
+		if (_edit.radBondRange == "just") {
 			var bondRadFrom = getValue("radiuscoonectFrom");
 			if (bondRadFrom == "") {
 				setV("connect (all) (all)  DELETE;");
@@ -865,7 +865,7 @@ function deleteBond() {
 	} else if (radbondVal == "atom") {
 		var atomFrom = getValue("connectbyElementList");
 		var atomTo = getValue("connectbyElementListone");
-		if (radBondRange == "just") {
+		if (_edit.radBondRange == "just") {
 			var bondRadFrom = getValue("radiuscoonectFrom");
 			if (bondRadFrom == "") {
 				setV("connect (" + atomFrom + ") (" + atomTo + ") DELETE;");
@@ -917,10 +917,10 @@ function checkBondStatus(radval) {
 
 }
 
-var radBondRange;
+var _edit.radBondRange;
 function checkWhithin(radVal) {
-	radBondRange = radVal;
-	if (radBondRange == "just") {
+	_edit.radBondRange = radVal;
+	if (_edit.radBondRange == "just") {
 		getbyID("radiuscoonectFrom").disabled = false;
 		getbyID("radiuscoonectTo").disabled = true;
 	} else {
@@ -2013,9 +2013,9 @@ function cleanCreateCrystal() {
 ////////////////////FUNCTIONS TO DEAL WITH SELECTION
 /////////
 var atomColor = "";
-var deleteMode = "";
-var hideMode = "";
-var displayMode = "";
+var _edit.deleteMode = "";
+var _edit.hideMode = "";
+var _edit.displayMode = "";
 function elementSelected(element) {
 	// updateListElement();
 	setV("select all; halo off; label off");
@@ -2027,23 +2027,23 @@ function elementSelected(element) {
 function elementSelectedDelete(element) {
 	setV("select all; halo off; label off");
 	setV("select " + element + "; halo on; label on");
-	deleteMode = "delete " + element;
-	return deleteMode;
+	_edit.deleteMode = "delete " + element;
+	return _edit.deleteMode;
 }
 
 function elementSelectedHide(element) {
 	setV("select all; halo off; label off");
 	setV("select " + element + "; halo on; label on");
-	hideMode = "hide " + element;
-	return hideMode;
+	_edit.hideMode = "hide " + element;
+	return _edit.hideMode;
 }
 
 function elementSelectedDisplay(element) {
 	// updateListAtomApp();
 	setV("select all; halo off; label off");
 	setV("select " + element + "; halo on; label on");
-	displayMode = "display " + element;
-	return displayMode;
+	_edit.displayMode = "display " + element;
+	return _edit.displayMode;
 }
 
 function atomSelected(atom) {
@@ -2057,22 +2057,22 @@ function atomSelected(atom) {
 function atomSelectedDelete(atom) {
 	setV("select all; halo off; label off");
 	setV("select {atomno=" + atom + "}; halo on; label on");
-	deleteMode = "delete {atomno=" + atom + "}";
-	return deleteMode;
+	_edit.deleteMode = "delete {atomno=" + atom + "}";
+	return _edit.deleteMode;
 }
 
 function atomSelectedHide(atom) {
 	setV("select all; halo off; label off");
 	setV("select {atomno=" + atom + "}; halo on; label on");
-	hideMode = "hide {atomno=" + atom + "}";
-	return hideMode;
+	_edit.hideMode = "hide {atomno=" + atom + "}";
+	return _edit.hideMode;
 }
 
 function atomSelectedDisplay(atom) {
 	setV("select all; halo off; label off");
 	setV("select {atomno=" + atom + "}; halo on; label on");
-	displayMode = "display {atomno=" + atom + "}";
-	return displayMode;
+	_edit.displayMode = "display {atomno=" + atom + "}";
+	return _edit.displayMode;
 }
 
 function setPicking(form) {
@@ -2096,12 +2096,12 @@ function setPickingDelete(form) {
 			setV('set picking on; set picking LABEL; set picking SELECT atom; halos on; ');
 		} else {
 			setV('showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on;');
-			deleteMode = "delete selected";
+			_edit.deleteMode = "delete selected";
 		}
 	}
 	if (!form.checked)
 		setV('select none; halos off; label off;');
-	return deleteMode;
+	return _edit.deleteMode;
 }
 
 function setPickingHide(form) {
@@ -2117,11 +2117,11 @@ function setPickingHide(form) {
 		} else {
 			setV('showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on; ');
 		}
-		hideMode = " hide selected";
+		_edit.hideMode = " hide selected";
 	} else {
 		setV('select none; halos off; label off;');
 	}
-	return hideMode;
+	return _edit.hideMode;
 }
 
 /*
@@ -2228,8 +2228,8 @@ function pickPlanecallback(a, b, c, d, e) {
 				var distance = prompt('Now enter the distance (in \305) within you want to select atoms. \n Positive values mean from the upper face on, negative ones the opposite.');
 				if (distance != null && distance != "") {
 					setV('select within(' + distance + ',plane, $plane1)');
-					hideMode = " hide selected";
-					deleteMode = " delete selected";
+					_edit.hideMode = " hide selected";
+					_edit.deleteMode = " delete selected";
 					atomColor = "color atoms";
 					setV('set PickCallback OFF');
 					counterClick = false;
@@ -2273,8 +2273,8 @@ function pickDistancecallback(a, b, c, d, e) {
 			// messageMsg('If you don\'t want to remove/hide the atom used for
 			// the
 			// selection, unselect it by using the option: select by picking.')
-			hideMode = " hide selected";
-			deleteMode = " delete selected";
+			_edit.hideMode = " hide selected";
+			_edit.deleteMode = " delete selected";
 			atomColor = "color atoms";
 			setV("set PickCallback 'pickDistancecallback' OFF");
 			counterClick = false;
@@ -2293,14 +2293,14 @@ function selectAll() {
 
 function selectAllDelete() {
 	setV("select *; halos on; label on;");
-	deleteMode = "select *; delete; select none ; halos off; draw off;";
-	return deleteMode;
+	_edit.deleteMode = "select *; delete; select none ; halos off; draw off;";
+	return _edit.deleteMode;
 }
 
 function selectAllHide() {
 	setV("select *; halos on; label on;");
-	hideMode = "select *; hide selected; select none; halos off; draw off;";
-	return hideMode;
+	_edit.hideMode = "select *; hide selected; select none; halos off; draw off;";
+	return _edit.hideMode;
 }
 
 function setTextSize(value) {

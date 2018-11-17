@@ -18,12 +18,12 @@ function setPickingDelete(form) {
 			runJmolScriptWait('halos on; ');
 		} else {
 			runJmolScriptWait('showSelections TRUE; halos on;');
-			deleteMode = "delete selected";
+			_edit.deleteMode = "delete selected";
 		}
 	}
 	if (!form.checked)
 		runJmolScriptWait('select none; halos off;');
-	return deleteMode;
+	return _edit.deleteMode;
 }
 
 function setPickingHide(form) {
@@ -38,11 +38,11 @@ function setPickingHide(form) {
 		} else {
 			runJmolScriptWait('showSelections TRUE; select none; halos on; ');
 		}
-		hideMode = " hide selected";
+		_edit.hideMode = " hide selected";
 	} else {
 		runJmolScriptWait('select none; halos off; label off;');
 	}
-	return hideMode;
+	return _edit.hideMode;
 }
 
 
@@ -139,8 +139,8 @@ function pickDistanceCallback() {
 		var distance = prompt('Enter the distance (in \305) within you want to select atoms.', '2.0');
 		if (distance != null && distance != "") {
 			runJmolScriptWait('select within(' + distance + ',picked); draw sphere1 width ' + distance + '  {picked} translucent;');
-			hideMode = " hide selected";
-			deleteMode = " delete selected";
+			_edit.hideMode = " hide selected";
+			_edit.deleteMode = " delete selected";
 			colorWhat = "color atoms";
 			cancelPicking();
 			return true;
