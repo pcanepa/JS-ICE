@@ -27,16 +27,8 @@ var makeCrystalSpaceGroup = null;
 var aCell, bCell, cCell, alpha, beta, gamma, typeSystem
 
 
-// from _m_orient.js
-
 // from _m_show.js
 
-var firstTimeBond = true;
-var colorWhat = "";
-
-// from > callback.js
-
-var fPick = null;
 
 // from constant.js
 
