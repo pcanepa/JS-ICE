@@ -26,12 +26,8 @@ var makeCrystalSpaceGroup = null;
 
 var aCell, bCell, cCell, alpha, beta, gamma, typeSystem
 
-// from _m_edit.js
-
 
 // from _m_orient.js
-
-var motion = "";
 
 // from _m_show.js
 
