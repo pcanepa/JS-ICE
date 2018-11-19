@@ -2,7 +2,7 @@
 
 function figureOutSpaceGroup() {
 	saveStateAndOrientation_a();
-	prevframeSelection = frameSelection;
+	prevframeSelection = _frame.frameSelection;
 	if (frameValue == null || frameValue == "" || flagCif)
 		frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
 	prevFrame = frameValue;

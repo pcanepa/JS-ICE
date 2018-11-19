@@ -1,13 +1,19 @@
+_frame = {
+	frameSelection : null,
+	frameNum : null,
+	frameValue : null
+}
+
 
 function setFrameValues(i) {
-	frameSelection = null;
+	_frame.frameSelection = null;
 	frameNum = null;
 	frameValue = null;
-	frameSelection = "{1." + i + "}";
+	_frame.frameSelection = "{1." + i + "}";
 	frameNum = "1." + i;
 	frameValue = i;
 	if (i == null || i == "") {
-		frameSelection = "{1.1}";
+		_frame.frameSelection = "{1.1}";
 		frameNum = "1.1";
 		frameValue = 1;
 	}

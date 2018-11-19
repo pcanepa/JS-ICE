@@ -30,15 +30,7 @@ var aCell, bCell, cCell, alpha, beta, gamma, typeSystem
 
 var version = "3.0.0"; // BH 2018
 
-// from conversion.js
-
-var radiant = Math.PI / 180;
-
 // from frame.js
-
-var frameSelection = null;
-var frameNum = null;
-var frameValue = null;
 
 //from pick.js
 

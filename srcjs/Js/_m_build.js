@@ -81,7 +81,7 @@ function addNewatom() {
 			var fractional = confirm("Are these coordinates fractionals (OK) or Cartesians (Cancel)?");
 			getUnitcell(frameValue);
 			setUnitCell();
-			runJmolScriptWait('var noatoms =' + frameSelection + '.length  + 1;');
+			runJmolScriptWait('var noatoms =' + _frame.frameSelection + '.length  + 1;');
 			if (!fractional) {
 				var atomString = "\n 1\n\n" + type + " " + parseFloat(x) + " "
 				+ parseFloat(y) + " " + parseFloat(z);

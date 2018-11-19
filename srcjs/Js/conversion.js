@@ -24,6 +24,9 @@
 
 //////////////////////////////////////VALUE conversion AND ROUNDOFF
 
+_conversion = {
+radiant : Math.PI / 180
+}
 
 _conversion = {
 	finalGeomUnit : "",
@@ -126,7 +129,7 @@ function substringIntFreqToFloat(value) {
 function cosRadiant(value) {
 	if (value != null) {
 		var angle = parseFloat(value).toPrecision(7);
-		angle = Math.cos(value * radiant);
+		angle = Math.cos(value * _conversion.radiant);
 		angle = Math.round(angle * 10000000) / 10000000;
 	}
 	return angle;
