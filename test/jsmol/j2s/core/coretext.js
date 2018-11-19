@@ -657,7 +657,7 @@ while (e.hasNext ()) {
 e.next ().setTranslucent (this.translucentLevel, isBackground);
 }
 }return;
-}if (propertyName === "deleteModelAtoms") {
+}if (propertyName === "_edit.deleteModelAtoms") {
 var modelIndex = ((value)[2])[0];
 var e = this.objects.values ().iterator ();
 while (e.hasNext ()) {
@@ -938,7 +938,7 @@ return;
 }if ("pymolLabels" === propertyName) {
 this.setPymolLabels (value, bsSelected);
 return;
-}if (propertyName === "deleteModelAtoms") {
+}if (propertyName === "_edit.deleteModelAtoms") {
 this.labelBoxes = null;
 var firstAtomDeleted = ((value)[2])[1];
 var nAtomsDeleted = ((value)[2])[2];
@@ -1366,7 +1366,7 @@ return;
 }if ("clear" === propertyName) {
 this.clear ();
 return;
-}if ("deleteModelAtoms" === propertyName) {
+}if ("_edit.deleteModelAtoms" === propertyName) {
 this.atoms = (value)[1];
 var modelIndex = ((value)[2])[0];
 var firstAtomDeleted = ((value)[2])[1];
@@ -1916,7 +1916,7 @@ return;
 this.labelFormat = value;
 if (this.labelFormat != null && this.labelFormat.length == 0) this.labelFormat = null;
 return;
-}if (propertyName === "deleteModelAtoms") {
+}if (propertyName === "_edit.deleteModelAtoms") {
 if (this.atomFormats != null) {
 var firstAtomDeleted = ((value)[2])[1];
 var nAtomsDeleted = ((value)[2])[2];

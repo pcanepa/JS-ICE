@@ -37,8 +37,11 @@ function enterSpectra() {
 	if (!_fileData.haveSpecData) {
 		_specData = null;
 		_fileData.haveSpecData = true;
+		
 		symmetryModeAdd();	
-		onClickModSpec(true);
+		onClickModSpec(true, true);			
+		setValue("nMax", _specData.maxX);
+		setValue("nMin", _specData.minX);
 	}
 	$("#nMin").keypress(function(event) {
 	if (event.which == 13) {
@@ -55,7 +58,7 @@ function enterSpectra() {
 	$("#sigma").keypress(function(event) {
 	if (event.which == 13) {
 		event.preventDefault();
-		onClickModSpec();
+		onClickModSpec(false, true);
 		}
 	});
 }
@@ -70,11 +73,6 @@ function doSpectraNewWindow() {
 	var newwin = open("spectrum.html");
 }
 
-//This resets the frequency state
-function resetFreq() {
-	checkBox("radVibrationOff");
-	uncheckBox("vectors");
-}
 
 
 /////////LOAD FUNCTIONS
@@ -99,31 +97,47 @@ function onClickSelectVib(value) {
 	updateJmolForFreqParams();
 }
 
-
-function onClickModSpec(isPageOpen) {
+function setYMax() {
+	var specData = setUpSpecData("all", "any"); 
+	setFrequencyList(specData, false);
+	createSpectrum(specData);
+	 _fileData.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
+}
+function onClickModSpec(isPageOpen, doSetYMax) {
 	if (_fileData.freqData.length == 0) {
 		return;
 	}
-	simSpectrum(isPageOpen);
+	if (doSetYMax) {
+		setYMax();
+	}
+	if (isPageOpen) {
+		checkBox("radVibrationOff");
+		uncheckBox("vectors");
+	}
+	var typeIRorRaman = getRadioSetValue(document.modelsVib.modSpec);
+	var irrep = getValueSel('sym');		
+	var specData = _specData = setUpSpecData(typeIRorRaman,irrep);
+	setFrequencyList(specData, true);
+	createSpectrum(specData);
+	if (isPageOpen){
+		setMaxMinPlot(specData);
+	}
+	showFreqGraph("plotareafreq", specData);	
+	
 }
 
-function simSpectrum(isPageOpen) {
-	cleanList('vib');
-	resetFreq();
-	var typeIRorRaman = getRadioSetValue(document.modelsVib.modSpec);
-	var typeConvolve = getRadioSetValue(document.modelsVib.convol);
-	var irrep = getValueSel('sym');		
-	var specData = _specData = {
+function setUpSpecData(typeIRorRaman,irrep) {
+	return {
 			typeIRorRaman : typeIRorRaman, 
-			typeConvolve  : typeConvolve, 
+			typeConvolve  : getRadioSetValue(document.modelsVib.convol), 
 			irrep     : irrep,
 			sigma     : getValue('sigma'), 
 			rescale   : true,
 			invertx   : isChecked('invertX'),
 			freqCount : _fileData.freqInfo.length,
-			minX      : 0,
-			maxX      : 4000,
-			maxY      : 100,
+			minX      : getValue("nMin"),
+			maxX      : getValue("nMax"),
+			maxY      : _fileData.spectraYMax,
 			previousPointFreq : -1,
 			freqInfo  : [],
 			irInt     : [],
@@ -138,62 +152,80 @@ function simSpectrum(isPageOpen) {
 			ranges    : [],
 			selectedfreq : [] 
 	};
-	setFrequencyList(specData);
-	switch (typeIRorRaman) {
-	case "ir":
-		extractIRData(specData);
-		break;
-	case "raman":
-		extractRamanData(specData);
-		break;
-	default:
-		extractIRData(specData);
-		extractRamanData(specData);
-		break;
-	}
-	if (isPageOpen)
-		setMaxMinPlot(specData);
 	
-	specData.minX = getValue("nMin");
-	specData.maxX = getValue("nMax");
-
-	var create = (typeConvolve == "stick" ? createStickSpectrum : createCoolSpectrum);
-
-	switch (typeIRorRaman) {
-	case "ir":
-		create(specData, "ir");
-		break;
-	case "raman":
-		create(specData, "raman");
-		break;
-	default:
-		create(specData, "ir");
-		create(specData, "raman");
-		break;
-	}
-
-	showFreqGraph("plotareafreq", specData);
 }
 
-function setFrequencyList(specData) {
-	var vib = getbyID('vib');			
+function createSpectrum(specData) {
+	switch (specData.typeIRorRaman) {
+	case "ir":
+		extractIRData(specData);
+		break;
+	case "raman":
+		extractRamanData(specData);
+		break;
+	default:
+		extractIRData(specData);
+		extractRamanData(specData);
+		break;
+	}
+	
+	var create = (specData.typeConvolve == "stick" ? createStickSpectrum : createCoolSpectrum);
+
+	switch (specData.typeIRorRaman) {
+	case "ir":
+		create(specData, "ir");
+		break;
+	case "raman":
+		create(specData, "raman");
+		break;
+	default:
+		create(specData, "ir");
+		create(specData, "raman");
+		break;
+	}
+}
+
+function setMaxMinPlot(specData) {
+	var n = specData.freqCount;
+	var sum = 0;
+	try { 
+		for (var i = 0; i < n; i++) {
+			
+			System.out.println(i + " " + specData.freqInfo[i].modelProperties.Frequency);
+			
+			sum += roundoff(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency), 0);
+		}
+		specData.maxR = (isNaN(sum) ? 3700 : sum / n);
+
+	} catch (err){
+			specData.maxR = 3700;
+	}
+	
+	
+	specData.maxX = specData.maxR + 300;
+	specData.minX = 0;
+
+}
+function setFrequencyList(specData, doAddOption) {
+	if (doAddOption) {
+		var vib = getbyID('vib');	
+		cleanList('vib');
+	}	
 	var vibLinesFromIrrep = getVibLinesFromIrrep(specData);
 	var prop = (specData.typeIRorRaman == "ir" ? "IRactivity" 
 			: specData.typeIRorRaman == "raman" ? "Ramanactivity" 
 			: null);
 
-	var maxY = 0;
 	for (var i = 0; i < specData.freqCount; i++) {
 		var label = null;
-		if (_fileData.freqIntens && _fileData.freqIntens[i] > maxY)
-			maxY = _fileData.freqIntens[i];
 		if ((vibLinesFromIrrep == null || (label = vibLinesFromIrrep[i]))
 			  && (prop == null || _fileData.freqInfo[i].modelProperties[prop] == "A")) {
 			specData.freqInfo.push(_fileData.freqInfo[i]);
-			addOption(vib, (label || i + " " + _fileData.freqInfo[i].name), _fileData.freqInfo[i].modelNumber);
+			if(doAddOption) {
+				addOption(vib, (label || (i+1) + " " + _fileData.freqInfo[i].name), _fileData.freqInfo[i].modelNumber);
+			}
 		}
 	}
-	specData.maxY = maxY;
 }
 
 function getVibLinesFromIrrep(specData) {
@@ -209,13 +241,13 @@ function getVibLinesFromIrrep(specData) {
 		for (var i = 0, val; i < _fileData.freqSymm.length; i++) {
 			if (irep == _fileData.freqSymm[i])
 				vibLinesFromIrrep[i] = 
-					i + " " + irep + " "+ _fileData.freqData[i] 
+					(i+1) + " " + irep + " "+ _fileData.freqData[i] 
 					+ (_fileData.freqIntens[i] ? " (" + _fileData.freqIntens[i] + ")" : "");
 		}
 	} else {
-		for (var i = 1, val; i < _fileData.freqInfo.length; i++) {
+		for (var i = 0, val; i < _fileData.freqInfo.length; i++) {
 			if (irep == _fileData.freqInfo[i].modelProperties.vibrationalSymmetry)
-				vibLinesFromIrrep[i] = i + " " + _fileData.freqInfo[i].name;
+				vibLinesFromIrrep[i] = (i+1) + " " + _fileData.freqInfo[i].name;
 		}
 	}
 	return vibLinesFromIrrep;
@@ -280,30 +312,6 @@ function extractRamanData(specData) {
 	return specData;
 }
 
-function getModelForSpec(specData) {
-	var freqs = specData.freqs
-	var sigma = specData.sigma;
-	n = specData.freqs.length;
-	
-	for (var i = 0, x1, x2, last=n-1; i <= last; i++) { 
-		switch (i) {
-		case 0:
-			x1 = specData.minX;
-			x2 = (freqs[i] + freqs[i + 1])/2;
-			break;
-		case last:
-			x1 = (freqs[i] + freqs[i - 1])/2;
-			x2 = specData.maxX;
-			break;
-		default:
-			x1 = (freqs[i] + freqs[i - 1])/2;
-			x2 = (freqs[i] + freqs[i + 1])/2;
-			break;
-		}
-		specData.ranges.push([Math.max(x1, freqs[i] - sigma/2), Math.min(x2, freqs[i] + sigma/2), freqs[i], i]);
-	}
-}	
-
 function createStickSpectrum(specData, type) {
 	var rescale = specData.rescale;
 	var spec = (type == "ir" ? specData.specIR : specData.specRaman);
@@ -361,11 +369,7 @@ function createConvolvedSpectrum(specData, type) {
 	var maxInt = specData.maxInt;
 
 	var allZero = (maxValue(spec) == 0);
-	var fscale = (specData.rescale && !allZero ? 100 * 0.3 / maxInt : 1);
 
-	if (!isGaussian)
-		fscale *= 100;
-	fscale *= 10;
 	// Gaussian Convolution
 	var cx = 4 * Math.LN2;
 	var ssa = sigma * sigma / cx;	
@@ -375,7 +379,7 @@ function createConvolvedSpectrum(specData, type) {
 	var ssc = xgamma * 0.5 / Math.PI;
 	var ssd = (xgamma * 0.5) * (xgamma * 0.5);
 	
-	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI)) * fscale;
+	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI));
 
 	var freq = (type == "ir" ? irFreq : ramanFreq);
 	var int = (type == "ir" ? irInt : ramanInt);
@@ -387,7 +391,7 @@ function createConvolvedSpectrum(specData, type) {
 			if (!freq[k]) 
 				continue;
 			int[k] || (int[k] = 0);
-			v = (allZero ? maxInt / 4 : int[k]);
+			v = (allZero ? 100 : int[k]);
 			var xnn = i - freq[k];
 			sp += (isGaussian ? Math.exp(-xnn * xnn / ssa) : ssc / (xnn * xnn + ssd)) * v * sb;
 		}
@@ -405,7 +409,7 @@ function showFreqGraph(plotDiv, specData) {
 	maxY *= 1.2;
 
 	var plotArea = $("#" + plotDiv);
-	getModelForSpec(specData);
+	getRanges(specData);
 	var A = specData.specIR, B = specData.specRaman;	
 	var model = specData.model;
 	var nplots = (B && B.length && A && A.length ? 2 : 1);
@@ -420,7 +424,7 @@ function showFreqGraph(plotDiv, specData) {
     	  invert : specData.invertx,
     	  tickDecimals: 0 
       },
-      yaxis: { ticks: 0, tickDecimals: 0, min: -0.01*maxY, max: maxY },
+      yaxis: { ticks: 0, tickDecimals: 0, min: -0.05*maxY, max: maxY },
       selection: { 
     	  	mode: (nplots == 1 ? "x" : "xy"), 
     	  	hoverMode: (nplots == 1 ? "x" : "xy") 
@@ -462,6 +466,30 @@ function showFreqGraph(plotDiv, specData) {
 	$.plot(plotArea, data, options);	
 	_specData.previousPointFreq = -1;
 }
+
+function getRanges(specData) {
+	var freqs = specData.freqs
+	var sigma = specData.sigma;
+	n = specData.freqs.length;
+	
+	for (var i = 0, x1, x2, last=n-1; i <= last; i++) { 
+		switch (i) {
+		case 0:
+			x1 = specData.minX;
+			x2 = (freqs[i] + freqs[i + 1])/2;
+			break;
+		case last:
+			x1 = (freqs[i] + freqs[i - 1])/2;
+			x2 = specData.maxX;
+			break;
+		default:
+			x1 = (freqs[i] + freqs[i - 1])/2;
+			x2 = (freqs[i] + freqs[i + 1])/2;
+			break;
+		}
+		specData.ranges.push([Math.max(x1, freqs[i] - sigma/2), Math.min(x2, freqs[i] + sigma/2), freqs[i], i]);
+	}
+}	
 
 function plotClickCallbackFreq(event, pos, itemFreq) {
 	if (!itemFreq) return
@@ -599,29 +627,7 @@ function updateJmolForFreqParams() {
 	runJmolScriptWait(script)
 }
 
-function setMaxMinPlot(specData) {
-	var n = specData.freqCount;
-	var sum = 0;
-	try { 
-		for (var i = 0; i < n; i++) {
-			
-			System.out.println(i + " " + specData.freqInfo[i].modelProperties.Frequency);
-			
-			sum += roundoff(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency), 0);
-		}
-		specData.maxR = (isNaN(sum) ? 3700 : sum / n);
 
-	} catch (err){
-			specData.maxR = 3700;
-	}
-	
-	
-	specData.maxX = specData.maxR + 300;
-	specData.minX = 0;
-	
-	setValue("nMax", specData.maxX);
-	setValue("nMin", specData.minX);
-}
 
 // Creates the frequency menu on the web applet
 function createFreqGrp() { 
@@ -646,9 +652,9 @@ function createFreqGrp() {
 		+ "Min freq. " + createText2("nMin", "onClickModSpec()", "4", "")
 		+ " Max " + createText2("nMax", "onClickModSpec()", "4", "") + "(cm<sup>-1</sup>)"
 		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "") + "<br>"
-		+ createRadio("convol", "Stick", 'onClickModSpec()', 0, 1, "", "stick")
-		+ createRadio("convol", "Gaussian", 'onClickModSpec()', 0, 0, "", "gaus")
-		+ createRadio("convol", "Lorentzian", 'onClickModSpec()', 0, 0, "", "lor") 
+		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 1, "", "stick")
+		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 0, "", "gaus")
+		+ createRadio("convol", "Lorentzian", 'onClickModSpec(false, true)', 0, 0, "", "lor") 
 		+ "&nbsp;" + "&nbsp;" + "&nbsp;"
 		+ createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
 
@@ -659,7 +665,7 @@ function createFreqGrp() {
 			strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "", "ir");
 			strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "", "raman");
 			strFreq += "<BR>\n";
-			strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeypress='onClickModSpec()' CLASS='select' >";
+			strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeyup='onClickModSpec()' CLASS='select' >";
 			strFreq += "</select> ";
 			strFreq += "<BR>\n";
 			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' onkeyup='onClickSelectVib(value)' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	

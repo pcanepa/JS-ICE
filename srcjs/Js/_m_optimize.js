@@ -57,7 +57,7 @@ function createOptimizeGrp() {
 			+ "\n";
 	strGeom += "<br>"
 		+ createSelect("framepersec", "runJmolScriptWait(value)", 0, 1, vecAnimValue,
-				vecAnimText) + " motion speed | ";
+				vecAnimText) + " _orient.motion speed | ";
 // this is problematic in JavaScript -- too many files created
 //	strGeom += createCheck('saveFrames', ' save video frames', 'saveFrame()',
 //			0, 0, "");

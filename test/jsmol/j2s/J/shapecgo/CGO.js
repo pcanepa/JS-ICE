@@ -64,12 +64,12 @@ this.cgoMesh.title = this.title;
 this.cgoMesh.visible = true;
 }this.clean ();
 return;
-}if (propertyName === "deleteModelAtoms") {
-this.deleteModels (((value)[2])[0]);
+}if (propertyName === "_edit.deleteModelAtoms") {
+this._edit.deleteModels (((value)[2])[0]);
 return;
 }this.setPropertySuper (propertyName, value, bs);
 }, "~S,~O,JU.BS");
-Clazz.defineMethod (c$, "deleteModels", 
+Clazz.defineMethod (c$, "_edit.deleteModels", 
 function (modelIndex) {
 for (var i = this.meshCount; --i >= 0; ) {
 var m = this.meshes[i];

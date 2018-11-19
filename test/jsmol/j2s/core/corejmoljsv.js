@@ -28939,7 +28939,7 @@ this.colixes[i] = JU.C.getColixTranslucent3 (this.colixes[i], isTranslucent, thi
 if (isTranslucent) this.bsColixSet.set (i);
 }
 return;
-}if (propertyName === "deleteModelAtoms") {
+}if (propertyName === "_edit.deleteModelAtoms") {
 this.atoms = (value)[1];
 var info = (value)[2];
 this.ac = this.ms.ac;
@@ -29448,7 +29448,7 @@ this.bsColixSet.set (iter.nextIndex ());
 iter.next ().setTranslucent (isTranslucent, this.translucentLevel);
 }
 return;
-}if ("deleteModelAtoms" === propertyName) {
+}if ("_edit.deleteModelAtoms" === propertyName) {
 return;
 }this.setPropS (propertyName, value, bs);
 }, "~S,~O,JU.BS");
@@ -32727,7 +32727,7 @@ Clazz_defineMethod (c$, "isModulated",
 function (i) {
 return this.bsModulated != null && this.bsModulated.get (i);
 }, "~N");
-Clazz_defineMethod (c$, "deleteModelAtoms", 
+Clazz_defineMethod (c$, "_edit.deleteModelAtoms", 
 function (firstAtomIndex, nAtoms, bsAtoms) {
 this.at = JU.AU.deleteElements (this.at, firstAtomIndex, nAtoms);
 this.ac = this.at.length;
@@ -36640,7 +36640,7 @@ Clazz_defineMethod (c$, "getDefaultStructure",
 function (bsAtoms, bsModified) {
 return (this.haveBioModels ? this.bioModelset.getAllDefaultStructures (bsAtoms, bsModified) : "");
 }, "JU.BS,JU.BS");
-Clazz_defineMethod (c$, "deleteModelBonds", 
+Clazz_defineMethod (c$, "_edit.deleteModelBonds", 
 function (modelIndex) {
 var bsAtoms = this.getModelAtomBitSetIncludingDeleted (modelIndex, false);
 this.makeConnections (0, 3.4028235E38, 131071, 12291, bsAtoms, bsAtoms, null, false, false, 0);
@@ -36713,7 +36713,7 @@ return;
 bsModels.set (i);
 }}
 }, "JU.BS");
-Clazz_defineMethod (c$, "deleteModels", 
+Clazz_defineMethod (c$, "_edit.deleteModels", 
 function (bsModels) {
 this.includeAllRelatedFrames (bsModels);
 var nModelsDeleted = bsModels.cardinality ();
@@ -36751,7 +36751,7 @@ if (nAtoms == 0) continue;
 var bsModelAtoms = oldModels[i].bsAtoms;
 var firstAtomIndex = oldModels[i].firstAtomIndex;
 JU.BSUtil.deleteBits (this.bsSymmetry, bsModelAtoms);
-this.deleteModel (mpt, firstAtomIndex, nAtoms, bsModelAtoms, bsBonds);
+this._edit.deleteModel (mpt, firstAtomIndex, nAtoms, bsModelAtoms, bsBonds);
 for (var j = oldModelCount; --j > i; ) oldModels[j].fixIndices (mpt, nAtoms, bsModelAtoms);
 
 this.vwr.shm.deleteShapeAtoms ( Clazz_newArray (-1, [newModels, this.at,  Clazz_newIntArray (-1, [mpt, firstAtomIndex, nAtoms])]), bsModelAtoms);
@@ -36785,7 +36785,7 @@ a.setCIPChirality (0);
 if (a.mi != modelIndex) this.am[modelIndex = a.mi].hasChirality = false;
 }
 }});
-Clazz_defineMethod (c$, "deleteModel", 
+Clazz_defineMethod (c$, "_edit.deleteModel", 
  function (modelIndex, firstAtomIndex, nAtoms, bsModelAtoms, bsBonds) {
 if (modelIndex < 0) {
 return;
@@ -36812,8 +36812,8 @@ this.unitCells = JU.AU.deleteElements (this.unitCells, modelIndex, 1);
 if (!this.stateScripts.get (i).deleteAtoms (modelIndex, bsBonds, bsModelAtoms)) {
 this.stateScripts.removeItemAt (i);
 }}
-this.deleteModelAtoms (firstAtomIndex, nAtoms, bsModelAtoms);
-this.vwr.deleteModelAtoms (modelIndex, firstAtomIndex, nAtoms, bsModelAtoms);
+this._edit.deleteModelAtoms (firstAtomIndex, nAtoms, bsModelAtoms);
+this.vwr._edit.deleteModelAtoms (modelIndex, firstAtomIndex, nAtoms, bsModelAtoms);
 }, "~N,~N,~N,JU.BS,JU.BS");
 Clazz_defineMethod (c$, "setAtomProperty", 
 function (bs, tok, iValue, fValue, sValue, values, list) {
@@ -50373,7 +50373,7 @@ return false;
 }, "~N,~N,JU.BS,~B");
 Clazz_defineMethod (c$, "deleteShapeAtoms", 
 function (value, bs) {
-if (this.shapes != null) for (var j = 0; j < 37; j++) if (this.shapes[j] != null) this.setShapePropertyBs (j, "deleteModelAtoms", value, bs);
+if (this.shapes != null) for (var j = 0; j < 37; j++) if (this.shapes[j] != null) this.setShapePropertyBs (j, "_edit.deleteModelAtoms", value, bs);
 
 }, "~A,JU.BS");
 Clazz_defineMethod (c$, "deleteVdwDependentShapes", 
@@ -58602,9 +58602,9 @@ var n = this.slm.deleteAtoms (bsAtoms);
 this.setTainted (true);
 this.sm.modifySend (atomIndex, this.ms.at[atomIndex].mi, -4, "OK");
 return n;
-}return this.deleteModels (this.ms.at[atomIndex].mi, bsAtoms);
+}return this._edit.deleteModels (this.ms.at[atomIndex].mi, bsAtoms);
 }, "JU.BS,~B");
-Clazz_defineMethod (c$, "deleteModels", 
+Clazz_defineMethod (c$, "_edit.deleteModels", 
 function (modelIndex, bsAtoms) {
 this.clearModelDependentObjects ();
 this.sm.modifySend (-1, modelIndex, 5, "deleting model " + this.getModelNumberDotted (modelIndex));
@@ -58612,7 +58612,7 @@ this.setCurrentModelIndexClear (0, false);
 this.am.setAnimationOn (false);
 var bsD0 = JU.BSUtil.copy (this.slm.bsDeleted);
 var bsModels = (bsAtoms == null ? JU.BSUtil.newAndSetBit (modelIndex) : this.ms.getModelBS (bsAtoms, false));
-var bsDeleted = this.ms.deleteModels (bsModels);
+var bsDeleted = this.ms._edit.deleteModels (bsModels);
 this.slm.processDeletedModelAtoms (bsDeleted);
 if (this.eval != null) this.eval.deleteAtomsInVariables (bsDeleted);
 this.setAnimationRange (0, 0);
@@ -58634,11 +58634,11 @@ this.sm.modifySend (-1, modelIndex, 2, "delete bonds " + JU.Escape.eBond (bsDele
 this.ms.deleteBonds (bsDeleted, false);
 this.sm.modifySend (-1, modelIndex, -2, "OK");
 }, "JU.BS");
-Clazz_defineMethod (c$, "deleteModelAtoms", 
+Clazz_defineMethod (c$, "_edit.deleteModelAtoms", 
 function (modelIndex, firstAtomIndex, nAtoms, bsModelAtoms) {
 this.sm.modifySend (-1, modelIndex, 1, "delete atoms " + JU.Escape.eBS (bsModelAtoms));
 JU.BSUtil.deleteBits (this.tm.bsFrameOffsets, bsModelAtoms);
-this.getDataManager ().deleteModelAtoms (firstAtomIndex, nAtoms, bsModelAtoms);
+this.getDataManager ()._edit.deleteModelAtoms (firstAtomIndex, nAtoms, bsModelAtoms);
 this.sm.modifySend (-1, modelIndex, -1, "OK");
 }, "~N,~N,~N,JU.BS");
 Clazz_defineMethod (c$, "getQuaternionFrame", 

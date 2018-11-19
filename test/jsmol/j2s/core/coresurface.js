@@ -3710,7 +3710,7 @@ return;
 }if ("colorDensity" === propertyName) {
 if (value != null && this.currentMesh != null) this.currentMesh.volumeRenderPointSize = (value).floatValue ();
 return;
-}if (propertyName === "deleteModelAtoms") {
+}if (propertyName === "_edit.deleteModelAtoms") {
 var modelIndex = ((value)[2])[0];
 var firstAtomDeleted = ((value)[2])[1];
 var nAtomsDeleted = ((value)[2])[2];
