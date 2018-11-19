@@ -26,18 +26,11 @@ var makeCrystalSpaceGroup = null;
 
 var aCell, bCell, cCell, alpha, beta, gamma, typeSystem
 
-
-// from _m_show.js
-
-
 // from constant.js
 
 var version = "3.0.0"; // BH 2018
 
 // from conversion.js
-
-var finalGeomUnit = ""
-var unitGeomEnergy = "";
 
 var radiant = Math.PI / 180;
 
