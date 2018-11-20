@@ -24,12 +24,11 @@ function createOptimizeGrp() {
 	var vecUnitEnergyText = new Array("Hartree", "eV", "Rydberg", "kJ*mol-1",
 	"kcal*mol-1");
 
-	var graphdiv = createDiv("graphdiv", "width:180;height:180;background-color:#EFEFEF; margin-left:0px;display:none", 
-			createDiv("plottitle", "display:none", "&#916E (kJ/mol)")
-		  + createDiv("plotarea", "width:180px;height:180px;background-color:#EFEFEF; display:none", "")
-		  + createDiv("plottitle1", "display:none","ForceMax")
-		  + createDiv("plotarea1", "width:180px;height:180px;background-color:#efefEF;display:none","")
-	);
+	var graphdiv = "<table><tr><td>&#916E (kJ/mol)<br>"
+		  + createDiv("plotarea", "width:170px;height:180px;background-color:#EFEFEF;", "")
+		  + "</td><td>Force<br>"
+		  + createDiv("plotarea1", "width:170px;height:180px;background-color:#efefEF;","")
+		  + "</td></tr></table>";
 
 	var strGeom = "<form autocomplete='nope'  id='geometryGroup' name='modelsGeom' style='display:none'>";
 	strGeom += "<table class='contents'><tr><td>";
@@ -66,9 +65,9 @@ function createOptimizeGrp() {
 			vecUnitEnergyVal, vecUnitEnergyText);
 	strGeom += "</td></tr><tr><td>";
 	strGeom += "<select id='geom' name='models' onchange='showFrame(value)'  class='selectmodels' size='10'></select>";
-	strGeom += "</td></tr><tr><td style='margin=0px; padding=0px;'><div id='appletdiv' style='display:none'>\n";	
+	strGeom += "</td></tr><tr><td style='margin=0px; padding=0px;'>\n";	
 	strGeom += graphdiv;
-	strGeom += "</table></form>\n";
+	strGeom += "</td></tr></table></form>\n";
 	return strGeom;
 }
 

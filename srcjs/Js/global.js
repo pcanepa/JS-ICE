@@ -1,6 +1,8 @@
 // global variables used in JS-ICE
 // Geoff van Dover 2018.10.26
 
+var version = "3.0.0"; // BH 2018
+
 
 // from _m_spectra.js
 
@@ -23,12 +25,9 @@ var arrayAtomZ = new Array(3);
 var makeCrystalSpaceGroup = null;
 
 // from _m_cell.js
+var _cell = {};
+	
 
-var aCell, bCell, cCell, alpha, beta, gamma, typeSystem
-
-// from constant.js
-
-var version = "3.0.0"; // BH 2018
 
 // from plotgraph.js
 

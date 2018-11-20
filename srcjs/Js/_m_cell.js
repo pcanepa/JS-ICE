@@ -1,3 +1,5 @@
+aCell, bCell, cCell, alpha, beta, gamma, typeSystem
+
 function enterCell() {
 	getUnitcell(_frame.frameValue);
 //	getSymInfo();
