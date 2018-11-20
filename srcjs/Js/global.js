@@ -32,13 +32,6 @@ var version = "3.0.0"; // BH 2018
 
 //from pick.js
 
-var pickingEnabled = false;
-var counterHide = 0;
-var selectedAtoms = [];
-var sortquestion = null;
-var selectCheckbox = null;
-var menuCallback = null;
-
 // from plotgraph.js
 
 var itemEnergy
