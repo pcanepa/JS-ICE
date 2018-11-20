@@ -30,38 +30,9 @@ var aCell, bCell, cCell, alpha, beta, gamma, typeSystem
 
 var version = "3.0.0"; // BH 2018
 
-//from pick.js
-
 // from plotgraph.js
 
-var itemEnergy
-var previousPoint = null
-var itemForce
-var previousPointForce = null
-var itemFreq
-
-var theplot; // global, mostly for testing.
-
-var haveGraphSpectra, haveGraphOptimize;
-
-var energy = 0;
-	var label = "";
-	var previous = 0;
-// var last = modelCount - 1;
-	
-	var data = [];
-    var A = [];
-    var nplots = 1;
-// var modelCount = Info.length;
-//var stringa = Info[3].name;
-    
-    var nullValues;
-    
-    var minY = 999999;
-
-    var dataSpectrum = [];
-	var spectrum = [];
-
+var _plot = {};
 
 // for citations:
 

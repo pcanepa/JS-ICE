@@ -185,9 +185,10 @@ function file_loadedCallback(filePath) {
 			freqData	: [],
 			vibLine		: [],
 			counterFreq : 0,
-			counterMD 	: 0
+			counterMD 	: 0,
+			haveGraphOptimize : false
 	};
-	resetGraphs();
+	
 	counterFreq = 0;
 	extractAuxiliaryJmol();
 	setFlags(_fileData.fileType);

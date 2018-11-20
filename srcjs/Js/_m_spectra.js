@@ -39,7 +39,9 @@ function enterSpectra() {
 		_fileData.haveSpecData = true;
 		
 		symmetryModeAdd();	
-		onClickModSpec(true, true);			
+		onClickModSpec(true, true);	
+		if (!_specData)
+			return;		
 		setValue("nMax", _specData.maxX);
 		setValue("nMin", _specData.minX);
 	}
