@@ -1,5 +1,5 @@
 function enterCell() {
-	getUnitcell(frameValue);
+	getUnitcell(_frame.frameValue);
 //	getSymInfo();
 }
 
@@ -9,14 +9,14 @@ function exitCell() {
 function saveFractionalCoordinate() {
 	warningMsg("Make sure you have selected the model you would like to export.");
 
-	if (frameSelection == null)
+	if (_frame.frameSelection == null)
 		getUnitcell("1");
 
 	var x = "var cellp = [" + roundNumber(aCell) + ", " + roundNumber(bCell)
 	+ ", " + roundNumber(cCell) + ", " + roundNumber(alpha) + ", "
 	+ roundNumber(beta) + ", " + roundNumber(gamma) + "];"
 	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
-	+ frameSelection + '.label("%a %16.9[fxyz]");'
+	+ _frame.frameSelection + '.label("%a %16.9[fxyz]");'
 	+ 'var lista = [cellparam, xyzfrac];'
 	+ 'WRITE VAR lista "?.XYZfrac" ';
 	runJmolScriptWait(x);
@@ -98,11 +98,11 @@ function getUnitcell(i) {
 }
 
 function setUnitCell() {
-	getUnitcell(frameValue);
-	if (frameSelection == null || frameSelection == "" || frameValue == ""
-		|| frameValue == null) {
-		frameSelection = "{1.1}";
-		frameNum = 1.1;
+	getUnitcell(_frame.frameValue);
+	if (_frame.frameSelection == null || _frame.frameSelection == "" || _frame.frameValue == ""
+		|| _frame.frameValue == null) {
+		_frame.frameSelection = "{1.1}";
+		_frame.frameNum = 1.1;
 		getUnitcell("1");
 	}
 }

@@ -46,19 +46,7 @@ function createSymopSet(){
 	symopSet = Jmol.evaluateVar(jmolApplet0,"symVectors"); 
 	return symopSet
 }
-//function createSymopSet(){
-//	var symopSet = [];
-//	var allSymopsString = jmolEvaluate('script("print readSymmetryVectors()")'); 
-//	var totalSymops = allSymopsString.match(/\n/g).length-1; //this should work in all cases
-//	for (var i = 1; i<= totalSymops;i++){
-//		var symopInt = parseInt(i)+"";
-//		var scriptToRun = 'script("var infor = readSymmetryVectors();print infor['+symopInt+']")';
-//		var symopString = jmolEvaluate(scriptToRun);
-//		symopString = symopString.trim();
-//		symopSet[i-1] = symopString;
-//	}
-//	return symopSet
-//}
+
 
 function setOpacity(){
 	var opacityString = getbyID("selopacity2");
@@ -69,14 +57,33 @@ function setOpacity(){
 	opacityScript = "select *;color atoms translucent " + (1 - opacity)
 	runJmolScript(opacityScript);
 }
+var symOffset = "{0/1,0/1,0/1}";
+function updateSymOffset(dimension,offset){
+	var symOffsetString = symOffset;
+	symOffsetString = symOffsetString.substring(1);
+	var symOffsetArray = symOffsetString.split(",");
+	var xValue = parseInt(symOffsetArray[0])+"/1";
+	var yValue = parseInt(symOffsetArray[1])+"/1";
+	var zValue = parseInt(symOffsetArray[2])+"/1";
+	if (dimension == "x"){
+		xValue = offset+"/1";
+	}
+	if (dimension == "y"){
+		yValue = offset+"/1";
+	}
+	if (dimension == "z"){
+		zValue = offset+"/1";
+	}
+	symOffset = "{"+xValue+","+yValue+","+zValue+"}"; 
+}
+
 //creates symmetry menu 
 function createSymmetryGrp() {
-	
 	var strSymmetry = "<form autocomplete='nope'  id='symmetryGroup' name='symmetryGroup' style='display:none'>\n";
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += "Write points in the form '{x y z}'";
 	strSymmetry += "<BR>\n";
-	strSymmetry += "<tr><td>\n";
+
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += "Add element:"
 	strSymmetry += createSelect('addSymEle', 'setSymElement(value)', 0, 1,
@@ -94,8 +101,28 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += "Symmetry Operation Origin:";
-	strSymmetry += "<input type='text'  name='symCenterPoint' id='symCenterPoint' size='10' class='text'>";
+	strSymmetry += "&nbsp&nbsp&nbsp-1 &nbsp&nbsp&nbsp&nbsp 0 &nbsp&nbsp&nbsp +1&nbsp&nbsp&nbsp(Offset)";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "x";
+	strSymmetry += createRadio("xOffset"," ",'updateSymOffset("x",-1)',0,0,"x-1","x-1");
+	strSymmetry += createRadio("xOffset"," ",'updateSymOffset("x",0)',0,1,"x+0","x+0");
+	strSymmetry += createRadio("xOffset"," ",'updateSymOffset("x",1)',0,0,"x+1","x+1");
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "y";
+	strSymmetry += createRadio("yOffset"," ",'updateSymOffset("y",-1)',0,0,"y-1","z-1");
+	strSymmetry += createRadio("yOffset"," ",'updateSymOffset("y",0)',0,1,"y+0","z+0");
+	strSymmetry += createRadio("yOffset"," ",'updateSymOffset("y",1)',0,0,"y+1","z+1");
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "z";
+	strSymmetry += createRadio("zOffset"," ",'updateSymOffset("z",-1)',0,0,"z-1","z-1");
+	strSymmetry += createRadio("zOffset"," ",'updateSymOffset("z",0)',0,1,"z+0","z+0");
+	strSymmetry += createRadio("zOffset"," ",'updateSymOffset("z",1)',0,0,"z+1","z+1");
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
@@ -110,22 +137,19 @@ function createSymmetryGrp() {
 	strSymmetry += "<div id='activateAllSymmetryDiv'></div>";
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
-	strSymmetry += "</form>\n";
 	strSymmetry += "set opacity:<select id=selopacity2 onchange=setOpacity() onkeypress=\"setTimeout('setOpacity()',50)\"  class='select'>"
 			+ "<option value=0.2 selected>20%</option>"
 			+ "<option value=0.4>40%</option>"
 			+ "<option value=0.6>60%</option>"
 			+ "<option value=1.0>100%</option>" + "</select>";
+			
+	strSymmetry += "</form>\n";
 	return strSymmetry
 }
 
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
-	var centerPoint = 	getValue("symCenterPoint") ;
-	if (! centerPoint){
-		centerPoint= "{0 0 0}"; 
-	}
-	runJmolScriptWait("draw symop '"+symop+"' "+centerPoint); 
+	runJmolScriptWait("draw symop '"+symop+"' "+symOffset); 
 } 
 
 // takes a given point and add the elements provided to it by a symmetry operation
@@ -139,22 +163,17 @@ function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 		console.log("ERROR: empty symmetry operation");
 	}
 	else {
-		point = point-getValue("symCenterPoint");
 		var newAtomArray = Jmol.evaluateVar(jmolApplet0,"getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
 		var numberOfNewAtoms = newAtomArray.length; 
 		for (i = 1; i <= numberOfNewAtoms; i++){
-			recenteredPosition = newAtomArray[i-1]+getValue("symCenterPoint");
-			runJmolScriptWait("appendNewAtom('"+elementName+"', {"+recenteredPosition+"})"); //this is a jmol script in functions.spt
+			runJmolScriptWait("appendNewAtom('"+elementName+"', "+newAtomArray[i-1]+")"); //this is a jmol script in functions.spt
 		}
 	}
 }
 function drawAllSymmetricPoints(point){
 	var pointValue = point;
-	if (getValue("symCenterPoint")){
-		var pointValue = pointValue-getValue("symCenterPoint")
-	}
 	runJmolScriptWait("allSymPoints = getSymmetryAtomArrayAllSymops("+pointValue+")");
-	runJmolScriptWait("allSymPoints = allSymPoints"+getValue('symCenterPoint'));
+	runJmolScriptWait("allSymPoints = allSymPoints");
 	runJmolScriptWait("draw points @allSymPoints");
 }
 
@@ -188,5 +207,17 @@ function drawAllSymmetricPoints(point){
 //		runJmolScriptWait("drawCleanSymmetryAxisVectors('"+symop+"', 3)");
 //	}
 //} 
-
+//function createSymopSet(){
+//	var symopSet = [];
+//	var allSymopsString = jmolEvaluate('script("print readSymmetryVectors()")'); 
+//	var totalSymops = allSymopsString.match(/\n/g).length-1; //this should work in all cases
+//	for (var i = 1; i<= totalSymops;i++){
+//		var symopInt = parseInt(i)+"";
+//		var scriptToRun = 'script("var infor = readSymmetryVectors();print infor['+symopInt+']")';
+//		var symopString = jmolEvaluate(scriptToRun);
+//		symopString = symopString.trim();
+//		symopSet[i-1] = symopString;
+//	}
+//	return symopSet
+//}
 

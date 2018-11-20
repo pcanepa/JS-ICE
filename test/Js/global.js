@@ -30,12 +30,12 @@ var aCell, bCell, cCell, alpha, beta, gamma, typeSystem;
 
 // from _m_edit.js
 
-var deleteMode = "";
-var hideMode = "";
-var displayMode = "";
-var firstTimeEdit = true;
+var _edit.deleteMode = "";
+var _edit.hideMode = "";
+var _edit.displayMode = "";
+var _edit.firstTimeEdit = true;
 
-var radBondRange;
+var _edit.radBondRange;
 
 // from _m_measure.js
 

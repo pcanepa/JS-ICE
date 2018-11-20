@@ -131,7 +131,7 @@ for (var i = 0, n = f.length, p = bsSelected.nextSetBit (0); p >= 0 && i < n; p 
 return fnew;
 }
 }, "~S,JU.BS,~N");
-Clazz.overrideMethod (c$, "deleteModelAtoms", 
+Clazz.overrideMethod (c$, "_edit.deleteModelAtoms", 
 function (firstAtomIndex, nAtoms, bsDeleted) {
 if (this.dataValues.size () == 0) return;
 for (var name, $name = this.dataValues.keySet ().iterator (); $name.hasNext () && ((name = $name.next ()) || true);) {

@@ -21,22 +21,22 @@ function atomSelectedColor(atom) {
 
 function atomSelectedDelete(atom) {
 	runJmolScriptWait("select {atomno=" + atom + "};");
-	deleteMode = "delete {atomno=" + atom + "}";
-	return deleteMode;
+	_edit.deleteMode = "delete {atomno=" + atom + "}";
+	return _edit.deleteMode;
 }
 
 function atomSelectedHide(atom) {
 	runJmolScriptWait("select {atomno=" + atom + "};");
-	hideMode = "hide {atomno=" + atom + "}";
-	return hideMode;
+	_edit.hideMode = "hide {atomno=" + atom + "}";
+	return _edit.hideMode;
 }
 
 
 function atomSelectedDisplay(atom) {
 	runJmolScriptWait("select all; halo off; label off");
 	runJmolScriptWait("select {atomno=" + atom + "}; halo on; label on");
-	displayMode = "display {atomno=" + atom + "}";
-	return displayMode;
+	_edit.displayMode = "display {atomno=" + atom + "}";
+	return _edit.displayMode;
 }
 
 function addAtomfrac() {
@@ -79,9 +79,9 @@ function addNewatom() {
 					+ ' end "model"');
 		} else {
 			var fractional = confirm("Are these coordinates fractionals (OK) or Cartesians (Cancel)?");
-			getUnitcell(frameValue);
+			getUnitcell(_frame.frameValue);
 			setUnitCell();
-			runJmolScriptWait('var noatoms =' + frameSelection + '.length  + 1;');
+			runJmolScriptWait('var noatoms =' + _frame.frameSelection + '.length  + 1;');
 			if (!fractional) {
 				var atomString = "\n 1\n\n" + type + " " + parseFloat(x) + " "
 				+ parseFloat(y) + " " + parseFloat(z);

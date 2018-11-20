@@ -86,7 +86,7 @@ this.bsColixSet.set (iter.nextIndex ());
 iter.next ().setTranslucent (isTranslucent, this.translucentLevel);
 }
 return;
-}if ("deleteModelAtoms" === propertyName) {
+}if ("_edit.deleteModelAtoms" === propertyName) {
 return;
 }this.setPropS (propertyName, value, bs);
 }, "~S,~O,JU.BS");
