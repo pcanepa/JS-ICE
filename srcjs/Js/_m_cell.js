@@ -1,5 +1,5 @@
 function enterCell() {
-	getUnitcell(frameValue);
+	getUnitcell(_frame.frameValue);
 //	getSymInfo();
 }
 
@@ -98,11 +98,11 @@ function getUnitcell(i) {
 }
 
 function setUnitCell() {
-	getUnitcell(frameValue);
-	if (_frame.frameSelection == null || _frame.frameSelection == "" || frameValue == ""
-		|| frameValue == null) {
+	getUnitcell(_frame.frameValue);
+	if (_frame.frameSelection == null || _frame.frameSelection == "" || _frame.frameValue == ""
+		|| _frame.frameValue == null) {
 		_frame.frameSelection = "{1.1}";
-		frameNum = 1.1;
+		_frame.frameNum = 1.1;
 		getUnitcell("1");
 	}
 }

@@ -79,7 +79,7 @@ function addNewatom() {
 					+ ' end "model"');
 		} else {
 			var fractional = confirm("Are these coordinates fractionals (OK) or Cartesians (Cancel)?");
-			getUnitcell(frameValue);
+			getUnitcell(_frame.frameValue);
 			setUnitCell();
 			runJmolScriptWait('var noatoms =' + _frame.frameSelection + '.length  + 1;');
 			if (!fractional) {

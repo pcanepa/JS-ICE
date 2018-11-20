@@ -30,8 +30,6 @@ var aCell, bCell, cCell, alpha, beta, gamma, typeSystem
 
 var version = "3.0.0"; // BH 2018
 
-// from frame.js
-
 //from pick.js
 
 var pickingEnabled = false;
@@ -70,14 +68,7 @@ var energy = 0;
 
     var dataSpectrum = [];
 	var spectrum = [];
-	
-// from uff.js
 
-var counterUff = 0
-
-// from windows.js
-
-var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50";
 
 // for citations:
 

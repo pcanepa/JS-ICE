@@ -3,9 +3,9 @@
 function figureOutSpaceGroup() {
 	saveStateAndOrientation_a();
 	prevframeSelection = _frame.frameSelection;
-	if (frameValue == null || frameValue == "" || flagCif)
+	if (_frame.frameValue == null || _frame.frameValue == "" || flagCif)
 		frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
-	prevFrame = frameValue;
+	prevFrame = _frame.frameValue;
 	var magnetic = confirm('It\'s the primitive cell ?')
 	// crystalPrev = confirm('Does the structure come from a previous CRYSTAL
 	// calculation?')
