@@ -14,9 +14,11 @@ function enterSymmetry() {
 function exitSymmetry() {
 }
 
+var _symmetry = {}; 
+
 //this appends new atoms by chosen symop
 function doActivateSymmetry(){
-	appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop,getValue("symIterations"));
+	appendSymmetricAtoms(_symmetry.chosenSymElement,getValue("initPoint"),_symmetry.chosenSymop,getValue("symIterations"));
 }
 
 //this only shows every point for a given point for all symops 
@@ -29,14 +31,14 @@ function doSymopSelection(symop){
 	displaySymmetryDrawObjects(symop);
 }
 
-var chosenSymElement = ""; 
+_symmetry._symmetry.chosenSymElement = ""; 
 function setSymElement(elementName){
-	chosenSymElement = elementName;
+	_symmetry.chosenSymElement = elementName;
 }
 
-var chosenSymop = "";
+_symmetry._symmetry.chosenSymop = "";
 function setSymop(symop){
-	chosenSymop = symop;
+	_symmetry.chosenSymop = symop;
 }
 
 function createSymopSet(){
@@ -101,7 +103,7 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += "&nbsp&nbsp&nbsp-1 &nbsp&nbsp&nbsp&nbsp 0 &nbsp&nbsp&nbsp +1&nbsp&nbsp&nbsp(Offset)";
+	strSymmetry += "&nbsp&nbsp&nbsp-1 &nbsp&nbsp&nbsp&nbsp&nbsp 0 &nbsp&nbsp&nbsp&nbsp +1&nbsp&nbsp&nbsp(Offset)";
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
