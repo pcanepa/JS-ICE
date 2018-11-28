@@ -31,18 +31,7 @@ function pointToArray(pointt){
 	}
 	return coordinateArray
 }
-//Unused
-function readSymmetryNames() {
-	var allSymopInfo = _M.getProperty("spacegroupInfo.operations");
-	var numSymops = allSymopInfo.length;
-	var symopNameArray = [];
-	for (var i = 1; i<= numSymops;i++){
-		var symopCurrent = allSymopInfo[i];
-		var currentName = symopCurrent[3];
-		symopNameArray[i] = currentName;
-	}
-	return symopNameArray
-}
+
 // gets and returns the symmetry operation vector (as in "x,y,z" for identity are so forth) names 
 function readSymmetryVectors() {
 	var symopVectorArray = [];
@@ -145,25 +134,42 @@ function getSymmetryAtomArrayAllSymops(point){
 //UNTESTED
 //Many of the below functions are outlines for future functions 
 function bindToVectorConstraint(vectorDrawObjectID,selectedPoint,errorDistance){
-	startPoint = $@vectorDrawObjectID[0]
-	endPoint = $@vectorDrawObjectID[1] 
+	vectorPointer = ""+vectorDrawObjectID+""
+	selectedPoint = {0.0 0.0 0.0}
+	errorDistance = 1
+	startPoint = $ @vectorPointer[0]
+	endPoint = $ @vectorPointer[1]
 	constrainedPoint = intersection(startPoint,endPoint,selectedPoint) 
 	if (selectedPointToNewPointDistance > errorDistance){
-		return selectedPoint 
+		print selectedPoint 
 	}
 	else{
-		return contrainedPoint 
+		print constrainedPoint 
 	}
 }
 
 function bindToPlaneConstraint(planeDrawObjectID, selectedPoint, errorDistance){
+	planePointer = ""+planeDrawObjectID+""
 	constrainedPoint = intersection(selectedPoint,planeDrawObjectID)
-	selectedPointToNewPointDistance = @selectedPoint.distance(planeDrawObjectID)
+	selectedPointToNewPointDistance = @selectedPoint.distance(planePointer)
 	if (selectedPointToNewPointDistance > errorDistance){
 		return selectedPoint 
 	}
 	else{
 		return constrainedPoint 
 	}
+}
+
+//Unused
+function readSymmetryNames() {
+	var allSymopInfo = _M.getProperty("spacegroupInfo.operations");
+	var numSymops = allSymopInfo.length;
+	var symopNameArray = [];
+	for (var i = 1; i<= numSymops;i++){
+		var symopCurrent = allSymopInfo[i];
+		var currentName = symopCurrent[3];
+		symopNameArray[i] = currentName;
+	}
+	return symopNameArray
 }
 
