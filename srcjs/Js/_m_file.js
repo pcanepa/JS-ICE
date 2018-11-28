@@ -172,14 +172,15 @@ function onChangeLoad(load) {
 }
 
 function file_loadedCallback(filePath) {
-	_specData = null;
 	_fileData = {
 			cell        : {},
 			fileType    : jmolEvaluate("_fileType").toLowerCase(), 
 			energyUnits : ENERGY_EV,
 			strUnitEnergy : "e",
 			hasInputModel : false,
-			haveSpecData : false,
+			symmetry    : null,
+			specData    : null,
+			plotFreq    : null,
 			geomData    : [],
 			freqInfo 	: [],
 			freqData	: [],

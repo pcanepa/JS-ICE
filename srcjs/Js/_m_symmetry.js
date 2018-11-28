@@ -1,9 +1,14 @@
 //initialization upon entry into symmetry tab 
 function enterSymmetry() {
-	if (! _fileData.symmetryOperationList){
-	 	var symopSelection = createSelect('addSymSymop', 'doSymopSelection(value)', 0, 1, createSymopSet());
-		 _fileData.symmetryOperationList = createSymopSet();
-		 getbyID("symmetryOperationSet").innerHTML = symopSelection;
+	if (! _fileData.symmetry){
+		_fileData.symmetry = {
+			operationList     : createSymopSet(),
+			chosenSymElement  : "", 
+			chosenSymop       : "",
+			symOffset         : "{0/1,0/1,0/1}"
+		}; 
+	 	var symopSelection = createSelect('addSymSymop', 'doSymopSelection(value)', 0, 1, _fileData.symmetry.operationList);
+		getbyID("symmetryOperationSet").innerHTML = symopSelection;
 	}
 	var activateSymmetry = createButton("activateSymmetryButton", "Activate applied symmetry:", 'doActivateSymmetry()', 0);
 	getbyID("activateSymmetryDiv").innerHTML = activateSymmetry;
@@ -16,7 +21,7 @@ function exitSymmetry() {
 
 //this appends new atoms by chosen symop
 function doActivateSymmetry(){
-	appendSymmetricAtoms(_symmetry.chosenSymElement,getValue("initPoint"),_symmetry.chosenSymop,getValue("symIterations"));
+	appendSymmetricAtoms(_fileData.symmetry.chosenSymElement,getValue("initPoint"),_fileData.symmetry.chosenSymop,getValue("symIterations"));
 }
 
 //this only shows every point for a given point for all symops 
@@ -32,12 +37,12 @@ function doSymopSelection(symop){
 
 
 function setSymElement(elementName){
-	_symmetry.chosenSymElement = elementName;
+	_fileData.symmetry.chosenSymElement = elementName;
 }
 
 
 function setSymop(symop){
-	_symmetry.chosenSymop = symop;
+	_fileData.symmetry.chosenSymop = symop;
 }
 
 //figures out from file data all of the symmetry operations as Jones faithful representations 
@@ -61,7 +66,7 @@ function setOpacity(){
 }
 
 function updateSymOffset(dimension,offset){
-	var symOffsetString = _symmetry.symOffset;
+	var symOffsetString = _fileData.symmetry.symOffset;
 	symOffsetString = symOffsetString.substring(1);
 	var symOffsetArray = symOffsetString.split(",");
 	var xValue = parseInt(symOffsetArray[0])+"/1";
@@ -76,7 +81,7 @@ function updateSymOffset(dimension,offset){
 	if (dimension == "z"){
 		zValue = offset+"/1";
 	}
-	_symmetry.symOffset = "{"+xValue+","+yValue+","+zValue+"}"; 
+	_fileData.symmetry.symOffset = "{"+xValue+","+yValue+","+zValue+"}"; 
 }
 
 //creates symmetry menu 
@@ -152,7 +157,7 @@ function createSymmetryGrp() {
 
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
-	runJmolScriptWait("draw symop '"+symop+"' "+symOffset); 
+	runJmolScriptWait("draw symop '"+symop+"' "+_fileData.symmetry.symOffset); 
 } 
 
 // takes a given point and add the elements provided to it by a symmetry operation
