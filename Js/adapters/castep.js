@@ -54,21 +54,21 @@ function exportCASTEP() {
 	switch (typeSystem) {
 	case "slab":
 		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
+				+ roundNumber(cCell) + ')');
 		break;
 	case "polymer":
 		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
+				+ roundNumber(cCell) + ')');
 		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/'
-				+ roundNumber(_fileData.cell.b) + ')');
+				+ roundNumber(bCell) + ')');
 		break;
 	case "molecule":
 		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
+				+ roundNumber(cCell) + ')');
 		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/'
-				+ roundNumber(_fileData.cell.b) + ')');
+				+ roundNumber(bCell) + ')');
 		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/'
-				+ roundNumber(_fileData.cell.a) + ')');
+				+ roundNumber(aCell) + ')');
 		break;
 	}
 

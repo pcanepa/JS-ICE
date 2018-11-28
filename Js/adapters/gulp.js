@@ -31,13 +31,16 @@ var restGulp = null;
 var flagShelgulp = null;
 var stringCellparamgulp;
 
+var flagsymmetryGulp = false;
+
+
 function exportGULP() {
 	warningMsg("Make sure you have selected the model you would like to export.");
 	saveStateAndOrientation_a();
 	if (typeSystem != "crystal")
 		setUnitCell();
 	setTitlegulp();
-	setSystem();
+	setGulpSystem();
 	setCellgulp();
 	setCoordinategulp();
 	if (typeSystem == "crystal")
@@ -70,8 +73,7 @@ function setTitlegulp() {
 
 }
 
-var flagsymmetryGulp = false;
-function setSystem() {
+function setGulpSystem() {
 	switch (typeSystem) {
 	case "crystal":
 		setUnitCell();
@@ -83,8 +85,8 @@ function setSystem() {
 			warningMsg("This procedure is not fully tested.");
 			figureOutSpaceGroup();
 		} else {
-			stringCellparamgulp = roundNumber(_fileData.cell.a) + ' ' + roundNumber(_fileData.cell.b)
-					+ ' ' + roundNumber(_fileData.cell.c) + ' ' + roundNumber(alpha) + ' '
+			stringCellparamgulp = roundNumber(aCell) + ' ' + roundNumber(bCell)
+					+ ' ' + roundNumber(cCell) + ' ' + roundNumber(alpha) + ' '
 					+ roundNumber(beta) + ' ' + roundNumber(gamma);
 		}
 		break;
@@ -92,18 +94,18 @@ function setSystem() {
 	case "surface":
 		cellHeadergulp = "scell"
 		coordinateAddgulp = "s"
-		stringCellparamgulp = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b)
+		stringCellparamgulp = roundNumber(aCell) + ", " + roundNumber(bCell)
 				+ ", " + roundNumber(gamma);
 		break;
 
 	case "polymer":
 		cellHeadergulp = "pcell"
 		coordinateAddgulp = ""
-		stringCellparamgulp = roundNumber(_fileData.cell.a);
+		stringCellparamgulp = roundNumber(aCell);
 		break;
 
 	case "molecule":
-		// TODO
+		// To be terminated
 
 		break;
 	}

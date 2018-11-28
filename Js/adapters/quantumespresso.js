@@ -263,11 +263,11 @@ function symmetryQuantum() {
 		var flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			cellDimString = "           celldm(1) = "
-				+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+				+ roundNumber(fromAngstromtoBohr(aCell))
 				+ "  \n           celldm(2) =  "
-				+ roundNumber(_fileData.cell.b / _fileData.cell.a)
+				+ roundNumber(bCell / aCell)
 				+ "  \n           celldm(3) =  "
-				+ roundNumber(_fileData.cell.c / _fileData.cell.a)
+				+ roundNumber(cCell / aCell)
 				+ "  \n           celldm(4) =  "
 				+ (cosRadiant(alpha))
 				+ "  \n           celldm(5) =  "
@@ -286,12 +286,12 @@ function symmetryQuantum() {
 		break;
 	case "slab":
 		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _fileData.cell.c
+		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + cCell
 				+ ')');
 		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
+			+ roundNumber(fromAngstromtoBohr(aCell))
+			+ "  \n            celldm(2) =  " + roundNumber(bCell / aCell)
+			+ "  \n            celldm(3) =  " + roundNumber(cCell / aCell)
 			+ "  \n            celldm(4) =  "
 			+ (cosRadiant(alpha))
 			+ "  \n            celldm(5) =  " + (cosRadiant(90))
@@ -300,14 +300,14 @@ function symmetryQuantum() {
 		break;
 	case "polymer":
 		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _fileData.cell.c
+		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + cCell
 				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + _fileData.cell.b
+		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + bCell
 				+ ')');
 		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
+			+ roundNumber(fromAngstromtoBohr(aCell))
+			+ "  \n            celldm(2) =  " + roundNumber(bCell / aCell)
+			+ "  \n            celldm(3) =  " + roundNumber(bCell / aCell)
 			+ "  \n            celldm(4) =  " + (cosRadiant(90))
 			+ "  \n            celldm(5) =  " + (cosRadiant(90))
 			+ "  \n            celldm(6) =  " + (cosRadiant(90));
@@ -315,14 +315,14 @@ function symmetryQuantum() {
 		break;
 	case "molecule":
 		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _fileData.cell.c
+		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + cCell
 				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + _fileData.cell.b
+		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + bCell
 				+ ')');
-		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/' + _fileData.cell.a
+		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/' + aCell
 				+ ')');
 		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+			+ roundNumber(fromAngstromtoBohr(aCell))
 			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(4) =  "

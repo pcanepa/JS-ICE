@@ -443,7 +443,7 @@ function showFreqGraph(plotDiv, specData, plot) {
       xaxis: { 
     	  min : specMinX, 
     	  max : specMaxX, 
-    	  ticks : (specMaxX - specMinX < 2000 ? 5 : 10), 
+    	  ticks : 10, 
     	  invert : specData.invertx,
     	  tickDecimals: 0 
       },

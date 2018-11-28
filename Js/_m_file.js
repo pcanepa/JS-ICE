@@ -174,7 +174,6 @@ function onChangeLoad(load) {
 function file_loadedCallback(filePath) {
 	_specData = null;
 	_fileData = {
-			cell        : {},
 			fileType    : jmolEvaluate("_fileType").toLowerCase(), 
 			energyUnits : ENERGY_EV,
 			strUnitEnergy : "e",
@@ -221,7 +220,7 @@ function cleanAndReloadForm() {
 
 resetLoadFlags = function(isCrystal) {
 	if (isCrystal)
-		_fileData.cell.typeSystem = "crystal";
+		typeSystem = "crystal";
 	flagCrystal = 
 	flagGromos = 
 	flagGulp = 
@@ -309,13 +308,13 @@ setFlags = function(type) {
 	case "gauss":
 		resetLoadFlags(); // BH Added
 		flagGaussian = true;
-		_fileData.cell.typeSystem = "molecule";
+		typeSystem = "molecule";
 		break;
 	case "molden":
 		// WE USE SAME SETTINGS AS VASP
 		// IT WORKS
 		resetLoadFlags(); // BH Added
-		_fileData.cell.typeSystem = "molecule";
+		typeSystem = "molecule";
 		flagOutcar = true;
 		break;
 	case "crysden":
