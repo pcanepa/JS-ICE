@@ -26,17 +26,20 @@
 
 function enterSpectra() {
 
-	if (!_fileData.haveSpecData) {
-		_specData = null;
-		_fileData.haveSpecData = true;
-		
+	if (!_fileData.plotFreq) {
+		_fileData.plotFreq = {
+				yscale: 1,
+				minX0: 0,
+				maxX0: 4000,
+				selectedFreq: -1
+		};
+		_fileData.specData = null;
 		symmetryModeAdd();	
-		_plot.specyscale = 1;
 		onClickModSpec(true, true);	
-		if (!_specData)
+		if (!_fileData.specData)
 			return;		
-		setValue("nMax", _specData.maxX);
-		setValue("nMin", _specData.minX);
+		setValue("nMax", _fileData.specData.maxX);
+		setValue("nMin", _fileData.specData.minX);
 	}
 	$("#nMin").keypress(function(event) {
 	if (event.which == 13) {
@@ -92,8 +95,8 @@ function onClickSelectVib(isTriggered) {
 	if (isTriggered) {
 		if (vib.selectedIndex < 0)
 			return;
-		_plot.specSelectedFreq = _specData.freqs[_specData.vibList[vib.selectedIndex][3]];
-		showFreqGraph("plotareafreq", _specData, _plot);
+		_fileData.plotFreq.selectedFreq = _fileData.specData.freqs[_fileData.specData.vibList[vib.selectedIndex][3]];
+		showFreqGraph("plotareafreq", _fileData.specData, _fileData.plotFreq);
 		return;
 	}	
 	var model = parseInt(vib.value);
@@ -122,14 +125,14 @@ function onClickModSpec(isPageOpen, doSetYMax) {
 	}
 	var typeIRorRaman = getRadioSetValue(document.modelsVib.modSpec);
 	var irrep = getValueSel('sym');		
-	_specData = setUpSpecData(typeIRorRaman,irrep);
-	getFrequencyList(_specData);
-	createSpectrum(_specData);
-	setVibList(_specData);
+	_fileData.specData = setUpSpecData(typeIRorRaman,irrep);
+	getFrequencyList(_fileData.specData);
+	createSpectrum(_fileData.specData);
+	setVibList(_fileData.specData);
 	if (isPageOpen){
-		setMaxMinPlot(_specData);
+		setMaxMinPlot(_fileData.specData);
 	}
-	return showFreqGraph("plotareafreq", _specData, _plot);	
+	return showFreqGraph("plotareafreq", _fileData.specData, _fileData.plotFreq);	
 }
 
 function setUpSpecData(typeIRorRaman,irrep) {
@@ -207,8 +210,8 @@ function setMaxMinPlot(specData) {
 			specData.maxR = 3700;
 	}
 		
-	_plot.specminX0 = specData.minX = 0;
-	_plot.specmaxX0 = specData.maxX = specData.maxR + 300;
+	_fileData.plotFreq.minX0 = specData.minX = 0;
+	_fileData.plotFreq.maxX0 = specData.maxX = specData.maxR + 300;
 
 }
 
@@ -421,11 +424,11 @@ function createConvolvedSpectrum(specData, type) {
 function showFreqGraph(plotDiv, specData, plot) {
 	var isHTMLPage = (!specData);
 	if (isHTMLPage) {
-		specData = _specData = opener._specData;
-		plot = _plot = opener._plot;
+		specData = _fileData.specData = opener._fileData.specData;
+		plot = _fileData.plotFreq = opener._fileData.plotFreq;
 	}
-	var specMinX = specData.minX;
-	var specMaxX = specData.maxX;
+	var minX = specData.minX;
+	var maxX = specData.maxX;
 	var maxY = specData.maxY;
 	if (maxY == 0)
 		maxY = 200;
@@ -441,9 +444,9 @@ function showFreqGraph(plotDiv, specData, plot) {
     	  	lines: { show: true, fill: false }
       },
       xaxis: { 
-    	  min : specMinX, 
-    	  max : specMaxX, 
-    	  ticks : (specMaxX - specMinX < 2000 ? 5 : 10), 
+    	  min : minX, 
+    	  max : maxX, 
+    	  ticks : (maxX - minX < 2000 ? 5 : 10), 
     	  invert : specData.invertx,
     	  tickDecimals: 0 
       },
@@ -464,9 +467,9 @@ function showFreqGraph(plotDiv, specData, plot) {
 	var raman = [];
 	for (var i = specData.minX, pt = 0; i < specData.maxX; i++, pt++) {
 		if (A.length)
-			ir[pt] = [i, A[i]*plot.specyscale, model[i]];
+			ir[pt] = [i, A[i]*plot.yscale, model[i]];
 		if (B.length)
-			raman[pt] = [i, B[i]*plot.specyscale, model[i]];		
+			raman[pt] = [i, B[i]*plot.yscale, model[i]];		
 	}
 
 	var data = [];
@@ -481,7 +484,7 @@ function showFreqGraph(plotDiv, specData, plot) {
 	var haveSelected = false;
 	for(var i= 0; specData.freqs.length > i; i++){
 		var specfreq= specData.freqs[i];
-		var y0 = (!isHTMLPage && plot.specSelectedFreq == specfreq ? minY : maxY * 0.95)
+		var y0 = (!isHTMLPage && plot.selectedFreq == specfreq ? minY : maxY * 0.95)
 		data.push({data: [[specfreq, y0],[specfreq, maxY]], color:"red", lineWidth:1});
 		if (y0 == minY)
 			haveSelected = true;
@@ -493,7 +496,7 @@ function showFreqGraph(plotDiv, specData, plot) {
 		plotArea.bind( "plotselected", plotSelectCallbackFreq);
 	}
 	$.plot(plotArea, data, options);	
-	_specData.previousPointFreq = -1;
+	_fileData.specData.previousPointFreq = -1;
 	return haveSelected;
 }
 
@@ -539,7 +542,7 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 	if (!range)
 		return;
 	var freq = range[2];
-	var listIndex = _specData.vibList[range[3]][2];	
+	var listIndex = _fileData.specData.vibList[range[3]][2];	
 	if (listIndex < 0)
 		return;		
 	var vib = getbyID('vib');
@@ -550,16 +553,16 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 function plotHoverCallbackFreq(event, pos, itemFreq) {
 	hideTooltip();
 	if(!itemFreq)return
-	if (_specData.previousPointFreq != itemFreq.datapoint) {
+	if (_fileData.specData.previousPointFreq != itemFreq.datapoint) {
 		previousPointFreq = itemFreq.datapoint;
 		var range = getFreqForClick(itemFreq.datapoint);
 		if (!range)
 			return;
 		var freq = range[2];
-		var listIndex = _specData.vibList[range[3]][2];	
+		var listIndex = _fileData.specData.vibList[range[3]][2];	
 		if (listIndex < 0)
 			return;		
-		var model = _specData.model[freq];
+		var model = _fileData.specData.model[freq];
 		var x = roundoff(itemFreq.datapoint[0],2);
 		var y = roundoff(itemFreq.datapoint[1],1);
 		var model = itemFreq.datapoint[2];
@@ -667,15 +670,15 @@ function updateJmolForFreqParams(isVibClick) {
 function onScale(mode) {
 	switch (mode) {
 	case 1:
-		_plot.specyscale *= 1.414;
+		_fileData.plotFreq.yscale *= 1.414;
 		break;
 	case 0:
-		_plot.specyscale = 1;
-		setValue("nMin", _plot.specminX0);
-		setValue("nMax", _plot.specmaxX0);
+		_fileData.plotFreq.yscale = 1;
+		setValue("nMin", _fileData.plotFreq.minX0);
+		setValue("nMax", _fileData.plotFreq.maxX0);
 		break;
 	case -1:
-		_plot.specyscale /= 1.414;
+		_fileData.plotFreq.yscale /= 1.414;
 		break;
 	}
 	onClickModSpec();
@@ -772,8 +775,8 @@ function getFreqForClick(p) {
 	var int = p[1];
 	var listIndex = -1;
 	
-	for (var i = 0; i < _specData.ranges.length; i++) {
-		var range = _specData.ranges[i];
+	for (var i = 0; i < _fileData.specData.ranges.length; i++) {
+		var range = _fileData.specData.ranges[i];
 		if (freq >= range[0] && freq <= range[1]) {
 			return range;
 		}
