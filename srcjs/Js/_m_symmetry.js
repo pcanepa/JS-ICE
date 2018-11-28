@@ -14,9 +14,6 @@ function enterSymmetry() {
 function exitSymmetry() {
 }
 
-//array for storing all symmetry global variables 
-var _symmetry = {}; 
-
 //this appends new atoms by chosen symop
 function doActivateSymmetry(){
 	appendSymmetricAtoms(_symmetry.chosenSymElement,getValue("initPoint"),_symmetry.chosenSymop,getValue("symIterations"));
@@ -33,12 +30,12 @@ function doSymopSelection(symop){
 	displaySymmetryDrawObjects(symop);
 }
 
-_symmetry.chosenSymElement = ""; 
+
 function setSymElement(elementName){
 	_symmetry.chosenSymElement = elementName;
 }
 
-_symmetry.chosenSymop = "";
+
 function setSymop(symop){
 	_symmetry.chosenSymop = symop;
 }
@@ -63,11 +60,8 @@ function setOpacity(){
 	runJmolScript(opacityScript);
 }
 
-
-_symmetry.symOffset = "{0/1,0/1,0/1}";
-
 function updateSymOffset(dimension,offset){
-	var symOffsetString = symOffset;
+	var symOffsetString = _symmetry.symOffset;
 	symOffsetString = symOffsetString.substring(1);
 	var symOffsetArray = symOffsetString.split(",");
 	var xValue = parseInt(symOffsetArray[0])+"/1";
@@ -82,7 +76,7 @@ function updateSymOffset(dimension,offset){
 	if (dimension == "z"){
 		zValue = offset+"/1";
 	}
-	symOffset = "{"+xValue+","+yValue+","+zValue+"}"; 
+	_symmetry.symOffset = "{"+xValue+","+yValue+","+zValue+"}"; 
 }
 
 //creates symmetry menu 

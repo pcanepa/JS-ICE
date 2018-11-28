@@ -26,7 +26,7 @@ var makeCrystalSpaceGroup = null;
 
 // from _m_cell.js
 
-var aCell, bCell, cCell, alpha, beta, gamma, typeSystem; 
+var _cell.a, _cell.b, _cell.c, alpha, beta, gamma, typeSystem; 
 
 // from _m_edit.js
 

@@ -8,7 +8,7 @@ function setVacuum() {
 
 		var zMaxCoord = parseFloat(jmolEvaluate(_frame.frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
-		newcCell = (zMaxCoord * 2) + vaccum;
+		new_fileData.cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
 		if (fractionalCoord == true) {
 			runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; ( i.z +'
@@ -17,7 +17,7 @@ function setVacuum() {
 			runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; i.z +'
 					+ factor + ')');
 		}
-		fromfractionaltoCartesian(null, null, newcCell, null, 90, 90);
+		fromfractionaltoCartesian(null, null, new_fileData.cell.c, null, 90, 90);
 		break;
 	case "polymer":
 		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
@@ -26,13 +26,13 @@ function setVacuum() {
 
 		var zMaxCoord = parseFloat(jmolEvaluate(_frame.frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
-		newcCell = (zMaxCoord * 2) + vaccum;
+		new_fileData.cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
 		runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; i.z +' + factor
 				+ ')');
 		runJmolScriptWait(_frame.frameSelection + '.y = for(i;' + _frame.frameSelection + '; i.y +' + factor
 				+ ')');
-		fromfractionaltoCartesian(null, newcCell, newcCell, 90, 90, 90);
+		fromfractionaltoCartesian(null, new_fileData.cell.c, new_fileData.cell.c, 90, 90, 90);
 		break;
 	case "molecule":
 		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
@@ -41,7 +41,7 @@ function setVacuum() {
 
 		var zMaxCoord = parseFloat(jmolEvaluate(_frame.frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
-		newcCell = (zMaxCoord * 2) + vaccum;
+		new_fileData.cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
 		runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; i.z +' + factor
 				+ ')');
@@ -49,7 +49,7 @@ function setVacuum() {
 				+ ')');
 		runJmolScriptWait(_frame.frameSelection + '.x = for(i;' + _frame.frameSelection + '; i.x +' + factor
 				+ ')');
-		fromfractionaltoCartesian(newcCell, newcCell, newcCell, 90, 90, 90);
+		fromfractionaltoCartesian(new_fileData.cell.c, new_fileData.cell.c, new_fileData.cell.c, 90, 90, 90);
 		break;
 
 	}
@@ -62,37 +62,37 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 	    yx, yy, yz, 
 	    zx, zy, zz;
 	if (aparam != null)
-		aCell = aparam;
+		_fileData.cell.a = aparam;
 	if (bparam != null)
-		bCell = bparam;
+		_fileData.cell.b = bparam;
 	if (cparam != null)
-		cCell = cparam;
+		_fileData.cell.c = cparam;
 	if (alphaparam != null)
-		alpha = alphaparam;
+		_fileData.cell.alpha = alphaparam;
 	if (betaparam != null)
-		beta = betaparam;
+		_fileData.cell.beta = betaparam;
 	if (gammaparam != null)
-		gamma = gammaparam;
+		_fileData.cell.gamma = gammaparam;
 	// formula repeated from
 	// http://en.wikipedia.org/wiki/Fractional_coordinates
 	var v = Math.sqrt(1
-			- (Math.cos(alpha * _conversion.radiant) * Math.cos(alpha * _conversion.radiant))
-			- (Math.cos(beta * _conversion.radiant) * Math.cos(beta * _conversion.radiant))
-			- (Math.cos(gamma * _conversion.radiant) * Math.cos(gamma * _conversion.radiant))
+			- (Math.cos(_fileData.cell.alpha * _conversion.radiant) * Math.cos(_fileData.cell.alpha * _conversion.radiant))
+			- (Math.cos(_fileData.cell.beta * _conversion.radiant) * Math.cos(_fileData.cell.beta * _conversion.radiant))
+			- (Math.cos(_fileData.cell.gamma * _conversion.radiant) * Math.cos(_fileData.cell.gamma * _conversion.radiant))
 			+ 2
-			* (Math.cos(alpha * _conversion.radiant) * Math.cos(beta * _conversion.radiant) * Math
-					.cos(gamma * _conversion.radiant)));
-	xx = aCell * Math.sin(beta * _conversion.radiant);
+			* (Math.cos(_fileData.cell.alpha * _conversion.radiant) * Math.cos(_fileData.cell.beta * _conversion.radiant) * Math
+					.cos(_fileData.cell.gamma * _conversion.radiant)));
+	xx = _fileData.cell.a * Math.sin(_fileData.cell.beta * _conversion.radiant);
 	xy = parseFloat(0.000);
-	xz = aCell * Math.cos(beta * _conversion.radiant);
-	yx = bCell
-	* (((Math.cos(gamma * _conversion.radiant)) - ((Math.cos(beta * _conversion.radiant)) * (Math
-			.cos(alpha * _conversion.radiant)))) / Math.sin(beta * _conversion.radiant));
-	yy = bCell * (v / Math.sin(beta * _conversion.radiant));
-	yz = bCell * Math.cos(alpha * _conversion.radiant);
+	xz = _fileData.cell.a * Math.cos(_fileData.cell.beta * _conversion.radiant);
+	yx = _fileData.cell.b
+	* (((Math.cos(_fileData.cell.gamma * _conversion.radiant)) - ((Math.cos(_fileData.cell.beta * _conversion.radiant)) * (Math
+			.cos(_fileData.cell.alpha * _conversion.radiant)))) / Math.sin(_fileData.cell.beta * _conversion.radiant));
+	yy = _fileData.cell.b * (v / Math.sin(_fileData.cell.beta * _conversion.radiant));
+	yz = _fileData.cell.b * Math.cos(_fileData.cell.alpha * _conversion.radiant);
 	zx = parseFloat(0.000);
 	zy = parseFloat(0.000);
-	zz = cCell;
+	zz = _fileData.cell.c;
 	return [[xx, xy, xz], [yx, yy, yz], [zx, zy, zz]];
 
 }
