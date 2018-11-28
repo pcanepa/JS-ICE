@@ -27,7 +27,13 @@ var makeCrystalSpaceGroup = null;
 // from _m_cell.js
 var _cell = {};
 	
+// from _m_symmetry.js
 
+var _symmetry = {
+		chosenSymElement: "", 
+		chosenSymop: "",
+		symOffset: "{0/1,0/1,0/1}"
+}; 
 
 // from plotgraph.js
 

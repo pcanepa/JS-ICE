@@ -1,4 +1,4 @@
-aCell, bCell, cCell, alpha, beta, gamma, typeSystem
+var aCell, bCell, cCell, alpha, beta, gamma, typeSystem;
 
 function enterCell() {
 	getUnitcell(_frame.frameValue);

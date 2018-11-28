@@ -1,6 +1,11 @@
 //prevframeSelection needs because of the conventional
 
+
+
 function figureOutSpaceGroup() {
+	var stringCellParam;
+	var cellDimString = null;
+	var ibravQ = "";
 	saveStateAndOrientation_a();
 	prevframeSelection = _frame.frameSelection;
 	if (_frame.frameValue == null || _frame.frameValue == "" || flagCif)
@@ -13,11 +18,6 @@ function figureOutSpaceGroup() {
 			flagCrystal ? "conv" : null, 
 			magnetic ? "delete not cell=555;" : null
 	);
-	getSpaceGroup();
-}
-
-var interNumber = "";
-getSpaceGroup = function() {
 	var s = ""
 	var info = jmolEvaluate('show("spacegroup")')
 	if (info.indexOf("x,") < 0) {
@@ -31,16 +31,8 @@ getSpaceGroup = function() {
 						.replace(/international table number:/, ""));
 		}
 	}
-	interNumber = parseInt(s);
+	var interNumber = parseInt(s);
 	getUnitcell(prevFrame);
-	findCellParameters()
-}
-
-
-var stringCellParam;
-var cellDimString = null;
-var ibravQ = "";
-function findCellParameters() {
 	// /from crystal manual http://www.crystal.unito.it/Manuals/crystal09.pdf
 	switch (true) {
 	case ((interNumber <= 2)): // Triclinic lattices

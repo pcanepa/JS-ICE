@@ -9,7 +9,6 @@ var flagSiesta = false;
 var flagDmol = false;
 var flagMolden = false;
 var flagCastep = false;
-
 var quantumEspresso = false;
 
 

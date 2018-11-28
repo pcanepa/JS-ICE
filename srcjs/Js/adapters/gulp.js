@@ -103,7 +103,7 @@ function setSystem() {
 		break;
 
 	case "molecule":
-		// To be terminated
+		// TODO
 
 		break;
 	}

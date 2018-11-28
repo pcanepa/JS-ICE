@@ -54,6 +54,7 @@ var symmetryCRYSTAL = null;
 function exportCRYSTAL() {
 	var endCRYSTAL = "TEST', 'END";
 	var script = "";
+	var flagsymmetry;
 	warningMsg("Make sure you have selected the model you would like to export.")
 	titleCRYSTAL();
 	setUnitCell();
@@ -66,7 +67,7 @@ function exportCRYSTAL() {
 		symmetryCRYSTAL = "'1'";
 
 		if (!flagSiesta && !flagOutcar && !flagCryVasp)
-			var flagsymmetry = confirm("Do you want to introduce symmetry ?")
+			flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			script = "var cellp = ["
 					+ roundNumber(aCell)

@@ -26,19 +26,12 @@
 
 function enterSpectra() {
 
-// from vaspoutcar
-//	if (fileData.vibLine) {
-//		var vib = getbyID('vib');
-//		for (var i = 1; i < _fileData.fileData.vibLine.length; i++) {
-//			 addOption(vib, _fileData.vibLine[i], i + 1);
-//		}
-//	}
-	
 	if (!_fileData.haveSpecData) {
 		_specData = null;
 		_fileData.haveSpecData = true;
 		
 		symmetryModeAdd();	
+		_plot.specyscale = 1;
 		onClickModSpec(true, true);	
 		if (!_specData)
 			return;		
@@ -94,14 +87,25 @@ function enableFreqOpts() {
 
 }
 
-function onClickSelectVib(value) {
-	showFrame(value);	
-	updateJmolForFreqParams();
+function onClickSelectVib(isTriggered) {
+	var vib = getbyID('vib');
+	if (isTriggered) {
+		if (vib.selectedIndex < 0)
+			return;
+		_plot.specSelectedFreq = _specData.freqs[_specData.vibList[vib.selectedIndex][3]];
+		showFreqGraph("plotareafreq", _specData, _plot);
+		return;
+	}	
+	var model = parseInt(vib.value);
+	showFrame(model);	
+	updateJmolForFreqParams(true);
+	// trigger to make sure selectedIndex has been set.
+	setTimeout(function() {onClickSelectVib(true)}, 50);
 }
 
 function setYMax() {
 	var specData = setUpSpecData("all", "any"); 
-	setFrequencyList(specData, false);
+	getFrequencyList(specData);
 	createSpectrum(specData);
 	 _fileData.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
 }
@@ -118,14 +122,14 @@ function onClickModSpec(isPageOpen, doSetYMax) {
 	}
 	var typeIRorRaman = getRadioSetValue(document.modelsVib.modSpec);
 	var irrep = getValueSel('sym');		
-	var specData = _specData = setUpSpecData(typeIRorRaman,irrep);
-	setFrequencyList(specData, true);
-	createSpectrum(specData);
+	_specData = setUpSpecData(typeIRorRaman,irrep);
+	getFrequencyList(_specData);
+	createSpectrum(_specData);
+	setVibList(_specData);
 	if (isPageOpen){
-		setMaxMinPlot(specData);
+		setMaxMinPlot(_specData);
 	}
-	showFreqGraph("plotareafreq", specData);	
-	
+	return showFreqGraph("plotareafreq", _specData, _plot);	
 }
 
 function setUpSpecData(typeIRorRaman,irrep) {
@@ -137,10 +141,11 @@ function setUpSpecData(typeIRorRaman,irrep) {
 			rescale   : true,
 			invertx   : isChecked('invertX'),
 			freqCount : _fileData.freqInfo.length,
-			minX      : parseInt(getValue("nMin")),
-			maxX      : parseInt(getValue("nMax")),
+			minX      : Math.min(parseInt(getValue("nMin")), parseInt(getValue("nMax"))),
+			maxX      : Math.max(parseInt(getValue("nMin")), parseInt(getValue("nMax"))),
 			maxY      : _fileData.spectraYMax,
 			previousPointFreq : -1,
+			vibList   : [],
 			freqInfo  : [],
 			irInt     : [],
 			irFreq    : [],
@@ -151,8 +156,7 @@ function setUpSpecData(typeIRorRaman,irrep) {
 			specRaman : [],
 			model     : [],
 			freqs     : [],
-			ranges    : [],
-			selectedfreq : [] 
+			ranges    : [] 
 	};
 	
 }
@@ -202,32 +206,45 @@ function setMaxMinPlot(specData) {
 	} catch (err){
 			specData.maxR = 3700;
 	}
-	
-	
-	specData.maxX = specData.maxR + 300;
-	specData.minX = 0;
+		
+	_plot.specminX0 = specData.minX = 0;
+	_plot.specmaxX0 = specData.maxX = specData.maxR + 300;
 
 }
-function setFrequencyList(specData, doAddOption) {
-	if (doAddOption) {
-		var vib = getbyID('vib');	
-		cleanList('vib');
-	}	
+
+function getFrequencyList(specData) {
+	// fill specData.freqInfo[] and specData.vibList[]
 	var vibLinesFromIrrep = getVibLinesFromIrrep(specData);
 	var prop = (specData.typeIRorRaman == "ir" ? "IRactivity" 
 			: specData.typeIRorRaman == "raman" ? "Ramanactivity" 
 			: null);
-
+	specData.vibList = [];
+	specData.freqInfo = [];
 	for (var i = 0; i < specData.freqCount; i++) {
 		var label = null;
 		if ((vibLinesFromIrrep == null || (label = vibLinesFromIrrep[i]))
 			  && (prop == null || _fileData.freqInfo[i].modelProperties[prop] == "A")) {
 			specData.freqInfo.push(_fileData.freqInfo[i]);
-			if(doAddOption) {
-				addOption(vib, (label || (i+1) + " " + _fileData.freqInfo[i].name), _fileData.freqInfo[i].modelNumber);
-			}
+			specData.vibList.push([(label || (i+1) + " " + _fileData.freqInfo[i].name), _fileData.freqInfo[i].modelNumber, -1]);
 		}
 	}
+}
+
+function setVibList(specData) {
+	var vib = getbyID('vib');	
+	cleanList('vib');
+	var xmin = specData.minX;
+	var xmax = specData.maxX;	
+	for (var i = 0, pt = 0, n = specData.vibList.length; i < n; i++) {
+		if (specData.freqs[i] >= xmin && specData.freqs[i] <= xmax) {
+			addOption(vib, specData.vibList[i][0], specData.vibList[i][1]);
+			specData.vibList[pt][3] = i;  // reverse loop-up
+			specData.vibList[i][2] = pt++;
+		}
+	}
+	var script = ";set echo bottom left;echo \"\";";	
+	runJmolScriptWait(script)
+
 }
 
 function getVibLinesFromIrrep(specData) {
@@ -401,15 +418,19 @@ function createConvolvedSpectrum(specData, type) {
 	}
 }
 
-function showFreqGraph(plotDiv, specData) {
-	specData || (specData = opener._specData);
+function showFreqGraph(plotDiv, specData, plot) {
+	var isHTMLPage = (!specData);
+	if (isHTMLPage) {
+		specData = _specData = opener._specData;
+		plot = _plot = opener._plot;
+	}
 	var specMinX = specData.minX;
 	var specMaxX = specData.maxX;
 	var maxY = specData.maxY;
 	if (maxY == 0)
 		maxY = 200;
 	maxY *= 1.2;
-
+	var minY = -0.05*maxY;
 	var plotArea = $("#" + plotDiv);
 	getRanges(specData);
 	var A = specData.specIR, B = specData.specRaman;	
@@ -426,10 +447,10 @@ function showFreqGraph(plotDiv, specData) {
     	  invert : specData.invertx,
     	  tickDecimals: 0 
       },
-      yaxis: { ticks: 0, tickDecimals: 0, min: -0.05*maxY, max: maxY },
+      yaxis: { ticks: 0, tickDecimals: 0, min: minY, max: maxY },
       selection: { 
-    	  	mode: (nplots == 1 ? "x" : "xy"), 
-    	  	hoverMode: (nplots == 1 ? "x" : "xy") 
+    	  	mode: "x", 
+    	  	hoverMode: "x" 
       },
       grid: { 
 			hoverable: true, 
@@ -443,12 +464,11 @@ function showFreqGraph(plotDiv, specData) {
 	var raman = [];
 	for (var i = specData.minX, pt = 0; i < specData.maxX; i++, pt++) {
 		if (A.length)
-			ir[pt] = [i, A[i], model[i]];
+			ir[pt] = [i, A[i]*plot.specyscale, model[i]];
 		if (B.length)
-			raman[pt] = [i, B[i], model[i]];		
+			raman[pt] = [i, B[i]*plot.specyscale, model[i]];		
 	}
 
-	var cursor = [[1000, maxY*0.9], [1000, maxY]];
 	var data = [];
 	if (A.length && B.length) {
 		data.push({label:"IR", data:ir, color:"orange"});
@@ -458,15 +478,33 @@ function showFreqGraph(plotDiv, specData) {
 	} else if (B.length) {
 		data.push({label:"Raman", data: raman, color:"blue"});
 	}
+	var haveSelected = false;
 	for(var i= 0; specData.freqs.length > i; i++){
 		var specfreq= specData.freqs[i];
-		data.push({data: [[specfreq, maxY*0.9],[specfreq, maxY]], color:"red", lineWidth:1});
+		var y0 = (!isHTMLPage && plot.specSelectedFreq == specfreq ? minY : maxY * 0.95)
+		data.push({data: [[specfreq, y0],[specfreq, maxY]], color:"red", lineWidth:1});
+		if (y0 == minY)
+			haveSelected = true;
 	}
-	plotArea.unbind("plothover plotclick", null)
+	plotArea.unbind("plothover plotclick plotselected", null)
 	plotArea.bind("plothover", plotHoverCallbackFreq);
-	plotArea.bind("plotclick", plotClickCallbackFreq);
+	if (!isHTMLPage) {
+		plotArea.bind("plotclick", plotClickCallbackFreq);
+		plotArea.bind( "plotselected", plotSelectCallbackFreq);
+	}
 	$.plot(plotArea, data, options);	
 	_specData.previousPointFreq = -1;
+	return haveSelected;
+}
+
+function plotSelectCallbackFreq(event, ranges) {
+	var x1 = ranges.xaxis.from | 0;
+	var x2 = ranges.xaxis.to | 0;
+	if (Math.abs(x2-x1) > 100) {
+		setValue("nMin", Math.min(x1, x2));
+		setValue("nMax", Math.max(x1, x2));
+		setTimeout(onClickModSpec,50);
+	}
 }
 
 function getRanges(specData) {
@@ -501,14 +539,12 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 	if (!range)
 		return;
 	var freq = range[2];
-	var listIndex = range[3];	
-	var model = _specData.model[freq];
-	// vibrationProp = 'vibration on; ' +  getValue("vecscale") + '; '+ getValue("vectors") + ';  '+ getValue("vecsamplitude"); 
-	var script = ' model '+ model +  '; ' //+ vibrationProp;  // 'set
-	runJmolScriptWait(script);
-//	setVibrationOn(true);
-	getbyID('vib').options[listIndex].selected = true;
-	onClickFreqParams()
+	var listIndex = _specData.vibList[range[3]][2];	
+	if (listIndex < 0)
+		return;		
+	var vib = getbyID('vib');
+	vib.options[listIndex].selected = true;
+	setTimeout(function(){onClickSelectVib();},50);
 }
 
 function plotHoverCallbackFreq(event, pos, itemFreq) {
@@ -520,18 +556,19 @@ function plotHoverCallbackFreq(event, pos, itemFreq) {
 		if (!range)
 			return;
 		var freq = range[2];
-		var listIndex = range[3];	
+		var listIndex = _specData.vibList[range[3]][2];	
+		if (listIndex < 0)
+			return;		
 		var model = _specData.model[freq];
-		
 		var x = roundoff(itemFreq.datapoint[0],2);
 		var y = roundoff(itemFreq.datapoint[1],1);
 		var model = itemFreq.datapoint[2];
-
+		
 		label = getbyID('vib').options[listIndex].text;
 
 		showTooltipFreq(itemFreq.pageX, itemFreq.pageY + 10, label, pos);
 	}
-	if (pos.canvasY > 320)plotClickCallbackFreq(event, pos, itemFreq);
+	if (pos.canvasY < 30)setTimeout(function(){plotClickCallbackFreq(event, pos, itemFreq)},50);
 }
 
 
@@ -570,7 +607,7 @@ function symmetryModeAdd() { // extracts vibrational symmetry modes from Info
 								// ID
 	cleanList('sym');
 	var sym = getbyID('sym');
-	if (Info[3].modelProperties) {
+	if (Info[3] && Info[3].modelProperties) {
 		var symm = _fileData.freqSymm;
 		if (!symm) {
 			var symm = [];
@@ -604,23 +641,46 @@ function unique(a) {
 }
 
 function onClickFreqParams() {
-	updateJmolForFreqParams();
+	updateJmolForFreqParams(false);
 }
 
-function updateJmolForFreqParams() {
+function updateJmolForFreqParams(isVibClick) {
 	var c = jmolColorPickerBoxes["vectorColorPicker"].getJmolColor();
 	var vectorsON = isChecked("vectorsON");
-	var script = "vibration " + isChecked("radVibrationOn")
+	var vibON = isChecked("radVibrationOn");
+	var script = "vibration " + vibON
 					+ ";vectors " + vectorsON
 					+ ";" + getValueSel("vecsamplitude")
 					+ ";" + getValueSel("vecscale")
 					+ ";color vectors " + (isChecked("vibVectcolor") ? "none" : "white");
 	if (vectorsON)
-		script += ";" + getValueSel("widthvec");
-	runJmolScriptWait(script)
+		script += ";" + getValueSel("widthvec");	
+	var label = getTextSel('vib');
+	script += ";set echo bottom left;echo \""+label+ "\";";	
+	runJmolScriptWait(script);
+	if (isVibClick && !vectorsON && !vibON) {
+		getbyID('radVibrationOn').checked = true;
+		runJmolScriptWait("vibration ON"); 
+	}
 }
 
-
+function onScale(mode) {
+	switch (mode) {
+	case 1:
+		_plot.specyscale *= 1.414;
+		break;
+	case 0:
+		_plot.specyscale = 1;
+		setValue("nMin", _plot.specminX0);
+		setValue("nMax", _plot.specmaxX0);
+		break;
+	case -1:
+		_plot.specyscale /= 1.414;
+		break;
+	}
+	onClickModSpec();
+	return true;
+}
 
 // Creates the frequency menu on the web applet
 function createFreqGrp() { 
@@ -634,8 +694,14 @@ function createFreqGrp() {
 	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
-	var smallGraph =  createDiv("plotareafreq", "background:blue;width:320px;height:180px;background-color:#EFEFEF","");  
-	
+	var smallGraph =  createDiv("plotareafreq", "background:blue;width:300px;height:180px;background-color:#EFEFEF","");  
+	var graphButtons = createButtonB("scaleup", "&#x25b2;","onScale(1)' title='increase Y scale",0,"width:35px") + "<br>"
+		+ createButtonB("scaleup", "&#x25cf;","onScale(0)' title='reset X and Y",0,"width:35px") + "<br>"
+		+ createButtonB("scaleup", "&#x25bc;","onScale(-1)' title='decrease Y scale",0,"width:35px");
+	var smallGraphAndButtons = "<table cellpadding=0 cellspacing=0><tr><td valign=top>" 
+			+ smallGraph + "</td><td valign=center>" 
+			+ graphButtons + "</td></tr></table>";
+
 	var simPanel = createDiv("simPanel", "", "Raman intensities set to 0.0 kmMol<sup>-1</sup>"
 		+ "<br>\n"
 		+ createLine('blue', '')
@@ -661,7 +727,7 @@ function createFreqGrp() {
 			strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeyup='onClickModSpec()' CLASS='select' >";
 			strFreq += "</select> ";
 			strFreq += "<BR>\n";
-			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' onkeyup='onClickSelectVib(value)' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
+			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib()' onkeyup='onClickSelectVib()' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
 		strFreq += "</td>"; // end of the first column
 		strFreq += "<td valign='bottom'>";
 		strFreq += "<BR>\n" + "<BR>\n";
@@ -687,8 +753,14 @@ function createFreqGrp() {
 			strFreq += "</tr></table>";					
 		strFreq += "</td></tr>";
 		strFreq += "<tr><td colspan=2>";
-		strFreq += createDiv("<td colspan=2>", createDiv("graphfreqdiv", // making small graph
-				"width:320px;height:200px;background-color:#EFEFEF;margin-left:5px;display:inline", smallGraph + createRadio("vectors", "off", 'onClickFreqParams()', 0,0, "vectorsOFF", "off"), "</td>") + simPanel);
+		strFreq += createDiv("graphfreqdiv", // making small graph
+				"width:320px;height:200px;background-color:#EFEFEF;margin-left:5px;display:inline", 
+				
+				
+				smallGraphAndButtons 
+				
+				
+				+ simPanel);
 		strFreq += "</td></tr>";
 	strFreq += "</table></form> ";
 
