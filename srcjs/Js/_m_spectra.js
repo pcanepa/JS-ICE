@@ -698,9 +698,9 @@ function createFreqGrp() {
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
 	var smallGraph =  createDiv("plotareafreq", "background:blue;width:300px;height:180px;background-color:#EFEFEF","");  
-	var graphButtons = createButtonB("scaleup", "&#x25b2;","onScale(1)' title='increase Y scale",0,"width:35px") + "<br>"
-		+ createButtonB("scaleup", "&#x25cf;","onScale(0)' title='reset X and Y",0,"width:35px") + "<br>"
-		+ createButtonB("scaleup", "&#x25bc;","onScale(-1)' title='decrease Y scale",0,"width:35px");
+	var graphButtons = createButtonB("scaleup", "&#x25b2;","onScale(1)' title='increase Y scale",0,"width:40px") + "<br>"
+		+ createButtonB("scaleup", "&#x25cf;","onScale(0)' title='reset X and Y",0,"width:40px") + "<br>"
+		+ createButtonB("scaleup", "&#x25bc;","onScale(-1)' title='decrease Y scale",0,"width:40px");
 	var smallGraphAndButtons = "<table cellpadding=0 cellspacing=0><tr><td valign=top>" 
 			+ smallGraph + "</td><td valign=center>" 
 			+ graphButtons + "</td></tr></table>";
