@@ -4,31 +4,32 @@
 //not really necessary for current functionality but nice to have 
 //only functional in jsmol as jsice cannot read spacegroupInfo.operations
 
-function pointToArray(point){
-	pointArray = []
-	//need to convert point to a string so that its length may be measured 
-	var totalChars = @point.length
-	var allElementsArray = []
-	var elementCounter = 1
+function pointToArray(pointt){
+	var pointt = ""+pointt+"" 
+	var coordinateArray = []
+	var totalChars = pointt.length
 	for (var i = 0; i < totalChars;i++){
-		if (point[i] == "{"){
-			point[i] = " "
+		if (pointt[i] == "{"){
+			pointt[i] = " "
 		}
-		if (point[i] == "}"){
-			point[i] = " "
+		if (pointt[i] == "}"){
+			pointt[i] = " "
 		}
 	}
-	for (var i = 0; i < totalChars;i++){
-		if (point[i] == " "){
-			pointArray[elementCounter] = elementString
+	var elementString  = ""
+	for (var i = 0; i <= totalChars;i++){
+		if (pointt[i] == " " || pointt[i] == "\t"){
+			if (elementString != " " && elementString != ""){
+				coordinateArray.push(elementString)
+			}
 			elementString = ""
-			elementCounter += 1 
+			
 		}
 		else{
-			elementString += symopCharArray[i]
+			elementString += pointt[i]
 		}
 	}
-	return pointArray
+	return coordinateArray
 }
 //Unused
 function readSymmetryNames() {
