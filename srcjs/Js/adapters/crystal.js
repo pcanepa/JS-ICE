@@ -69,11 +69,11 @@ function exportCRYSTAL() {
 			var flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			script = "var cellp = ["
-					+ roundNumber(aCell)
+					+ roundNumber(_cell.a)
 					+ ", "
-					+ roundNumber(bCell)
+					+ roundNumber(_cell.b)
 					+ ", "
-					+ roundNumber(cCell)
+					+ roundNumber(_cell.c)
 					+ ", "
 					+ roundNumber(alpha)
 					+ ", "
@@ -114,8 +114,8 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = [" + roundNumber(aCell) + ", "
-				+ roundNumber(bCell) + ", " + roundNumber(gamma) + "];"
+		script = "var cellp = [" + roundNumber(_cell.a) + ", "
+				+ roundNumber(_cell.b) + ", " + roundNumber(gamma) + "];"
 				+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
 				+ titleCRYS + "', " + systemCRYSTAL + ", " + symmetryCRYSTAL
 				+ "];" + 'crystalArr = crystalArr.replace("\n\n","\n");'
@@ -133,7 +133,7 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = " + roundNumber(aCell) + ";"
+		script = "var cellp = " + roundNumber(_cell.a) + ";"
 				+ "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
 				+ ", " + symmetryCRYSTAL + "];"
 				+ 'crystalArr = crystalArr.replace("\n\n","\n");'

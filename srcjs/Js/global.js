@@ -10,7 +10,16 @@ var _specData;
 
 // from _m_file.js
 
-var _fileData = {};
+_fileData = {};
+_cell = {
+		a : 0,
+		b : 0,
+		c : 0,
+		alpha : 0,
+		beta : 0,
+		gamma : 0,
+		typeSystem : ''
+};
 var _fileIsReload = false;
 
 // from symmetry.js
@@ -18,14 +27,10 @@ var _fileIsReload = false;
 var prevframeSelection = null;
 var prevFrame = null;
 
-// from _m_build.js
-var distanceZ, angleZ, torsionalZ
-var arrayAtomZ = new Array(3);
-
-var makeCrystalSpaceGroup = null;
+// from _m_build.js
 
 // from _m_cell.js
-var _cell = {};
+//var _cell = {};
 	
 
 

@@ -8,7 +8,7 @@ function setVacuum() {
 
 		var zMaxCoord = parseFloat(jmolEvaluate(frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
-		newcCell = (zMaxCoord * 2) + vaccum;
+		new_cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
 		if (fractionalCoord == true) {
 			runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; ( i.z +'
@@ -17,7 +17,7 @@ function setVacuum() {
 			runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z +'
 					+ factor + ')');
 		}
-		fromfractionaltoCartesian(null, null, newcCell, null, 90, 90);
+		fromfractionaltoCartesian(null, null, new_cell.c, null, 90, 90);
 		break;
 	case "polymer":
 		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
@@ -26,13 +26,13 @@ function setVacuum() {
 
 		var zMaxCoord = parseFloat(jmolEvaluate(frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
-		newcCell = (zMaxCoord * 2) + vaccum;
+		new_cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
 		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z +' + factor
 				+ ')');
 		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y +' + factor
 				+ ')');
-		fromfractionaltoCartesian(null, newcCell, newcCell, 90, 90, 90);
+		fromfractionaltoCartesian(null, new_cell.c, new_cell.c, 90, 90, 90);
 		break;
 	case "molecule":
 		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
@@ -41,7 +41,7 @@ function setVacuum() {
 
 		var zMaxCoord = parseFloat(jmolEvaluate(frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
-		newcCell = (zMaxCoord * 2) + vaccum;
+		new_cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
 		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z +' + factor
 				+ ')');
@@ -49,7 +49,7 @@ function setVacuum() {
 				+ ')');
 		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x +' + factor
 				+ ')');
-		fromfractionaltoCartesian(newcCell, newcCell, newcCell, 90, 90, 90);
+		fromfractionaltoCartesian(new_cell.c, new_cell.c, new_cell.c, 90, 90, 90);
 		break;
 
 	}
@@ -62,11 +62,11 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 	    yx, yy, yz, 
 	    zx, zy, zz;
 	if (aparam != null)
-		aCell = aparam;
+		_cell.a = aparam;
 	if (bparam != null)
-		bCell = bparam;
+		_cell.b = bparam;
 	if (cparam != null)
-		cCell = cparam;
+		_cell.c = cparam;
 	if (alphaparam != null)
 		alpha = alphaparam;
 	if (betaparam != null)
@@ -82,17 +82,17 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 			+ 2
 			* (Math.cos(alpha * radiant) * Math.cos(beta * radiant) * Math
 					.cos(gamma * radiant)));
-	xx = aCell * Math.sin(beta * radiant);
+	xx = _cell.a * Math.sin(beta * radiant);
 	xy = parseFloat(0.000);
-	xz = aCell * Math.cos(beta * radiant);
-	yx = bCell
+	xz = _cell.a * Math.cos(beta * radiant);
+	yx = _cell.b
 	* (((Math.cos(gamma * radiant)) - ((Math.cos(beta * radiant)) * (Math
 			.cos(alpha * radiant)))) / Math.sin(beta * radiant));
-	yy = bCell * (v / Math.sin(beta * radiant));
-	yz = bCell * Math.cos(alpha * radiant);
+	yy = _cell.b * (v / Math.sin(beta * radiant));
+	yz = _cell.b * Math.cos(alpha * radiant);
 	zx = parseFloat(0.000);
 	zy = parseFloat(0.000);
-	zz = cCell;
+	zz = _cell.c;
 	return [[xx, xy, xz], [yx, yy, yz], [zx, zy, zz]];
 
 }

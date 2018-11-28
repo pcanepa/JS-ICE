@@ -1,5 +1,3 @@
-aCell, bCell, cCell, alpha, beta, gamma, typeSystem
-
 function enterCell() {
 	getUnitcell(_frame.frameValue);
 //	getSymInfo();
@@ -14,9 +12,9 @@ function saveFractionalCoordinate() {
 	if (_frame.frameSelection == null)
 		getUnitcell("1");
 
-	var x = "var cellp = [" + roundNumber(aCell) + ", " + roundNumber(bCell)
-	+ ", " + roundNumber(cCell) + ", " + roundNumber(alpha) + ", "
-	+ roundNumber(beta) + ", " + roundNumber(gamma) + "];"
+	var x = "var cellp = [" + roundNumber(_cell.a) + ", " + roundNumber(_cell.b)
+	+ ", " + roundNumber(_cell.c) + ", " + roundNumber(_cell.alpha) + ", "
+	+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(gamma) + "];"
 	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
 	+ _frame.frameSelection + '.label("%a %16.9[fxyz]");'
 	+ 'var lista = [cellparam, xyzfrac];'
@@ -27,24 +25,24 @@ function saveFractionalCoordinate() {
 //This reads out cell parameters given astructure.
 function getUnitcell(i) {
 	// document.cellGroup.reset();
-	typeSystem = "";
+	_cell.typeSystem = "";
 	i || (i = 1);
 	var StringUnitcell = "auxiliaryinfo.models[" + i + "].infoUnitCell";
 
 	var cellparam = extractInfoJmol(StringUnitcell);
 
-	aCell = roundNumber(cellparam[0]);
-	bCell = roundNumber(cellparam[1]);
-	cCell = roundNumber(cellparam[2]);
+	_cell.a = roundNumber(cellparam[0]);
+	_cell.b = roundNumber(cellparam[1]);
+	_cell.c = roundNumber(cellparam[2]);
 	dimensionality = parseFloat(cellparam[15]);
 	volumeCell = roundNumber(cellparam[16]);
 
-	var bOvera = roundNumber(parseFloat(bCell / cCell));
-	var cOvera = roundNumber(parseFloat(cCell / aCell));
+	var bOvera = roundNumber(parseFloat(_cell.b / _cell.c));
+	var cOvera = roundNumber(parseFloat(_cell.c / _cell.a));
 
 	if (dimensionality == 1) {
-		bCell = 0.000;
-		cCell = 0.000;
+		_cell.b = 0.000;
+		_cell.c = 0.000;
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeDisable("par_b");
@@ -53,10 +51,10 @@ function getUnitcell(i) {
 		setValue("par_c", "1");
 		setValue("bovera", "0");
 		setValue("covera", "0");
-		typeSystem = "polymer";
+		_cell.typeSystem = "polymer";
 	} else if (dimensionality == 2) {
-		cCell = 0.000;
-		typeSystem = "slab";
+		_cell.c = 0.000;
+		_cell.typeSystem = "slab";
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeEnable("par_b");
@@ -66,9 +64,9 @@ function getUnitcell(i) {
 		setValue("bovera", bOvera);
 		setValue("covera", "0");
 	} else if (dimensionality == 3) {
-		typeSystem = "crystal";
-		alpha = cellparam[3];
-		beta = cellparam[4];
+		_cell.typeSystem = "crystal";
+		_cell.alpha = cellparam[3];
+		_fileData.cell.beta = cellparam[4];
 		gamma = cellparam[5];
 		makeEnable("par_a");
 		setValue("par_a", "");
@@ -79,22 +77,22 @@ function getUnitcell(i) {
 		setValue("bovera", bOvera);
 		setValue("covera", cOvera);
 	} else if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
-		aCell = 0.00;
-		bCell = 0.00;
-		cCell = 0.00;
-		alpha = 0.00;
-		beta = 0.00;
+		_cell.a = 0.00;
+		_cell.b = 0.00;
+		_cell.c = 0.00;
+		_cell.alpha = 0.00;
+		_fileData.cell.beta = 0.00;
 		gamma = 0.00;
-		typeSystem = "molecule";
+		_cell.typeSystem = "molecule";
 		setValue("bovera", "0");
 		setValue("covera", "0");
 	}
-	setValue("aCell", roundNumber(aCell));
-	setValue("bCell", roundNumber(bCell));
-	setValue("cCell", roundNumber(cCell));
-	setValue("alphaCell", roundNumber(alpha));
-	setValue("betaCell", roundNumber(beta));
-	setValue("gammaCell", roundNumber(gamma));
+	setValue("_cell.a", roundNumber(_cell.a));
+	setValue("_cell.b", roundNumber(_cell.b));
+	setValue("_cell.c", roundNumber(_cell.c));
+	setValue("alph_cell.a", roundNumber(_cell.alpha));
+	setValue("bet_cell.a", roundNumber(_fileData.cell.beta));
+	setValue("gamm_cell.a", roundNumber(gamma));
 	setValue("volumeCell", roundNumber(volumeCell));
 
 }
@@ -115,27 +113,27 @@ function setUnitCell() {
 /////////////
 
 function setCellMeasure(value) {
-	typeSystem = "";
+	_cell.typeSystem = "";
 	var StringUnitcell = "auxiliaryinfo.models[" + i + "].infoUnitCell";
 
 	if (i == null || i == "")
 		StringUnitcell = " auxiliaryInfo.models[1].infoUnitCell ";
 
 	var cellparam = extractInfoJmol(StringUnitcell);
-	aCell = cellparam[0];
-	bCell = cellparam[1];
-	cCell = cellparam[2];
+	_cell.a = cellparam[0];
+	_cell.b = cellparam[1];
+	_cell.c = cellparam[2];
 	if (value == "a") {
-		setValue("aCell", roundNumber(aCell));
-		setValue("bCell", roundNumber(bCell));
-		setValue("cCell", roundNumber(cCell));
+		setValue("_cell.a", roundNumber(_cell.a));
+		setValue("_cell.b", roundNumber(_cell.b));
+		setValue("_cell.c", roundNumber(_cell.c));
 	} else {
-		aCell = aCell * 1.889725989;
-		bCell = bCell * 1.889725989;
-		cCell = cCell * 1.889725989;
-		setValue("aCell", roundNumber(aCell));
-		setValue("bCell", roundNumber(bCell));
-		setValue("cCell", roundNumber(cCell));
+		_cell.a = _cell.a * 1.889725989;
+		_cell.b = _cell.b * 1.889725989;
+		_cell.c = _cell.c * 1.889725989;
+		setValue("_cell.a", roundNumber(_cell.a));
+		setValue("_cell.b", roundNumber(_cell.b));
+		setValue("_cell.c", roundNumber(_cell.c));
 	}
 
 }
@@ -364,12 +362,12 @@ function createCellGrp() {
 	strCell += createRadio("cellMeasure", "Bohr", 'setCellMeasure(value)', 0,
 			0, "", "b")
 			+ "\n <br>";
-	strCell += "<i>a</i> " + createText2("aCell", "", 7, 1);
-	strCell += "<i>b</i> " + createText2("bCell", "", 7, 1);
-	strCell += "<i>c</i> " + createText2("cCell", "", 7, 1) + "<br><br>\n";
-	strCell += "<i>&#945;</i> " + createText2("alphaCell", "", 7, 1);
-	strCell += "<i>&#946;</i> " + createText2("betaCell", "", 7, 1);
-	strCell += "<i>&#947;</i> " + createText2("gammaCell", "", 7, 1)
+	strCell += "<i>a</i> " + createText2("_cell.a", "", 7, 1);
+	strCell += "<i>b</i> " + createText2("_cell.b", "", 7, 1);
+	strCell += "<i>c</i> " + createText2("_cell.c", "", 7, 1) + "<br><br>\n";
+	strCell += "<i>&#945;</i> " + createText2("alph_cell.a", "", 7, 1);
+	strCell += "<i>&#946;</i> " + createText2("bet_cell.a", "", 7, 1);
+	strCell += "<i>&#947;</i> " + createText2("gamm_cell.a", "", 7, 1)
 	+ " degrees <br><br>\n";
 	strCell += "Volume cell " + createText2("volumeCell", "", 10, 1)
 	+ "  &#197<sup>3</sup><br><br>";

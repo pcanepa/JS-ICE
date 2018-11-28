@@ -1118,8 +1118,8 @@ function saveFractionalCoordinate() {
 	if (selectedFrame == null)
 		getUnitcell(1);
 
-	var x = "var cellp = [" + roundNumber(aCell) + ", " + roundNumber(bCell)
-	+ ", " + roundNumber(cCell) + ", " + roundNumber(alpha) + ", "
+	var x = "var cellp = [" + roundNumber(_cell.a) + ", " + roundNumber(_cell.b)
+	+ ", " + roundNumber(_cell.c) + ", " + roundNumber(alpha) + ", "
 	+ roundNumber(beta) + ", " + roundNumber(gamma) + "];"
 	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
 	+ selectedFrame + '.label("%a %16.9[fxyz]");'
@@ -1129,7 +1129,7 @@ function saveFractionalCoordinate() {
 }
 
 //This reads out cell parameters given astructure.
-var aCell, bCell, cCell, alpha, beta, gamma, typeSystem;
+var _cell.a, _cell.b, _cell.c, alpha, beta, gamma, typeSystem;
 function getUnitcell(i) {
 	// document.cellGroup.reset();
 	typeSystem = "";
@@ -1140,18 +1140,18 @@ function getUnitcell(i) {
 
 	var cellparam = extractInfoJmol(StringUnitcell);
 
-	aCell = roundNumber(cellparam[0]);
-	bCell = roundNumber(cellparam[1]);
-	cCell = roundNumber(cellparam[2]);
+	_cell.a = roundNumber(cellparam[0]);
+	_cell.b = roundNumber(cellparam[1]);
+	_cell.c = roundNumber(cellparam[2]);
 	dimensionality = parseFloat(cellparam[15]);
 	volumeCell = roundNumber(cellparam[16]);
 
-	var bOvera = roundNumber(parseFloat(bCell / cCell));
-	var cOvera = roundNumber(parseFloat(cCell / aCell));
+	var bOvera = roundNumber(parseFloat(_cell.b / _cell.c));
+	var cOvera = roundNumber(parseFloat(_cell.c / _cell.a));
 
 	if (dimensionality == 1) {
-		bCell = 0.000;
-		cCell = 0.000;
+		_cell.b = 0.000;
+		_cell.c = 0.000;
 		makeEnable("par_a");
 		setVbyID("par_a", "");
 		makeDisable("par_b");
@@ -1162,7 +1162,7 @@ function getUnitcell(i) {
 		setVbyID("covera", "0");
 		typeSystem = "polymer";
 	} else if (dimensionality == 2) {
-		cCell = 0.000;
+		_cell.c = 0.000;
 		typeSystem = "slab";
 		makeEnable("par_a");
 		setVbyID("par_a", "");
@@ -1186,9 +1186,9 @@ function getUnitcell(i) {
 		setVbyID("bovera", bOvera);
 		setVbyID("covera", cOvera);
 	} else if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
-		aCell = 0.00;
-		bCell = 0.00;
-		cCell = 0.00;
+		_cell.a = 0.00;
+		_cell.b = 0.00;
+		_cell.c = 0.00;
 		alpha = 0.00;
 		beta = 0.00;
 		gamma = 0.00;
@@ -1196,12 +1196,12 @@ function getUnitcell(i) {
 		setVbyID("bovera", "0");
 		setVbyID("covera", "0");
 	}
-	setVbyID("aCell", roundNumber(aCell));
-	setVbyID("bCell", roundNumber(bCell));
-	setVbyID("cCell", roundNumber(cCell));
-	setVbyID("alphaCell", roundNumber(alpha));
-	setVbyID("betaCell", roundNumber(beta));
-	setVbyID("gammaCell", roundNumber(gamma));
+	setVbyID("_cell.a", roundNumber(_cell.a));
+	setVbyID("_cell.b", roundNumber(_cell.b));
+	setVbyID("_cell.c", roundNumber(_cell.c));
+	setVbyID("alph_cell.a", roundNumber(alpha));
+	setVbyID("bet_cell.a", roundNumber(beta));
+	setVbyID("gamm_cell.a", roundNumber(gamma));
 	setVbyID("volumeCell", roundNumber(volumeCell));
 
 }
@@ -1229,20 +1229,20 @@ function setCellMeasure(value) {
 		StringUnitcell = " auxiliaryInfo.models[1].infoUnitCell ";
 
 	var cellparam = extractInfoJmol(StringUnitcell);
-	aCell = cellparam[0];
-	bCell = cellparam[1];
-	cCell = cellparam[2];
+	_cell.a = cellparam[0];
+	_cell.b = cellparam[1];
+	_cell.c = cellparam[2];
 	if (value == "a") {
-		setVbyID("aCell", roundNumber(aCell));
-		setVbyID("bCell", roundNumber(bCell));
-		setVbyID("cCell", roundNumber(cCell));
+		setVbyID("_cell.a", roundNumber(_cell.a));
+		setVbyID("_cell.b", roundNumber(_cell.b));
+		setVbyID("_cell.c", roundNumber(_cell.c));
 	} else {
-		aCell = aCell * 1.889725989;
-		bCell = bCell * 1.889725989;
-		cCell = cCell * 1.889725989;
-		setVbyID("aCell", roundNumber(aCell));
-		setVbyID("bCell", roundNumber(bCell));
-		setVbyID("cCell", roundNumber(cCell));
+		_cell.a = _cell.a * 1.889725989;
+		_cell.b = _cell.b * 1.889725989;
+		_cell.c = _cell.c * 1.889725989;
+		setVbyID("_cell.a", roundNumber(_cell.a));
+		setVbyID("_cell.b", roundNumber(_cell.b));
+		setVbyID("_cell.c", roundNumber(_cell.c));
 	}
 
 }

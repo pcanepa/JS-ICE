@@ -44,26 +44,26 @@ function findCellParameters() {
 	// /from crystal manual http://www.crystal.unito.it/Manuals/crystal09.pdf
 	switch (true) {
 	case ((interNumber <= 2)): // Triclinic lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(bCell) + ", "
-				+ roundNumber(cCell) + ", " + roundNumber(alpha) + ", "
-				+ roundNumber(beta) + ", " + roundNumber(gamma);
-		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(aCell)
-				+ " \n celdm(2) =  " + roundNumber(bCell / aCell)
-				+ " \n celdm(3) =  " + roundNumber(cCell / aCell)
-				+ " \n celdm(4) =  " + cosRadiant(alpha) + " \n celdm(5) =  "
-				+ (cosRadiant(beta)) + " \n celdm(6) =  "
-				+ (cosRadiant(gamma)) + " \n\n";
+		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.b) + ", "
+				+ roundNumber(_cell.c) + ", " + roundNumber(_cell.alpha) + ", "
+				+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_cell.gamma);
+		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_cell.a)
+				+ " \n celdm(2) =  " + roundNumber(_cell.b / _cell.a)
+				+ " \n celdm(3) =  " + roundNumber(_cell.c / _cell.a)
+				+ " \n celdm(4) =  " + cosRadiant(_cell.alpha) + " \n celdm(5) =  "
+				+ (cosRadiant(_fileData.cell.beta)) + " \n celdm(6) =  "
+				+ (cosRadiant(_cell.gamma)) + " \n\n";
 		ibravQ = "14";
 		break;
 
 	case ((interNumber > 2) && (interNumber <= 15)): // Monoclinic lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(bCell) + ", "
-				+ roundNumber(cCell) + ", " + roundNumber(alpha);
+		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.b) + ", "
+				+ roundNumber(_cell.c) + ", " + roundNumber(_cell.alpha);
 		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(2) =  " + roundNumber(bCell / aCell)
-					+ " \n celdm(3) =  " + roundNumber(cCell / aCell)
-					+ " \n celdm(4) =  " + (cosRadiant(alpha))
+			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_cell.a)
+					+ " \n celdm(2) =  " + roundNumber(_cell.b / _cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_cell.c / _cell.a)
+					+ " \n celdm(4) =  " + (cosRadiant(_cell.alpha))
 					+ " \n\n";
 			ibravQ = "12"; // Monoclinic base centered
 
@@ -74,12 +74,12 @@ function findCellParameters() {
 		break;
 
 	case ((interNumber > 15) && (interNumber <= 74)): // Orthorhombic lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(bCell) + ", "
-				+ roundNumber(cCell);
+		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.b) + ", "
+				+ roundNumber(_cell.c);
 		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(2) =  " + roundNumber(bCell / aCell)
-					+ " \n celdm(3) =  " + roundNumber(cCell / aCell) + " \n\n";
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
+					+ " \n celdm(2) =  " + roundNumber(_cell.b / _cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_cell.c / _cell.a) + " \n\n";
 			ibravQ = "8";
 
 			var question = confirm("Is this a Orthorhombic base-centered lattice?")
@@ -99,10 +99,10 @@ function findCellParameters() {
 
 	case ((interNumber > 74) && (interNumber <= 142)): // Tetragonal lattices
 
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(cCell);
+		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.c);
 		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(3) =  " + roundNumber(cCell / aCell) + " \n\n";
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_cell.c / _cell.a) + " \n\n";
 			ibravQ = "6";
 			var question = confirm("Is this a Tetragonal I body centered (bct) lattice?");
 			if (question)
@@ -111,36 +111,36 @@ function findCellParameters() {
 		break;
 
 	case ((interNumber > 142) && (interNumber <= 167)): // Trigonal lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(alpha) + ", "
-				+ roundNumber(beta) + ", " + roundNumber(gamma);
-		cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-				+ " \n celdm(4) =  " + (cosRadiant(alpha))
-				+ " \n celdm(5) = " + (cosRadiant(beta))
-				+ " \n celdm(6) =  " + (cosRadiant(gamma));
+		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.alpha) + ", "
+				+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_cell.gamma);
+		cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
+				+ " \n celdm(4) =  " + (cosRadiant(_cell.alpha))
+				+ " \n celdm(5) = " + (cosRadiant(_fileData.cell.beta))
+				+ " \n celdm(6) =  " + (cosRadiant(_cell.gamma));
 		ibravQ = "5";
 		var question = confirm("Is a romboheadral lattice?")
 		if (question) {
-			stringCellParam = roundNumber(aCell) + ", " + roundNumber(cCell);
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(4) =  " + (cosRadiant(alpha))
-					+ " \n celdm(5) = " + (cosRadiant(beta))
-					+ " \n celdm(6) =  " + (cosRadiant(gamma))
+			stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.c);
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
+					+ " \n celdm(4) =  " + (cosRadiant(_cell.alpha))
+					+ " \n celdm(5) = " + (cosRadiant(_fileData.cell.beta))
+					+ " \n celdm(6) =  " + (cosRadiant(_cell.gamma))
 					+ " \n\n";
 			ibravQ = "4";
 		}
 		break;
 	case ((interNumber > 167) && (interNumber <= 194)): // Hexagonal lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(cCell);
+		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.c);
 		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(3) = " + roundNumber(cCell / aCell) + " \n\n";
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
+					+ " \n celdm(3) = " + roundNumber(_cell.c / _cell.a) + " \n\n";
 			ibravQ = "4";
 		}
 		break;
 	case ((interNumber > 194) && (interNumber <= 230)): // Cubic lattices
-		stringCellParam = roundNumber(aCell);
+		stringCellParam = roundNumber(_cell.a);
 		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell);
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a);
 			// alert("I am here");
 			ibravQ = "1";
 			var question = confirm("Is a face centered cubic lattice?")
@@ -161,9 +161,9 @@ function findCellParameters() {
 		break;
 	}// end switch
 	
-//	stringCellparamgulp = roundNumber(aCell) + ' ' + roundNumber(bCell) + ' '
-//			+ roundNumber(cCell) + ' ' + roundNumber(alpha) + ' '
-//			+ roundNumber(beta) + ' ' + roundNumber(gamma);
+//	stringCellparamgulp = roundNumber(_cell.a) + ' ' + roundNumber(_cell.b) + ' '
+//			+ roundNumber(_cell.c) + ' ' + roundNumber(_cell.alpha) + ' '
+//			+ roundNumber(_fileData.cell.beta) + ' ' + roundNumber(_cell.gamma);
 	//	alert(stringCellparamgulp)
 	if (flagCrystal)
 		savCRYSTALSpace();
