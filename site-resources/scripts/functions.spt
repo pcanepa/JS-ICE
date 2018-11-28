@@ -6,6 +6,7 @@
 
 function pointToArray(point){
 	pointArray = []
+	//need to convert point to a string so that its length may be measured 
 	var totalChars = @point.length
 	var allElementsArray = []
 	var elementCounter = 1
@@ -29,7 +30,7 @@ function pointToArray(point){
 	}
 	return pointArray
 }
-
+//Unused
 function readSymmetryNames() {
 	var allSymopInfo = _M.getProperty("spacegroupInfo.operations");
 	var numSymops = allSymopInfo.length;
