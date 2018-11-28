@@ -81,7 +81,7 @@ function getSymmetricAtomArray(symopSelected,pointt,iterations){
 //
 //p1 = $draw_object_name[0]  ; p2 = $draw_object_name[1]
 function drawCleanSymmetryAxisVectors(symOperation, axisFactor){
-	draw symAxis* off 
+	draw sym_axis* off 
 	draw symop @symOperation
 	point1 = $sym_rotvector1[0]
 	point2 = $sym_rotvector1[1]
@@ -90,8 +90,8 @@ function drawCleanSymmetryAxisVectors(symOperation, axisFactor){
 	point1 = point1*axisFactor
 	point3 = point3*axisFactor
 	draw s* off 
-	draw ID "symAxis1" vector @point2 @point1 
-	draw ID "symAxis2" vector @point4 @point3
+	draw ID "sym_axis1" vector @point2 @point1 
+	draw ID "sym_axis2" vector @point4 @point3
 } 
 
 function appendNewAtom(elementName, point) {
@@ -113,6 +113,29 @@ function getSymmetryAtomArrayAllSymops(point){
 	return symAtomArrayAllSymops
 }
 
+//IDEA: constraint menu
+//UNTESTED
+//Many of the below functions are outlines for future functions 
+function bindToVectorConstraint(vectorDrawObjectID,selectedPoint,errorDistance){
+	startPoint = $@vectorDrawObjectID[0]
+	endPoint = $@vectorDrawObjectID[1] 
+	constrainedPoint = intersection(startPoint,endPoint,selectedPoint) 
+	if (selectedPointToNewPointDistance > errorDistance){
+		return selectedPoint 
+	}
+	else{
+		return contrainedPoint 
+	}
+}
 
-//IDEA: constraint menu? 
+function bindToPlaneConstraint(planeDrawObjectID, selectedPoint, errorDistance){
+	constrainedPoint = intersection(selectedPoint,planeDrawObjectID)
+	selectedPointToNewPointDistance = @selectedPoint.distance(planeDrawObjectID)
+	if (selectedPointToNewPointDistance > errorDistance){
+		return selectedPoint 
+	}
+	else{
+		return contrainedPoint 
+	}
+}
 
