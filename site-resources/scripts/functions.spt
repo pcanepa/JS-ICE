@@ -4,6 +4,32 @@
 //not really necessary for current functionality but nice to have 
 //only functional in jsmol as jsice cannot read spacegroupInfo.operations
 
+function pointToArray(point){
+	pointArray = []
+	var totalChars = @point.length
+	var allElementsArray = []
+	var elementCounter = 1
+	for (var i = 0; i < totalChars;i++){
+		if (point[i] == "{"){
+			point[i] = " "
+		}
+		if (point[i] == "}"){
+			point[i] = " "
+		}
+	}
+	for (var i = 0; i < totalChars;i++){
+		if (point[i] == " "){
+			pointArray[elementCounter] = elementString
+			elementString = ""
+			elementCounter += 1 
+		}
+		else{
+			elementString += symopCharArray[i]
+		}
+	}
+	return pointArray
+}
+
 function readSymmetryNames() {
 	var allSymopInfo = _M.getProperty("spacegroupInfo.operations");
 	var numSymops = allSymopInfo.length;
@@ -135,7 +161,7 @@ function bindToPlaneConstraint(planeDrawObjectID, selectedPoint, errorDistance){
 		return selectedPoint 
 	}
 	else{
-		return contrainedPoint 
+		return constrainedPoint 
 	}
 }
 
