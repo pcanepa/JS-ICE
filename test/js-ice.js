@@ -788,8 +788,8 @@ function saveFractionalCoordinate() {
 	if (frameSelection == null)
 		getUnitcell("1");
 
-	var x = "var cellp = [" + roundNumber(aCell) + ", " + roundNumber(bCell)
-	+ ", " + roundNumber(cCell) + ", " + roundNumber(alpha) + ", "
+	var x = "var cellp = [" + roundNumber(_cell.a) + ", " + roundNumber(_cell.b)
+	+ ", " + roundNumber(_cell.c) + ", " + roundNumber(alpha) + ", "
 	+ roundNumber(beta) + ", " + roundNumber(gamma) + "];"
 	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
 	+ frameSelection + '.label("%a %16.9[fxyz]");'
@@ -807,18 +807,18 @@ function getUnitcell(i) {
 
 	var cellparam = extractInfoJmol(StringUnitcell);
 
-	aCell = roundNumber(cellparam[0]);
-	bCell = roundNumber(cellparam[1]);
-	cCell = roundNumber(cellparam[2]);
+	_cell.a = roundNumber(cellparam[0]);
+	_cell.b = roundNumber(cellparam[1]);
+	_cell.c = roundNumber(cellparam[2]);
 	dimensionality = parseFloat(cellparam[15]);
 	volumeCell = roundNumber(cellparam[16]);
 
-	var bOvera = roundNumber(parseFloat(bCell / cCell));
-	var cOvera = roundNumber(parseFloat(cCell / aCell));
+	var bOvera = roundNumber(parseFloat(_cell.b / _cell.c));
+	var cOvera = roundNumber(parseFloat(_cell.c / _cell.a));
 
 	if (dimensionality == 1) {
-		bCell = 0.000;
-		cCell = 0.000;
+		_cell.b = 0.000;
+		_cell.c = 0.000;
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeDisable("par_b");
@@ -829,7 +829,7 @@ function getUnitcell(i) {
 		setValue("covera", "0");
 		typeSystem = "polymer";
 	} else if (dimensionality == 2) {
-		cCell = 0.000;
+		_cell.c = 0.000;
 		typeSystem = "slab";
 		makeEnable("par_a");
 		setValue("par_a", "");
@@ -853,9 +853,9 @@ function getUnitcell(i) {
 		setValue("bovera", bOvera);
 		setValue("covera", cOvera);
 	} else if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
-		aCell = 0.00;
-		bCell = 0.00;
-		cCell = 0.00;
+		_cell.a = 0.00;
+		_cell.b = 0.00;
+		_cell.c = 0.00;
 		alpha = 0.00;
 		beta = 0.00;
 		gamma = 0.00;
@@ -863,12 +863,12 @@ function getUnitcell(i) {
 		setValue("bovera", "0");
 		setValue("covera", "0");
 	}
-	setValue("aCell", roundNumber(aCell));
-	setValue("bCell", roundNumber(bCell));
-	setValue("cCell", roundNumber(cCell));
-	setValue("alphaCell", roundNumber(alpha));
-	setValue("betaCell", roundNumber(beta));
-	setValue("gammaCell", roundNumber(gamma));
+	setValue("_cell.a", roundNumber(_cell.a));
+	setValue("_cell.b", roundNumber(_cell.b));
+	setValue("_cell.c", roundNumber(_cell.c));
+	setValue("alph_cell.a", roundNumber(alpha));
+	setValue("bet_cell.a", roundNumber(beta));
+	setValue("gamm_cell.a", roundNumber(gamma));
 	setValue("volumeCell", roundNumber(volumeCell));
 
 }
@@ -896,20 +896,20 @@ function setCellMeasure(value) {
 		StringUnitcell = " auxiliaryInfo.models[1].infoUnitCell ";
 
 	var cellparam = extractInfoJmol(StringUnitcell);
-	aCell = cellparam[0];
-	bCell = cellparam[1];
-	cCell = cellparam[2];
+	_cell.a = cellparam[0];
+	_cell.b = cellparam[1];
+	_cell.c = cellparam[2];
 	if (value == "a") {
-		setValue("aCell", roundNumber(aCell));
-		setValue("bCell", roundNumber(bCell));
-		setValue("cCell", roundNumber(cCell));
+		setValue("_cell.a", roundNumber(_cell.a));
+		setValue("_cell.b", roundNumber(_cell.b));
+		setValue("_cell.c", roundNumber(_cell.c));
 	} else {
-		aCell = aCell * 1.889725989;
-		bCell = bCell * 1.889725989;
-		cCell = cCell * 1.889725989;
-		setValue("aCell", roundNumber(aCell));
-		setValue("bCell", roundNumber(bCell));
-		setValue("cCell", roundNumber(cCell));
+		_cell.a = _cell.a * 1.889725989;
+		_cell.b = _cell.b * 1.889725989;
+		_cell.c = _cell.c * 1.889725989;
+		setValue("_cell.a", roundNumber(_cell.a));
+		setValue("_cell.b", roundNumber(_cell.b));
+		setValue("_cell.c", roundNumber(_cell.c));
 	}
 
 }
@@ -1138,12 +1138,12 @@ function createCellGrp() {
 	strCell += createRadio("cellMeasure", "Bohr", 'setCellMeasure(value)', 0,
 			0, "", "b")
 			+ "\n <br>";
-	strCell += "<i>a</i> " + createText2("aCell", "", 7, 1);
-	strCell += "<i>b</i> " + createText2("bCell", "", 7, 1);
-	strCell += "<i>c</i> " + createText2("cCell", "", 7, 1) + "<br><br>\n";
-	strCell += "<i>&#945;</i> " + createText2("alphaCell", "", 7, 1);
-	strCell += "<i>&#946;</i> " + createText2("betaCell", "", 7, 1);
-	strCell += "<i>&#947;</i> " + createText2("gammaCell", "", 7, 1)
+	strCell += "<i>a</i> " + createText2("_cell.a", "", 7, 1);
+	strCell += "<i>b</i> " + createText2("_cell.b", "", 7, 1);
+	strCell += "<i>c</i> " + createText2("_cell.c", "", 7, 1) + "<br><br>\n";
+	strCell += "<i>&#945;</i> " + createText2("alph_cell.a", "", 7, 1);
+	strCell += "<i>&#946;</i> " + createText2("bet_cell.a", "", 7, 1);
+	strCell += "<i>&#947;</i> " + createText2("gamm_cell.a", "", 7, 1)
 	+ " degrees <br><br>\n";
 	strCell += "Voulme cell " + createText2("volumeCell", "", 10, 1)
 	+ "  &#197<sup>3</sup><br><br>";
@@ -4937,7 +4937,7 @@ function setVacuum() {
 
 		var zMaxCoord = parseFloat(jmolEvaluate(frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
-		newcCell = (zMaxCoord * 2) + vaccum;
+		new_cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
 		if (fractionalCoord == true) {
 			runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; ( i.z +'
@@ -4946,7 +4946,7 @@ function setVacuum() {
 			runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z +'
 					+ factor + ')');
 		}
-		fromfractionaltoCartesian(null, null, newcCell, null, 90, 90);
+		fromfractionaltoCartesian(null, null, new_cell.c, null, 90, 90);
 		break;
 	case "polymer":
 		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
@@ -4955,13 +4955,13 @@ function setVacuum() {
 
 		var zMaxCoord = parseFloat(jmolEvaluate(frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
-		newcCell = (zMaxCoord * 2) + vaccum;
+		new_cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
 		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z +' + factor
 				+ ')');
 		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y +' + factor
 				+ ')');
-		fromfractionaltoCartesian(null, newcCell, newcCell, 90, 90, 90);
+		fromfractionaltoCartesian(null, new_cell.c, new_cell.c, 90, 90, 90);
 		break;
 	case "molecule":
 		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
@@ -4970,7 +4970,7 @@ function setVacuum() {
 
 		var zMaxCoord = parseFloat(jmolEvaluate(frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
-		newcCell = (zMaxCoord * 2) + vaccum;
+		new_cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
 		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z +' + factor
 				+ ')');
@@ -4978,7 +4978,7 @@ function setVacuum() {
 				+ ')');
 		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x +' + factor
 				+ ')');
-		fromfractionaltoCartesian(newcCell, newcCell, newcCell, 90, 90, 90);
+		fromfractionaltoCartesian(new_cell.c, new_cell.c, new_cell.c, 90, 90, 90);
 		break;
 
 	}
@@ -4991,11 +4991,11 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 	    yx, yy, yz, 
 	    zx, zy, zz;
 	if (aparam != null)
-		aCell = aparam;
+		_cell.a = aparam;
 	if (bparam != null)
-		bCell = bparam;
+		_cell.b = bparam;
 	if (cparam != null)
-		cCell = cparam;
+		_cell.c = cparam;
 	if (alphaparam != null)
 		alpha = alphaparam;
 	if (betaparam != null)
@@ -5011,17 +5011,17 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 			+ 2
 			* (Math.cos(alpha * radiant) * Math.cos(beta * radiant) * Math
 					.cos(gamma * radiant)));
-	xx = aCell * Math.sin(beta * radiant);
+	xx = _cell.a * Math.sin(beta * radiant);
 	xy = parseFloat(0.000);
-	xz = aCell * Math.cos(beta * radiant);
-	yx = bCell
+	xz = _cell.a * Math.cos(beta * radiant);
+	yx = _cell.b
 	* (((Math.cos(gamma * radiant)) - ((Math.cos(beta * radiant)) * (Math
 			.cos(alpha * radiant)))) / Math.sin(beta * radiant));
-	yy = bCell * (v / Math.sin(beta * radiant));
-	yz = bCell * Math.cos(alpha * radiant);
+	yy = _cell.b * (v / Math.sin(beta * radiant));
+	yz = _cell.b * Math.cos(alpha * radiant);
 	zx = parseFloat(0.000);
 	zy = parseFloat(0.000);
-	zz = cCell;
+	zz = _cell.c;
 	return [[xx, xy, xz], [yx, yy, yz], [zx, zy, zz]];
 
 }
@@ -6532,12 +6532,12 @@ function findCellParameters() {
 	// /from crystal manual http://www.crystal.unito.it/Manuals/crystal09.pdf
 	switch (true) {
 	case ((interNumber <= 2)): // Triclinic lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(bCell) + ", "
-				+ roundNumber(cCell) + ", " + roundNumber(alpha) + ", "
+		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.b) + ", "
+				+ roundNumber(_cell.c) + ", " + roundNumber(alpha) + ", "
 				+ roundNumber(beta) + ", " + roundNumber(gamma);
-		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(aCell)
-				+ " \n celdm(2) =  " + roundNumber(bCell / aCell)
-				+ " \n celdm(3) =  " + roundNumber(cCell / aCell)
+		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_cell.a)
+				+ " \n celdm(2) =  " + roundNumber(_cell.b / _cell.a)
+				+ " \n celdm(3) =  " + roundNumber(_cell.c / _cell.a)
 				+ " \n celdm(4) =  " + cosRadiant(alpha) + " \n celdm(5) =  "
 				+ (cosRadiant(beta)) + " \n celdm(6) =  "
 				+ (cosRadiant(gamma)) + " \n\n";
@@ -6545,12 +6545,12 @@ function findCellParameters() {
 		break;
 
 	case ((interNumber > 2) && (interNumber <= 15)): // Monoclinic lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(bCell) + ", "
-				+ roundNumber(cCell) + ", " + roundNumber(alpha);
+		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.b) + ", "
+				+ roundNumber(_cell.c) + ", " + roundNumber(alpha);
 		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(2) =  " + roundNumber(bCell / aCell)
-					+ " \n celdm(3) =  " + roundNumber(cCell / aCell)
+			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_cell.a)
+					+ " \n celdm(2) =  " + roundNumber(_cell.b / _cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_cell.c / _cell.a)
 					+ " \n celdm(4) =  " + (cosRadiant(alpha))
 					+ " \n\n";
 			ibravQ = "12"; // Monoclinic base centered
@@ -6562,12 +6562,12 @@ function findCellParameters() {
 		break;
 
 	case ((interNumber > 15) && (interNumber <= 74)): // Orthorhombic lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(bCell) + ", "
-				+ roundNumber(cCell);
+		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.b) + ", "
+				+ roundNumber(_cell.c);
 		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(2) =  " + roundNumber(bCell / aCell)
-					+ " \n celdm(3) =  " + roundNumber(cCell / aCell) + " \n\n";
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
+					+ " \n celdm(2) =  " + roundNumber(_cell.b / _cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_cell.c / _cell.a) + " \n\n";
 			ibravQ = "8";
 
 			var question = confirm("Is this a Orthorhombic base-centered lattice?")
@@ -6587,10 +6587,10 @@ function findCellParameters() {
 
 	case ((interNumber > 74) && (interNumber <= 142)): // Tetragonal lattices
 
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(cCell);
+		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.c);
 		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(3) =  " + roundNumber(cCell / aCell) + " \n\n";
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_cell.c / _cell.a) + " \n\n";
 			ibravQ = "6";
 			var question = confirm("Is this a Tetragonal I body centered (bct) lattice?");
 			if (question)
@@ -6599,17 +6599,17 @@ function findCellParameters() {
 		break;
 
 	case ((interNumber > 142) && (interNumber <= 167)): // Trigonal lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(alpha) + ", "
+		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(alpha) + ", "
 				+ roundNumber(beta) + ", " + roundNumber(gamma);
-		cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
+		cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
 				+ " \n celdm(4) =  " + (cosRadiant(alpha))
 				+ " \n celdm(5) = " + (cosRadiant(beta))
 				+ " \n celdm(6) =  " + (cosRadiant(gamma));
 		ibravQ = "5";
 		var question = confirm("Is a romboheadral lattice?")
 		if (question) {
-			stringCellParam = roundNumber(aCell) + ", " + roundNumber(cCell);
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
+			stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.c);
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
 					+ " \n celdm(4) =  " + (cosRadiant(alpha))
 					+ " \n celdm(5) = " + (cosRadiant(beta))
 					+ " \n celdm(6) =  " + (cosRadiant(gamma))
@@ -6618,17 +6618,17 @@ function findCellParameters() {
 		}
 		break;
 	case ((interNumber > 167) && (interNumber <= 194)): // Hexagonal lattices
-		stringCellParam = roundNumber(aCell) + ", " + roundNumber(cCell);
+		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.c);
 		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell)
-					+ " \n celdm(3) = " + roundNumber(cCell / aCell) + " \n\n";
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
+					+ " \n celdm(3) = " + roundNumber(_cell.c / _cell.a) + " \n\n";
 			ibravQ = "4";
 		}
 		break;
 	case ((interNumber > 194) && (interNumber <= 230)): // Cubic lattices
-		stringCellParam = roundNumber(aCell);
+		stringCellParam = roundNumber(_cell.a);
 		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(aCell);
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a);
 			// alert("I am here");
 			ibravQ = "1";
 			var question = confirm("Is a face centered cubic lattice?")
@@ -6649,8 +6649,8 @@ function findCellParameters() {
 		break;
 	}// end switch
 	
-//	stringCellparamgulp = roundNumber(aCell) + ' ' + roundNumber(bCell) + ' '
-//			+ roundNumber(cCell) + ' ' + roundNumber(alpha) + ' '
+//	stringCellparamgulp = roundNumber(_cell.a) + ' ' + roundNumber(_cell.b) + ' '
+//			+ roundNumber(_cell.c) + ' ' + roundNumber(alpha) + ' '
 //			+ roundNumber(beta) + ' ' + roundNumber(gamma);
 	//	alert(stringCellparamgulp)
 	if (flagCrystal)
@@ -6797,7 +6797,7 @@ var makeCrystalSpaceGroup = null;
 
 // from _m_cell.js
 
-var aCell, bCell, cCell, alpha, beta, gamma, typeSystem; 
+var _cell.a, _cell.b, _cell.c, alpha, beta, gamma, typeSystem; 
 
 // from _m_edit.js
 
@@ -6949,21 +6949,21 @@ function exportCASTEP() {
 	switch (typeSystem) {
 	case "slab":
 		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
-				+ roundNumber(cCell) + ')');
+				+ roundNumber(_cell.c) + ')');
 		break;
 	case "polymer":
 		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
-				+ roundNumber(cCell) + ')');
+				+ roundNumber(_cell.c) + ')');
 		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/'
-				+ roundNumber(bCell) + ')');
+				+ roundNumber(_cell.b) + ')');
 		break;
 	case "molecule":
 		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
-				+ roundNumber(cCell) + ')');
+				+ roundNumber(_cell.c) + ')');
 		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/'
-				+ roundNumber(bCell) + ')');
+				+ roundNumber(_cell.b) + ')');
 		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/'
-				+ roundNumber(aCell) + ')');
+				+ roundNumber(_cell.a) + ')');
 		break;
 	}
 
@@ -7099,11 +7099,11 @@ function exportCRYSTAL() {
 			var flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			script = "var cellp = ["
-					+ roundNumber(aCell)
+					+ roundNumber(_cell.a)
 					+ ", "
-					+ roundNumber(bCell)
+					+ roundNumber(_cell.b)
 					+ ", "
-					+ roundNumber(cCell)
+					+ roundNumber(_cell.c)
 					+ ", "
 					+ roundNumber(alpha)
 					+ ", "
@@ -7144,8 +7144,8 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = [" + roundNumber(aCell) + ", "
-				+ roundNumber(bCell) + ", " + roundNumber(gamma) + "];"
+		script = "var cellp = [" + roundNumber(_cell.a) + ", "
+				+ roundNumber(_cell.b) + ", " + roundNumber(gamma) + "];"
 				+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
 				+ titleCRYS + "', " + systemCRYSTAL + ", " + symmetryCRYSTAL
 				+ "];" + 'crystalArr = crystalArr.replace("\n\n","\n");'
@@ -7163,7 +7163,7 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = " + roundNumber(aCell) + ";"
+		script = "var cellp = " + roundNumber(_cell.a) + ";"
 				+ "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
 				+ ", " + symmetryCRYSTAL + "];"
 				+ 'crystalArr = crystalArr.replace("\n\n","\n");'
@@ -7435,9 +7435,9 @@ function setCoordinatesGromacs() {
 	var numatomsGrom = " " + frameSelection + ".length";
 	var coordinateGrom = frameSelection
 			+ '.label("  %i%e %i %e %8.3[xyz] %8.4fy %8.4fz")';
-	var cellbox = +roundNumber(aCell) * (cosRadiant(alpha)) + ' '
-			+ roundNumber(bCell) * (cosRadiant(beta)) + ' '
-			+ roundNumber(cCell) * (cosRadiant(gamma));
+	var cellbox = +roundNumber(_cell.a) * (cosRadiant(alpha)) + ' '
+			+ roundNumber(_cell.b) * (cosRadiant(beta)) + ' '
+			+ roundNumber(_cell.c) * (cosRadiant(gamma));
 	coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
 			+ 'var coordGrom = ' + coordinateGrom + ';'
 			+ 'var cellGrom = \" \n\t' + cellbox + '\"; '
@@ -7531,8 +7531,8 @@ function setSystem() {
 			warningMsg("This procedure is not fully tested.");
 			figureOutSpaceGroup();
 		} else {
-			stringCellparamgulp = roundNumber(aCell) + ' ' + roundNumber(bCell)
-					+ ' ' + roundNumber(cCell) + ' ' + roundNumber(alpha) + ' '
+			stringCellparamgulp = roundNumber(_cell.a) + ' ' + roundNumber(_cell.b)
+					+ ' ' + roundNumber(_cell.c) + ' ' + roundNumber(alpha) + ' '
 					+ roundNumber(beta) + ' ' + roundNumber(gamma);
 		}
 		break;
@@ -7540,14 +7540,14 @@ function setSystem() {
 	case "surface":
 		cellHeadergulp = "scell"
 		coordinateAddgulp = "s"
-		stringCellparamgulp = roundNumber(aCell) + ", " + roundNumber(bCell)
+		stringCellparamgulp = roundNumber(_cell.a) + ", " + roundNumber(_cell.b)
 				+ ", " + roundNumber(gamma);
 		break;
 
 	case "polymer":
 		cellHeadergulp = "pcell"
 		coordinateAddgulp = ""
-		stringCellparamgulp = roundNumber(aCell);
+		stringCellparamgulp = roundNumber(_cell.a);
 		break;
 
 	case "molecule":
@@ -7969,11 +7969,11 @@ function symmetryQuantum() {
 		var flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			cellDimString = "           celldm(1) = "
-				+ roundNumber(fromAngstromtoBohr(aCell))
+				+ roundNumber(fromAngstromtoBohr(_cell.a))
 				+ "  \n           celldm(2) =  "
-				+ roundNumber(bCell / aCell)
+				+ roundNumber(_cell.b / _cell.a)
 				+ "  \n           celldm(3) =  "
-				+ roundNumber(cCell / aCell)
+				+ roundNumber(_cell.c / _cell.a)
 				+ "  \n           celldm(4) =  "
 				+ (cosRadiant(alpha))
 				+ "  \n           celldm(5) =  "
@@ -7992,12 +7992,12 @@ function symmetryQuantum() {
 		break;
 	case "slab":
 		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + cCell
+		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _cell.c
 				+ ')');
 		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(aCell))
-			+ "  \n            celldm(2) =  " + roundNumber(bCell / aCell)
-			+ "  \n            celldm(3) =  " + roundNumber(cCell / aCell)
+			+ roundNumber(fromAngstromtoBohr(_cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(_cell.b / _cell.a)
+			+ "  \n            celldm(3) =  " + roundNumber(_cell.c / _cell.a)
 			+ "  \n            celldm(4) =  "
 			+ (cosRadiant(alpha))
 			+ "  \n            celldm(5) =  " + (cosRadiant(90))
@@ -8006,14 +8006,14 @@ function symmetryQuantum() {
 		break;
 	case "polymer":
 		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + cCell
+		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _cell.c
 				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + bCell
+		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + _cell.b
 				+ ')');
 		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(aCell))
-			+ "  \n            celldm(2) =  " + roundNumber(bCell / aCell)
-			+ "  \n            celldm(3) =  " + roundNumber(bCell / aCell)
+			+ roundNumber(fromAngstromtoBohr(_cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(_cell.b / _cell.a)
+			+ "  \n            celldm(3) =  " + roundNumber(_cell.b / _cell.a)
 			+ "  \n            celldm(4) =  " + (cosRadiant(90))
 			+ "  \n            celldm(5) =  " + (cosRadiant(90))
 			+ "  \n            celldm(6) =  " + (cosRadiant(90));
@@ -8021,14 +8021,14 @@ function symmetryQuantum() {
 		break;
 	case "molecule":
 		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + cCell
+		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _cell.c
 				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + bCell
+		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + _cell.b
 				+ ')');
-		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/' + aCell
+		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/' + _cell.a
 				+ ')');
 		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(aCell))
+			+ roundNumber(fromAngstromtoBohr(_cell.a))
 			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(4) =  "

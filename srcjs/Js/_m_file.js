@@ -220,7 +220,7 @@ function cleanAndReloadForm() {
 
 resetLoadFlags = function(isCrystal) {
 	if (isCrystal)
-		typeSystem = "crystal";
+		_cell.typeSystem = "crystal";
 	flagCrystal = 
 	flagGromos = 
 	flagGulp = 
@@ -308,13 +308,13 @@ setFlags = function(type) {
 	case "gauss":
 		resetLoadFlags(); // BH Added
 		flagGaussian = true;
-		typeSystem = "molecule";
+		_cell.typeSystem = "molecule";
 		break;
 	case "molden":
 		// WE USE SAME SETTINGS AS VASP
 		// IT WORKS
 		resetLoadFlags(); // BH Added
-		typeSystem = "molecule";
+		_cell.typeSystem = "molecule";
 		flagOutcar = true;
 		break;
 	case "crysden":
