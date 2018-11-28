@@ -133,12 +133,12 @@ function setUpSpecData(typeIRorRaman,irrep) {
 			typeIRorRaman : typeIRorRaman, 
 			typeConvolve  : getRadioSetValue(document.modelsVib.convol), 
 			irrep     : irrep,
-			sigma     : getValue('sigma'), 
+			sigma     : parseFloat(getValue('sigma')), 
 			rescale   : true,
 			invertx   : isChecked('invertX'),
 			freqCount : _fileData.freqInfo.length,
-			minX      : getValue("nMin"),
-			maxX      : getValue("nMax"),
+			minX      : parseInt(getValue("nMin")),
+			maxX      : parseInt(getValue("nMax")),
 			maxY      : _fileData.spectraYMax,
 			previousPointFreq : -1,
 			freqInfo  : [],
@@ -531,7 +531,7 @@ function plotHoverCallbackFreq(event, pos, itemFreq) {
 
 		showTooltipFreq(itemFreq.pageX, itemFreq.pageY + 10, label, pos);
 	}
-	if (pos.canvasY > 350)plotClickCallbackFreq(event, pos, itemFreq);
+	if (pos.canvasY > 320)plotClickCallbackFreq(event, pos, itemFreq);
 }
 
 
@@ -634,7 +634,7 @@ function createFreqGrp() {
 	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
-	var smallGraph =  createDiv("plotareafreq", "background:blue;width:350px;height:180px;background-color:#EFEFEF","");  
+	var smallGraph =  createDiv("plotareafreq", "background:blue;width:320px;height:180px;background-color:#EFEFEF","");  
 	
 	var simPanel = createDiv("simPanel", "", "Raman intensities set to 0.0 kmMol<sup>-1</sup>"
 		+ "<br>\n"
@@ -687,8 +687,8 @@ function createFreqGrp() {
 			strFreq += "</tr></table>";					
 		strFreq += "</td></tr>";
 		strFreq += "<tr><td colspan=2>";
-		strFreq += createDiv("graphfreqdiv", // making small graph
-				"width:350px;height:200px;background-color:#EFEFEF;margin-left:5px;display:inline", smallGraph + simPanel);
+		strFreq += createDiv("<td colspan=2>", createDiv("graphfreqdiv", // making small graph
+				"width:320px;height:200px;background-color:#EFEFEF;margin-left:5px;display:inline", smallGraph + createRadio("vectors", "off", 'onClickFreqParams()', 0,0, "vectorsOFF", "off"), "</td>") + simPanel);
 		strFreq += "</td></tr>";
 	strFreq += "</table></form> ";
 
