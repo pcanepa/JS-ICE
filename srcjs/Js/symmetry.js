@@ -7,10 +7,10 @@ function figureOutSpaceGroup() {
 	var cellDimString = null;
 	var ibravQ = "";
 	saveStateAndOrientation_a();
-	prevframeSelection = _frame.frameSelection;
-	if (_frame.frameValue == null || _frame.frameValue == "" || flagCif)
+	prevframeSelection = _fileData.frameSelection;
+	if (_fileData.frameValue == null || _fileData.frameValue == "" || flagCif)
 		frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
-	prevFrame = _frame.frameValue;
+	prevFrame = _fileData.frameValue;
 	var magnetic = confirm('It\'s the primitive cell ?')
 	// crystalPrev = confirm('Does the structure come from a previous CRYSTAL
 	// calculation?')

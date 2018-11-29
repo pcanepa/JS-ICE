@@ -25,13 +25,10 @@
 //////////////////////////////////////VALUE conversion AND ROUNDOFF
 
 _conversion = {
-radiant : Math.PI / 180
-}
-
-_conversion = {
-	finalGeomUnit : "",
-	unitGeomEnergy : ""
-}
+	radiant 		: Math.PI / 180,
+	finalGeomUnit 	: "",
+	unitGeomEnergy 	: ""
+};
 
 function substringEnergyToFloat(value) {
 	if (value != null) {

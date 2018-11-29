@@ -6,15 +6,15 @@ function setVacuum() {
 		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
 				: (messageMsg("Vacuum set to: " + vaccum + " \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(_frame.frameSelection + '.fz.max'));
+		var zMaxCoord = parseFloat(jmolEvaluate(_fileData.frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
 		new_fileData.cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
 		if (fractionalCoord == true) {
-			runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; ( i.z +'
+			runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; ( i.z +'
 					+ factor + ') /' + newcell + ')');
 		} else {
-			runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; i.z +'
+			runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z +'
 					+ factor + ')');
 		}
 		fromfractionaltoCartesian(null, null, new_fileData.cell.c, null, 90, 90);
@@ -24,13 +24,13 @@ function setVacuum() {
 		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
 				: (messageMsg("Vacuum set to: " + vaccum + "  \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(_frame.frameSelection + '.fz.max'));
+		var zMaxCoord = parseFloat(jmolEvaluate(_fileData.frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
 		new_fileData.cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
-		runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; i.z +' + factor
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z +' + factor
 				+ ')');
-		runJmolScriptWait(_frame.frameSelection + '.y = for(i;' + _frame.frameSelection + '; i.y +' + factor
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y +' + factor
 				+ ')');
 		fromfractionaltoCartesian(null, new_fileData.cell.c, new_fileData.cell.c, 90, 90, 90);
 		break;
@@ -39,15 +39,15 @@ function setVacuum() {
 		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
 				: (messageMsg("Vacuum set to: " + vaccum + " \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(_frame.frameSelection + '.fz.max'));
+		var zMaxCoord = parseFloat(jmolEvaluate(_fileData.frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
 		new_fileData.cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
-		runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; i.z +' + factor
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z +' + factor
 				+ ')');
-		runJmolScriptWait(_frame.frameSelection + '.y = for(i;' + _frame.frameSelection + '; i.y +' + factor
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y +' + factor
 				+ ')');
-		runJmolScriptWait(_frame.frameSelection + '.x = for(i;' + _frame.frameSelection + '; i.x +' + factor
+		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x +' + factor
 				+ ')');
 		fromfractionaltoCartesian(new_fileData.cell.c, new_fileData.cell.c, new_fileData.cell.c, 90, 90, 90);
 		break;

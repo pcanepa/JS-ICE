@@ -32,23 +32,23 @@ loadDone_siesta = function(msg) {
 
 	_fileData.energyUnits = ENERGY_RYDBERG;
 	_fileData.StrUnitEnergy = "R";
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		var line = _fileData.info[i].name;
 		if (line != null) {
 			if (line.search(/E/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
 				_fileData.geomSiesta[i] = line;
-				if (Info[i].modelProperties.Energy != null
-						|| Info[i].modelProperties.Energy != "")
-					_fileData.energy[i] = Info[i].modelProperties.Energy;
+				if (_fileData.info[i].modelProperties.Energy != null
+						|| _fileData.info[i].modelProperties.Energy != "")
+					_fileData.energy[i] = _fileData.info[i].modelProperties.Energy;
 				_fileData.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
 				_fileData.vibLine.push(i + " " + line + " ("
-						+ Info[i].modelProperties.IRIntensity + ")");
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(Info[i].modelProperties.Frequency);
-				_fileData.freqSymm.push(Info[i].modelProperties.FrequencyLabel);
-				_fileData.freqIntens.push(Info[i].modelProperties.IRIntensity);
+						+ _fileData.info[i].modelProperties.IRIntensity + ")");
+				_fileData.freqInfo.push(_fileData.info[i]);
+				_fileData.freqData.push(_fileData.info[i].modelProperties.Frequency);
+				_fileData.freqSymm.push(_fileData.info[i].modelProperties.FrequencyLabel);
+				_fileData.freqIntens.push(_fileData.info[i].modelProperties.IRIntensity);
 			}
 		}
 	}

@@ -27,15 +27,15 @@
 loadDone_dmol = function() {
 	_fileData.energyUnits = ENERGY_HARTREE;
 	_fileData.StrUnitEnergy = "H";
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		var line = _fileData.info[i].name;
 		if (line != null) {
 			if (line.search(/E =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
 				_fileData.geomData[i] = line;
 				_fileData.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqInfo.push(_fileData.info[i]);
 				_fileData.freqData.push(line);
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
 				_fileData.vibLine.push(i + " A " + data + " cm^-1");

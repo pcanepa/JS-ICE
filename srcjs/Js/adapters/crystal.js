@@ -192,20 +192,20 @@ loadDone_crystal = function() {
 	_fileData.energyUnits = ENERGY_HARTREE;
 	_fileData.StrUnitEnergy = "H";
 	var vib = getbyID('vib');
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		var line = _fileData.info[i].name;
 		if (line != null) {
 			if (line.search(/Energy/i) != -1) { // Energy
-//				if (i > 0 && i < Info.length)
-//					var previous = substringEnergyToFloat(Info[i - 1].name);
-//				if (Info[i].name != null) {
+//				if (i > 0 && i < _fileData.info.length)
+//					var previous = substringEnergyToFloat(_fileData.info[i - 1].name);
+//				if (_fileData.info[i].name != null) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
 				_fileData.geomData[i] = line;
 				_fileData.counterFreq++;
 //				}
 			} else if (line.search(/cm/i) != -1) {
 				if (line.search(/LO/) == -1) {
-					_fileData.freqInfo.push(Info[i]);
+					_fileData.freqInfo.push(_fileData.info[i]);
 					_fileData.vibLine.push((i - _fileData.counterFreq) + " " + line); 
 					_fileData.freqData.push(line);
 				}

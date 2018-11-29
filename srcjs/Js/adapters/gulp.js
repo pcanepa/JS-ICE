@@ -187,8 +187,8 @@ loadDone_gulp = function() {
 	_fileData.energyUnits = ENERGY_EV;
 	_fileData.StrUnitEnergy = "e";
 	_fileData.counterFreq = 0;
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		var line = _fileData.info[i].name;
 		if (i == 0) {
 			line = "Intial";
 		}

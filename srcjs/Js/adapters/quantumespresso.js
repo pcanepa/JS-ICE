@@ -342,8 +342,8 @@ loadDone_espresso = function() {
 	_fileData.StrUnitEnergy = "R";
 	_fileData.hasInputModel = true;
 
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		var line = _fileData.info[i].name;
 
 		if (i == 0) {
 			_fileData.geomData[0] = line;
@@ -356,9 +356,9 @@ loadDone_espresso = function() {
 				_fileData.counterFreq++;
 			} /*
 			 * else if (line.search(/cm/i) != -1) { // alert("vibration")
-			 * freqData[i - counterFreq] = Info[i].name; counterMD++; } else
+			 * freqData[i - counterFreq] = _fileData.info[i].name; counterMD++; } else
 			 * if (line.search(/Temp/i) != -1) { addOption(getbyID('geom'),
-			 * (i - counterMD) + " " + Info[i].name, i + 1); }
+			 * (i - counterMD) + " " + _fileData.info[i].name, i + 1); }
 			 */
 		}
 	}

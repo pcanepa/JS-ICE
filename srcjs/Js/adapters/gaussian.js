@@ -35,23 +35,23 @@ loadDone_gaussian = function() {
 
 	var geom = getbyID('geom');
 	var vib = getbyID('vib');
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		if (_fileData.info[i].name != null) {
+			var line = _fileData.info[i].name;
 			// alert(line)
 			if (line.search(/E/i) != -1) {
-				_fileData.geom[i] = Info[i].name;
+				_fileData.geom[i] = _fileData.info[i].name;
 				addOption(geom, i + " " + _fileData.geom[i], i + 1);
-				if (Info[i].modelProperties.Energy != null
-						|| Info[i].modelProperties.Energy != "")
-					_fileData.energy[i] = Info[i].modelProperties.Energy;
+				if (_fileData.info[i].modelProperties.Energy != null
+						|| _fileData.info[i].modelProperties.Energy != "")
+					_fileData.energy[i] = _fileData.info[i].modelProperties.Energy;
 				_fileData.counterGauss++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.vibLine.push(i + " " + Info[i].name + " (" + Info[i].modelProperties.IRIntensity + ")");
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(Info[i].modelProperties.Frequency);
-				_fileData.freqSymm.push(Info[i].modelProperties.FrequencyLabel);
-				_fileData.freqIntens.push(Info[i].modelProperties.IRIntensity);
+				_fileData.vibLine.push(i + " " + _fileData.info[i].name + " (" + _fileData.info[i].modelProperties.IRIntensity + ")");
+				_fileData.freqInfo.push(_fileData.info[i]);
+				_fileData.freqData.push(_fileData.info[i].modelProperties.Frequency);
+				_fileData.freqSymm.push(_fileData.info[i].modelProperties.FrequencyLabel);
+				_fileData.freqIntens.push(_fileData.info[i].modelProperties.IRIntensity);
 			}
 		}
 	}

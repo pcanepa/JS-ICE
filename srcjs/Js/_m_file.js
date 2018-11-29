@@ -114,9 +114,9 @@ loadFile = function(fileName, packing, filter, more) {
 
 function setDefaultJmolSettings() {
 	runJmolScriptWait('select all; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
-	radiiSlider.setValue(20);
-	bondSlider.setValue(15);
-	// radiiConnectSlider.setValue(20);
+	_slider.radii.setValue(20);
+	_slider.bond.setValue(15);
+	// _slider.radiiConnect.setValue(20);
 //	getbyID('radiiMsg').innerHTML = 20 + "%";
 //	getbyID('bondMsg').innerHTML = 0.15 + " &#197";
 
@@ -198,11 +198,15 @@ function file_loadedCallback(filePath) {
 			vibLine		: [],
 			counterFreq : 0,
 			counterMD 	: 0,
+			fMinim 		: null,
+			frameSelection : null,
+			frameNum 	: null,
+			frameValue 	: null,
 			haveGraphOptimize : false
 	};
 	
 	counterFreq = 0;
-	extractAuxiliaryJmol();
+	_fileData.info = extractInfoJmol("auxiliaryInfo.models");
 	setFlags(_fileData.fileType);
 	setFileName();
 	getUnitcell(1);

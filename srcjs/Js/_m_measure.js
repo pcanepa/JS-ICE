@@ -116,7 +116,7 @@ function createMeasureGrp() {
 	
 	var strMeas = "<form autocomplete='nope'  id='measureGroup' name='measureGroup' style='display:none'>";
 	strMeas += "<table class='contents'><tr><td > \n";
-	strMeas += "<h2>Measure and Info</h2>\n";
+	strMeas += "<h2>Measure and _fileData.info</h2>\n";
 	strMeas += "</td></tr>\n";
 	strMeas += "<tr><td colspan='2'>\n";
 	strMeas += "Measure<br>\n";

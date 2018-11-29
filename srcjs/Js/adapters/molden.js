@@ -29,12 +29,12 @@ loadDone_molden = function(msg) {
 	_fileData.energyUnits = ENERGY_EV;
 	_fileData.StrUnitEnergy = "e";
 	
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		if (_fileData.info[i].name != null) {
+			var line = _fileData.info[i].name;
 			if (line.search(/cm/i) != -1) {
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
-				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqInfo.push(_fileData.info[i]);
 				_fileData.freqData.push(line);
 				_fileData.vibLine.push(i + " A " + data + " cm^-1");
 				_fileData.counterMD++;

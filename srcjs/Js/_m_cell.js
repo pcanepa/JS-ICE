@@ -1,5 +1,5 @@
 function enterCell() {
-	getUnitcell(_frame.frameValue);
+	getUnitcell(_fileData.frameValue);
 //	getSymInfo();
 }
 
@@ -9,14 +9,14 @@ function exitCell() {
 function saveFractionalCoordinate() {
 	warningMsg("Make sure you have selected the model you would like to export.");
 
-	if (_frame.frameSelection == null)
+	if (_fileData.frameSelection == null)
 		getUnitcell("1");
 
 	var x = "var cellp = [" + roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b)
 	+ ", " + roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha) + ", "
 	+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(gamma) + "];"
 	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
-	+ _frame.frameSelection + '.label("%a %16.9[fxyz]");'
+	+ _fileData.frameSelection + '.label("%a %16.9[fxyz]");'
 	+ 'var lista = [cellparam, xyzfrac];'
 	+ 'WRITE VAR lista "?.XYZfrac" ';
 	runJmolScriptWait(x);
@@ -98,11 +98,11 @@ function getUnitcell(i) {
 }
 
 function setUnitCell() {
-	getUnitcell(_frame.frameValue);
-	if (_frame.frameSelection == null || _frame.frameSelection == "" || _frame.frameValue == ""
-		|| _frame.frameValue == null) {
-		_frame.frameSelection = "{1.1}";
-		_frame.frameNum = 1.1;
+	getUnitcell(_fileData.frameValue);
+	if (_fileData.frameSelection == null || _fileData.frameSelection == "" || _fileData.frameValue == ""
+		|| _fileData.frameValue == null) {
+		_fileData.frameSelection = "{1.1}";
+		_fileData.frameNum = 1.1;
 		getUnitcell("1");
 	}
 }
@@ -198,7 +198,7 @@ function setPackRangeAndReload(val) {
 function checkPack() {
 	uncheckBox("superPack");
 	// This initialize the bar
-	getbyID("packMsg").innerHTML = 0 + " &#197";
+	getbyID("slider.packMsg").innerHTML = 0 + " &#197";
 }
 
 function uncheckPack() {
@@ -223,7 +223,7 @@ function setCellType(value) {
 
 function applyPack(range) {
 	setPackRangeAndReload(parseFloat(range).toPrecision(2));
-	getbyID("packMsg").innerHTML = packRange + " &#197";
+	getbyID("slider.packMsg").innerHTML = packRange + " &#197";
 }
 
 function setManualOrigin() {
