@@ -81,7 +81,7 @@ this.simpleEllipsoids.put (id, e);
 }if ("atoms" === propertyName) {
 this.selectedAtoms = value;
 return;
-}if (propertyName === "_edit.deleteModelAtoms") {
+}if (propertyName === "deleteModelAtoms") {
 var modelIndex = ((value)[2])[0];
 var e = this.simpleEllipsoids.values ().iterator ();
 while (e.hasNext ()) if (e.next ().tensor.modelIndex == modelIndex) e.remove ();

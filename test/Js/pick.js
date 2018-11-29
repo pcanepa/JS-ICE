@@ -1,3 +1,12 @@
+_pick = {
+	pickingEnabled : false,
+	counterHide : 0,
+	selectedAtoms : [],
+	sortquestion : null,
+	selectCheckbox : null,
+	menuCallback : null
+}
+
 function setPicking(form) {
 	if (form.checked) {
 		runJmolScriptWait('showSelections TRUE; select none;halos on; ');
@@ -64,8 +73,8 @@ function setPickingHide(form) {
 
 
 function onClickPickPlane(checkbox, callback) {
-	menuCallback = callback;
-	selectCheckbox = checkbox;
+	_pick.menuCallback = callback;
+	_pick.selectCheckbox = checkbox;
 	if (!checkbox || checkbox.checked) {
 		selectPlane();
 	} else {
@@ -81,7 +90,7 @@ function selectPlane() {
 		return;
 	if (miller) {
 		runJmolScriptWait('draw delete; draw plane1 HKL {' + miller + '};draw off;');
-		menuCallback && menuCallback();
+		_pick.menuCallback && _pick.menuCallback();
 		return true;			
 	} else {
 		runJmolScriptWait("draw off; showSelections TRUE; select none; halos on;");
@@ -91,26 +100,26 @@ function selectPlane() {
 }
 
 function startPicking() {
-	selectedAtoms = [];
-	counterHide = 0;
-	pickingEnabled = true;
+	_pick.selectedAtoms = [];
+	_pick.counterHide = 0;
+	_pick.pickingEnabled = true;
 	runJmolScriptWait("pickedlist = []");
 	setPickingCallbackFunction(pickPlaneCallback);
 }
 
 function cancelPicking() {
 	setPickingCallbackFunction(null);
-	pickingEnabled = false;
+	_pick.pickingEnabled = false;
 	runJmolScriptWait("select none; halos off; draw off; showSelections TRUE; select none;");
-	if (selectCheckbox)
-		uncheckBox(selectCheckbox);
+	if (_pick.selectCheckbox)
+		uncheckBox(_pick.selectCheckbox);
 }
 
 function setDistanceHide(checkbox) {
-	selectCheckbox = checkbox;
+	_pick.selectCheckbox = checkbox;
 	if (checkbox.checked) {
 		setStatus('Select the central atom around which you want to select atoms.');
-		pickingEnabled = true;
+		_pick.pickingEnabled = true;
 		setPickingCallbackFunction(pickDistanceCallback);
 		runJmolScriptWait("showSelections TRUE; select none; halos on;");
 	} else {
@@ -119,7 +128,7 @@ function setDistanceHide(checkbox) {
 }
 
 function pickPlaneCallback() {
-	if (pickingEnabled) {
+	if (_pick.pickingEnabled) {
 		runJmolScriptWait("select pickedList");
 		var picklist = Jmol.evaluateVar(jmolApplet0, "pickedlist");
 		if (picklist.length < 3) {
@@ -128,13 +137,13 @@ function pickPlaneCallback() {
 		}
 		cancelPicking();
 		runJmolScriptWait('draw delete; draw plane1 PLANE @pickedlist;draw off');
-		menuCallback && menuCallback();
+		_pick.menuCallback && _pick.menuCallback();
 		return true;			
 	}
 }
 
 function pickDistanceCallback() {
-	if (pickingEnabled == true) {
+	if (_pick.pickingEnabled == true) {
 		runJmolScriptWait("select picked");
 		var distance = prompt('Enter the distance (in \305) within you want to select atoms.', '2.0');
 		if (distance != null && distance != "") {

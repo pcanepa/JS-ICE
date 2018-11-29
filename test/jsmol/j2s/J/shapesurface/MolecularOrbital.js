@@ -137,7 +137,7 @@ if (this.moSquareLinear === Boolean.TRUE) this.thisModel.put ("moSquareLinear", 
  else this.thisModel.remove ("moSquareLinear");
 this.setOrbital (this.$moNumber, this.$moLinearCombination);
 return;
-}if (propertyName === "_edit.deleteModelAtoms") {
+}if (propertyName === "deleteModelAtoms") {
 var modelIndex = ((value)[2])[0];
 var htModelsNew =  new java.util.Hashtable ();
 for (var i = this.meshCount; --i >= 0; ) {

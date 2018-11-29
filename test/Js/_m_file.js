@@ -9,7 +9,6 @@ var flagSiesta = false;
 var flagDmol = false;
 var flagMolden = false;
 var flagCastep = false;
-
 var quantumEspresso = false;
 
 
@@ -19,6 +18,7 @@ var sampleOptionArr = ["Load a Sample File",
 	"benzene single-point calculation", 
 	"NH3 geometry optimization", 
 	"NH3 vibrations", 
+	"Formaldehyde slab fragment vibrations",
 	"quartz CIF", 
 	"ice.out", 
 	"=AMS/rutile (11 models)"
@@ -29,6 +29,12 @@ function onChangeLoadSample(value) {
 	switch(value) {
 	case "=AMS/rutile (11 models)":
 		fname = "output/rutile.cif";
+		break;
+	case "Formaldehyde slab fragment vibrations":
+		fname = "output/vib-freq/formic_on_ha.out";
+		break;
+	case "quartz CIF":
+		fname = "output/quartz.cif";
 		break;
 	case "quartz CIF":
 		fname = "output/quartz.cif";
@@ -173,21 +179,24 @@ function onChangeLoad(load) {
 }
 
 function file_loadedCallback(filePath) {
-	_specData = null;
 	_fileData = {
+			cell        : {},
 			fileType    : jmolEvaluate("_fileType").toLowerCase(), 
 			energyUnits : ENERGY_EV,
 			strUnitEnergy : "e",
 			hasInputModel : false,
-			haveSpecData : false,
+			symmetry    : null,
+			specData    : null,
+			plotFreq    : null,
 			geomData    : [],
 			freqInfo 	: [],
 			freqData	: [],
 			vibLine		: [],
 			counterFreq : 0,
-			counterMD 	: 0
+			counterMD 	: 0,
+			haveGraphOptimize : false
 	};
-	resetGraphs();
+	
 	counterFreq = 0;
 	extractAuxiliaryJmol();
 	setFlags(_fileData.fileType);
@@ -220,7 +229,7 @@ function cleanAndReloadForm() {
 
 resetLoadFlags = function(isCrystal) {
 	if (isCrystal)
-		typeSystem = "crystal";
+		_fileData.cell.typeSystem = "crystal";
 	flagCrystal = 
 	flagGromos = 
 	flagGulp = 
@@ -308,13 +317,13 @@ setFlags = function(type) {
 	case "gauss":
 		resetLoadFlags(); // BH Added
 		flagGaussian = true;
-		typeSystem = "molecule";
+		_fileData.cell.typeSystem = "molecule";
 		break;
 	case "molden":
 		// WE USE SAME SETTINGS AS VASP
 		// IT WORKS
 		resetLoadFlags(); // BH Added
-		typeSystem = "molecule";
+		_fileData.cell.typeSystem = "molecule";
 		flagOutcar = true;
 		break;
 	case "crysden":
@@ -455,11 +464,28 @@ function createFileGrp() { // Here the order is crucial
 	strFile += createSelectmenu('Export File', 'onChangeSave(value)', 0, 1,
 			elSOptionArr, elSOptionText);
 	strFile += "<p ><img src='images/j-ice.png' alt='logo'/></p>";
-	strFile += "<div style='margin-top:50px;'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
-	strFile += "<blockquote>\"J-ICE: a new Jmol interface for handling<br> and visualizing Crystallographic<br> and Electronics properties.<br>"
-	strFile += "P. Canepa, R.M. Hanson, P. Ugliengo, M. Alfredsson, <br>  J. Appl. Cryst. 44, 225 (2011). <a href='http://dx.doi.org/10.1107/S0021889810049411' target'blank'>[doi]</a> \"</blockquote> </p></div>";
+	strFile += "<div style='margin-top:50px;width:350px'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
+	strFile += createCitations();
+	strFile += "</p></div>";
 	strFile += "</form>\n";
 	return strFile;
 }
+
+ 	createCitations = function() {
+		var citations = _global.citations; 
+		var s = "";
+		for (var i = 0; i < citations.length; i++) {
+			var cite = citations[i];
+			s += "<blockquote><b>";
+			s += cite.title;
+			s += "</b><br>";
+			s += cite.authors.join(", ");
+			s += " <br>";  
+			s+= cite.journal;
+			s += " <a href='" + cite.link + "' target='_blank'>[doi]</a>";
+			s += "</blockquote>"; 
+		};
+		return s
+	}
 
 

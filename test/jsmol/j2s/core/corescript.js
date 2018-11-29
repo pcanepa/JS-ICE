@@ -8259,7 +8259,7 @@ return;
 if (this.chk) return;
 if (bs.nextSetBit (0) < 0 && this.slen == 4 && this.tokAt (2) == 1073742359) {
 var iModel = this.vwr.ms.getModelNumberIndex (this.getToken (2).intValue, false, true);
-if (iModel >= 0) this.vwr._edit.deleteModels (iModel, null);
+if (iModel >= 0) this.vwr.deleteModels (iModel, null);
 return;
 }var nDeleted = this.vwr.deleteAtoms (bs, true);
 var isQuiet = !this.doReport ();

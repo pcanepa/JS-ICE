@@ -101,7 +101,7 @@ this.colixes[i] = JU.C.getColixTranslucent3 (this.colixes[i], isTranslucent, thi
 if (isTranslucent) this.bsColixSet.set (i);
 }
 return;
-}if (propertyName === "_edit.deleteModelAtoms") {
+}if (propertyName === "deleteModelAtoms") {
 this.atoms = (value)[1];
 var info = (value)[2];
 this.ac = this.ms.ac;

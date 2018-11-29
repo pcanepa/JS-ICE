@@ -240,8 +240,8 @@ this.thisMesh.visible = true;
 this.vData = null;
 this.lineData = null;
 return;
-}if (propertyName === "_edit.deleteModelAtoms") {
-this._edit.deleteModels (((value)[2])[0]);
+}if (propertyName === "deleteModelAtoms") {
+this.deleteModels (((value)[2])[0]);
 return;
 }this.setPropertySuper (propertyName, value, bs);
 }, "~S,~O,JU.BS");
@@ -274,7 +274,7 @@ pts.set (i, JS.SV.getVariable (pt));
 this.vData.addLast ( Clazz.newArray (-1, [key, pt]));
 }}
 }, "~N,~O");
-Clazz.defineMethod (c$, "_edit.deleteModels", 
+Clazz.defineMethod (c$, "deleteModels", 
  function (modelIndex) {
 for (var i = this.meshCount; --i >= 0; ) {
 var m = this.dmeshes[i];

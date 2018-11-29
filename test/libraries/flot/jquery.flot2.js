@@ -20,6 +20,9 @@
 
   modified for Jmol by Bob Hanson ("bh", below)
 
+
+ BH 11/7/2018  adds invert option for x axis, series.antialiased  
+
 	*/
 
 
@@ -47,6 +50,7 @@
                     backgroundOpacity: 0.85 // set to 0 to avoid background
                 },
                 xaxis: {
+			   invert:false, // BH 2018 
                     mode: null, // null or "time"
                     min: null, // min. value to show, null means set automatically
                     max: null, // max. value to show, null means set automatically
@@ -121,7 +125,8 @@
                     hoverMode: "xy", // or "x" or "y" //[[[BH]]]]
                     color: "#e8cfac"
                 },
-                shadowSize: 4
+                shadowSize: 0,       // bh 2018 was 4
+                antialiased: false   // bh 2018
             },
         canvas = null,      // the canvas for the plot itself
         overlay = null,     // canvas for interactive stuff on top of plot
@@ -392,9 +397,9 @@
                 // add transformation helpers
                 if (axis == axes.xaxis || axis == axes.x2axis) {
                     // data point to canvas coordinate
-                    axis.p2c = function (p) { return (p - axis.min) * axis.scale; };
+                    axis.p2c = function (p) { return (options.invert ? axis.max - p : p - axis.min) * axis.scale; }; // BH 2018
                     // canvas coordinate to data point 
-                    axis.c2p = function (c) { return axis.min + c / axis.scale; };
+                    axis.c2p = function (c) { return (options.invert ? axis.max - c / axis.scale : axis.min + c / axis.scale); }; // BH 2018
                 }
                 else {
                     axis.p2c = function (p) { return (axis.max - p) * axis.scale; };
@@ -898,7 +903,25 @@
             
             return { from: from, to: to, axis: axis };
         }
-        
+
+        var drawLine = function(xrange, yrange, ctxstyle) {
+//            if (xrange.from == xrange.to || yrange.from == yrange.to) {
+//                // draw line
+//                ctx.strokeStyle = ctxstyle;
+//                ctx.lineWidth = m.lineWidth || options.grid.markingsLineWidth;
+//                ctx.moveTo(Math.floor(xrange.from), Math.floor(yrange.from));
+//                ctx.lineTo(Math.floor(xrange.to), Math.floor(yrange.to));
+//                ctx.stroke();
+//            }
+//            else {
+                // fill area
+                ctx.fillStyle = ctxstyle;
+                ctx.fillRect(Math.floor(xrange.from),
+                             Math.floor(yrange.to),
+                             Math.floor(xrange.to - xrange.from),
+                             Math.floor(yrange.from - yrange.to));
+//            }
+        }
         function drawGrid() {
             var i;
             
@@ -952,23 +975,7 @@
                     xrange.to = xrange.axis.p2c(xrange.to);
                     yrange.from = yrange.axis.p2c(yrange.from);
                     yrange.to = yrange.axis.p2c(yrange.to);
-                    
-                    if (xrange.from == xrange.to || yrange.from == yrange.to) {
-                        // draw line
-                        ctx.strokeStyle = m.color || options.grid.markingsColor;
-                        ctx.lineWidth = m.lineWidth || options.grid.markingsLineWidth;
-                        ctx.moveTo(Math.floor(xrange.from), Math.floor(yrange.from));
-                        ctx.lineTo(Math.floor(xrange.to), Math.floor(yrange.to));
-                        ctx.stroke();
-                    }
-                    else {
-                        // fill area
-                        ctx.fillStyle = m.color || options.grid.markingsColor;
-                        ctx.fillRect(Math.floor(xrange.from),
-                                     Math.floor(yrange.to),
-                                     Math.floor(xrange.to - xrange.from),
-                                     Math.floor(yrange.from - yrange.to));
-                    }
+                    drawLine(xrange, yrange, m.color || options.grid.markingsColor);
                 }
             }
             
@@ -1116,7 +1123,11 @@
             function plotLine(data, offset, axisx, axisy) {
                 var prev, cur = null, drawx = null, drawy = null;
                 
+                if (series.antialiased)  // bh 2018
+                	ctx.translate(0.5,0.5);
                 ctx.beginPath();
+                ctx.lineWidth = series.lines.lineWidth || series.lineWidth || 1;  // bh 2018
+                ctx.lineWidth = 1;
                 for (var i = 0; i < data.length; ++i) {
                     prev = cur;
                     cur = data[i];
@@ -1192,6 +1203,8 @@
                     ctx.lineTo(drawx, drawy);
                 }
                 ctx.stroke();
+                if (series.antialiased)   // bh 2018
+                	ctx.translate(-0.5,-0.5);
             }
 
             function plotLineArea(data, axisx, axisy) {

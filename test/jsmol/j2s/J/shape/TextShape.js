@@ -119,7 +119,7 @@ while (e.hasNext ()) {
 e.next ().setTranslucent (this.translucentLevel, isBackground);
 }
 }return;
-}if (propertyName === "_edit.deleteModelAtoms") {
+}if (propertyName === "deleteModelAtoms") {
 var modelIndex = ((value)[2])[0];
 var e = this.objects.values ().iterator ();
 while (e.hasNext ()) {
