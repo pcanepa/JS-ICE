@@ -21,12 +21,16 @@ var sampleOptionArr = ["Load a Sample File",
 	"Formic acid slab fragment vibrations",
 	"quartz CIF", 
 	"ice.out", 
-	"=AMS/rutile (11 models)"
+	"=AMS/rutile (11 models)",
+	"urea VASP test"
 ]
 
 function onChangeLoadSample(value) {
 	var fname = null;
 	switch(value) {
+	case "urea VASP test":
+		fname = "vasp/Urea_vasp5.dat"
+		break;
 	case "=AMS/rutile (11 models)":
 		fname = "output/rutile.cif";
 		break;
