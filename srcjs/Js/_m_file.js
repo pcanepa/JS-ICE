@@ -29,7 +29,7 @@ function onChangeLoadSample(value) {
 	var fname = null;
 	switch(value) {
 	case "urea VASP test":
-		fname = "vasp/Urea_vasp5.dat"
+		fname = "output/vasp/Urea_vasp5.dat"
 		break;
 	case "=AMS/rutile (11 models)":
 		fname = "output/rutile.cif";
