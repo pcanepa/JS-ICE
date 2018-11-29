@@ -1832,7 +1832,7 @@ Clazz.defineMethod (c$, "isModulated",
 function (i) {
 return this.bsModulated != null && this.bsModulated.get (i);
 }, "~N");
-Clazz.defineMethod (c$, "_edit.deleteModelAtoms", 
+Clazz.defineMethod (c$, "deleteModelAtoms", 
 function (firstAtomIndex, nAtoms, bsAtoms) {
 this.at = JU.AU.deleteElements (this.at, firstAtomIndex, nAtoms);
 this.ac = this.at.length;

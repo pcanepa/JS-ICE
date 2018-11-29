@@ -265,12 +265,12 @@ this.doApplySymmetry = this.isProperties;
 return !this.isProperties;
 });
 Clazz.defineMethod (c$, "readLatticeParams", 
- function (isNewSet) {
+ function (isPrimitive) {
 var f = (this.line.indexOf ("(BOHR") >= 0 ? 0.5291772 : 1);
-if (isNewSet) this.newAtomSet ();
+if (isPrimitive) this.newAtomSet ();
 this.primitiveVolume = 0;
 this.primitiveDensity = 0;
-if (this.isPolymer && !this.isPrimitive && this.line.indexOf ("BOHR =") < 0) {
+if (this.isPolymer && !isPrimitive && this.line.indexOf ("BOHR =") < 0) {
 this.setUnitCell (this.parseFloatStr (this.line.substring (this.line.indexOf ("CELL") + 4)) * f, -1, -1, 90, 90, 90);
 } else {
 while (this.rd ().indexOf ("GAMMA") < 0) if (this.line.indexOf ("VOLUME=") >= 0) {
@@ -279,7 +279,7 @@ this.primitiveDensity = this.parseFloatStr (this.line.substring (66));
 }
 var tokens = JU.PT.getTokens (this.rd ());
 if (this.isSlab) {
-if (this.isPrimitive) this.setUnitCell (this.parseFloatStr (tokens[0]) * f, this.parseFloatStr (tokens[1]) * f, -1, this.parseFloatStr (tokens[3]), this.parseFloatStr (tokens[4]), this.parseFloatStr (tokens[5]));
+if (isPrimitive) this.setUnitCell (this.parseFloatStr (tokens[0]) * f, this.parseFloatStr (tokens[1]) * f, -1, this.parseFloatStr (tokens[3]), this.parseFloatStr (tokens[4]), this.parseFloatStr (tokens[5]));
  else this.setUnitCell (this.parseFloatStr (tokens[0]) * f, this.parseFloatStr (tokens[1]) * f, -1, 90, 90, this.parseFloatStr (tokens[2]));
 } else if (this.isPolymer) {
 this.setUnitCell (this.parseFloatStr (tokens[0]) * f, -1, -1, this.parseFloatStr (tokens[3]), this.parseFloatStr (tokens[4]), this.parseFloatStr (tokens[5]));
@@ -471,7 +471,7 @@ this.discardLinesUntilContains ("MODES");
 var haveIntensities = (this.line.indexOf ("INTENS") >= 0);
 this.rd ();
 var vData =  new JU.Lst ();
-var freqAtomCount = this.ac;
+var freqAtomCount = (this.atomFrag == null ? this.ac : 0);
 while (this.rd () != null && this.line.length > 0) {
 var i0 = this.parseIntRange (this.line, 1, 5);
 var i1 = this.parseIntRange (this.line, 6, 10);

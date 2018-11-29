@@ -19,7 +19,6 @@ function enterSymmetry() {
 function exitSymmetry() {
 }
 
-
 //this appends new atoms by chosen symop
 function doActivateSymmetry(){
 	appendSymmetricAtoms(_fileData.symmetry.chosenSymElement,getValue("initPoint"),_fileData.symmetry.chosenSymop,getValue("symIterations"));
@@ -30,19 +29,23 @@ function doActivateAllSymmetry(){
 	drawAllSymmetricPoints(getValue("initPoint"));
 }
 
+
 function doSymopSelection(symop){
 	setSymop(symop);
 	displaySymmetryDrawObjects(symop);
 }
 
+
 function setSymElement(elementName){
 	_fileData.symmetry.chosenSymElement = elementName;
 }
+
 
 function setSymop(symop){
 	_fileData.symmetry.chosenSymop = symop;
 }
 
+//figures out from file data all of the symmetry operations as Jones faithful representations 
 function createSymopSet(){
 	var symopSet = [];
 	runJmolScriptWait("getProperty spacegroupInfo.symmetryInfo");
@@ -61,6 +64,7 @@ function setOpacity(){
 	opacityScript = "select *;color atoms translucent " + (1 - opacity)
 	runJmolScript(opacityScript);
 }
+
 function updateSymOffset(dimension,offset){
 	var symOffsetString = _fileData.symmetry.symOffset;
 	symOffsetString = symOffsetString.substring(1);
@@ -81,6 +85,7 @@ function updateSymOffset(dimension,offset){
 }
 
 //creates symmetry menu 
+//HTML is here 
 function createSymmetryGrp() {
 	var strSymmetry = "<form autocomplete='nope'  id='symmetryGroup' name='symmetryGroup' style='display:none'>\n";
 	strSymmetry += "<tr><td>\n";
@@ -166,6 +171,7 @@ function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 		console.log("ERROR: empty symmetry operation");
 	}
 	else {
+		runJmolScriptWait("appendNewAtom('"+elementName+"', "+point+")");
 		var newAtomArray = Jmol.evaluateVar(jmolApplet0,"getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
 		var numberOfNewAtoms = newAtomArray.length; 
 		for (i = 1; i <= numberOfNewAtoms; i++){

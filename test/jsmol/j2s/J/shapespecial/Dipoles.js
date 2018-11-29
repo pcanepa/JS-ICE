@@ -185,7 +185,7 @@ if (this.isBond || !this.iHaveTwoEnds && this.tempDipole.bsMolecule == null) ret
 this.setDipole ();
 this.setModelIndex ();
 return;
-}if (propertyName === "_edit.deleteModelAtoms") {
+}if (propertyName === "deleteModelAtoms") {
 var modelIndex = ((value)[2])[0];
 for (var i = this.dipoleCount; --i >= 0; ) if (this.dipoles[i].modelIndex > modelIndex) {
 this.dipoles[i].modelIndex--;

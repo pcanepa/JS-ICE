@@ -544,7 +544,7 @@ default:
 this.invArg ();
 }
 break;
-case 134219266:
+case 134217763:
 switch (this.getToken (i + 1).tok) {
 case 1814695966:
 case 1678381065:
@@ -1357,7 +1357,7 @@ sbCommand.append (" pmesh");
 propertyName = "fileType";
 propertyValue = "Pmesh";
 break;
-case 134219266:
+case 134217763:
 bsSelect = this.atomExpressionAt (++i);
 if (this.chk) {
 bs =  new JU.BS ();
@@ -3710,7 +3710,7 @@ return;
 }if ("colorDensity" === propertyName) {
 if (value != null && this.currentMesh != null) this.currentMesh.volumeRenderPointSize = (value).floatValue ();
 return;
-}if (propertyName === "_edit.deleteModelAtoms") {
+}if (propertyName === "deleteModelAtoms") {
 var modelIndex = ((value)[2])[0];
 var firstAtomDeleted = ((value)[2])[1];
 var nAtomsDeleted = ((value)[2])[2];

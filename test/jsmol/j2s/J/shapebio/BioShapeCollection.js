@@ -64,7 +64,7 @@ var b = this.bioShapes[i];
 if (b.modelIndex == modelIndex) b.falsifyMesh ();
 }
 return;
-}if (propertyName === "_edit.deleteModelAtoms") {
+}if (propertyName === "deleteModelAtoms") {
 this.atoms = (value)[1];
 var modelIndex = ((value)[2])[0];
 for (var i = this.bioShapes.length; --i >= 0; ) {

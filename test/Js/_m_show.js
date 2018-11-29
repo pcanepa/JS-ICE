@@ -1,11 +1,16 @@
+_show = {
+	firstTimeBond : true,
+	colorWhat : ""
+}
+
 function enterShow() {
-	if (firstTimeBond) {
+	if (_show.firstTimeBond) {
 		bondSlider.setValue(20);
 		radiiSlider.setValue(22);
 		getbyID('radiiMsg').innerHTML = 20 + " %";
 		getbyID('bondMsg').innerHTML = 0.20 + " &#197";
 	}
-	firstTimeBond = false;
+	_show.firstTimeBond = false;
 }
 
 function exitShow() {

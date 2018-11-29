@@ -4,17 +4,34 @@
 //not really necessary for current functionality but nice to have 
 //only functional in jsmol as jsice cannot read spacegroupInfo.operations
 
-function readSymmetryNames() {
-	var allSymopInfo = _M.getProperty("spacegroupInfo.operations");
-	var numSymops = allSymopInfo.length;
-	var symopNameArray = [];
-	for (var i = 1; i<= numSymops;i++){
-		var symopCurrent = allSymopInfo[i];
-		var currentName = symopCurrent[3];
-		symopNameArray[i] = currentName;
+function pointToArray(pointt){
+	var pointt = ""+pointt+"" 
+	var coordinateArray = []
+	var totalChars = pointt.length
+	for (var i = 0; i < totalChars;i++){
+		if (pointt[i] == "{"){
+			pointt[i] = " "
+		}
+		if (pointt[i] == "}"){
+			pointt[i] = " "
+		}
 	}
-	return symopNameArray
+	var elementString  = ""
+	for (var i = 0; i <= totalChars;i++){
+		if (pointt[i] == " " || pointt[i] == "\t"){
+			if (elementString != " " && elementString != ""){
+				coordinateArray.push(elementString)
+			}
+			elementString = ""
+			
+		}
+		else{
+			elementString += pointt[i]
+		}
+	}
+	return coordinateArray
 }
+
 // gets and returns the symmetry operation vector (as in "x,y,z" for identity are so forth) names 
 function readSymmetryVectors() {
 	var symopVectorArray = [];
@@ -81,7 +98,7 @@ function getSymmetricAtomArray(symopSelected,pointt,iterations){
 //
 //p1 = $draw_object_name[0]  ; p2 = $draw_object_name[1]
 function drawCleanSymmetryAxisVectors(symOperation, axisFactor){
-	draw symAxis* off 
+	draw sym_axis* off 
 	draw symop @symOperation
 	point1 = $sym_rotvector1[0]
 	point2 = $sym_rotvector1[1]
@@ -90,8 +107,8 @@ function drawCleanSymmetryAxisVectors(symOperation, axisFactor){
 	point1 = point1*axisFactor
 	point3 = point3*axisFactor
 	draw s* off 
-	draw ID "symAxis1" vector @point2 @point1 
-	draw ID "symAxis2" vector @point4 @point3
+	draw ID "sym_axis1" vector @point2 @point1 
+	draw ID "sym_axis2" vector @point4 @point3
 } 
 
 function appendNewAtom(elementName, point) {
@@ -113,6 +130,45 @@ function getSymmetryAtomArrayAllSymops(point){
 	return symAtomArrayAllSymops
 }
 
+//IDEA: constraint menu
+//UNTESTED
+//Many of the below functions are outlines for future functions 
+function bindToVectorConstraint(vectorDrawObjectID,selectedPoint,errorDistance){
+	vectorPointer = ""+vectorDrawObjectID+""
+	errorDistance = 1
+	startPoint = $ @vectorPointer[0]
+	endPoint = $ @vectorPointer[1]
+	constrainedPoint = intersection(startPoint,endPoint-startPoint,selectedPoint) 
+	if (selectedPointToNewPointDistance > errorDistance){
+		print selectedPoint 
+	}
+	else{
+		print constrainedPoint 
+	}
+}
 
-//IDEA: constraint menu? 
+function bindToPlaneConstraint(planeDrawObjectID, selectedPoint, errorDistance){
+	planePointer = ""+planeDrawObjectID+""
+	constrainedPoint = intersection(selectedPoint,planeDrawObjectID)
+	selectedPointToNewPointDistance = @selectedPoint.distance(planePointer)
+	if (selectedPointToNewPointDistance > errorDistance){
+		return selectedPoint 
+	}
+	else{
+		return constrainedPoint 
+	}
+}
+
+//Unused
+function readSymmetryNames() {
+	var allSymopInfo = _M.getProperty("spacegroupInfo.operations");
+	var numSymops = allSymopInfo.length;
+	var symopNameArray = [];
+	for (var i = 1; i<= numSymops;i++){
+		var symopCurrent = allSymopInfo[i];
+		var currentName = symopCurrent[3];
+		symopNameArray[i] = currentName;
+	}
+	return symopNameArray
+}
 

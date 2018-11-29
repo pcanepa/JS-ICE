@@ -83,8 +83,8 @@ function setSystem() {
 			warningMsg("This procedure is not fully tested.");
 			figureOutSpaceGroup();
 		} else {
-			stringCellparamgulp = roundNumber(_cell.a) + ' ' + roundNumber(_cell.b)
-					+ ' ' + roundNumber(_cell.c) + ' ' + roundNumber(alpha) + ' '
+			stringCellparamgulp = roundNumber(_fileData.cell.a) + ' ' + roundNumber(_fileData.cell.b)
+					+ ' ' + roundNumber(_fileData.cell.c) + ' ' + roundNumber(alpha) + ' '
 					+ roundNumber(beta) + ' ' + roundNumber(gamma);
 		}
 		break;
@@ -92,18 +92,18 @@ function setSystem() {
 	case "surface":
 		cellHeadergulp = "scell"
 		coordinateAddgulp = "s"
-		stringCellparamgulp = roundNumber(_cell.a) + ", " + roundNumber(_cell.b)
+		stringCellparamgulp = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b)
 				+ ", " + roundNumber(gamma);
 		break;
 
 	case "polymer":
 		cellHeadergulp = "pcell"
 		coordinateAddgulp = ""
-		stringCellparamgulp = roundNumber(_cell.a);
+		stringCellparamgulp = roundNumber(_fileData.cell.a);
 		break;
 
 	case "molecule":
-		// To be terminated
+		// TODO
 
 		break;
 	}

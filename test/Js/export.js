@@ -6,50 +6,50 @@ function setVacuum() {
 		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
 				: (messageMsg("Vacuum set to: " + vaccum + " \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(frameSelection + '.fz.max'));
+		var zMaxCoord = parseFloat(jmolEvaluate(_frame.frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
-		new_cell.c = (zMaxCoord * 2) + vaccum;
+		new_fileData.cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
 		if (fractionalCoord == true) {
-			runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; ( i.z +'
+			runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; ( i.z +'
 					+ factor + ') /' + newcell + ')');
 		} else {
-			runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z +'
+			runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; i.z +'
 					+ factor + ')');
 		}
-		fromfractionaltoCartesian(null, null, new_cell.c, null, 90, 90);
+		fromfractionaltoCartesian(null, null, new_fileData.cell.c, null, 90, 90);
 		break;
 	case "polymer":
 		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
 		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
 				: (messageMsg("Vacuum set to: " + vaccum + "  \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(frameSelection + '.fz.max'));
+		var zMaxCoord = parseFloat(jmolEvaluate(_frame.frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
-		new_cell.c = (zMaxCoord * 2) + vaccum;
+		new_fileData.cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z +' + factor
+		runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; i.z +' + factor
 				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y +' + factor
+		runJmolScriptWait(_frame.frameSelection + '.y = for(i;' + _frame.frameSelection + '; i.y +' + factor
 				+ ')');
-		fromfractionaltoCartesian(null, new_cell.c, new_cell.c, 90, 90, 90);
+		fromfractionaltoCartesian(null, new_fileData.cell.c, new_fileData.cell.c, 90, 90, 90);
 		break;
 	case "molecule":
 		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
 		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
 				: (messageMsg("Vacuum set to: " + vaccum + " \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(frameSelection + '.fz.max'));
+		var zMaxCoord = parseFloat(jmolEvaluate(_frame.frameSelection + '.fz.max'));
 		vaccum = parseFloat(vaccum);
-		new_cell.c = (zMaxCoord * 2) + vaccum;
+		new_fileData.cell.c = (zMaxCoord * 2) + vaccum;
 		var factor = roundNumber(zMaxCoord + vaccum);
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z +' + factor
+		runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; i.z +' + factor
 				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y +' + factor
+		runJmolScriptWait(_frame.frameSelection + '.y = for(i;' + _frame.frameSelection + '; i.y +' + factor
 				+ ')');
-		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x +' + factor
+		runJmolScriptWait(_frame.frameSelection + '.x = for(i;' + _frame.frameSelection + '; i.x +' + factor
 				+ ')');
-		fromfractionaltoCartesian(new_cell.c, new_cell.c, new_cell.c, 90, 90, 90);
+		fromfractionaltoCartesian(new_fileData.cell.c, new_fileData.cell.c, new_fileData.cell.c, 90, 90, 90);
 		break;
 
 	}
@@ -62,37 +62,37 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 	    yx, yy, yz, 
 	    zx, zy, zz;
 	if (aparam != null)
-		_cell.a = aparam;
+		_fileData.cell.a = aparam;
 	if (bparam != null)
-		_cell.b = bparam;
+		_fileData.cell.b = bparam;
 	if (cparam != null)
-		_cell.c = cparam;
+		_fileData.cell.c = cparam;
 	if (alphaparam != null)
-		alpha = alphaparam;
+		_fileData.cell.alpha = alphaparam;
 	if (betaparam != null)
-		beta = betaparam;
+		_fileData.cell.beta = betaparam;
 	if (gammaparam != null)
-		gamma = gammaparam;
+		_fileData.cell.gamma = gammaparam;
 	// formula repeated from
 	// http://en.wikipedia.org/wiki/Fractional_coordinates
 	var v = Math.sqrt(1
-			- (Math.cos(alpha * radiant) * Math.cos(alpha * radiant))
-			- (Math.cos(beta * radiant) * Math.cos(beta * radiant))
-			- (Math.cos(gamma * radiant) * Math.cos(gamma * radiant))
+			- (Math.cos(_fileData.cell.alpha * _conversion.radiant) * Math.cos(_fileData.cell.alpha * _conversion.radiant))
+			- (Math.cos(_fileData.cell.beta * _conversion.radiant) * Math.cos(_fileData.cell.beta * _conversion.radiant))
+			- (Math.cos(_fileData.cell.gamma * _conversion.radiant) * Math.cos(_fileData.cell.gamma * _conversion.radiant))
 			+ 2
-			* (Math.cos(alpha * radiant) * Math.cos(beta * radiant) * Math
-					.cos(gamma * radiant)));
-	xx = _cell.a * Math.sin(beta * radiant);
+			* (Math.cos(_fileData.cell.alpha * _conversion.radiant) * Math.cos(_fileData.cell.beta * _conversion.radiant) * Math
+					.cos(_fileData.cell.gamma * _conversion.radiant)));
+	xx = _fileData.cell.a * Math.sin(_fileData.cell.beta * _conversion.radiant);
 	xy = parseFloat(0.000);
-	xz = _cell.a * Math.cos(beta * radiant);
-	yx = _cell.b
-	* (((Math.cos(gamma * radiant)) - ((Math.cos(beta * radiant)) * (Math
-			.cos(alpha * radiant)))) / Math.sin(beta * radiant));
-	yy = _cell.b * (v / Math.sin(beta * radiant));
-	yz = _cell.b * Math.cos(alpha * radiant);
+	xz = _fileData.cell.a * Math.cos(_fileData.cell.beta * _conversion.radiant);
+	yx = _fileData.cell.b
+	* (((Math.cos(_fileData.cell.gamma * _conversion.radiant)) - ((Math.cos(_fileData.cell.beta * _conversion.radiant)) * (Math
+			.cos(_fileData.cell.alpha * _conversion.radiant)))) / Math.sin(_fileData.cell.beta * _conversion.radiant));
+	yy = _fileData.cell.b * (v / Math.sin(_fileData.cell.beta * _conversion.radiant));
+	yz = _fileData.cell.b * Math.cos(_fileData.cell.alpha * _conversion.radiant);
 	zx = parseFloat(0.000);
 	zy = parseFloat(0.000);
-	zz = _cell.c;
+	zz = _fileData.cell.c;
 	return [[xx, xy, xz], [yx, yy, yz], [zx, zy, zz]];
 
 }

@@ -150,7 +150,7 @@ return;
 }if ("clear" === propertyName) {
 this.clear ();
 return;
-}if ("_edit.deleteModelAtoms" === propertyName) {
+}if ("deleteModelAtoms" === propertyName) {
 this.atoms = (value)[1];
 var modelIndex = ((value)[2])[0];
 var firstAtomDeleted = ((value)[2])[1];

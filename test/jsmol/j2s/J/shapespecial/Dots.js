@@ -83,7 +83,7 @@ var m =  new JU.M3 ();
 m4.getRotationScale (m);
 this.ec.reCalculate (bs, m);
 return;
-}if (propertyName === "_edit.deleteModelAtoms") {
+}if (propertyName === "deleteModelAtoms") {
 var firstAtomDeleted = ((value)[2])[1];
 var nAtomsDeleted = ((value)[2])[2];
 JU.BSUtil.deleteBits (this.bsOn, bs);

@@ -54,6 +54,7 @@ var symmetryCRYSTAL = null;
 function exportCRYSTAL() {
 	var endCRYSTAL = "TEST', 'END";
 	var script = "";
+	var flagsymmetry;
 	warningMsg("Make sure you have selected the model you would like to export.")
 	titleCRYSTAL();
 	setUnitCell();
@@ -66,20 +67,20 @@ function exportCRYSTAL() {
 		symmetryCRYSTAL = "'1'";
 
 		if (!flagSiesta && !flagOutcar && !flagCryVasp)
-			var flagsymmetry = confirm("Do you want to introduce symmetry ?")
+			flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			script = "var cellp = ["
-					+ roundNumber(_cell.a)
+					+ roundNumber(_fileData.cell.a)
 					+ ", "
-					+ roundNumber(_cell.b)
+					+ roundNumber(_fileData.cell.b)
 					+ ", "
-					+ roundNumber(_cell.c)
+					+ roundNumber(_fileData.cell.c)
 					+ ", "
-					+ roundNumber(_cell.alpha)
+					+ roundNumber(alpha)
 					+ ", "
-					+ roundNumber(_fileData.cell.beta)
+					+ roundNumber(beta)
 					+ ", "
-					+ roundNumber(_cell.gamma)
+					+ roundNumber(gamma)
 					+ "];"
 					+ 'var cellparam = cellp.join(" ");'
 					+ 'cellparam = cellparam.replace("\n\n","\n");'
@@ -114,8 +115,8 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = [" + roundNumber(_cell.a) + ", "
-				+ roundNumber(_cell.b) + ", " + roundNumber(gamma) + "];"
+		script = "var cellp = [" + roundNumber(_fileData.cell.a) + ", "
+				+ roundNumber(_fileData.cell.b) + ", " + roundNumber(gamma) + "];"
 				+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
 				+ titleCRYS + "', " + systemCRYSTAL + ", " + symmetryCRYSTAL
 				+ "];" + 'crystalArr = crystalArr.replace("\n\n","\n");'
@@ -133,7 +134,7 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = " + roundNumber(_cell.a) + ";"
+		script = "var cellp = " + roundNumber(_fileData.cell.a) + ";"
 				+ "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
 				+ ", " + symmetryCRYSTAL + "];"
 				+ 'crystalArr = crystalArr.replace("\n\n","\n");'
