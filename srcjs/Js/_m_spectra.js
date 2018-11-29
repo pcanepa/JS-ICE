@@ -79,17 +79,17 @@ function doSpectraNewWindow() {
 /////////LOAD FUNCTIONS
 
 function disableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
+	/*for (var i = 0; i < document.modelsVib.modAct.length; i++)
 		document.modelsVib.modAct[i].disabled = true;
 	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = true;
+		document.modelsVib.kindspectra[i].disabled = true;*/
 }
 
 function enableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
+	/*for (var i = 0; i < document.modelsVib.modAct.length; i++)
 		document.modelsVib.modAct[i].disabled = false;
 	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = false;
+		document.modelsVib.kindspectra[i].disabled = false;*/
 
 }
 /* called by fily types, but currently do nothing. */
@@ -277,7 +277,9 @@ function setVibList(specData) {
 	runJmolScriptWait(script)
 
 }
-/* This function changes the vib list to include only frequencies in the xmax and xmin range. */
+/* This function makes vibList include only frequencies in the xmax and xmin range. */
+
+
 function getVibLinesFromIrrep(specData) {
 	var vibLinesFromIrrep = [];
 	var irep = specData.irrep;
