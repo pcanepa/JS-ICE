@@ -18,7 +18,7 @@ var sampleOptionArr = ["Load a Sample File",
 	"benzene single-point calculation", 
 	"NH3 geometry optimization", 
 	"NH3 vibrations", 
-	"Formaldehyde slab fragment vibrations",
+	"Formic acid slab fragment vibrations",
 	"quartz CIF", 
 	"ice.out", 
 	"=AMS/rutile (11 models)"
@@ -30,7 +30,7 @@ function onChangeLoadSample(value) {
 	case "=AMS/rutile (11 models)":
 		fname = "output/rutile.cif";
 		break;
-	case "Formaldehyde slab fragment vibrations":
+	case "Formic acid slab fragment vibrations":
 		fname = "output/vib-freq/formic_on_ha.out";
 		break;
 	case "quartz CIF":

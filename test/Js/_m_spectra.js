@@ -90,20 +90,20 @@ function enableFreqOpts() {
 
 }
 
-function onClickSelectVib(isTriggered) {
+function onClickSelectVib() {
 	var vib = getbyID('vib');
-	if (isTriggered) {
-		if (vib.selectedIndex < 0)
-			return;
-		_fileData.plotFreq.selectedFreq = _fileData.specData.freqs[_fileData.specData.vibList[vib.selectedIndex][3]];
-		showFreqGraph("plotareafreq", _fileData.specData, _fileData.plotFreq);
-		return;
-	}	
 	var model = parseInt(vib.value);
 	showFrame(model);	
 	updateJmolForFreqParams(true);
 	// trigger to make sure selectedIndex has been set.
-	setTimeout(function() {onClickSelectVib(true)}, 50);
+	setTimeout(function() {selectVib(vib.selectedIndex)}, 50);
+}
+
+function selectVib(index) {
+	var vib = getbyID('vib');
+	_fileData.plotFreq.selectedFreq = (index < 0 ? -1 
+			: _fileData.specData.freqs[_fileData.specData.vibList[index][3]]);
+	showFreqGraph("plotareafreq", _fileData.specData, _fileData.plotFreq);
 }
 
 function setYMax() {
@@ -535,18 +535,15 @@ function getRanges(specData) {
 }	
 
 function plotClickCallbackFreq(event, pos, itemFreq) {
-	if (!itemFreq) return
+	var range = (itemFreq ? getFreqForClick(itemFreq.datapoint) : null);
 	// itemFreq is [x,y] so [freq,int]
-	var range = getFreqForClick(itemFreq.datapoint);
 	// range is [min,max,freq,i]
-	if (!range)
-		return;
-	var freq = range[2];
-	var listIndex = _fileData.specData.vibList[range[3]][2];	
-	if (listIndex < 0)
+	var listIndex = (range ? _fileData.specData.vibList[range[3]][2] : -1);
+	if (listIndex < 0) {
+		setTimeout(function() { selectVib(-1) }, 50);
 		return;		
-	var vib = getbyID('vib');
-	vib.options[listIndex].selected = true;
+	}
+	getbyID('vib').options[listIndex].selected = true;
 	setTimeout(function(){onClickSelectVib();},50);
 }
 
