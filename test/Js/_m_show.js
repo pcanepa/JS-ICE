@@ -1,11 +1,16 @@
+_show = {
+	firstTimeBond : true,
+	colorWhat : ""
+}
+
 function enterShow() {
-	if (firstTimeBond) {
+	if (_show.firstTimeBond) {
 		bondSlider.setValue(20);
 		radiiSlider.setValue(22);
 		getbyID('radiiMsg').innerHTML = 20 + " %";
 		getbyID('bondMsg').innerHTML = 0.20 + " &#197";
 	}
-	firstTimeBond = false;
+	_show.firstTimeBond = false;
 }
 
 function exitShow() {
@@ -15,15 +20,12 @@ function showPickPlaneCallback() {
 	var distance = prompt('Enter the distance (in \305) within you want to select atoms. \n Positive values mean from the upper face on, negative ones the opposite.', '1');
 	if (distance != null && distance != "") {
 		runJmolScriptWait('select within(' + distance + ',plane,$plane1)');
-//			hideMode = " hide selected";
-//			deleteMode = " delete selected";
+//			_edit.hideMode = " hide selected";
+//			_edit.deleteMode = " delete selected";
 		colorWhat = "color atoms";
 	}
 }
 
-var firstTimeBond = true;
-
-var colorWhat = "";
 
 
 function setColorWhat(rgb, colorscript) {

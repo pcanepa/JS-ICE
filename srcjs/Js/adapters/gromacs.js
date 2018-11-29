@@ -52,9 +52,9 @@ function setCoordinatesGromacs() {
 	var numatomsGrom = " " + frameSelection + ".length";
 	var coordinateGrom = frameSelection
 			+ '.label("  %i%e %i %e %8.3[xyz] %8.4fy %8.4fz")';
-	var cellbox = +roundNumber(aCell) * (cosRadiant(alpha)) + ' '
-			+ roundNumber(bCell) * (cosRadiant(beta)) + ' '
-			+ roundNumber(cCell) * (cosRadiant(gamma));
+	var cellbox = +roundNumber(_fileData.cell.a) * (cosRadiant(alpha)) + ' '
+			+ roundNumber(_fileData.cell.b) * (cosRadiant(beta)) + ' '
+			+ roundNumber(_fileData.cell.c) * (cosRadiant(gamma));
 	coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
 			+ 'var coordGrom = ' + coordinateGrom + ';'
 			+ 'var cellGrom = \" \n\t' + cellbox + '\"; '

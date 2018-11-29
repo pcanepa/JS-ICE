@@ -9,26 +9,6 @@ function doClickReloadCurrentState() {
 	runJmolScriptWait('restore ORIENTATION orask; restore STATE stask; restore BOND bask;');
 }
 
-
-// BH 2018.09.21 never used
-//Array.prototype.max = function() {
-//	var max = this[0];
-//	var len = this.length;
-//	for (var i = 1; i < len; i++)
-//		if (this[i] > max)
-//			max = this[i];
-//	return max;
-//}
-//
-//Array.prototype.min = function() {
-//	var min = this[0];
-//	var len = this.length;
-//	for (var i = 1; i < len; i++)
-//		if (this[i] < min)
-//			min = this[i];
-//	return min;
-//}
-
 runJmolScript = function(script) {
 	debugSay(script);
 	jmolScript(script);	
@@ -43,11 +23,12 @@ createApplet = function() {
 	Jmol.Info || (Jmol.Info = {});
 	Jmol.Info.serverUrl = "https://chemapps.stolaf.edu/jmol/jsmol/php/jmol.php"
 	jmolSetAppletColor("white");
-	jmolApplet(
-			[ "570", "570" ],
-			"script scripts/init.spt;"
+	var script = "script scripts/init.spt;"
 			+ getCallbackSettings()
 			+ ";script scripts/reset.spt;"
+	jmolApplet(
+			[ "570", "570" ],
+			script 
 			);
 }
 
@@ -110,10 +91,11 @@ function docWriteRightFrame() {
 
 function docWriteSpectrumHeader() {
 	// for spectrum.html
-	var s = "Min Freq. " + createTextSpectrum("minValue", "", "5", "")
-	+ " Max " + createTextSpectrum("maxValue", "", "5", "")
-	+ " cm<sup>-1</sup> ";
-	s += createButton("rescaleSpectraButton", "Rescale", "replotSpectrumHTML()", "");
+	var s = 
+	//"Min Freq. " + createTextSpectrum("minValue", "", "5", "")
+	//+ " Max " + createTextSpectrum("maxValue", "", "5", "")
+	//+ " cm<sup>-1</sup> ";
+//	s += createButton("rescaleSpectraButton", "Rescale", "replotSpectrumHTML()", "");
 	s += createButton("savespectra", "Save spectrum", "writeSpectumHTML()", "");
 	document.write(s);
 }

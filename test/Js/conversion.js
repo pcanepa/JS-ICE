@@ -24,10 +24,14 @@
 
 //////////////////////////////////////VALUE conversion AND ROUNDOFF
 
-var finalGeomUnit = ""
-var unitGeomEnergy = "";
+_conversion = {
+radiant : Math.PI / 180
+}
 
-var radiant = Math.PI / 180;
+_conversion = {
+	finalGeomUnit : "",
+	unitGeomEnergy : ""
+}
 
 function substringEnergyToFloat(value) {
 	if (value != null) {
@@ -125,7 +129,7 @@ function substringIntFreqToFloat(value) {
 function cosRadiant(value) {
 	if (value != null) {
 		var angle = parseFloat(value).toPrecision(7);
-		angle = Math.cos(value * radiant);
+		angle = Math.cos(value * _conversion.radiant);
 		angle = Math.round(angle * 10000000) / 10000000;
 	}
 	return angle;
@@ -163,7 +167,7 @@ function convertPlot(value) {
 	setconversionParam();
 	switch (unitEnergy) {
 	case "h": // Hartree
-		finalGeomUnit = " Hartree";
+		_conversion.finalGeomUnit = " Hartree";
 		switch (_fileData.energyUnits) {
 		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtohartree);
@@ -177,7 +181,7 @@ function convertPlot(value) {
 		}
 		break;
 	case "e": // eV
-		finalGeomUnit = " eV";
+		_conversion.finalGeomUnit = " eV";
 		switch (_fileData.energyUnits) {
 		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtoEV);
@@ -192,7 +196,7 @@ function convertPlot(value) {
 		break;
 
 	case "r": // Rydberg
-		finalGeomUnit = " Ry";
+		_conversiomn.finalGeomUnit = " Ry";
 		switch (_fileData.energyUnits) {
 		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtorydberg);
@@ -207,7 +211,7 @@ function convertPlot(value) {
 		break;
 
 	case "kj": // Kj/mol
-		finalGeomUnit = " kJ/mol"
+		_conversion.finalGeomUnit = " kJ/mol"
 			switch (_fileData.energyUnits) {
 			case ENERGY_RYDBERG:
 				convertGeomData(fromRydbergtoKj);
@@ -222,7 +226,7 @@ function convertPlot(value) {
 		break;
 
 	case "kc": // Kcal*mol
-		finalGeomUnit = " kcal/mol"			
+		_conversion.finalGeomUnit = " kcal/mol"			
 		switch (_fileData.energyUnits) {
 		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtokcalmol);
@@ -239,20 +243,20 @@ function convertPlot(value) {
 }
 
 function setconversionParam() {
-	unitGeomEnergy = _fileData.unitGeomEnergy;
+	_conversion.unitGeomEnergy = _fileData.unitGeomEnergy;
 	switch (_fileData.energyUnits) {
 	case ENERGY_RYDBERG:
-		unitGeomEnergy = "R";
+		_conversion.unitGeomEnergy = "R";
 		break;
 	case ENERGY_EV:
-		unitGeomEnergy = "e";
+		_conversion.unitGeomEnergy = "e";
 		break;
 	case ENERGY_HARTREE:
-		unitGeomEnergy = "H";
+		_conversion.unitGeomEnergy = "H";
 		break;
 // TODO: why 'k'
 //	case ENERGY_KJ_PER_MOLE:
-//		unitGeomEnergy = "k";
+//		_conversion.unitGeomEnergy = "k";
 	}
 }
 
@@ -265,7 +269,7 @@ function setconversionParam() {
 //	switch (unitEnergy) {
 //
 //	case "h": // Hartree
-//		finalGeomUnit = " Hartree";
+//		_conversion.finalGeomUnit = " Hartree";
 //		if (flagQuantumEspresso) {
 //			convertGeomData(fromRydbergtohartree);
 //		} else if (!flagCrystal || flagOutcar || flagGulp) {
@@ -275,7 +279,7 @@ function setconversionParam() {
 //		}
 //		break;
 //	case "e": // eV
-//		finalGeomUnit = " eV";
+//		_conversion.finalGeomUnit = " eV";
 //		if (flagCrystal || flagDmol) {
 //			convertGeomData(fromHartreetoEv);
 //		} else if (flagQuantumEspresso) {
@@ -287,7 +291,7 @@ function setconversionParam() {
 //		break;
 //
 //	case "r": // Rydberg
-//		finalGeomUnit = " Ry";
+//		_conversion.finalGeomUnit = " Ry";
 //		if (flagCrystal || flagDmol) {
 //			convertGeomData(fromHartreetoRydberg);
 //		} else if (!flagCrystal || flagOutcar || flagGulp) {
@@ -298,7 +302,7 @@ function setconversionParam() {
 //		break;
 //
 //	case "kj": // Kj/mol
-//		finalGeomUnit = " kJ/mol"
+//		_conversion.finalGeomUnit = " kJ/mol"
 //
 //			if (flagCrystal || flagDmol) {
 //				convertGeomData(fromHartreetokJ);
@@ -310,7 +314,7 @@ function setconversionParam() {
 //		break;
 //
 //	case "kc": // Kcal*mol
-//		finalGeomUnit = " kcal/mol"
+//		_conversion.finalGeomUnit = " kcal/mol"
 //			
 //			if (flagCrystal || flagDmol) {
 //				convertGeomData(fromHartreetokcalmol);
@@ -325,13 +329,13 @@ function setconversionParam() {
 //
 //function setconversionParam() {
 //	if (flagCrystal || flagDmol) {
-//		unitGeomEnergy = "H"; // Hartree
+//		_conversion.unitGeomEnergy = "H"; // Hartree
 //	} else if ((!flagCrystal && !flagQuantumEspresso) || (flagOutcar && !flagQuantumEspresso)) {
-//		unitGeomEnergy = "e"; // VASP
+//		_conversion.unitGeomEnergy = "e"; // VASP
 //	} else if (flagGulp) {
-//		unitGeomEnergy = "k";
+//		_conversion.unitGeomEnergy = "k";
 //	} else if (flagQuantumEspresso || !flagOutcar) {
-//		unitGeomEnergy = "R";
+//		_conversion.unitGeomEnergy = "R";
 //	}
 //}
 
@@ -349,8 +353,8 @@ function convertGeomData(f) {
 	for (var i = n; i < geomData.length; i++) {
 		var data = _fileInfo.geomData[i];
 		val = f(data.substring(data.indexOf('=') + 1, 
-				data.indexOf(unitGeomEnergy) - 1));
-		addOption(geom, i + " E = " + val + finalGeomUnit, i + 1);
+				data.indexOf(_conversion.unitGeomEnergy) - 1));
+		addOption(geom, i + " E = " + val + _conversion.finalGeomUnit, i + 1);
 	}
 
 }

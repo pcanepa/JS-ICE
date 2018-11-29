@@ -104,6 +104,21 @@ function createButton(name, text, onclick, disab, style) {
 	return createButton1(name, text, onclick, disab, "button", style);
 }
 
+function createButtonB(name, text, onclick, disab, style) {
+	var s = "<BUTTON type='button' ";
+	s += "NAME='" + name + "' ";
+	s += "ID='" + name + "' ";
+	if (style)
+		s += "style='" + style + "'";
+	if (disab) {
+		s += "DISABLED ";
+	}
+	s += "OnClick='" + onclick + "'>";
+	s += text;
+	s += "</BUTTON>";
+	return s;
+}
+
 //This includes the class
 function createButton1(name, text, onclick, disab, myclass, style) {
 	var s = "<INPUT TYPE='BUTTON'";
@@ -340,6 +355,10 @@ function setValue(id, val) {
 
 function getValueSel(id) {
 	return getbyID(id)[getbyID(id).selectedIndex].value;
+}
+
+function getTextSel(id) {
+	return getbyID(id)[getbyID(id).selectedIndex].text;
 }
 
 function isChecked(id) {

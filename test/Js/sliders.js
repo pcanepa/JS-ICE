@@ -23,7 +23,7 @@
  */
 
 function applyBond(angstroms) {
-	if (firstTimeBond) {
+	if (_show.firstTimeBond) {
 		runJmolScriptWait("wireframe .2;");
 	} else {
 		runJmolScriptWait("wireframe " + angstroms + ";");

@@ -1,3 +1,12 @@
+var _build = {
+	counterClicZ : 0,
+	distanceZ : 0,
+	angleZ : 0,
+	torsionalZ : 0,
+	arrayAtomZ : new Array(3),
+	makeCrystalSpaceGroup : null
+};
+
 function enterBuild() {
 	// not implemented
 }
@@ -17,22 +26,22 @@ function atomSelectedColor(atom) {
 
 function atomSelectedDelete(atom) {
 	runJmolScriptWait("select {atomno=" + atom + "};");
-	deleteMode = "delete {atomno=" + atom + "}";
-	return deleteMode;
+	_edit.deleteMode = "delete {atomno=" + atom + "}";
+	return _edit.deleteMode;
 }
 
 function atomSelectedHide(atom) {
 	runJmolScriptWait("select {atomno=" + atom + "};");
-	hideMode = "hide {atomno=" + atom + "}";
-	return hideMode;
+	_edit.hideMode = "hide {atomno=" + atom + "}";
+	return _edit.hideMode;
 }
 
 
 function atomSelectedDisplay(atom) {
 	runJmolScriptWait("select all; halo off; label off");
 	runJmolScriptWait("select {atomno=" + atom + "}; halo on; label on");
-	displayMode = "display {atomno=" + atom + "}";
-	return displayMode;
+	_edit.displayMode = "display {atomno=" + atom + "}";
+	return _edit.displayMode;
 }
 
 function addAtomfrac() {
@@ -75,9 +84,9 @@ function addNewatom() {
 					+ ' end "model"');
 		} else {
 			var fractional = confirm("Are these coordinates fractionals (OK) or Cartesians (Cancel)?");
-			getUnitcell(frameValue);
+			getUnitcell(_frame.frameValue);
 			setUnitCell();
-			runJmolScriptWait('var noatoms =' + frameSelection + '.length  + 1;');
+			runJmolScriptWait('var noatoms =' + _frame.frameSelection + '.length  + 1;');
 			if (!fractional) {
 				var atomString = "\n 1\n\n" + type + " " + parseFloat(x) + " "
 				+ parseFloat(y) + " " + parseFloat(z);
@@ -120,11 +129,10 @@ function loadScriptZMatrix() {
 			+ 'rotate Selected molecular @b @a @tor @newAtom \n' + '}');
 }
 
-var counterClicZ = 0;
 function selectElementZmatrix(form) {
 
 	if (form.checked) {
-		counterClicZ = 0;
+		_build.counterClicZ = 0;
 		for (var i = 0; i < 3; i++) {
 
 			if (i == 0) {
@@ -132,9 +140,9 @@ function selectElementZmatrix(form) {
 				messageMsg("Select the 1st atom where to attach the new atom.");
 			}
 
-			if (counterClicZ == 1) {
+			if (_build.counterClicZ == 1) {
 				messageMsg("Select the 2nd atom to form the angle.");
-			} else if (counterClicZ == 2) {
+			} else if (_build.counterClicZ == 2) {
 				messageMsg("Select the 3rd atom to form the torsional angle.");
 			}
 			setPickingCallbackFunction(pickZmatrixCallback)
@@ -143,50 +151,48 @@ function selectElementZmatrix(form) {
 	}
 }
 
-var distanceZ, angleZ, torsionalZ
-var arrayAtomZ = new Array(3);
 function pickZmatrixCallback(b, c, d, e) {
-	if (counterClicZ == 0) { // distance
+	if (_build.counterClicZ == 0) { // distance
 		var valuedist = prompt(
 				"Now enter the distance (in \305) from which you want to add the new atom. \n Seletion is done by symply clikking ont the desire atom",
 		"1.0");
-		distanceZ = parseFloat(valuedist);
-		arrayAtomZ[0] = parseInt(b.substring(b.indexOf('#') + 1,
+		_build.distanceZ = parseFloat(valuedist);
+		_build.arrayAtomZ[0] = parseInt(b.substring(b.indexOf('#') + 1,
 				b.indexOf('.') - 2));
 
 	}
-	if (counterClicZ == 1) { // angle
+	if (_build.counterClicZ == 1) { // angle
 
 		var valueangle = prompt(
 				"Now the enter the angle (in degrees) formed between the new atom, the 1st and the 2nd ones. \n Seletion is done by symply clikking ont the desire atoms",
 		"109.7");
-		angleZ = parseFloat(valueangle);
-		arrayAtomZ[1] = parseInt(b.substring(b.indexOf('#') + 1,
+		_build.angleZ = parseFloat(valueangle);
+		_build.arrayAtomZ[1] = parseInt(b.substring(b.indexOf('#') + 1,
 				b.indexOf('.') - 2));
 
 	}
-	if (counterClicZ == 2) {// torsional
+	if (_build.counterClicZ == 2) {// torsional
 
 		var valuetorsion = prompt(
 				"Enter the torsional angle(in degrees) formed between the new atom, the 1st, the 2nd and the 3rd ones. \n Seletion is done by symply clikking ont the desire atoms",
 		"180.0");
-		torsionalZ = parseFloat(valuetorsion);
-		arrayAtomZ[2] = parseInt(b.substring(b.indexOf('#') + 1,
+		_build.torsionalZ = parseFloat(valuetorsion);
+		_build.arrayAtomZ[2] = parseInt(b.substring(b.indexOf('#') + 1,
 				b.indexOf('.') - 2));
-		messageMsg("distance: " + distanceZ + " from atom " + arrayAtomZ[0]
-		+ " angle: " + angleZ + " formed by atoms: new, "
-		+ arrayAtomZ[0] + ", " + arrayAtomZ[1] + "\n and torsional: "
-		+ torsionalZ + " formed by atoms: new, " + arrayAtomZ[0] + ", "
-		+ arrayAtomZ[1] + ", " + arrayAtomZ[2])
+		messageMsg("distance: " + _build.distanceZ + " from atom " + _build.arrayAtomZ[0]
+		+ " angle: " + _build.angleZ + " formed by atoms: new, "
+		+ _build.arrayAtomZ[0] + ", " + _build.arrayAtomZ[1] + "\n and torsional: "
+		+ _build.torsionalZ + " formed by atoms: new, " + _build.arrayAtomZ[0] + ", "
+		+ _build.arrayAtomZ[1] + ", " + _build.arrayAtomZ[2])
 		messageMsg("Now, select the desire element.");
 	}
-	counterClicZ++;
+	_build.counterClicZ++;
 }
 
 function addZatoms() {
-	runJmolScriptWait('zAdd(\"' + getValue('addEleZ') + '\",' + distanceZ + ',{'
-			+ arrayAtomZ[0] + '}, ' + angleZ + ', {' + arrayAtomZ[1] + '},'
-			+ torsionalZ + ', {' + arrayAtomZ[2] + '})')
+	runJmolScriptWait('zAdd(\"' + getValue('addEleZ') + '\",' + _build.distanceZ + ',{'
+			+ _build.arrayAtomZ[0] + '}, ' + _build.angleZ + ', {' + _build.arrayAtomZ[1] + '},'
+			+ _build.torsionalZ + ', {' + _build.arrayAtomZ[2] + '})')
 }
 
 function createCrystalStr(form) {
@@ -197,7 +203,6 @@ function createCrystalStr(form) {
 	}
 }
 
-var makeCrystalSpaceGroup = null;
 function checkIfThreeD(value) {
 	makeEnablePeriodicityMol()
 	if (value == "crystal") {
@@ -208,7 +213,7 @@ function checkIfThreeD(value) {
 		setValue("c_frac", "");
 	} else if (value == "slab") {
 		makeDisable("periodMole");
-		makeCrystalSpaceGroup = "P-1"; // / set P-1 as symmetry for film and
+		_build.makeCrystalSpaceGroup = "P-1"; // / set P-1 as symmetry for film and
 		// polymer
 		setValue("a_frac", "");
 		setValue("b_frac", "");
@@ -220,7 +225,7 @@ function checkIfThreeD(value) {
 		makeDisable("gamma_frac");
 	} else if (value == "polymer") {
 		makeDisable("periodMole");
-		makeCrystalSpaceGroup = "P-1"; // / set P-1 as symmetry for film and
+		_build.makeCrystalSpaceGroup = "P-1"; // / set P-1 as symmetry for film and
 		// polymer
 		setValue("a_frac", "");
 		setValue("b_frac", "0");
@@ -392,7 +397,7 @@ function createMolecularCrystal() {
 	if (value == "") {
 		errorMsg("You must select which sort of structure you would like to build.")
 	} else if (value == "crystal") {
-		makeCrystalSpaceGroup = getValue('periodMole');
+		_build.makeCrystalSpaceGroup = getValue('periodMole');
 		getValueMakeCrystal();
 	} else {
 		getValueMakeCrystal();
@@ -401,7 +406,7 @@ function createMolecularCrystal() {
 
 ///TODO SAVE state before creating crystal
 function getValueMakeCrystal() {
-	reload('{1 1 1} spacegroup "' + makeCrystalSpaceGroup
+	reload('{1 1 1} spacegroup "' + _build.makeCrystalSpaceGroup
 			+ '" unitcell ' + getCurrentUnitCell() + ';');
 	getbyID("createmolecularCrystal").style.display = "none";
 }

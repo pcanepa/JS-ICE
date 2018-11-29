@@ -1,3 +1,11 @@
+
+_measure = {
+	kindCoord: "",
+	measureCoord : false,
+	unitMeasure : "",
+	mesCount : 0
+}
+
 function enterMeasure() {
 
 }
@@ -6,10 +14,8 @@ function exitMeasure() {
 	measureCoord = false;
 }
 
-var kindCoord;
-var measureCoord = false;
 function viewCoord(value) {
-	kindCoord = value;
+	_measure.kindCoord = value;
 	measureCoord = true;
 	messageMsg("Pick the atom you are interested in, please.");
 	setPickingCallbackFunction(showCoord);
@@ -20,14 +26,14 @@ function viewCoord(value) {
 
 function showCoord() {
 	if (measureCoord) {
-		if (kindCoord == "fractional") {
+		if (_measure.kindCoord == "fractional") {
 			runJmolScriptWait('Label "%a: %.2[fX] %.2[fY] %.2[fZ]"');
 		} else {
 			runJmolScriptWait('Label "%a: %1.2[atomX] %1.2[atomY] %1.2[atomZ]"');
 		}
 	}
 }
-var unitMeasure = "";
+
 function setMeasureUnit(value) {
 	unitMeasure = value;
 	runJmolScriptWait("set measurements " + value);
@@ -37,7 +43,6 @@ function setMeasurement() {
 	runJmolScriptWait("set measurements ON");
 }
 
-var mesCount = 0;
 function checkMeasure(value) {
 	var radiobutton = value;
 	var unit = getbyID('measureDist').value;

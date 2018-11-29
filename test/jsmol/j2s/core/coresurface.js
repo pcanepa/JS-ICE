@@ -544,7 +544,7 @@ default:
 this.invArg ();
 }
 break;
-case 134219266:
+case 134217763:
 switch (this.getToken (i + 1).tok) {
 case 1814695966:
 case 1678381065:
@@ -1357,7 +1357,7 @@ sbCommand.append (" pmesh");
 propertyName = "fileType";
 propertyValue = "Pmesh";
 break;
-case 134219266:
+case 134217763:
 bsSelect = this.atomExpressionAt (++i);
 if (this.chk) {
 bs =  new JU.BS ();

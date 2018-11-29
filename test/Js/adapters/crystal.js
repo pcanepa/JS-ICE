@@ -54,6 +54,7 @@ var symmetryCRYSTAL = null;
 function exportCRYSTAL() {
 	var endCRYSTAL = "TEST', 'END";
 	var script = "";
+	var flagsymmetry;
 	warningMsg("Make sure you have selected the model you would like to export.")
 	titleCRYSTAL();
 	setUnitCell();
@@ -66,14 +67,14 @@ function exportCRYSTAL() {
 		symmetryCRYSTAL = "'1'";
 
 		if (!flagSiesta && !flagOutcar && !flagCryVasp)
-			var flagsymmetry = confirm("Do you want to introduce symmetry ?")
+			flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			script = "var cellp = ["
-					+ roundNumber(aCell)
+					+ roundNumber(_fileData.cell.a)
 					+ ", "
-					+ roundNumber(bCell)
+					+ roundNumber(_fileData.cell.b)
 					+ ", "
-					+ roundNumber(cCell)
+					+ roundNumber(_fileData.cell.c)
 					+ ", "
 					+ roundNumber(alpha)
 					+ ", "
@@ -114,8 +115,8 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = [" + roundNumber(aCell) + ", "
-				+ roundNumber(bCell) + ", " + roundNumber(gamma) + "];"
+		script = "var cellp = [" + roundNumber(_fileData.cell.a) + ", "
+				+ roundNumber(_fileData.cell.b) + ", " + roundNumber(gamma) + "];"
 				+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
 				+ titleCRYS + "', " + systemCRYSTAL + ", " + symmetryCRYSTAL
 				+ "];" + 'crystalArr = crystalArr.replace("\n\n","\n");'
@@ -133,7 +134,7 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = " + roundNumber(aCell) + ";"
+		script = "var cellp = " + roundNumber(_fileData.cell.a) + ";"
 				+ "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
 				+ ", " + symmetryCRYSTAL + "];"
 				+ 'crystalArr = crystalArr.replace("\n\n","\n");'

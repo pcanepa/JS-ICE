@@ -1,3 +1,7 @@
+_orient = {
+	motion : ""
+}
+
 function enterOrient() {
 	slabSlider.setValue(100 - jmolEvaluate("slab"));
 	depthSlider.setValue(jmolEvaluate("depth"));
@@ -38,23 +42,22 @@ function toggleSlab() {
 }
 
 //This controls the refined motion of the structure
-var motion = "";
 function setKindMotion(valueList) {
-	motion = valueList;
-	if (motion == "select")
+	_orient.motion = valueList;
+	if (_orient.motion == "select")
 		errorMsg("Please select the motion");
-	return motion;
+	return _orient.motion;
 }
 
 function setMotion(axis) {
 	var magnitudeMotion = getbyID("fineOrientMagn").value;
 
-	if (motion == "select" || motion == "") {
+	if (_orient.motion == "select" || _orient.motion == "") {
 		errorMsg("Please select the motion");
 		return false;
 	}
 
-	// /(motion == "translate" )? (makeDisable("-z") + makeDisable("z")) :
+	// /(_orient.motion == "translate" )? (makeDisable("-z") + makeDisable("z")) :
 	// (makeEnable("-z") + makeEnable("z"))
 
 	if (magnitudeMotion == "") {
@@ -63,12 +66,12 @@ function setMotion(axis) {
 	}
 
 	var stringa = "Selected" + " " + axis + " " + magnitudeMotion;
-	if (motion == "translate" && (axis == "-x" || axis == "-y" || axis == "-z")) {
+	if (_orient.motion == "translate" && (axis == "-x" || axis == "-y" || axis == "-z")) {
 		axis = axis.replace("-", "");
 		stringa = "Selected" + " " + axis + " -" + magnitudeMotion;
 	}
 
-	stringa = motion + (getbyID("moveByselection").checked ? "Selected " : " ") + stringa;
+	stringa = _orient.motion + (getbyID("moveByselection").checked ? "Selected " : " ") + stringa;
 	 
 	runJmolScriptWait(stringa);
 

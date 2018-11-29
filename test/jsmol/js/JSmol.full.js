@@ -20939,6 +20939,6 @@ Sys.err.write = function (buf, offset, len) {
 })(Clazz, Jmol); // requires JSmolCore.js
 
 }; // called by external application 
-Jmol.___JmolDate="$Date: 2018-10-13 23:02:01 -0500 (Sat, 13 Oct 2018) $"
+Jmol.___JmolDate="$Date: 2018-11-28 19:07:11 -0600 (Wed, 28 Nov 2018) $"
 Jmol.___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-Jmol.___JmolVersion="14.29.27"
+Jmol.___JmolVersion="14.29.29" 

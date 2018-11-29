@@ -23,7 +23,10 @@
  */
 
 //////////Following functions control the structural optimization of a structure using the embedded uff of Jmol
-var counterUff = 0
+_uff = {
+	counterUff : 0
+}
+
 function minimizeStructure() {
 	var optCriterion = parseFloat(getValue("optciteria"));
 	var optSteps = parseInt(getValue("maxsteps"));
@@ -37,12 +40,12 @@ function minimizeStructure() {
 		warningMsg("Please set the Max No. of steps.");
 		return false;
 	} else if (!form.checked) {
-		counterUff = 0;
+		_uff.counterUff = 0;
 		setMinimizationCallbackFunction(scriptUffCallback);
 		runJmolScript("set debugscript on ;set logLevel 5;set minimizationCriterion " + optCriterion + "; minimize STEPS "
 				+ optSteps + "; set minimizationRefresh TRUE;  minimize;");
 	} else if (form.checked) {
-		counterUff = 0;
+		_uff.counterUff = 0;
 		setMinimizationCallbackFunction(scriptUffCallback);
 		runJmolScript("set debugscript on ;set logLevel 5;set minimizationCriterion " + optCriterion + "; minimize STEPS "
 				+ optSteps
@@ -71,8 +74,8 @@ function resetOptimize() {
 }
 
 function scriptUffCallback(b, step, d, e, f, g) {
-	var text = ("s = " + counterUff + " E = " + parseFloat(d).toPrecision(10)
+	var text = ("s = " + _uff.counterUff + " E = " + parseFloat(d).toPrecision(10)
 			+ " kJ/mol, dE = " + parseFloat(e).toPrecision(6) + " kJ/mol")
 	getbyID("textUff").value = text
-	counterUff++;
+	_uff.counterUff++;
 }

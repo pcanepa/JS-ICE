@@ -1,5 +1,9 @@
 // BH 2018
 
+_callback = {
+	fPick : null
+}
+
 getCallbackSettings = function() {
 //	return  "set messageCallback 'myMessageCallback';" +
 	return	"set errorCallback 'myErrorCallback';" +
@@ -24,14 +28,14 @@ myErrorCallback = function(applet, b, msg, d) {
 	errorMsg(msg);
 }
 
-var fPick = null;
+
 
 setPickingCallbackFunction = function(f) {
-	fPick = f;
+	_callback.fPick = f;
 }
 
 myPickCallback = function(applet, b, c, d) {
-	fPick && fPick(b,c,d);
+	_callback.fPick && _callback.fPick(b,c,d);
 }
 
 fMinim = null;
