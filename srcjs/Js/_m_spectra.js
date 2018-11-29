@@ -60,17 +60,20 @@ function enterSpectra() {
 		}
 	});
 }
+/*enterSpectra gets information from fileData in order to set up the plot frequency. This includes nmin, nmax and selected 
+frequency values. nMin, nMax and sigma values are also changeable by hitting the enter key. */ 
+
 
 function exitSpectra() {
 	runJmolScriptWait('vibration off; vectors off');
 }
+/*Leaving the spectra page turns off the vibration and vectors. */ 
+
 
 function doSpectraNewWindow() {
-	// this opens the window that contains the spectrum
-	//var win = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=800,height=600,left=50";
 	var newwin = open("spectrum.html");
 }
-
+/* This opens the spectra graph in the new window. */ 
 
 
 /////////LOAD FUNCTIONS
@@ -89,6 +92,8 @@ function enableFreqOpts() {
 		document.modelsVib.kindspectra[i].disabled = false;
 
 }
+/* called by fily types, but currently do nothing. */
+
 
 function onClickSelectVib(isTriggered) {
 	var vib = getbyID('vib');
@@ -105,6 +110,10 @@ function onClickSelectVib(isTriggered) {
 	// trigger to make sure selectedIndex has been set.
 	setTimeout(function() {onClickSelectVib(true)}, 50);
 }
+/* When triggered (by a click), the vibration is retrieved from the file data. The graph is then
+updated to show a larger red line at the selected frequency. The correct frame is also shown for the 
+specific vibration. */ 
+
 
 function setYMax() {
 	var specData = setUpSpecData("all", "any"); 
@@ -112,6 +121,10 @@ function setYMax() {
 	createSpectrum(specData);
 	 _fileData.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
 }
+/* The maxY value is found from the information taken from the file and put into specData. 
+The max y value of both Raman and IR arrays becomes the ymax value in fileData. */
+
+
 function onClickModSpec(isPageOpen, doSetYMax) {
 	if (_fileData.freqData.length == 0) {
 		return;
@@ -134,6 +147,9 @@ function onClickModSpec(isPageOpen, doSetYMax) {
 	}
 	return showFreqGraph("plotareafreq", _fileData.specData, _fileData.plotFreq);	
 }
+/* Gets information on the symmetry, IR or Raman, etc. in specData that is chosen by the user 
+and/or file data. It then remakes the spectra plot with the updated information.*/ 
+
 
 function setUpSpecData(typeIRorRaman,irrep) {
 	return {
@@ -147,6 +163,7 @@ function setUpSpecData(typeIRorRaman,irrep) {
 			minX      : Math.min(parseInt(getValue("nMin")), parseInt(getValue("nMax"))),
 			maxX      : Math.max(parseInt(getValue("nMin")), parseInt(getValue("nMax"))),
 			maxY      : _fileData.spectraYMax,
+			maxR      : 3700,
 			previousPointFreq : -1,
 			vibList   : [],
 			freqInfo  : [],
@@ -163,6 +180,8 @@ function setUpSpecData(typeIRorRaman,irrep) {
 	};
 	
 }
+/* This sets up specData, which is used throughout the code as an easy way to store all 
+necessary information in terms of plotting the spectra.*/ 
 
 function createSpectrum(specData) {
 	switch (specData.typeIRorRaman) {
@@ -193,6 +212,9 @@ function createSpectrum(specData) {
 		break;
 	}
 }
+/* This function creates the spectrum (either stick or cool) based on whether the spectrum includes
+Raman data, IR data, or both (decided on by user and found in specData).*/ 
+
 
 function setMaxMinPlot(specData) {
 	var n = specData.freqCount;
@@ -214,6 +236,9 @@ function setMaxMinPlot(specData) {
 	_fileData.plotFreq.maxX0 = specData.maxX = specData.maxR + 300;
 
 }
+/* This function gets the max and min data for the plot. The max x is defined as being 4000, or 300 
+greater than the last peak if the final peak is at a much lower value.*/ 
+
 
 function getFrequencyList(specData) {
 	// fill specData.freqInfo[] and specData.vibList[]
@@ -232,6 +257,9 @@ function getFrequencyList(specData) {
 		}
 	}
 }
+/* This function finds the frequency list and vibration list from modelProperties in fileData, and
+is based on IR or Raman type. These lists are then pushed into specData as the freqInfo and VibList.*/
+
 
 function setVibList(specData) {
 	var vib = getbyID('vib');	
@@ -249,7 +277,7 @@ function setVibList(specData) {
 	runJmolScriptWait(script)
 
 }
-
+/* This function changes the vib list to include only frequencies in the xmax and xmin range. */
 function getVibLinesFromIrrep(specData) {
 	var vibLinesFromIrrep = [];
 	var irep = specData.irrep;

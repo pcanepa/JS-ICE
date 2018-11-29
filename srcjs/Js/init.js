@@ -91,12 +91,12 @@ function docWriteRightFrame() {
 
 function docWriteSpectrumHeader() {
 	// for spectrum.html
-	var s = 
+//	var s = 
 	//"Min Freq. " + createTextSpectrum("minValue", "", "5", "")
 	//+ " Max " + createTextSpectrum("maxValue", "", "5", "")
 	//+ " cm<sup>-1</sup> ";
-//	s += createButton("rescaleSpectraButton", "Rescale", "replotSpectrumHTML()", "");
-	s += createButton("savespectra", "Save spectrum", "writeSpectumHTML()", "");
-	document.write(s);
+//	createButton("rescaleSpectraButton", "Rescale", "replotSpectrumHTML()", "");
+	//+ createButton("savespectra", "Save spectrum", "writeSpectumHTML()", "");
+//	document.write(s);
 }
 
