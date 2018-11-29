@@ -241,7 +241,7 @@ function preparePostionblock() {
 
 	setUnitCell();
 	atompositionQ = "var posHeader = 'ATOMIC_POSITIONS crystal';"
-		+ 'var posCoord = ' + frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
+		+ 'var posCoord = ' + _fileData.frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
 		// %16.9[fxyz]\");'
 		+ 'posQ = [posHeader,posCoord];';
 	runJmolScriptWait(atompositionQ);
@@ -286,7 +286,7 @@ function symmetryQuantum() {
 		break;
 	case "slab":
 		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _fileData.cell.c
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/' + _fileData.cell.c
 				+ ')');
 		cellDimString = "            celldm(1) = "
 			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
@@ -300,9 +300,9 @@ function symmetryQuantum() {
 		break;
 	case "polymer":
 		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _fileData.cell.c
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/' + _fileData.cell.c
 				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + _fileData.cell.b
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/' + _fileData.cell.b
 				+ ')');
 		cellDimString = "            celldm(1) = "
 			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
@@ -315,11 +315,11 @@ function symmetryQuantum() {
 		break;
 	case "molecule":
 		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _fileData.cell.c
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/' + _fileData.cell.c
 				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + _fileData.cell.b
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/' + _fileData.cell.b
 				+ ')');
-		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/' + _fileData.cell.a
+		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/' + _fileData.cell.a
 				+ ')');
 		cellDimString = "            celldm(1) = "
 			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))

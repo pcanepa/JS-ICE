@@ -43,7 +43,6 @@
  %ENDBLOCK SPECIES_POT
  */
 
-var positionCastep = null;
 
 function exportCASTEP() {
 	warningMsg("Make sure you have selected the model you would like to export.");
@@ -53,21 +52,21 @@ function exportCASTEP() {
 	setVacuum();
 	switch (typeSystem) {
 	case "slab":
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
 				+ roundNumber(_fileData.cell.c) + ')');
 		break;
 	case "polymer":
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
 				+ roundNumber(_fileData.cell.c) + ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/'
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/'
 				+ roundNumber(_fileData.cell.b) + ')');
 		break;
 	case "molecule":
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
 				+ roundNumber(_fileData.cell.c) + ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/'
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/'
 				+ roundNumber(_fileData.cell.b) + ')');
-		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/'
+		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/'
 				+ roundNumber(_fileData.cell.a) + ')');
 		break;
 	}
@@ -93,8 +92,8 @@ function prepareLatticeblockcastep(lattice) {
 
 // /Frac coordinates
 function prepareCoordinateblockCastep() {
-	positionCastep = "var positionHeader = '\%block POSITIONS_FRAC';"
-			+ 'var xyzCoord = ' + frameSelection + '.label("%e %16.9[fxyz]");'
+	var positionCastep = "var positionHeader = '\%block POSITIONS_FRAC';"
+			+ 'var xyzCoord = ' + _fileData.frameSelection + '.label("%e %16.9[fxyz]");'
 			+ 'xyzCoord = xyzCoord.replace("\n\n","\n");'
 			+ "var positionClose = '\%endblock POSITIONS_FRAC';"
 			+ "positionCastep = [positionHeader, xyzCoord, positionClose];"

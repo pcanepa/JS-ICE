@@ -1,5 +1,5 @@
 function newAppletWindow() {
-	var windowoptions : "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50"
+	var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50"
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);
 	var newwin = open("OutputResized.html", "jmol_" + sm, _window.windowoptions);

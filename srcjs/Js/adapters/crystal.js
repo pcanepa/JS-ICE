@@ -39,12 +39,12 @@ var numAtomCRYSTAL = null;
 var fractionalCRYSTAL = null;
 function atomCRYSTAL() {
 	if (typeSystem == "molecule")
-		fractionalCRYSTAL = frameSelection + '.label("%l %16.9[xyz]")';
+		fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[xyz]")';
 	runJmolScriptWait("print " + fractionalCRYSTAL)
 	// alert(typeSystem);
 
-	numAtomCRYSTAL = frameSelection + ".length";
-	fractionalCRYSTAL = frameSelection + '.label("%l %16.9[fxyz]")';
+	numAtomCRYSTAL = _fileData.frameSelection + ".length";
+	fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[fxyz]")';
 	// alert(typeSystem);
 }
 

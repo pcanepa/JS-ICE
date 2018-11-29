@@ -1,6 +1,5 @@
-/*  J-ICE library 
 
-    based on:
+ /*   based on:
  *
  *  Copyright (C) 2010-2014 Pieremanuele Canepa http://j-ice.sourceforge.net/
  *
@@ -125,11 +124,11 @@ function setCoordinategulp() {
 	setCoorgulp();
 	flagShelgulp = confirm("Is the inter-atomic potential a core/shel one? \n Cancel stands for NO core/shel potential.");
 	if (sortofCoordinateGulp && typeSystem == 'crystal') {
-		coordinateString = frameSelection + '.label("%e core %16.9[fxyz]")';
-		coordinateShel = frameSelection + '.label("%e shel %16.9[fxyz]")';
+		coordinateString = _fileData.frameSelection + '.label("%e core %16.9[fxyz]")';
+		coordinateShel = _fileData.frameSelection + '.label("%e shel %16.9[fxyz]")';
 	} else {
-		coordinateString = frameSelection + '.label("%e core %16.9[xyz]")';
-		coordinateShel = frameSelection + '.label("%e shel %16.9[xyz]")';
+		coordinateString = _fileData.frameSelection + '.label("%e core %16.9[xyz]")';
+		coordinateShel = _fileData.frameSelection + '.label("%e shel %16.9[xyz]")';
 	}
 	if (flagShelgulp) {
 		coordinateGulp = 'var coordtype = \"' + sortofCoordinateGulp + '\";'

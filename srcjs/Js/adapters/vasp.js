@@ -122,7 +122,7 @@ function exportVASP() {
 		+ _measure.kindCoord
 		+ '";' // imp
 		+ 'var xyzCoord = '
-		+ frameSelection
+		+ _fileData.frameSelection
 		+ '.label(" %16.9'
 		+ fractString
 		+ '");' // imp
