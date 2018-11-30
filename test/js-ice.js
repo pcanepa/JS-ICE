@@ -358,7 +358,7 @@ file_method = function(methodName, defaultMethod, params) {
 	// Execute a method specific to a given file type, for example:
 	// loadDone_crystal
 	params || (params = []);
-	methodName += "_" + _fileData.fileType;
+	methodName += "_" + _file.fileType;
 	var f = self[methodName] || defaultMethod;
 	return (f && f.apply(null, params));
 }
@@ -460,7 +460,7 @@ function onChangeLoad(load) {
 }
 
 function file_loadedCallback(filePath) {
-	_fileData = {
+	_file = {
 			cell        : {},
 			fileType    : jmolEvaluate("_fileType").toLowerCase(), 
 			energyUnits : ENERGY_EV,
@@ -485,7 +485,7 @@ function file_loadedCallback(filePath) {
 	};
 	
 	counterFreq = 0;
-	_fileData.info = extractInfoJmol("auxiliaryInfo.models");
+	_file.info = extractInfoJmol("auxiliaryInfo.models");
 	setFlags();
 	setFileName();
 	getUnitcell(1);
@@ -514,100 +514,70 @@ function cleanAndReloadForm() {
 	setTitleEcho();
 }
 
-resetLoadFlags = function(isCrystal) {
-	if (isCrystal)
-		_fileData.cell.typeSystem = "crystal";
-}
-
 setFlags = function() {
 	// BH TODO: missing xmlvasp?
-	switch (_fileData.fileType) {
+	switch (_file.fileType) {
 	default:
 	case "xyz":
-		break;
-	case "shelx":
-		resetLoadFlags(true); // BH 2018 added -- Q: Why no clearing of flags?
-		_fileData.exportModelOne = true;
-		break;
-	case "crystal":
-		resetLoadFlags();
-		_fileData.plotEnergyType = "crystal";
-		_fileData.plotEnergyForces = true;
-		break;
 	case "cube":
+	case "gromacs":
+	case "material":
+		break;
+	case "castep":
+	case "outcastep":
+		_file.cell.typeSystem = "crystal";
 		break;
 	case "aims":
 	case "aimsfhi":
 	case "castep":
-		resetLoadFlags(true);
-		_fileData.exportModelOne = true;
+	case "cif":
+	case "crysden":
+	case "pdb":
+	case "shelx":
+	case "wien":
+		_file.cell.typeSystem = "crystal";
+		_file.exportModelOne = true;
 		break;
-	case "vasp":
-		resetLoadFlags(true);
-		_fileData.plotEnergyType = "vasp";
-		_fileData.exportNoSymmetry = true;
-		break;
-	case "vaspoutcar":
-		resetLoadFlags(true);
-		_fileData.plotEnergyType = "outcar";
-		_fileData.exportNoSymmetry = true;		
+	case "siesta":
+		_file.cell.typeSystem = "crystal";
+		_file.exportNoSymmetry = true;
 		break;
 	case "dmol":
-		resetLoadFlags();
-		_fileData.plotEnergyType = "dmol";
+		_file.plotEnergyType = "dmol";
+		break;
+	case "gulp":
+		_file.plotEnergyType = "gulp";
+		break;
+	case "vasp":
+		_file.cell.typeSystem = "crystal";
+		_file.plotEnergyType = "vasp";
+		_file.exportNoSymmetry = true;
+		break;
+	case "vaspoutcar":
+		_file.cell.typeSystem = "crystal";
+		_file.plotEnergyType = "outcar";
+		_file.exportNoSymmetry = true;		
 		break;
 	case "espresso":
 	case "quantum":
-		resetLoadFlags(true);
-		_fileData.plotEnergyType = "qespresso";
-		break;
-	case "gulp":
-		resetLoadFlags();
-		_fileData.plotEnergyType = "gulp";
-		break;
-	case "material":
-		resetLoadFlags(); // BH Added
-		break;
-	case "wien":
-		resetLoadFlags(true); // BH Added
-		_fileData.exportModelOne = true;
-		break;
-	case "cif":
-		resetLoadFlags(true); // BH Added
-		_fileData.exportModelOne = true;
-		break;
-	case "siesta":
-		resetLoadFlags(true); // BH Added
-		_fileData.exportNoSymmetry = true;
-		break;
-	case "pdb":
-		resetLoadFlags(true); // BH Added
-		_fileData.exportModelOne = true;
-		break;
-	case "gromacs":
-		resetLoadFlags(); // BH Added
+		_file.cell.typeSystem = "crystal";
+		_file.plotEnergyType = "qespresso";
 		break;
 	case "gaussian":
 	case "gauss":
-		resetLoadFlags(); // BH Added
-		_fileData.cell.typeSystem = "molecule";
-		_fileData.plotEnergyType = "gaussian";
+		_file.cell.typeSystem = "molecule";
+		_file.plotEnergyType = "gaussian";
 		break;
 	case "molden":
 		// WE USE SAME SETTINGS AS VASP
 		// IT WORKS
-		resetLoadFlags(); // BH Added
-		_fileData.cell.typeSystem = "molecule";
-		_fileData.plotEnergyType = "outcar";
-		_fileData.exportNoSymmetry = true;
+		_file.cell.typeSystem = "molecule";
+		_file.plotEnergyType = "outcar";
+		_file.exportNoSymmetry = true;
 		break;
-	case "crysden":
-		resetLoadFlags(true); // BH Added
-		_fileData.exportModelOne = true;
-		break;
-	case "castep":
-	case "outcastep":
-		resetLoadFlags(true); // BH Added
+	case "crystal":
+		_file.plotEnergyType = "crystal";
+		_file.plotEnergyForces = true;
 		break;
 	}
 }
@@ -628,26 +598,21 @@ function onChangeSave(save) {
 		saveFractionalCoordinate();
 		break;
 	case "saveCRYSTAL":
-		_fileData._export = {};
 		exportCRYSTAL();
 		break;
 	case "saveVASP":
-		_fileData._export = {};
 		exportVASP();
 		break;
 	case "saveGROMACS":
-		_fileData._export = {};
 		exportGromacs();
 		break;
 	case "saveCASTEP":
 		exportCASTEP();
 		break;
 	case "saveQuantum":
-		_fileData._export = {};
 		exportQuantum();
 		break;
 	case "saveGULP":
-		_fileData._export = {};
 		exportGULP();
 		break;
 	case "savePOV":
@@ -765,7 +730,7 @@ function createFileGrp() { // Here the order is crucial
       		
 ///js// Js/_m_cell.js /////
 function enterCell() {
-	getUnitcell(_fileData.frameValue);
+	getUnitcell(_file.frameValue);
 //	getSymInfo();
 }
 
@@ -775,14 +740,14 @@ function exitCell() {
 function saveFractionalCoordinate() {
 	warningMsg("Make sure you have selected the model you would like to export.");
 
-	if (_fileData.frameSelection == null)
+	if (_file.frameSelection == null)
 		getUnitcell("1");
 
-	var x = "var cellp = [" + roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b)
-	+ ", " + roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha) + ", "
-	+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_fileData.cell.gamma) + "];"
+	var x = "var cellp = [" + roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.b)
+	+ ", " + roundNumber(_file.cell.c) + ", " + roundNumber(_file.cell.alpha) + ", "
+	+ roundNumber(_file.cell.beta) + ", " + roundNumber(_file.cell.gamma) + "];"
 	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
-	+ _fileData.frameSelection + '.label("%a %16.9[fxyz]");'
+	+ _file.frameSelection + '.label("%a %16.9[fxyz]");'
 	+ 'var lista = [cellparam, xyzfrac];'
 	+ 'WRITE VAR lista "?.XYZfrac" ';
 	runJmolScriptWait(x);
@@ -791,23 +756,23 @@ function saveFractionalCoordinate() {
 //This reads out cell parameters given astructure.
 function getUnitcell(i) {
 	// document.cellGroup.reset();
-	_fileData.cell.typeSystem = "";
+	_file.cell.typeSystem = "";
 	var StringUnitcell = "auxiliaryinfo.models[" + (i || 1) + "].infoUnitCell";
 	var cellparam = extractInfoJmol(StringUnitcell);
 
-	_fileData.cell.a = roundNumber(cellparam[0]);
-	_fileData.cell.b = roundNumber(cellparam[1]);
-	_fileData.cell.c = roundNumber(cellparam[2]);
-	_fileData.cell.dimensionality = parseFloat(cellparam[15]);
-	_fileData.cell.volumeCell = roundNumber(cellparam[16]);
+	_file.cell.a = roundNumber(cellparam[0]);
+	_file.cell.b = roundNumber(cellparam[1]);
+	_file.cell.c = roundNumber(cellparam[2]);
+	_file.cell.dimensionality = parseFloat(cellparam[15]);
+	_file.cell.volumeCell = roundNumber(cellparam[16]);
 
-	var bOvera = roundNumber(parseFloat(_fileData.cell.b / _fileData.cell.c));
-	var cOvera = roundNumber(parseFloat(_fileData.cell.c / _fileData.cell.a));
+	var bOvera = roundNumber(parseFloat(_file.cell.b / _file.cell.c));
+	var cOvera = roundNumber(parseFloat(_file.cell.c / _file.cell.a));
 
-	switch (_fileData.cell.dimensionality) {
+	switch (_file.cell.dimensionality) {
 	case 1:
-		_fileData.cell.b = 0.000;
-		_fileData.cell.c = 0.000;
+		_file.cell.b = 0.000;
+		_file.cell.c = 0.000;
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeDisable("par_b");
@@ -816,11 +781,11 @@ function getUnitcell(i) {
 		setValue("par_c", "1");
 		setValue("bovera", "0");
 		setValue("covera", "0");
-		_fileData.cell.typeSystem = "polymer";
+		_file.cell.typeSystem = "polymer";
 		break;
 	case 2:
-		_fileData.cell.c = 0.000;
-		_fileData.cell.typeSystem = "slab";
+		_file.cell.c = 0.000;
+		_file.cell.typeSystem = "slab";
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeEnable("par_b");
@@ -831,10 +796,10 @@ function getUnitcell(i) {
 		setValue("covera", "0");
 		break;
 	case 3:
-		_fileData.cell.typeSystem = "crystal";
-		_fileData.cell.alpha = cellparam[3];
-		_fileData.cell.beta = cellparam[4];
-		_fileData.cell.gamma = cellparam[5];
+		_file.cell.typeSystem = "crystal";
+		_file.cell.alpha = cellparam[3];
+		_file.cell.beta = cellparam[4];
+		_file.cell.gamma = cellparam[5];
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeEnable("par_b");
@@ -846,33 +811,33 @@ function getUnitcell(i) {
 		break;
 	default:
 	  if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
-		_fileData.cell.a = 0.00;
-		_fileData.cell.b = 0.00;
-		_fileData.cell.c = 0.00;
-		_fileData.cell.alpha = 0.00;
-		_fileData.cell.beta = 0.00;
-		_fileData.cell.gamma = 0.00;
-		_fileData.cell.typeSystem = "molecule";
+		_file.cell.a = 0.00;
+		_file.cell.b = 0.00;
+		_file.cell.c = 0.00;
+		_file.cell.alpha = 0.00;
+		_file.cell.beta = 0.00;
+		_file.cell.gamma = 0.00;
+		_file.cell.typeSystem = "molecule";
 		setValue("bovera", "0");
 		setValue("covera", "0");
 	  }
 	}
-	setValue("cell.a", roundNumber(_fileData.cell.a));
-	setValue("cell.b", roundNumber(_fileData.cell.b));
-	setValue("cell.c", roundNumber(_fileData.cell.c));
-	setValue("cell.alpha", roundNumber(_fileData.cell.alpha));
-	setValue("cell.beta", roundNumber(_fileData.cell.beta));
-	setValue("cell.gamma", roundNumber(_fileData.cell.gamma));
-	setValue("cell.volumeCell", roundNumber(_fileData.cell.volumeCell));
+	setValue("cell.a", roundNumber(_file.cell.a));
+	setValue("cell.b", roundNumber(_file.cell.b));
+	setValue("cell.c", roundNumber(_file.cell.c));
+	setValue("cell.alpha", roundNumber(_file.cell.alpha));
+	setValue("cell.beta", roundNumber(_file.cell.beta));
+	setValue("cell.gamma", roundNumber(_file.cell.gamma));
+	setValue("cell.volumeCell", roundNumber(_file.cell.volumeCell));
 
 }
 
 function setUnitCell() {
-	getUnitcell(_fileData.frameValue);
-	if (_fileData.frameSelection == null || _fileData.frameSelection == "" || _fileData.frameValue == ""
-		|| _fileData.frameValue == null) {
-		_fileData.frameSelection = "{1.1}";
-		_fileData.frameNum = "1.1";
+	getUnitcell(_file.frameValue);
+	if (_file.frameSelection == null || _file.frameSelection == "" || _file.frameValue == ""
+		|| _file.frameValue == null) {
+		_file.frameSelection = "{1.1}";
+		_file.frameNum = "1.1";
 		getUnitcell("1");
 	}
 }
@@ -883,24 +848,24 @@ function setUnitCell() {
 /////////////
 
 function setCellMeasure(value) {
-	_fileData.cell.typeSystem = "";
-	var i = _fileData.frameValue;
+	_file.cell.typeSystem = "";
+	var i = _file.frameValue;
 	var StringUnitcell = "auxiliaryinfo.models[" + (i || 1) + "].infoUnitCell";
 	var cellparam = extractInfoJmol(StringUnitcell);
-	_fileData.cell.a = cellparam[0];
-	_fileData.cell.b = cellparam[1];
-	_fileData.cell.c = cellparam[2];
+	_file.cell.a = cellparam[0];
+	_file.cell.b = cellparam[1];
+	_file.cell.c = cellparam[2];
 	if (value == "a") {
-		setValue("cell.a", roundNumber(_fileData.cell.a));
-		setValue("cell.b", roundNumber(_fileData.cell.b));
-		setValue("cell.c", roundNumber(_fileData.cell.c));
+		setValue("cell.a", roundNumber(_file.cell.a));
+		setValue("cell.b", roundNumber(_file.cell.b));
+		setValue("cell.c", roundNumber(_file.cell.c));
 	} else {
-		_fileData.cell.a *= 1.889725989;
-		_fileData.cell.b *= 1.889725989;
-		_fileData.cell.c *= 1.889725989;
-		setValue("cell.a", roundNumber(_fileData.cell.a));
-		setValue("cell.b", roundNumber(_fileData.cell.b));
-		setValue("cell.c", roundNumber(_fileData.cell.c));
+		_file.cell.a *= 1.889725989;
+		_file.cell.b *= 1.889725989;
+		_file.cell.c *= 1.889725989;
+		setValue("cell.a", roundNumber(_file.cell.a));
+		setValue("cell.b", roundNumber(_file.cell.b));
+		setValue("cell.c", roundNumber(_file.cell.c));
 	}
 }
 
@@ -1453,15 +1418,15 @@ function applyConnect(r) {
 	} else {
 		var flagBond = checkBoxX("allBondconnect");
 		// alert(flagBond);
-		// alert(_fileData.frameNum);
-		if (_fileData.frameNum == null || _fileData.frameNum == '') {
+		// alert(_file.frameNum);
+		if (_file.frameNum == null || _file.frameNum == '') {
 			getUnitcell("1");
-			_fileData.frameNum = 1.1;
+			_file.frameNum = 1.1;
 		} else {
 
 		}
 		if (flagBond == 'off') {
-			runJmolScriptWait("select " + _fileData.frameNum
+			runJmolScriptWait("select " + _file.frameNum
 					+ "; connect  (selected) (selected)  DELETE");
 			runJmolScriptWait("connect " + r
 					+ " (selected) (selected) single ModifyOrCreate;");
@@ -1920,7 +1885,7 @@ function createMeasureGrp() {
 	
 	var strMeas = "<form autocomplete='nope'  id='measureGroup' name='measureGroup' style='display:none'>";
 	strMeas += "<table class='contents'><tr><td > \n";
-	strMeas += "<h2>Measure and _fileData.info</h2>\n";
+	strMeas += "<h2>Measure and _file.info</h2>\n";
 	strMeas += "</td></tr>\n";
 	strMeas += "<tr><td colspan='2'>\n";
 	strMeas += "Measure<br>\n";
@@ -2661,7 +2626,7 @@ function exitOptimize() {
 function doConvertPlotUnits(unitEnergy) {
 	switch (unitEnergy) {
 	case "h": // Hartree
-		switch (_fileData.energyUnits) {
+		switch (_file.energyUnits) {
 		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtohartree, "Hartree");
 			break;
@@ -2674,7 +2639,7 @@ function doConvertPlotUnits(unitEnergy) {
 		}
 		break;
 	case "e": // eV
-		switch (_fileData.energyUnits) {
+		switch (_file.energyUnits) {
 		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtoEV, "eV");
 			break;
@@ -2688,7 +2653,7 @@ function doConvertPlotUnits(unitEnergy) {
 		break;
 
 	case "r": // Rydberg
-		switch (_fileData.energyUnits) {
+		switch (_file.energyUnits) {
 		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtorydberg, "Ry");
 			break;
@@ -2702,7 +2667,7 @@ function doConvertPlotUnits(unitEnergy) {
 		break;
 
 	case "kj": // Kj/mol
-			switch (_fileData.energyUnits) {
+			switch (_file.energyUnits) {
 			case ENERGY_RYDBERG:
 				convertGeomData(fromRydbergtoKj, "kJ/mol");
 				break;
@@ -2716,7 +2681,7 @@ function doConvertPlotUnits(unitEnergy) {
 		break;
 
 	case "kc": // Kcal*mol
-		switch (_fileData.energyUnits) {
+		switch (_file.energyUnits) {
 		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtokcalmol, "kcal/mol");
 			break;
@@ -2739,8 +2704,8 @@ function convertGeomData(f, toUnits) {
 
 	toUnits = " " + toUnits;
 	
-	var u = _fileData.unitGeomEnergy;
-	switch (_fileData.energyUnits) {
+	var u = _file.unitGeomEnergy;
+	switch (_file.energyUnits) {
 	case ENERGY_RYDBERG:
 		u = "R";
 		break;
@@ -2757,7 +2722,7 @@ function convertGeomData(f, toUnits) {
 
 	// The required value is the end of the string Energy = -123.456 Hartree.
 	
-	for (var i = (_fileData.hasInputModel ? 1 : 0); i < geomData.length; i++) {
+	for (var i = (_file.hasInputModel ? 1 : 0); i < geomData.length; i++) {
 		var data = _fileInfo.geomData[i];
 		var val = f(data.substring(data.indexOf('=') + 1, 
 				data.indexOf(u) - 1));
@@ -2861,20 +2826,20 @@ function createOptimizeGrp() {
 
 function enterSpectra() {
 
-	if (!_fileData.plotFreq) {
-		_fileData.plotFreq = {
+	if (!_file.plotFreq) {
+		_file.plotFreq = {
 				yscale: 1,
 				minX0: 0,
 				maxX0: 4000,
 				selectedFreq: -1
 		};
-		_fileData.specData = null;
+		_file.specData = null;
 		symmetryModeAdd();	
 		onClickModSpec(true, true);	
-		if (!_fileData.specData)
+		if (!_file.specData)
 			return;		
-		setValue("nMax", _fileData.specData.maxX);
-		setValue("nMin", _fileData.specData.minX);
+		setValue("nMax", _file.specData.maxX);
+		setValue("nMin", _file.specData.minX);
 	}
 	$("#nMin").keypress(function(event) {
 	if (event.which == 13) {
@@ -2941,9 +2906,9 @@ function onClickSelectVib() {
 
 function selectVib(index) {
 	var vib = getbyID('vib');
-	_fileData.plotFreq.selectedFreq = (index < 0 ? -1 
-			: _fileData.specData.freqs[_fileData.specData.vibList[index][3]]);
-	showFreqGraph("plotareafreq", _fileData.specData, _fileData.plotFreq);
+	_file.plotFreq.selectedFreq = (index < 0 ? -1 
+			: _file.specData.freqs[_file.specData.vibList[index][3]]);
+	showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);
 }
 /* When triggered (by a click), the vibration is retrieved from the file data. The graph is then
 updated to show a larger red line at the selected frequency. The correct frame is also shown for the 
@@ -2954,14 +2919,14 @@ function setYMax() {
 	var specData = setUpSpecData("all", "any"); 
 	getFrequencyList(specData);
 	createSpectrum(specData);
-	 _fileData.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
+	 _file.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
 }
 /* The maxY value is found from the information taken from the file and put into specData. 
 The max y value of both Raman and IR arrays becomes the ymax value in fileData. */
 
 
 function onClickModSpec(isPageOpen, doSetYMax) {
-	if (_fileData.freqData.length == 0) {
+	if (_file.freqData.length == 0) {
 		return;
 	}
 	if (doSetYMax) {
@@ -2973,14 +2938,14 @@ function onClickModSpec(isPageOpen, doSetYMax) {
 	}
 	var typeIRorRaman = getRadioSetValue(document.modelsVib.modSpec);
 	var irrep = getValueSel('sym');		
-	_fileData.specData = setUpSpecData(typeIRorRaman,irrep);
-	getFrequencyList(_fileData.specData);
-	createSpectrum(_fileData.specData);
-	setVibList(_fileData.specData);
+	_file.specData = setUpSpecData(typeIRorRaman,irrep);
+	getFrequencyList(_file.specData);
+	createSpectrum(_file.specData);
+	setVibList(_file.specData);
 	if (isPageOpen){
-		setMaxMinPlot(_fileData.specData);
+		setMaxMinPlot(_file.specData);
 	}
-	return showFreqGraph("plotareafreq", _fileData.specData, _fileData.plotFreq);	
+	return showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);	
 }
 /* Gets information on the symmetry, IR or Raman, etc. in specData that is chosen by the user 
 and/or file data. It then remakes the spectra plot with the updated information.*/ 
@@ -2994,10 +2959,10 @@ function setUpSpecData(typeIRorRaman,irrep) {
 			sigma     : parseFloat(getValue('sigma')), 
 			rescale   : true,
 			invertx   : isChecked('invertX'),
-			freqCount : _fileData.freqInfo.length,
+			freqCount : _file.freqInfo.length,
 			minX      : Math.min(parseInt(getValue("nMin")), parseInt(getValue("nMax"))),
 			maxX      : Math.max(parseInt(getValue("nMin")), parseInt(getValue("nMax"))),
-			maxY      : _fileData.spectraYMax,
+			maxY      : _file.spectraYMax,
 			maxR      : 3700,
 			previousPointFreq : -1,
 			vibList   : [],
@@ -3067,8 +3032,8 @@ function setMaxMinPlot(specData) {
 			specData.maxR = 3700;
 	}
 		
-	_fileData.plotFreq.minX0 = specData.minX = 0;
-	_fileData.plotFreq.maxX0 = specData.maxX = specData.maxR + 300;
+	_file.plotFreq.minX0 = specData.minX = 0;
+	_file.plotFreq.maxX0 = specData.maxX = specData.maxR + 300;
 
 }
 /* This function gets the max and min data for the plot. The max x is defined as being 4000, or 300 
@@ -3086,9 +3051,9 @@ function getFrequencyList(specData) {
 	for (var i = 0; i < specData.freqCount; i++) {
 		var label = null;
 		if ((vibLinesFromIrrep == null || (label = vibLinesFromIrrep[i]))
-			  && (prop == null || _fileData.freqInfo[i].modelProperties[prop] == "A")) {
-			specData.freqInfo.push(_fileData.freqInfo[i]);
-			specData.vibList.push([(label || (i+1) + " " + _fileData.freqInfo[i].name), _fileData.freqInfo[i].modelNumber, -1]);
+			  && (prop == null || _file.freqInfo[i].modelProperties[prop] == "A")) {
+			specData.freqInfo.push(_file.freqInfo[i]);
+			specData.vibList.push([(label || (i+1) + " " + _file.freqInfo[i].name), _file.freqInfo[i].modelNumber, -1]);
 		}
 	}
 }
@@ -3125,18 +3090,18 @@ function getVibLinesFromIrrep(specData) {
 	
 	// check for F, E, or A irreducible representations
 	
-	if (_fileData.freqSymm) {
+	if (_file.freqSymm) {
 		// gaussian and others
-		for (var i = 0, val; i < _fileData.freqSymm.length; i++) {
-			if (irep == _fileData.freqSymm[i])
+		for (var i = 0, val; i < _file.freqSymm.length; i++) {
+			if (irep == _file.freqSymm[i])
 				vibLinesFromIrrep[i] = 
-					(i+1) + " " + irep + " "+ _fileData.freqData[i] 
-					+ (_fileData.freqIntens[i] ? " (" + _fileData.freqIntens[i] + ")" : "");
+					(i+1) + " " + irep + " "+ _file.freqData[i] 
+					+ (_file.freqIntens[i] ? " (" + _file.freqIntens[i] + ")" : "");
 		}
 	} else {
-		for (var i = 0, val; i < _fileData.freqInfo.length; i++) {
-			if (irep == _fileData.freqInfo[i].modelProperties.vibrationalSymmetry)
-				vibLinesFromIrrep[i] = (i+1) + " " + _fileData.freqInfo[i].name;
+		for (var i = 0, val; i < _file.freqInfo.length; i++) {
+			if (irep == _file.freqInfo[i].modelProperties.vibrationalSymmetry)
+				vibLinesFromIrrep[i] = (i+1) + " " + _file.freqInfo[i].name;
 		}
 	}
 	return vibLinesFromIrrep;
@@ -3164,7 +3129,7 @@ function extractIRData_crystal(specData) {
 function extractIRData_vaspoutcar(specData) {
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
-		specData.freqs[i] = specData.irFreq[i] = Math.round(substringFreqToFloat(_fileData.freqData[i]));
+		specData.freqs[i] = specData.irFreq[i] = Math.round(substringFreqToFloat(_file.freqData[i]));
 		specData.specIR[specData.irFreq[i]] = 100;
 		specData.model[specData.irFreq[i]] = specData.freqInfo[i].modelNumber;
 		specData.irInt[i] = 100;
@@ -3291,8 +3256,8 @@ function createConvolvedSpectrum(specData, type) {
 function showFreqGraph(plotDiv, specData, plot) {
 	var isHTMLPage = (!specData);
 	if (isHTMLPage) {
-		specData = _fileData.specData = opener._fileData.specData;
-		plot = _fileData.plotFreq = opener._fileData.plotFreq;
+		specData = _file.specData = opener._file.specData;
+		plot = _file.plotFreq = opener._file.plotFreq;
 	}
 	var minX = specData.minX;
 	var maxX = specData.maxX;
@@ -3363,7 +3328,7 @@ function showFreqGraph(plotDiv, specData, plot) {
 		plotArea.bind( "plotselected", plotSelectCallbackFreq);
 	}
 	$.plot(plotArea, data, options);	
-	_fileData.specData.previousPointFreq = -1;
+	_file.specData.previousPointFreq = -1;
 	return haveSelected;
 }
 
@@ -3405,7 +3370,7 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 	var range = (itemFreq ? getFreqForClick(itemFreq.datapoint) : null);
 	// itemFreq is [x,y] so [freq,int]
 	// range is [min,max,freq,i]
-	var listIndex = (range ? _fileData.specData.vibList[range[3]][2] : -1);
+	var listIndex = (range ? _file.specData.vibList[range[3]][2] : -1);
 	if (listIndex < 0) {
 		setTimeout(function() { selectVib(-1) }, 50);
 		return;		
@@ -3417,16 +3382,16 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 function plotHoverCallbackFreq(event, pos, itemFreq) {
 	hideTooltip();
 	if(!itemFreq)return
-	if (_fileData.specData.previousPointFreq != itemFreq.datapoint) {
+	if (_file.specData.previousPointFreq != itemFreq.datapoint) {
 		previousPointFreq = itemFreq.datapoint;
 		var range = getFreqForClick(itemFreq.datapoint);
 		if (!range)
 			return;
 		var freq = range[2];
-		var listIndex = _fileData.specData.vibList[range[3]][2];	
+		var listIndex = _file.specData.vibList[range[3]][2];	
 		if (listIndex < 0)
 			return;		
-		var model = _fileData.specData.model[freq];
+		var model = _file.specData.model[freq];
 		var x = roundoff(itemFreq.datapoint[0],2);
 		var y = roundoff(itemFreq.datapoint[1],1);
 		var model = itemFreq.datapoint[2];
@@ -3443,7 +3408,7 @@ function plotHoverCallbackFreq(event, pos, itemFreq) {
  * function scaleSpectrum(){
  * 
  * var vecorFreq = []; var vecorChk = []; var counter; for(var i =0 ; i <
- * _fileData.info.length; i++){ vecorFreq[i] = _fileData.info[i].name; vecorChk[i] = 0 if(i == 0)
+ * _file.info.length; i++){ vecorFreq[i] = _file.info[i].name; vecorChk[i] = 0 if(i == 0)
  * vecorChk[i] = 1 counter++ }
  * 
  * var s = " Shift spectrum "; s+= createSelect("Frequencies", "", 0, 1, counter ,
@@ -3469,18 +3434,18 @@ function minValue(irInt) {
 	return parseInt(irInt.sort(sortNumber)[0]);
 }
 
-function symmetryModeAdd() { // extracts vibrational symmetry modes from _fileData.info
+function symmetryModeAdd() { // extracts vibrational symmetry modes from _file.info
 								// array and lets one get symmetry operations by
 								// ID
 	cleanList('sym');
 	var sym = getbyID('sym');
-	if (_fileData.info[3] && _fileData.info[3].modelProperties) {
-		var symm = _fileData.freqSymm;
+	if (_file.info[3] && _file.info[3].modelProperties) {
+		var symm = _file.freqSymm;
 		if (!symm) {
 			var symm = [];
-			for (var i = 1; i < _fileData.info.length; i++)
-				if (_fileData.info[i].name)
-					symm[i] = _fileData.info[i].modelProperties.vibrationalSymmetry;
+			for (var i = 1; i < _file.info.length; i++)
+				if (_file.info[i].name)
+					symm[i] = _file.info[i].modelProperties.vibrationalSymmetry;
 		}
 		var sortedSymm = unique(symm);
 		addOption(sym, "any", "any");
@@ -3534,15 +3499,15 @@ function updateJmolForFreqParams(isVibClick) {
 function onScale(mode) {
 	switch (mode) {
 	case 1:
-		_fileData.plotFreq.yscale *= 1.414;
+		_file.plotFreq.yscale *= 1.414;
 		break;
 	case 0:
-		_fileData.plotFreq.yscale = 1;
-		setValue("nMin", _fileData.plotFreq.minX0);
-		setValue("nMax", _fileData.plotFreq.maxX0);
+		_file.plotFreq.yscale = 1;
+		setValue("nMin", _file.plotFreq.minX0);
+		setValue("nMax", _file.plotFreq.maxX0);
 		break;
 	case -1:
-		_fileData.plotFreq.yscale /= 1.414;
+		_file.plotFreq.yscale /= 1.414;
 		break;
 	}
 	onClickModSpec();
@@ -3639,8 +3604,8 @@ function getFreqForClick(p) {
 	var int = p[1];
 	var listIndex = -1;
 	
-	for (var i = 0; i < _fileData.specData.ranges.length; i++) {
-		var range = _fileData.specData.ranges[i];
+	for (var i = 0; i < _file.specData.ranges.length; i++) {
+		var range = _file.specData.ranges[i];
 		if (freq >= range[0] && freq <= range[1]) {
 			return range;
 		}
@@ -3882,14 +3847,14 @@ function createOtherGrp() {
 ///js// Js/_m_symmetry.js /////
 //initialization upon entry into symmetry tab 
 function enterSymmetry() {
-	if (! _fileData.symmetry){
-		_fileData.symmetry = {
+	if (! _file.symmetry){
+		_file.symmetry = {
 			operationList     : createSymopSet(),
 			chosenSymElement  : "", 
 			chosenSymop       : "",
 			symOffset         : "{0/1,0/1,0/1}"
 		}; 
-	 	var symopSelection = createSelect('addSymSymop', 'doSymopSelection(value)', 0, 1, _fileData.symmetry.operationList);
+	 	var symopSelection = createSelect('addSymSymop', 'doSymopSelection(value)', 0, 1, _file.symmetry.operationList);
 		getbyID("symmetryOperationSet").innerHTML = symopSelection;
 	}
 	var activateSymmetry = createButton("activateSymmetryButton", "Activate applied symmetry:", 'doActivateSymmetry()', 0);
@@ -3903,7 +3868,7 @@ function exitSymmetry() {
 
 //this appends new atoms by chosen symop
 function doActivateSymmetry(){
-	appendSymmetricAtoms(_fileData.symmetry.chosenSymElement,getValue("initPoint"),_fileData.symmetry.chosenSymop,getValue("symIterations"));
+	appendSymmetricAtoms(_file.symmetry.chosenSymElement,getValue("initPoint"),_file.symmetry.chosenSymop,getValue("symIterations"));
 }
 
 //this only shows every point for a given point for all symops 
@@ -3919,12 +3884,12 @@ function doSymopSelection(symop){
 
 
 function setSymElement(elementName){
-	_fileData.symmetry.chosenSymElement = elementName;
+	_file.symmetry.chosenSymElement = elementName;
 }
 
 
 function setSymop(symop){
-	_fileData.symmetry.chosenSymop = symop;
+	_file.symmetry.chosenSymop = symop;
 }
 
 //figures out from file data all of the symmetry operations as Jones faithful representations 
@@ -3948,7 +3913,7 @@ function setOpacity(){
 }
 
 function updateSymOffset(dimension,offset){
-	var symOffsetString = _fileData.symmetry.symOffset;
+	var symOffsetString = _file.symmetry.symOffset;
 	symOffsetString = symOffsetString.substring(1);
 	var symOffsetArray = symOffsetString.split(",");
 	var xValue = parseInt(symOffsetArray[0])+"/1";
@@ -3963,7 +3928,7 @@ function updateSymOffset(dimension,offset){
 	if (dimension == "z"){
 		zValue = offset+"/1";
 	}
-	_fileData.symmetry.symOffset = "{"+xValue+","+yValue+","+zValue+"}"; 
+	_file.symmetry.symOffset = "{"+xValue+","+yValue+","+zValue+"}"; 
 }
 
 //creates symmetry menu 
@@ -4039,7 +4004,7 @@ function createSymmetryGrp() {
 
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
-	runJmolScriptWait("draw symop '"+symop+"' "+_fileData.symmetry.symOffset); 
+	runJmolScriptWait("draw symop '"+symop+"' "+_file.symmetry.symOffset); 
 } 
 
 // takes a given point and add the elements provided to it by a symmetry operation
@@ -4155,11 +4120,11 @@ myPickCallback = function(applet, b, c, d) {
 }
 
 setMinimizationCallbackFunction = function(f) {
-	_fileData.fMinim = f;
+	_file.fMinim = f;
 }
 
 myMinimizationCallback = function(applet,b,c,d) {
-	_fileData.fMinim && _fileData.fMinim(b, c, d);
+	_file.fMinim && _file.fMinim(b, c, d);
 }
 
       		
@@ -4976,9 +4941,9 @@ debugShowHistory = function() {
 
 function scaleModelCoordinates(xyz, op1, f1, op2, f2, etc) {
 	// e.g. {1.1}.xyz.all.mul(2);
-	var atomArray = _fileData.frameSelection + '.' + xyz;
+	var atomArray = _file.frameSelection + '.' + xyz;
 	var s = "";
-	for (int i = 1; i < arguments.length;) {
+	for (var i = 1; i < arguments.length;) {
 		s += atomArray + " = " + atomArray + ".all." + arguments[i++] + "(" + arguments[i++] + ");";
 	}
 	runJmolScriptWait(s);
@@ -4988,17 +4953,17 @@ function scaleModelCoordinates(xyz, op1, f1, op2, f2, etc) {
 function setVacuum() {
 	var newCell_c;
 	var vacuum;
-	switch (_fileData.cell.typeSystem) {
+	switch (_file.cell.typeSystem) {
 	case "slab":
 		vacuum = prompt("Please enter the vacuum thickness (\305).", "");
 		(vacuum == "") ? (errorMsg("Vacuum not entered!"))
 				: (messageMsg("Vacuum set to: " + vacuum + " \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(_fileData.frameSelection + '.fz.max'));
+		var zMaxCoord = parseFloat(jmolEvaluate(_file.frameSelection + '.fz.max'));
 		vacuum = parseFloat(vacuum);
 		newCell_c = (zMaxCoord * 2) + vacuum;
 		var factor = roundNumber(zMaxCoord + vacuum);
-		if (_fileData._exportFractionalCoord) { // from VASP only?
+		if (_file._exportFractionalCoord) { // from VASP only?
 			scaleModelCoordinates("z", "add", factor, "div", newcell_c);
 		} else {
 			scaleModelCoordinates("z", "add", factor);
@@ -5010,7 +4975,7 @@ function setVacuum() {
 		(vacuum == "") ? (errorMsg("Vacuum not entered!"))
 				: (messageMsg("Vacuum set to: " + vacuum + "  \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(_fileData.frameSelection + '.fz.max'));
+		var zMaxCoord = parseFloat(jmolEvaluate(_file.frameSelection + '.fz.max'));
 		vacuum = parseFloat(vacuum);
 		newCell_c = (zMaxCoord * 2) + vacuum;
 		var factor = roundNumber(zMaxCoord + vacuum);
@@ -5023,7 +4988,7 @@ function setVacuum() {
 		(vacuum == "") ? (errorMsg("Vacuum not entered!"))
 				: (messageMsg("Vacuum set to: " + vacuum + " \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(_fileData.frameSelection + '.fz.max'));
+		var zMaxCoord = parseFloat(jmolEvaluate(_file.frameSelection + '.fz.max'));
 		vacuum = parseFloat(vacuum);
 		newCell_c = (zMaxCoord * 2) + vacuum;
 		var factor = roundNumber(zMaxCoord + vacuum);
@@ -5041,34 +5006,34 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 	    yx, yy, yz, 
 	    zx, zy, zz;
 	if (aparam != null)
-		_fileData.cell.a = aparam;
+		_file.cell.a = aparam;
 	if (bparam != null)
-		_fileData.cell.b = bparam;
+		_file.cell.b = bparam;
 	if (cparam != null)
-		_fileData.cell.c = cparam;
+		_file.cell.c = cparam;
 	if (alphaparam != null)
-		_fileData.cell.alpha = alphaparam;
+		_file.cell.alpha = alphaparam;
 	if (betaparam != null)
-		_fileData.cell.beta = betaparam;
+		_file.cell.beta = betaparam;
 	if (gammaparam != null)
-		_fileData.cell.gamma = gammaparam;
+		_file.cell.gamma = gammaparam;
 	// formula repeated from
 	// http://en.wikipedia.org/wiki/Fractional_coordinates
 	var v = Math.sqrt(1
-			- (cosDeg(_fileData.cell.alpha) * cosDeg(_fileData.cell.alpha))
-			- (cosDeg(_fileData.cell.beta) * cosDeg(_fileData.cell.beta))
-			- (cosDeg(_fileData.cell.gamma) * cosDeg(_fileData.cell.gamma))
-			+ 2	* (cosDeg(_fileData.cell.alpha) * cosDeg(_fileData.cell.beta) * cosDeg(_fileData.cell.gamma)));
-	xx = _fileData.cell.a * sinDeg(_fileData.cell.beta);
+			- (cosDeg(_file.cell.alpha) * cosDeg(_file.cell.alpha))
+			- (cosDeg(_file.cell.beta) * cosDeg(_file.cell.beta))
+			- (cosDeg(_file.cell.gamma) * cosDeg(_file.cell.gamma))
+			+ 2	* (cosDeg(_file.cell.alpha) * cosDeg(_file.cell.beta) * cosDeg(_file.cell.gamma)));
+	xx = _file.cell.a * sinDeg(_file.cell.beta);
 	xy = parseFloat(0.000);
-	xz = _fileData.cell.a * cosDeg(_fileData.cell.beta);
-	yx = _fileData.cell.b
-	* (((cosDeg(_fileData.cell.gamma)) - ((cosDeg(_fileData.cell.beta)) * (cosDeg(_fileData.cell.alpha)))) / sinDeg(_fileData.cell.beta));
-	yy = _fileData.cell.b * (v / sinDeg(_fileData.cell.beta));
-	yz = _fileData.cell.b * cosDeg(_fileData.cell.alpha);
+	xz = _file.cell.a * cosDeg(_file.cell.beta);
+	yx = _file.cell.b
+	* (((cosDeg(_file.cell.gamma)) - ((cosDeg(_file.cell.beta)) * (cosDeg(_file.cell.alpha)))) / sinDeg(_file.cell.beta));
+	yy = _file.cell.b * (v / sinDeg(_file.cell.beta));
+	yz = _file.cell.b * cosDeg(_file.cell.alpha);
 	zx = parseFloat(0.000);
 	zy = parseFloat(0.000);
-	zz = _fileData.cell.c;
+	zz = _file.cell.c;
 	return [[xx, xy, xz], [yx, yy, yz], [zx, zy, zz]];
 
 }
@@ -5084,10 +5049,10 @@ function figureOutSpaceGroup(doReload, isConv, quantumEspresso) {
 	var cellDimString = null;
 	var ibravQ = "";
 	saveStateAndOrientation_a();
-	//prevframeSelection = _fileData.frameSelection;
-	if (_fileData.frameValue == null || _fileData.frameValue == "" || _fileData.exportModelOne)
-		_fileData.frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
-	var prevFrame = _fileData.frameValue;
+	//prevframeSelection = _file.frameSelection;
+	if (_file.frameValue == null || _file.frameValue == "" || _file.exportModelOne)
+		_file.frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
+	var prevFrame = _file.frameValue;
 	var magnetic = confirm('It\'s the primitive cell ?')
 	// crystalPrev = confirm('Does the structure come from a previous CRYSTAL
 	// calculation?')
@@ -5113,26 +5078,26 @@ function figureOutSpaceGroup(doReload, isConv, quantumEspresso) {
 	// /from crystal manual http://www.crystal.unito.it/Manuals/crystal09.pdf
 	switch (true) {
 	case ((interNumber <= 2)): // Triclinic lattices
-		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
-				+ roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha) + ", "
-				+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_fileData.cell.gamma);
-		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_fileData.cell.a)
-				+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-				+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
-				+ " \n celdm(4) =  " + cosRounded(_fileData.cell.alpha) + " \n celdm(5) =  "
-				+ (cosRounded(_fileData.cell.beta)) + " \n celdm(6) =  "
-				+ (cosRounded(_fileData.cell.gamma)) + " \n\n";
+		stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.b) + ", "
+				+ roundNumber(_file.cell.c) + ", " + roundNumber(_file.cell.alpha) + ", "
+				+ roundNumber(_file.cell.beta) + ", " + roundNumber(_file.cell.gamma);
+		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_file.cell.a)
+				+ " \n celdm(2) =  " + roundNumber(_file.cell.b / _file.cell.a)
+				+ " \n celdm(3) =  " + roundNumber(_file.cell.c / _file.cell.a)
+				+ " \n celdm(4) =  " + cosRounded(_file.cell.alpha) + " \n celdm(5) =  "
+				+ (cosRounded(_file.cell.beta)) + " \n celdm(6) =  "
+				+ (cosRounded(_file.cell.gamma)) + " \n\n";
 		ibravQ = "14";
 		break;
 
 	case ((interNumber > 2) && (interNumber <= 15)): // Monoclinic lattices
-		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
-				+ roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha);
+		stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.b) + ", "
+				+ roundNumber(_file.cell.c) + ", " + roundNumber(_file.cell.alpha);
 		if (quantumEspresso) {
-			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_fileData.cell.a)
-					+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
-					+ " \n celdm(4) =  " + (cosRounded(_fileData.cell.alpha))
+			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_file.cell.a)
+					+ " \n celdm(2) =  " + roundNumber(_file.cell.b / _file.cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_file.cell.c / _file.cell.a)
+					+ " \n celdm(4) =  " + (cosRounded(_file.cell.alpha))
 					+ " \n\n";
 			ibravQ = "12"; // Monoclinic base centered
 
@@ -5143,12 +5108,12 @@ function figureOutSpaceGroup(doReload, isConv, quantumEspresso) {
 		break;
 
 	case ((interNumber > 15) && (interNumber <= 74)): // Orthorhombic lattices
-		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
-				+ roundNumber(_fileData.cell.c);
+		stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.b) + ", "
+				+ roundNumber(_file.cell.c);
 		if (quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-					+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_file.cell.a)
+					+ " \n celdm(2) =  " + roundNumber(_file.cell.b / _file.cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_file.cell.c / _file.cell.a) + " \n\n";
 			ibravQ = "8";
 
 			var question = confirm("Is this a Orthorhombic base-centered lattice?")
@@ -5168,10 +5133,10 @@ function figureOutSpaceGroup(doReload, isConv, quantumEspresso) {
 
 	case ((interNumber > 74) && (interNumber <= 142)): // Tetragonal lattices
 
-		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
+		stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.c);
 		if (quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_file.cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_file.cell.c / _file.cell.a) + " \n\n";
 			ibravQ = "6";
 			var question = confirm("Is this a Tetragonal I body centered (bct) lattice?");
 			if (question)
@@ -5180,36 +5145,36 @@ function figureOutSpaceGroup(doReload, isConv, quantumEspresso) {
 		break;
 
 	case ((interNumber > 142) && (interNumber <= 167)): // Trigonal lattices
-		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.alpha) + ", "
-				+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_fileData.cell.gamma);
-		cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-				+ " \n celdm(4) =  " + (cosRounded(_fileData.cell.alpha))
-				+ " \n celdm(5) = " + (cosRounded(_fileData.cell.beta))
-				+ " \n celdm(6) =  " + (cosRounded(_fileData.cell.gamma));
+		stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.alpha) + ", "
+				+ roundNumber(_file.cell.beta) + ", " + roundNumber(_file.cell.gamma);
+		cellDimString = " celdm(1) = " + fromAngstromtoBohr(_file.cell.a)
+				+ " \n celdm(4) =  " + (cosRounded(_file.cell.alpha))
+				+ " \n celdm(5) = " + (cosRounded(_file.cell.beta))
+				+ " \n celdm(6) =  " + (cosRounded(_file.cell.gamma));
 		ibravQ = "5";
 		var question = confirm("Is a romboheadral lattice?")
 		if (question) {
-			stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-					+ " \n celdm(4) =  " + (cosRounded(_fileData.cell.alpha))
-					+ " \n celdm(5) = " + (cosRounded(_fileData.cell.beta))
-					+ " \n celdm(6) =  " + (cosRounded(_fileData.cell.gamma))
+			stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.c);
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_file.cell.a)
+					+ " \n celdm(4) =  " + (cosRounded(_file.cell.alpha))
+					+ " \n celdm(5) = " + (cosRounded(_file.cell.beta))
+					+ " \n celdm(6) =  " + (cosRounded(_file.cell.gamma))
 					+ " \n\n";
 			ibravQ = "4";
 		}
 		break;
 	case ((interNumber > 167) && (interNumber <= 194)): // Hexagonal lattices
-		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
+		stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.c);
 		if (quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-					+ " \n celdm(3) = " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_file.cell.a)
+					+ " \n celdm(3) = " + roundNumber(_file.cell.c / _file.cell.a) + " \n\n";
 			ibravQ = "4";
 		}
 		break;
 	case ((interNumber > 194) && (interNumber <= 230)): // Cubic lattices
-		stringCellParam = roundNumber(_fileData.cell.a);
+		stringCellParam = roundNumber(_file.cell.a);
 		if (quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a);
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_file.cell.a);
 			// alert("I am here");
 			ibravQ = "1";
 			var question = confirm("Is a face centered cubic lattice?")
@@ -5230,9 +5195,9 @@ function figureOutSpaceGroup(doReload, isConv, quantumEspresso) {
 		break;
 	}// end switch
 	
-//	stringCellparamgulp = roundNumber(_fileData.cell.a) + ' ' + roundNumber(_fileData.cell.b) + ' '
-//			+ roundNumber(_fileData.cell.c) + ' ' + roundNumber(_fileData.cell.alpha) + ' '
-//			+ roundNumber(_fileData.cell.beta) + ' ' + roundNumber(_fileData.cell.gamma);
+//	stringCellparamgulp = roundNumber(_file.cell.a) + ' ' + roundNumber(_file.cell.b) + ' '
+//			+ roundNumber(_file.cell.c) + ' ' + roundNumber(_file.cell.alpha) + ' '
+//			+ roundNumber(_file.cell.beta) + ' ' + roundNumber(_file.cell.gamma);
 	//	alert(stringCellparamgulp)
 	if (doReload) {
 		reload("primitive");
@@ -5769,13 +5734,13 @@ function selectListItem(list, itemToSelect) {
 ///js// Js/frame.js /////
 function setFrameValues(i) {
 	if (i == null || i == "") {
-		_fileData.frameSelection = "{1.1}";
-		_fileData.frameNum = "1.1";
-		_fileData.frameValue = 1;
+		_file.frameSelection = "{1.1}";
+		_file.frameNum = "1.1";
+		_file.frameValue = 1;
 	} else {
-		_fileData.frameSelection = "{1." + i + "}";
-		_fileData.frameNum = "1." + i;
-		_fileData.frameValue = i;
+		_file.frameSelection = "{1." + i + "}";
+		_file.frameNum = "1." + i;
+		_file.frameValue = i;
 	}
 }
 
@@ -6064,8 +6029,8 @@ function pickDistanceCallback() {
 //	var data = [];
 //  var A = [];
 //    var nplots = 1;
-//	var modelCount = _fileData.info.length;
-//var stringa = _fileData.info[3].name;
+//	var modelCount = _file.info.length;
+//var stringa = _file.info[3].name;
     
 //	var nullValues;
     
@@ -6109,10 +6074,10 @@ function arrayMin(a) {
 
 
 function plotEnergies(){
-	var modelCount = _fileData.info.length;
-	if (_fileData.haveGraphOptimize || modelCount < 3)
+	var modelCount = _file.info.length;
+	if (_file.haveGraphOptimize || modelCount < 3)
 		return false;
-	_fileData.haveGraphOptimize = true;
+	_file.haveGraphOptimize = true;
 	_plot = {
 		theplot : null,
 		itemEnergy : 0,
@@ -6127,11 +6092,11 @@ function plotEnergies(){
 	var data = [];
 	var A = [];
 	var nplots = 1;
-	var stringa = _fileData.info[3].name;
+	var stringa = _file.info[3].name;
 	var f = null;
 	var pattern = null;
 
-	switch (_fileData.plotEnergyType) {
+	switch (_file.plotEnergyType) {
 	case "crystal":
 		if(stringa.search(/Energy/i) < 0)
 			return false;
@@ -6165,35 +6130,35 @@ function plotEnergies(){
 	if (f) {
 		// not Gaussian
 		for (var i = 0; i < last; i++) {
-			var name = _fileData.info[i].name;
+			var name = _file.info[i].name;
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = 0+ _fileData.info[i].modelNumber;
+			var modelnumber = 0+ _file.info[i].modelNumber;
 			if(i > 0)
 				previous = i - 1;
 			var e = f(name);
-//			if(i == 0 || _fileData.info[i - 1].name == null) {
-				energy = Math.abs(e - f(_fileData.info[last].name));
-//			} else if (previous > 0 && e != f(_fileData.info[i - 1].name)) {
-//				energy = Math.abs(e - f(_fileData.info[i - 1].name));
+//			if(i == 0 || _file.info[i - 1].name == null) {
+				energy = Math.abs(e - f(_file.info[last].name));
+//			} else if (previous > 0 && e != f(_file.info[i - 1].name)) {
+//				energy = Math.abs(e - f(_file.info[i - 1].name));
 //			}
 			label = 'Model = ' + modelnumber + ', &#916 E = ' + energy + ' kJmol^-1';
 			A.push([i+1,energy,modelnumber,label]);
 		}
 	} else {
 		// Gaussian
-		last = _fileData.energy.length;
+		last = _file.energy.length;
 		for (var i = 1; i < last; i++) {
-			var name = _fileData.energy[i];
+			var name = _file.energy[i];
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = _fileData.energy.length - 1;		
-			if(i > 0 && i < _fileData.info.length)
+			var modelnumber = _file.energy.length - 1;		
+			if(i > 0 && i < _file.info.length)
 				var previous = i - 1;
 			var e = fromHartreetokJ(name);
 			var e1;
 //			if(i == 0 || (e1 = energyGauss[i - 1]) == null) {
-				energy = Math.abs(e - fromHartreetokJ(_fileData.energy[last]));
+				energy = Math.abs(e - fromHartreetokJ(_file.energy[last]));
 //			} else if (previous > 0) {
 //				if (e != e1)
 //					energy = Math.abs(e - e1);
@@ -6221,7 +6186,7 @@ function plotEnergies(){
 	//function plotGradient(){
 
 
-	if(!_fileData.plotEnergyForces)
+	if(!_file.plotEnergyForces)
 		return;
 	var data = [];
 	var A = [];
@@ -6230,10 +6195,10 @@ function plotEnergies(){
 	if(stringa.search(/Energy/i) != -1){
 		last = modelCount - 1;
 		for (var i = 0; i < last; i++) {
-			var name = _fileData.info[i].name;
+			var name = _file.info[i].name;
 			if (name == null)
 				continue;
-			var modelnumber = 0 + _fileData.info[i].modelNumber;
+			var modelnumber = 0 + _file.info[i].modelNumber;
 			// first gradient will be for model 1
 			// This is if is to check if we are dealing with an optimization
 			// or
@@ -6241,10 +6206,10 @@ function plotEnergies(){
 			// frequency calculation
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-				maxGra = parseFloat(_fileData.info[i].modelProperties.maxGradient);
+				maxGra = parseFloat(_file.info[i].modelProperties.maxGradient);
 //			else if(name && previous > 0) {
-//				if (substringEnergyToFloat(_fileData.info[i].name) != substringEnergyToFloat(_fileData.info[i - 1].name))
-//					maxGra = parseFloat(_fileData.info[i].modelProperties.maxGradient);
+//				if (substringEnergyToFloat(_file.info[i].name) != substringEnergyToFloat(_file.info[i - 1].name))
+//					maxGra = parseFloat(_file.info[i].modelProperties.maxGradient);
 //			}
 			if (isNaN(maxGra))
 				continue;
@@ -6717,7 +6682,7 @@ version = "3.0.0"; // BH 2018
 
 // _m_file.js
 
-_fileData = {};
+_file = {};
 
 _fileIsReload = false;
 
@@ -6792,22 +6757,22 @@ _global = {
 // /// FUNCTION LOAD
 
 loadDone_castep = function() {
-	_fileData.energyUnits = ENERGY_EV;
-	_fileData.counterFreq = 0;
-	_fileData.counterMD = 0;
-	for (var i = 0; i < _fileData.info.length; i++) {
-		if (_fileData.info[i].name != null) {
-			var line = _fileData.info[i].name;
+	_file.energyUnits = ENERGY_EV;
+	_file.counterFreq = 0;
+	_file.counterMD = 0;
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var line = _file.info[i].name;
 			if (line.search(/Energy =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
+				_file.geomData[i] = line;
+				_file.counterFreq++;
 			} else if (line.search(/cm-1/i) != -1) {
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
-				_fileData.freqInfo.push(_fileData.info[i]);
-				_fileData.freqData.push(line);
-				_fileData.vibLine.push(i + " A " + data + " cm^-1");
-				_fileData.counterMD++;
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(line);
+				_file.vibLine.push(i + " A " + data + " cm^-1");
+				_file.counterMD++;
 			}
 		}
 	}
@@ -6824,18 +6789,18 @@ function exportCASTEP() {
 	saveStateAndOrientation_a();
 	var lattice = fromfractionaltoCartesian();
 	setVacuum();
-	switch (_fileData.cell.typeSystem) {
+	switch (_file.cell.typeSystem) {
 	case "slab":
-		scaleModelCoordinates("z", "div", roundNumber(_fileData.cell.c));
+		scaleModelCoordinates("z", "div", roundNumber(_file.cell.c));
 		break;
 	case "polymer":
-		scaleModelCoordinates("z", "div", roundNumber(_fileData.cell.c));
-		scaleModelCoordinates("y", "div", roundNumber(_fileData.cell.b));
+		scaleModelCoordinates("z", "div", roundNumber(_file.cell.c));
+		scaleModelCoordinates("y", "div", roundNumber(_file.cell.b));
 		break;
 	case "molecule":
-		scaleModelCoordinates("z", "div", roundNumber(_fileData.cell.c));
-		scaleModelCoordinates("y", "div", roundNumber(_fileData.cell.b));
-		scaleModelCoordinates("x", "div", roundNumber(_fileData.cell.a));
+		scaleModelCoordinates("z", "div", roundNumber(_file.cell.c));
+		scaleModelCoordinates("y", "div", roundNumber(_file.cell.b));
+		scaleModelCoordinates("x", "div", roundNumber(_file.cell.a));
 		break;
 	}
 
@@ -6848,7 +6813,7 @@ function exportCASTEP() {
 	runJmolScriptWait(cellCastep);
 	
 	var positionCastep = "var positionHeader = '\%block POSITIONS_FRAC';"
-		+ 'var xyzCoord = ' + _fileData.frameSelection + '.label("%e %16.9[fxyz]");'
+		+ 'var xyzCoord = ' + _file.frameSelection + '.label("%e %16.9[fxyz]");'
 		+ 'xyzCoord = xyzCoord.replace("\n\n","\n");'
 		+ "var positionClose = '\%endblock POSITIONS_FRAC';"
 		+ "positionCastep = [positionHeader, xyzCoord, positionClose];"
@@ -6896,25 +6861,25 @@ function exportCASTEP() {
 ///////////////////////// LOAD & ON LOAD functions
 
 loadDone_crystal = function() {
-	_fileData.energyUnits = ENERGY_HARTREE;
-	_fileData.StrUnitEnergy = "H";
+	_file.energyUnits = ENERGY_HARTREE;
+	_file.StrUnitEnergy = "H";
 	var vib = getbyID('vib');
-	for (var i = 0; i < _fileData.info.length; i++) {
-		var line = _fileData.info[i].name;
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 		if (line != null) {
 			if (line.search(/Energy/i) != -1) { // Energy
-//				if (i > 0 && i < _fileData.info.length)
-//					var previous = substringEnergyToFloat(_fileData.info[i - 1].name);
-//				if (_fileData.info[i].name != null) {
+//				if (i > 0 && i < _file.info.length)
+//					var previous = substringEnergyToFloat(_file.info[i - 1].name);
+//				if (_file.info[i].name != null) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
+				_file.geomData[i] = line;
+				_file.counterFreq++;
 //				}
 			} else if (line.search(/cm/i) != -1) {
 				if (line.search(/LO/) == -1) {
-					_fileData.freqInfo.push(_fileData.info[i]);
-					_fileData.vibLine.push((i - _fileData.counterFreq) + " " + line); 
-					_fileData.freqData.push(line);
+					_file.freqInfo.push(_file.info[i]);
+					_file.vibLine.push((i - _file.counterFreq) + " " + line); 
+					_file.freqData.push(line);
 				}
 			}
 	
@@ -6942,30 +6907,30 @@ function exportCRYSTAL() {
 
 	setUnitCell();
 
-	var  numAtomCRYSTAL = _fileData.frameSelection + ".length";
-	var fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[fxyz]")';
+	var  numAtomCRYSTAL = _file.frameSelection + ".length";
+	var fractionalCRYSTAL = _file.frameSelection + '.label("%l %16.9[fxyz]")';
 
-	switch (_fileData.cell.typeSystem) {
+	switch (_file.cell.typeSystem) {
 	case "crystal":
 		systemCRYSTAL = "'CRYSTAL'";
 		keywordCRYSTAL = "'0 0 0'";
 		symmetryCRYSTAL = "'1'";
 
-		if (!_fileData.exportNoSymmetry)
+		if (!_file.exportNoSymmetry)
 			flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			script = "var cellp = ["
-					+ roundNumber(_fileData.cell.a)
+					+ roundNumber(_file.cell.a)
 					+ ", "
-					+ roundNumber(_fileData.cell.b)
+					+ roundNumber(_file.cell.b)
 					+ ", "
-					+ roundNumber(_fileData.cell.c)
+					+ roundNumber(_file.cell.c)
 					+ ", "
-					+ roundNumber(_fileData.cell.alpha)
+					+ roundNumber(_file.cell.alpha)
 					+ ", "
-					+ roundNumber(_fileData.cell.beta)
+					+ roundNumber(_file.cell.beta)
 					+ ", "
-					+ roundNumber(_fileData.cell.gamma)
+					+ roundNumber(_file.cell.gamma)
 					+ "];"
 					+ 'var cellparam = cellp.join(" ");'
 					+ 'cellparam = cellparam.replace("\n\n","\n");'
@@ -7014,8 +6979,8 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = [" + roundNumber(_fileData.cell.a) + ", "
-				+ roundNumber(_fileData.cell.b) + ", " + roundNumber(_fileData.cell.gamma) + "];"
+		script = "var cellp = [" + roundNumber(_file.cell.a) + ", "
+				+ roundNumber(_file.cell.b) + ", " + roundNumber(_file.cell.gamma) + "];"
 				+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
 				+ titleCRYS + "', " + systemCRYSTAL + ", " + symmetryCRYSTAL
 				+ "];" + 'crystalArr = crystalArr.replace("\n\n","\n");'
@@ -7033,7 +6998,7 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = " + roundNumber(_fileData.cell.a) + ";"
+		script = "var cellp = " + roundNumber(_file.cell.a) + ";"
 				+ "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
 				+ ", " + symmetryCRYSTAL + "];"
 				+ 'crystalArr = crystalArr.replace("\n\n","\n");'
@@ -7097,21 +7062,21 @@ function exportCRYSTAL() {
 //3rd-Sept-2010 CANEPA
 
 loadDone_dmol = function() {
-	_fileData.energyUnits = ENERGY_HARTREE;
-	_fileData.StrUnitEnergy = "H";
-	for (var i = 0; i < _fileData.info.length; i++) {
-		var line = _fileData.info[i].name;
+	_file.energyUnits = ENERGY_HARTREE;
+	_file.StrUnitEnergy = "H";
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 		if (line != null) {
 			if (line.search(/E =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
+				_file.geomData[i] = line;
+				_file.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.freqInfo.push(_fileData.info[i]);
-				_fileData.freqData.push(line);
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(line);
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
-				_fileData.vibLine.push(i + " A " + data + " cm^-1");
-				_fileData.counterMD++;
+				_file.vibLine.push(i + " A " + data + " cm^-1");
+				_file.counterMD++;
 			}
 		}
 	}
@@ -7152,8 +7117,8 @@ loadDone_gaussian = function() {
 
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
 
-	_fileData.energyUnits = ENERGY_HARTREE;
-	_fileData.StrUnitEnergy = "H";
+	_file.energyUnits = ENERGY_HARTREE;
+	_file.StrUnitEnergy = "H";
 
 	setTitleEcho();
 	setFrameValues("1");
@@ -7161,23 +7126,23 @@ loadDone_gaussian = function() {
 
 	var geom = getbyID('geom');
 	var vib = getbyID('vib');
-	for (var i = 0; i < _fileData.info.length; i++) {
-		if (_fileData.info[i].name != null) {
-			var line = _fileData.info[i].name;
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var line = _file.info[i].name;
 			// alert(line)
 			if (line.search(/E/i) != -1) {
-				_fileData.geom[i] = _fileData.info[i].name;
-				addOption(geom, i + " " + _fileData.geom[i], i + 1);
-				if (_fileData.info[i].modelProperties.Energy != null
-						|| _fileData.info[i].modelProperties.Energy != "")
-					_fileData.energy[i] = _fileData.info[i].modelProperties.Energy;
-				_fileData.counterGauss++;
+				_file.geom[i] = _file.info[i].name;
+				addOption(geom, i + " " + _file.geom[i], i + 1);
+				if (_file.info[i].modelProperties.Energy != null
+						|| _file.info[i].modelProperties.Energy != "")
+					_file.energy[i] = _file.info[i].modelProperties.Energy;
+				_file.counterGauss++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.vibLine.push(i + " " + _fileData.info[i].name + " (" + _fileData.info[i].modelProperties.IRIntensity + ")");
-				_fileData.freqInfo.push(_fileData.info[i]);
-				_fileData.freqData.push(_fileData.info[i].modelProperties.Frequency);
-				_fileData.freqSymm.push(_fileData.info[i].modelProperties.FrequencyLabel);
-				_fileData.freqIntens.push(_fileData.info[i].modelProperties.IRIntensity);
+				_file.vibLine.push(i + " " + _file.info[i].name + " (" + _file.info[i].modelProperties.IRIntensity + ")");
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(_file.info[i].modelProperties.Frequency);
+				_file.freqSymm.push(_file.info[i].modelProperties.FrequencyLabel);
+				_file.freqIntens.push(_file.info[i].modelProperties.IRIntensity);
 			}
 		}
 	}
@@ -7224,12 +7189,12 @@ function exportGromacs() {
 	
 	scaleModelCoordinates("xyz", "div", 10);
 	
-	var numatomsGrom = " " + _fileData.frameSelection + ".length";
-	var coordinateGrom = _fileData.frameSelection
+	var numatomsGrom = " " + _file.frameSelection + ".length";
+	var coordinateGrom = _file.frameSelection
 			+ '.label("  %i%e %i %e %8.3[xyz] %8.4fy %8.4fz")';
-	var cellbox = +roundNumber(_fileData.cell.a) * (cosRounded(_fileData.cell.alpha)) + ' '
-			+ roundNumber(_fileData.cell.b) * (cosRounded(_fileData.cell.beta)) + ' '
-			+ roundNumber(_fileData.cell.c) * (cosRounded(_fileData.cell.gamma));
+	var cellbox = +roundNumber(_file.cell.a) * (cosRounded(_file.cell.alpha)) + ' '
+			+ roundNumber(_file.cell.b) * (cosRounded(_file.cell.beta)) + ' '
+			+ roundNumber(_file.cell.c) * (cosRounded(_file.cell.gamma));
 	var coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
 			+ 'var coordGrom = ' + coordinateGrom + ';'
 			+ 'var cellGrom = \" \n\t' + cellbox + '\"; '
@@ -7271,17 +7236,17 @@ function exportGromacs() {
 // ////////////GULP READER
 
 loadDone_gulp = function() {
-	_fileData.energyUnits = ENERGY_EV;
-	_fileData.StrUnitEnergy = "e";
-	_fileData.counterFreq = 0;
-	for (var i = 0; i < _fileData.info.length; i++) {
-		var line = _fileData.info[i].name;
+	_file.energyUnits = ENERGY_EV;
+	_file.StrUnitEnergy = "e";
+	_file.counterFreq = 0;
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 		if (i == 0) {
 			line = "Intial";
 		}
 		addOption(getbyID('geom'), i + " " + line, i + 1);
-		_fileData.geomData[i] = line;
-		_fileData.counterFreq++;
+		_file.geomData[i] = line;
+		_file.counterFreq++;
 	}
 
 	runJmolScriptWait("script scripts/gulp_name.spt"); 
@@ -7302,7 +7267,7 @@ function exportGULP() {
 
 	warningMsg("Make sure you have selected the model you would like to export.");
 	saveStateAndOrientation_a();
-	if (_fileData.cell.typeSystem != "crystal")
+	if (_file.cell.typeSystem != "crystal")
 		setUnitCell();
 	
 	var titleGulpinput = prompt("Type here the job title:", "");
@@ -7315,7 +7280,7 @@ function exportGULP() {
 			+ 'titlegulp = [optiongulp, titleheader, title, titleend];';
 	runJmolScriptWait(titleGulp);
 
-	switch (_fileData.cell.typeSystem) {
+	switch (_file.cell.typeSystem) {
 	case "crystal":
 		setUnitCell();
 		flagsymmetryGulp = confirm("Do you want to introduce symmetry ?");
@@ -7324,23 +7289,23 @@ function exportGULP() {
 			warningMsg("This procedure is not fully tested.");
 			figureOutSpaceGroup(false, false);
 		} else {
-			stringCellparamgulp = roundNumber(_fileData.cell.a) + ' ' + roundNumber(_fileData.cell.b)
-					+ ' ' + roundNumber(_fileData.cell.c) + ' ' + roundNumber(_fileData.cell.alpha) + ' '
-					+ roundNumber(_fileData.cell.beta) + ' ' + roundNumber(_fileData.cell.gamma);
+			stringCellparamgulp = roundNumber(_file.cell.a) + ' ' + roundNumber(_file.cell.b)
+					+ ' ' + roundNumber(_file.cell.c) + ' ' + roundNumber(_file.cell.alpha) + ' '
+					+ roundNumber(_file.cell.beta) + ' ' + roundNumber(_file.cell.gamma);
 		}
 		break;
 
 	case "surface":
 		cellHeadergulp = "scell";
 		coordinateAddgulp = "s";
-		stringCellparamgulp = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b)
-				+ ", " + roundNumber(_fileData.cell.gamma);
+		stringCellparamgulp = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.b)
+				+ ", " + roundNumber(_file.cell.gamma);
 		break;
 
 	case "polymer":
 		cellHeadergulp = "pcell";
 		coordinateAddgulp = "";
-		stringCellparamgulp = roundNumber(_fileData.cell.a);
+		stringCellparamgulp = roundNumber(_file.cell.a);
 		break;
 
 	case "molecule":
@@ -7358,7 +7323,7 @@ function exportGULP() {
 	var coordinateString;
 	var coordinateShel;
 	var sortofCoordinateGulp;
-	if (_fileData.cell.typeSystem == 'crystal') {
+	if (_file.cell.typeSystem == 'crystal') {
 		var sortofCoordinate = confirm("Do you want the coordinates in Cartesian or fractional? \n OK for Cartesian, Cancel for fractional.")
 		sortofCoordinateGulp = (sortofCoordinate == true) ? (coordinateAddgulp + "cartesian")
 				: (coordinateAddgulp + "fractional");
@@ -7366,12 +7331,12 @@ function exportGULP() {
 		messageMsg("Coordinate will be exported in Cartesian");
 	}
 	var flagShelgulp = confirm("Is the inter-atomic potential a core/shel one? \n Cancel stands for NO core/shel potential.");
-	if (sortofCoordinateGulp && _fileData.cell.typeSystem == 'crystal') {
-		coordinateString = _fileData.frameSelection + '.label("%e core %16.9[fxyz]")';
-		coordinateShel = _fileData.frameSelection + '.label("%e shel %16.9[fxyz]")';
+	if (sortofCoordinateGulp && _file.cell.typeSystem == 'crystal') {
+		coordinateString = _file.frameSelection + '.label("%e core %16.9[fxyz]")';
+		coordinateShel = _file.frameSelection + '.label("%e shel %16.9[fxyz]")';
 	} else {
-		coordinateString = _fileData.frameSelection + '.label("%e core %16.9[xyz]")';
-		coordinateShel = _fileData.frameSelection + '.label("%e shel %16.9[xyz]")';
+		coordinateString = _file.frameSelection + '.label("%e core %16.9[xyz]")';
+		coordinateShel = _file.frameSelection + '.label("%e shel %16.9[xyz]")';
 	}
 	var coordinateGulp;
 	if (flagShelgulp) {
@@ -7386,7 +7351,7 @@ function exportGULP() {
 	}
 	runJmolScriptWait(coordinateGulp);
 
-	if (_fileData.cell.typeSystem == "crystal") {
+	if (_file.cell.typeSystem == "crystal") {
 		// interNumber from crystalfunction .. BH??? interNumber is only defined locally in figureOutSpaceGroup
 		if (!flagsymmetryGulp)
 			interNumber = "P 1"
@@ -7410,7 +7375,7 @@ function exportGULP() {
 	runJmolScriptWait(restGulp);
 
 	var finalInputGulp;
-	if (_fileData.cell.typeSystem == "crystal") {
+	if (_file.cell.typeSystem == "crystal") {
 		finalInputGulp = "var final = [titlegulp,cellgulp,coordgulp,spacegulp,restgulp];"
 				+ 'final = final.replace("\n\n","\n");'
 				+ 'WRITE VAR final "?.gin" ';
@@ -7454,18 +7419,18 @@ function exportGULP() {
 
 loadDone_molden = function(msg) {
 
-	_fileData.energyUnits = ENERGY_EV;
-	_fileData.StrUnitEnergy = "e";
+	_file.energyUnits = ENERGY_EV;
+	_file.StrUnitEnergy = "e";
 	
-	for (var i = 0; i < _fileData.info.length; i++) {
-		if (_fileData.info[i].name != null) {
-			var line = _fileData.info[i].name;
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var line = _file.info[i].name;
 			if (line.search(/cm/i) != -1) {
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
-				_fileData.freqInfo.push(_fileData.info[i]);
-				_fileData.freqData.push(line);
-				_fileData.vibLine.push(i + " A " + data + " cm^-1");
-				_fileData.counterMD++;
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(line);
+				_file.vibLine.push(i + " A " + data + " cm^-1");
+				_file.counterMD++;
 			}
 		}
 	}
@@ -7504,27 +7469,27 @@ loadDone_molden = function(msg) {
 
 loadDone_espresso = function() {
 	
-	_fileData.energyUnits = ENERGY_RYDBERG;
-	_fileData.StrUnitEnergy = "R";
-	_fileData.hasInputModel = true;
+	_file.energyUnits = ENERGY_RYDBERG;
+	_file.StrUnitEnergy = "R";
+	_file.hasInputModel = true;
 
-	for (var i = 0; i < _fileData.info.length; i++) {
-		var line = _fileData.info[i].name;
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 
 		if (i == 0) {
-			_fileData.geomData[0] = line;
+			_file.geomData[0] = line;
 			addOption(getbyID('geom'), "0 initial", 1);
 		}
 		if (line != null) {
 			if (line.search(/E =/i) != -1) {
 				addOption(getbyID('geom'), i + 1 + " " + line, i + 1);
-				_fileData.geomData[i + 1] = line;
-				_fileData.counterFreq++;
+				_file.geomData[i + 1] = line;
+				_file.counterFreq++;
 			} /*
 			 * else if (line.search(/cm/i) != -1) { // alert("vibration")
-			 * freqData[i - counterFreq] = _fileData.info[i].name; counterMD++; } else
+			 * freqData[i - counterFreq] = _file.info[i].name; counterMD++; } else
 			 * if (line.search(/Temp/i) != -1) { addOption(getbyID('geom'),
-			 * (i - counterMD) + " " + _fileData.info[i].name, i + 1); }
+			 * (i - counterMD) + " " + _file.info[i].name, i + 1); }
 			 */
 		}
 	}
@@ -7631,7 +7596,7 @@ function prepareSystemblock() {
 
 	setUnitCell();
 
-	var numberAtom = jmolEvaluate(_fileData.frameSelection + ".length");
+	var numberAtom = jmolEvaluate(_file.frameSelection + ".length");
 
 	var stringCutoff = null;
 	var stringCutoffrho = null;
@@ -7653,22 +7618,22 @@ function prepareSystemblock() {
 	setUnitCell();
 	
 	var cellDimString, ibravQ;	
-	switch (_fileData.cell.typeSystem) {
+	switch (_file.cell.typeSystem) {
 	case "crystal":
 		var flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			cellDimString = "           celldm(1) = "
-				+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+				+ roundNumber(fromAngstromtoBohr(_file.cell.a))
 				+ "  \n           celldm(2) =  "
-				+ roundNumber(_fileData.cell.b / _fileData.cell.a)
+				+ roundNumber(_file.cell.b / _file.cell.a)
 				+ "  \n           celldm(3) =  "
-				+ roundNumber(_fileData.cell.c / _fileData.cell.a)
+				+ roundNumber(_file.cell.c / _file.cell.a)
 				+ "  \n           celldm(4) =  "
-				+ (cosRounded(_fileData.cell.alpha))
+				+ (cosRounded(_file.cell.alpha))
 				+ "  \n           celldm(5) =  "
-				+ (cosRounded(_fileData.cell.beta))
+				+ (cosRounded(_file.cell.beta))
 				+ "  \n           celldm(6) =  "
-				+ (cosRounded(_fileData.cell.gamma));
+				+ (cosRounded(_file.cell.gamma));
 			ibravQ = "14";
 		} else {
 			warningMsg("This procedure is not fully tested.");
@@ -7679,25 +7644,25 @@ function prepareSystemblock() {
 		break;
 	case "slab":
 		setVacuum();
-		scaleModelCoordinates("z", "div", _fileData.cell.c);
+		scaleModelCoordinates("z", "div", _file.cell.c);
 		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
+			+ roundNumber(fromAngstromtoBohr(_file.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(_file.cell.b / _file.cell.a)
+			+ "  \n            celldm(3) =  " + roundNumber(_file.cell.c / _file.cell.a)
 			+ "  \n            celldm(4) =  "
-			+ (cosRounded(_fileData.cell.alpha))
+			+ (cosRounded(_file.cell.alpha))
 			+ "  \n            celldm(5) =  " + (cosRounded(90))
 			+ "  \n            celldm(6) =  " + (cosRounded(90));
 		ibravQ = "14";
 		break;
 	case "polymer":
 		setVacuum();
-		scaleModelCoordinates("z", "div", _fileData.cell.c);
-		scaleModelCoordinates("y", "div", _fileData.cell.b);
+		scaleModelCoordinates("z", "div", _file.cell.c);
+		scaleModelCoordinates("y", "div", _file.cell.b);
 		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
+			+ roundNumber(fromAngstromtoBohr(_file.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(_file.cell.b / _file.cell.a)
+			+ "  \n            celldm(3) =  " + roundNumber(_file.cell.b / _file.cell.a)
 			+ "  \n            celldm(4) =  " + (cosRounded(90))
 			+ "  \n            celldm(5) =  " + (cosRounded(90))
 			+ "  \n            celldm(6) =  " + (cosRounded(90));
@@ -7705,15 +7670,15 @@ function prepareSystemblock() {
 		break;
 	case "molecule":
 		setVacuum();
-		scaleModelCoordinates("x", "div", _fileData.cell.a);
-		scaleModelCoordinates("y", "div", _fileData.cell.b);
-		scaleModelCoordinates("z", "div", _fileData.cell.c);
+		scaleModelCoordinates("x", "div", _file.cell.a);
+		scaleModelCoordinates("y", "div", _file.cell.b);
+		scaleModelCoordinates("z", "div", _file.cell.c);
 		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+			+ roundNumber(fromAngstromtoBohr(_file.cell.a))
 			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(4) =  "
-			+ (cosRounded(_fileData.cell.alpha))
+			+ (cosRounded(_file.cell.alpha))
 			+ "  \n            celldm(5) =  " + (cosRounded(90))
 			+ "  \n            celldm(6) =  " + (cosRounded(90));
 		ibravQ = "14";
@@ -7791,7 +7756,7 @@ function prepareSpecieblock() {
 
 	for (var i = 0; i < sortedElement.length; i++) {
 		var elemento = sortedElement[i];
-		var numeroAtom = jmolEvaluate('{' + _fileData.frameNum + ' and _' + elemento
+		var numeroAtom = jmolEvaluate('{' + _file.frameNum + ' and _' + elemento
 				+ '}[0].label("%l")'); //tobe changed in atomic mass
 		scriptEl = "'" + elemento + " " + eleSymbMass[parseInt(numeroAtom)]
 		+ " #Here goes the psudopotential filename e.g.: " + elemento
@@ -7817,7 +7782,7 @@ function prepareSpecieblock() {
 function preparePostionblock() {
 	setUnitCell();
 	var atompositionQ = "var posHeader = 'ATOMIC_POSITIONS crystal';"
-		+ 'var posCoord = ' + _fileData.frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
+		+ 'var posCoord = ' + _file.frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
 		// %16.9[fxyz]\");'
 		+ 'posQ = [posHeader,posCoord];';
 	runJmolScriptWait(atompositionQ);
@@ -7865,25 +7830,25 @@ loadDone_siesta = function(msg) {
 	// Reset program and set filename if available
 	// This also extract the auxiliary info
 
-	_fileData.energyUnits = ENERGY_RYDBERG;
-	_fileData.StrUnitEnergy = "R";
-	for (var i = 0; i < _fileData.info.length; i++) {
-		var line = _fileData.info[i].name;
+	_file.energyUnits = ENERGY_RYDBERG;
+	_file.StrUnitEnergy = "R";
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 		if (line != null) {
 			if (line.search(/E/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomSiesta[i] = line;
-				if (_fileData.info[i].modelProperties.Energy != null
-						|| _fileData.info[i].modelProperties.Energy != "")
-					_fileData.energy[i] = _fileData.info[i].modelProperties.Energy;
-				_fileData.counterFreq++;
+				_file.geomSiesta[i] = line;
+				if (_file.info[i].modelProperties.Energy != null
+						|| _file.info[i].modelProperties.Energy != "")
+					_file.energy[i] = _file.info[i].modelProperties.Energy;
+				_file.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.vibLine.push(i + " " + line + " ("
-						+ _fileData.info[i].modelProperties.IRIntensity + ")");
-				_fileData.freqInfo.push(_fileData.info[i]);
-				_fileData.freqData.push(_fileData.info[i].modelProperties.Frequency);
-				_fileData.freqSymm.push(_fileData.info[i].modelProperties.FrequencyLabel);
-				_fileData.freqIntens.push(_fileData.info[i].modelProperties.IRIntensity);
+				_file.vibLine.push(i + " " + line + " ("
+						+ _file.info[i].modelProperties.IRIntensity + ")");
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(_file.info[i].modelProperties.Frequency);
+				_file.freqSymm.push(_file.info[i].modelProperties.FrequencyLabel);
+				_file.freqIntens.push(_file.info[i].modelProperties.IRIntensity);
 			}
 		}
 	}
@@ -7921,24 +7886,24 @@ loadDone_siesta = function(msg) {
 
 
 loadDone_vaspoutcar = function() {
-	_fileData.energyUnits = ENERGY_EV;
-	_fileData.StrUnitEnergy = "e";
-	_fileData.counterFreq = 1; 
-	for (var i = 0; i < _fileData.info.length; i++) {
-		if (_fileData.info[i].name != null) {
-			var line = _fileData.info[i].name;
+	_file.energyUnits = ENERGY_EV;
+	_file.StrUnitEnergy = "e";
+	_file.counterFreq = 1; 
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var line = _file.info[i].name;
 			if (line.search(/G =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
+				_file.geomData[i] = line;
+				_file.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));	
-				_fileData.freqInfo.push(_fileData.info[i]);
-				_fileData.freqData.push(line);
-				_fileData.vibLine.push(i + " A " + data + " cm^-1");
-				_fileData.counterMD++;
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(line);
+				_file.vibLine.push(i + " A " + data + " cm^-1");
+				_file.counterMD++;
 			} else if (line.search(/Temp/i) != -1) {
-				addOption(getbyID('geom'), (i - _fileData.counterMD) + " " + line, i + 1);
+				addOption(getbyID('geom'), (i - _file.counterMD) + " " + line, i + 1);
 			}
 		}
 	}
@@ -7954,12 +7919,12 @@ loadDone_xmlvasp = function() {
 
 	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
 
-	// _fileData.... ? 
+	// _file.... ? 
 	
-	for (var i = 0; i < _fileData.info.length; i++) {
-		if (_fileData.info[i].name != null) {
-			var valueEnth = _fileData.info[i].name.substring(11, 24);
-			var gibbs = _fileData.info[i].name.substring(41, 54);
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var valueEnth = _file.info[i].name.substring(11, 24);
+			var gibbs = _file.info[i].name.substring(41, 54);
 			var stringa = "Enth. = " + valueEnth + " eV, Gibbs E.= " + gibbs
 			+ " eV";
 			
@@ -7979,12 +7944,12 @@ function exportVASP() {
 	var stringList = "";
 	var stringElement = "";
 	numAtomelement = null;
-	getUnitcell(_fileData.frameValue);
+	getUnitcell(_file.frameValue);
 	setUnitCell();
 	var sortedElement = getElementList();
 	for (var i = 0; i < sortedElement.length; i++) {
 		// scriptEl = "";
-		scriptEl = "{" + _fileData.frameNum + " and _" + sortedElement[i] + "}.length";
+		scriptEl = "{" + _file.frameNum + " and _" + sortedElement[i] + "}.length";
 
 		if (i != (sortedElement.length - 1)) {
 			stringList = stringList + " " + scriptEl + ", ";
@@ -8014,11 +7979,11 @@ function exportVASP() {
 	if (exportType) {
 		_measure.kindCoord = "Direct"
 			fractString = "[fxyz]";
-		_fileData._exportFractionalCoord = true;
+		_file._exportFractionalCoord = true;
 	} else {
 		_measure.kindCoord = "Cartesian"
 			fractString = "[xyz]";
-		_fileData._exportFractionalCoord = false;
+		_file._exportFractionalCoord = false;
 	}
 
 	setVacuum();
@@ -8049,7 +8014,7 @@ function exportVASP() {
 		+ _measure.kindCoord
 		+ '";' // imp
 		+ 'var xyzCoord = '
-		+ _fileData.frameSelection
+		+ _file.frameSelection
 		+ '.label(" %16.9'
 		+ fractString
 		+ '");' // imp
