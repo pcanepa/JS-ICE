@@ -26,20 +26,20 @@
 
 function enterSpectra() {
 
-	if (!_fileData.plotFreq) {
-		_fileData.plotFreq = {
+	if (!_file.plotFreq) {
+		_file.plotFreq = {
 				yscale: 1,
 				minX0: 0,
 				maxX0: 4000,
 				selectedFreq: -1
 		};
-		_fileData.specData = null;
+		_file.specData = null;
 		symmetryModeAdd();	
 		onClickModSpec(true, true);	
-		if (!_fileData.specData)
+		if (!_file.specData)
 			return;		
-		setValue("nMax", _fileData.specData.maxX);
-		setValue("nMin", _fileData.specData.minX);
+		setValue("nMax", _file.specData.maxX);
+		setValue("nMin", _file.specData.minX);
 	}
 	$("#nMin").keypress(function(event) {
 	if (event.which == 13) {
@@ -106,9 +106,9 @@ function onClickSelectVib() {
 
 function selectVib(index) {
 	var vib = getbyID('vib');
-	_fileData.plotFreq.selectedFreq = (index < 0 ? -1 
-			: _fileData.specData.freqs[_fileData.specData.vibList[index][3]]);
-	showFreqGraph("plotareafreq", _fileData.specData, _fileData.plotFreq);
+	_file.plotFreq.selectedFreq = (index < 0 ? -1 
+			: _file.specData.freqs[_file.specData.vibList[index][3]]);
+	showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);
 }
 /* When triggered (by a click), the vibration is retrieved from the file data. The graph is then
 updated to show a larger red line at the selected frequency. The correct frame is also shown for the 
@@ -119,14 +119,14 @@ function setYMax() {
 	var specData = setUpSpecData("all", "any"); 
 	getFrequencyList(specData);
 	createSpectrum(specData);
-	 _fileData.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
+	 _file.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
 }
 /* The maxY value is found from the information taken from the file and put into specData. 
 The max y value of both Raman and IR arrays becomes the ymax value in fileData. */
 
 
 function onClickModSpec(isPageOpen, doSetYMax) {
-	if (_fileData.freqData.length == 0) {
+	if (_file.freqData.length == 0) {
 		return;
 	}
 	if (doSetYMax) {
@@ -138,14 +138,14 @@ function onClickModSpec(isPageOpen, doSetYMax) {
 	}
 	var typeIRorRaman = getRadioSetValue(document.modelsVib.modSpec);
 	var irrep = getValueSel('sym');		
-	_fileData.specData = setUpSpecData(typeIRorRaman,irrep);
-	getFrequencyList(_fileData.specData);
-	createSpectrum(_fileData.specData);
-	setVibList(_fileData.specData);
+	_file.specData = setUpSpecData(typeIRorRaman,irrep);
+	getFrequencyList(_file.specData);
+	createSpectrum(_file.specData);
+	setVibList(_file.specData);
 	if (isPageOpen){
-		setMaxMinPlot(_fileData.specData);
+		setMaxMinPlot(_file.specData);
 	}
-	return showFreqGraph("plotareafreq", _fileData.specData, _fileData.plotFreq);	
+	return showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);	
 }
 /* Gets information on the symmetry, IR or Raman, etc. in specData that is chosen by the user 
 and/or file data. It then remakes the spectra plot with the updated information.*/ 
@@ -159,10 +159,10 @@ function setUpSpecData(typeIRorRaman,irrep) {
 			sigma     : parseFloat(getValue('sigma')), 
 			rescale   : true,
 			invertx   : isChecked('invertX'),
-			freqCount : _fileData.freqInfo.length,
+			freqCount : _file.freqInfo.length,
 			minX      : Math.min(parseInt(getValue("nMin")), parseInt(getValue("nMax"))),
 			maxX      : Math.max(parseInt(getValue("nMin")), parseInt(getValue("nMax"))),
-			maxY      : _fileData.spectraYMax,
+			maxY      : _file.spectraYMax,
 			maxR      : 3700,
 			previousPointFreq : -1,
 			vibList   : [],
@@ -232,8 +232,8 @@ function setMaxMinPlot(specData) {
 			specData.maxR = 3700;
 	}
 		
-	_fileData.plotFreq.minX0 = specData.minX = 0;
-	_fileData.plotFreq.maxX0 = specData.maxX = specData.maxR + 300;
+	_file.plotFreq.minX0 = specData.minX = 0;
+	_file.plotFreq.maxX0 = specData.maxX = specData.maxR + 300;
 
 }
 /* This function gets the max and min data for the plot. The max x is defined as being 4000, or 300 
@@ -251,9 +251,9 @@ function getFrequencyList(specData) {
 	for (var i = 0; i < specData.freqCount; i++) {
 		var label = null;
 		if ((vibLinesFromIrrep == null || (label = vibLinesFromIrrep[i]))
-			  && (prop == null || _fileData.freqInfo[i].modelProperties[prop] == "A")) {
-			specData.freqInfo.push(_fileData.freqInfo[i]);
-			specData.vibList.push([(label || (i+1) + " " + _fileData.freqInfo[i].name), _fileData.freqInfo[i].modelNumber, -1]);
+			  && (prop == null || _file.freqInfo[i].modelProperties[prop] == "A")) {
+			specData.freqInfo.push(_file.freqInfo[i]);
+			specData.vibList.push([(label || (i+1) + " " + _file.freqInfo[i].name), _file.freqInfo[i].modelNumber, -1]);
 		}
 	}
 }
@@ -290,18 +290,18 @@ function getVibLinesFromIrrep(specData) {
 	
 	// check for F, E, or A irreducible representations
 	
-	if (_fileData.freqSymm) {
+	if (_file.freqSymm) {
 		// gaussian and others
-		for (var i = 0, val; i < _fileData.freqSymm.length; i++) {
-			if (irep == _fileData.freqSymm[i])
+		for (var i = 0, val; i < _file.freqSymm.length; i++) {
+			if (irep == _file.freqSymm[i])
 				vibLinesFromIrrep[i] = 
-					(i+1) + " " + irep + " "+ _fileData.freqData[i] 
-					+ (_fileData.freqIntens[i] ? " (" + _fileData.freqIntens[i] + ")" : "");
+					(i+1) + " " + irep + " "+ _file.freqData[i] 
+					+ (_file.freqIntens[i] ? " (" + _file.freqIntens[i] + ")" : "");
 		}
 	} else {
-		for (var i = 0, val; i < _fileData.freqInfo.length; i++) {
-			if (irep == _fileData.freqInfo[i].modelProperties.vibrationalSymmetry)
-				vibLinesFromIrrep[i] = (i+1) + " " + _fileData.freqInfo[i].name;
+		for (var i = 0, val; i < _file.freqInfo.length; i++) {
+			if (irep == _file.freqInfo[i].modelProperties.vibrationalSymmetry)
+				vibLinesFromIrrep[i] = (i+1) + " " + _file.freqInfo[i].name;
 		}
 	}
 	return vibLinesFromIrrep;
@@ -329,7 +329,7 @@ function extractIRData_crystal(specData) {
 function extractIRData_vaspoutcar(specData) {
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
-		specData.freqs[i] = specData.irFreq[i] = Math.round(substringFreqToFloat(_fileData.freqData[i]));
+		specData.freqs[i] = specData.irFreq[i] = Math.round(substringFreqToFloat(_file.freqData[i]));
 		specData.specIR[specData.irFreq[i]] = 100;
 		specData.model[specData.irFreq[i]] = specData.freqInfo[i].modelNumber;
 		specData.irInt[i] = 100;
@@ -456,8 +456,8 @@ function createConvolvedSpectrum(specData, type) {
 function showFreqGraph(plotDiv, specData, plot) {
 	var isHTMLPage = (!specData);
 	if (isHTMLPage) {
-		specData = _fileData.specData = opener._fileData.specData;
-		plot = _fileData.plotFreq = opener._fileData.plotFreq;
+		specData = _file.specData = opener._file.specData;
+		plot = _file.plotFreq = opener._file.plotFreq;
 	}
 	var minX = specData.minX;
 	var maxX = specData.maxX;
@@ -528,7 +528,7 @@ function showFreqGraph(plotDiv, specData, plot) {
 		plotArea.bind( "plotselected", plotSelectCallbackFreq);
 	}
 	$.plot(plotArea, data, options);	
-	_fileData.specData.previousPointFreq = -1;
+	_file.specData.previousPointFreq = -1;
 	return haveSelected;
 }
 
@@ -570,7 +570,7 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 	var range = (itemFreq ? getFreqForClick(itemFreq.datapoint) : null);
 	// itemFreq is [x,y] so [freq,int]
 	// range is [min,max,freq,i]
-	var listIndex = (range ? _fileData.specData.vibList[range[3]][2] : -1);
+	var listIndex = (range ? _file.specData.vibList[range[3]][2] : -1);
 	if (listIndex < 0) {
 		setTimeout(function() { selectVib(-1) }, 50);
 		return;		
@@ -582,16 +582,16 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 function plotHoverCallbackFreq(event, pos, itemFreq) {
 	hideTooltip();
 	if(!itemFreq)return
-	if (_fileData.specData.previousPointFreq != itemFreq.datapoint) {
+	if (_file.specData.previousPointFreq != itemFreq.datapoint) {
 		previousPointFreq = itemFreq.datapoint;
 		var range = getFreqForClick(itemFreq.datapoint);
 		if (!range)
 			return;
 		var freq = range[2];
-		var listIndex = _fileData.specData.vibList[range[3]][2];	
+		var listIndex = _file.specData.vibList[range[3]][2];	
 		if (listIndex < 0)
 			return;		
-		var model = _fileData.specData.model[freq];
+		var model = _file.specData.model[freq];
 		var x = roundoff(itemFreq.datapoint[0],2);
 		var y = roundoff(itemFreq.datapoint[1],1);
 		var model = itemFreq.datapoint[2];
@@ -608,7 +608,7 @@ function plotHoverCallbackFreq(event, pos, itemFreq) {
  * function scaleSpectrum(){
  * 
  * var vecorFreq = []; var vecorChk = []; var counter; for(var i =0 ; i <
- * _fileData.info.length; i++){ vecorFreq[i] = _fileData.info[i].name; vecorChk[i] = 0 if(i == 0)
+ * _file.info.length; i++){ vecorFreq[i] = _file.info[i].name; vecorChk[i] = 0 if(i == 0)
  * vecorChk[i] = 1 counter++ }
  * 
  * var s = " Shift spectrum "; s+= createSelect("Frequencies", "", 0, 1, counter ,
@@ -634,18 +634,18 @@ function minValue(irInt) {
 	return parseInt(irInt.sort(sortNumber)[0]);
 }
 
-function symmetryModeAdd() { // extracts vibrational symmetry modes from _fileData.info
+function symmetryModeAdd() { // extracts vibrational symmetry modes from _file.info
 								// array and lets one get symmetry operations by
 								// ID
 	cleanList('sym');
 	var sym = getbyID('sym');
-	if (_fileData.info[3] && _fileData.info[3].modelProperties) {
-		var symm = _fileData.freqSymm;
+	if (_file.info[3] && _file.info[3].modelProperties) {
+		var symm = _file.freqSymm;
 		if (!symm) {
 			var symm = [];
-			for (var i = 1; i < _fileData.info.length; i++)
-				if (_fileData.info[i].name)
-					symm[i] = _fileData.info[i].modelProperties.vibrationalSymmetry;
+			for (var i = 1; i < _file.info.length; i++)
+				if (_file.info[i].name)
+					symm[i] = _file.info[i].modelProperties.vibrationalSymmetry;
 		}
 		var sortedSymm = unique(symm);
 		addOption(sym, "any", "any");
@@ -699,15 +699,15 @@ function updateJmolForFreqParams(isVibClick) {
 function onScale(mode) {
 	switch (mode) {
 	case 1:
-		_fileData.plotFreq.yscale *= 1.414;
+		_file.plotFreq.yscale *= 1.414;
 		break;
 	case 0:
-		_fileData.plotFreq.yscale = 1;
-		setValue("nMin", _fileData.plotFreq.minX0);
-		setValue("nMax", _fileData.plotFreq.maxX0);
+		_file.plotFreq.yscale = 1;
+		setValue("nMin", _file.plotFreq.minX0);
+		setValue("nMax", _file.plotFreq.maxX0);
 		break;
 	case -1:
-		_fileData.plotFreq.yscale /= 1.414;
+		_file.plotFreq.yscale /= 1.414;
 		break;
 	}
 	onClickModSpec();
@@ -804,8 +804,8 @@ function getFreqForClick(p) {
 	var int = p[1];
 	var listIndex = -1;
 	
-	for (var i = 0; i < _fileData.specData.ranges.length; i++) {
-		var range = _fileData.specData.ranges[i];
+	for (var i = 0; i < _file.specData.ranges.length; i++) {
+		var range = _file.specData.ranges[i];
 		if (freq >= range[0] && freq <= range[1]) {
 			return range;
 		}

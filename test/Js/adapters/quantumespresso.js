@@ -26,27 +26,27 @@
 
 loadDone_espresso = function() {
 	
-	_fileData.energyUnits = ENERGY_RYDBERG;
-	_fileData.StrUnitEnergy = "R";
-	_fileData.hasInputModel = true;
+	_file.energyUnits = ENERGY_RYDBERG;
+	_file.StrUnitEnergy = "R";
+	_file.hasInputModel = true;
 
-	for (var i = 0; i < _fileData.info.length; i++) {
-		var line = _fileData.info[i].name;
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 
 		if (i == 0) {
-			_fileData.geomData[0] = line;
+			_file.geomData[0] = line;
 			addOption(getbyID('geom'), "0 initial", 1);
 		}
 		if (line != null) {
 			if (line.search(/E =/i) != -1) {
 				addOption(getbyID('geom'), i + 1 + " " + line, i + 1);
-				_fileData.geomData[i + 1] = line;
-				_fileData.counterFreq++;
+				_file.geomData[i + 1] = line;
+				_file.counterFreq++;
 			} /*
 			 * else if (line.search(/cm/i) != -1) { // alert("vibration")
-			 * freqData[i - counterFreq] = _fileData.info[i].name; counterMD++; } else
+			 * freqData[i - counterFreq] = _file.info[i].name; counterMD++; } else
 			 * if (line.search(/Temp/i) != -1) { addOption(getbyID('geom'),
-			 * (i - counterMD) + " " + _fileData.info[i].name, i + 1); }
+			 * (i - counterMD) + " " + _file.info[i].name, i + 1); }
 			 */
 		}
 	}
@@ -153,7 +153,7 @@ function prepareSystemblock() {
 
 	setUnitCell();
 
-	var numberAtom = jmolEvaluate(_fileData.frameSelection + ".length");
+	var numberAtom = jmolEvaluate(_file.frameSelection + ".length");
 
 	var stringCutoff = null;
 	var stringCutoffrho = null;
@@ -175,22 +175,22 @@ function prepareSystemblock() {
 	setUnitCell();
 	
 	var cellDimString, ibravQ;	
-	switch (_fileData.cell.typeSystem) {
+	switch (_file.cell.typeSystem) {
 	case "crystal":
 		var flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			cellDimString = "           celldm(1) = "
-				+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+				+ roundNumber(fromAngstromtoBohr(_file.cell.a))
 				+ "  \n           celldm(2) =  "
-				+ roundNumber(_fileData.cell.b / _fileData.cell.a)
+				+ roundNumber(_file.cell.b / _file.cell.a)
 				+ "  \n           celldm(3) =  "
-				+ roundNumber(_fileData.cell.c / _fileData.cell.a)
+				+ roundNumber(_file.cell.c / _file.cell.a)
 				+ "  \n           celldm(4) =  "
-				+ (cosRounded(_fileData.cell.alpha))
+				+ (cosRounded(_file.cell.alpha))
 				+ "  \n           celldm(5) =  "
-				+ (cosRounded(_fileData.cell.beta))
+				+ (cosRounded(_file.cell.beta))
 				+ "  \n           celldm(6) =  "
-				+ (cosRounded(_fileData.cell.gamma));
+				+ (cosRounded(_file.cell.gamma));
 			ibravQ = "14";
 		} else {
 			warningMsg("This procedure is not fully tested.");
@@ -201,25 +201,25 @@ function prepareSystemblock() {
 		break;
 	case "slab":
 		setVacuum();
-		scaleModelCoordinates("z", "div", _fileData.cell.c);
+		scaleModelCoordinates("z", "div", _file.cell.c);
 		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
+			+ roundNumber(fromAngstromtoBohr(_file.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(_file.cell.b / _file.cell.a)
+			+ "  \n            celldm(3) =  " + roundNumber(_file.cell.c / _file.cell.a)
 			+ "  \n            celldm(4) =  "
-			+ (cosRounded(_fileData.cell.alpha))
+			+ (cosRounded(_file.cell.alpha))
 			+ "  \n            celldm(5) =  " + (cosRounded(90))
 			+ "  \n            celldm(6) =  " + (cosRounded(90));
 		ibravQ = "14";
 		break;
 	case "polymer":
 		setVacuum();
-		scaleModelCoordinates("z", "div", _fileData.cell.c);
-		scaleModelCoordinates("y", "div", _fileData.cell.b);
+		scaleModelCoordinates("z", "div", _file.cell.c);
+		scaleModelCoordinates("y", "div", _file.cell.b);
 		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
+			+ roundNumber(fromAngstromtoBohr(_file.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(_file.cell.b / _file.cell.a)
+			+ "  \n            celldm(3) =  " + roundNumber(_file.cell.b / _file.cell.a)
 			+ "  \n            celldm(4) =  " + (cosRounded(90))
 			+ "  \n            celldm(5) =  " + (cosRounded(90))
 			+ "  \n            celldm(6) =  " + (cosRounded(90));
@@ -227,15 +227,15 @@ function prepareSystemblock() {
 		break;
 	case "molecule":
 		setVacuum();
-		scaleModelCoordinates("x", "div", _fileData.cell.a);
-		scaleModelCoordinates("y", "div", _fileData.cell.b);
-		scaleModelCoordinates("z", "div", _fileData.cell.c);
+		scaleModelCoordinates("x", "div", _file.cell.a);
+		scaleModelCoordinates("y", "div", _file.cell.b);
+		scaleModelCoordinates("z", "div", _file.cell.c);
 		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+			+ roundNumber(fromAngstromtoBohr(_file.cell.a))
 			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(4) =  "
-			+ (cosRounded(_fileData.cell.alpha))
+			+ (cosRounded(_file.cell.alpha))
 			+ "  \n            celldm(5) =  " + (cosRounded(90))
 			+ "  \n            celldm(6) =  " + (cosRounded(90));
 		ibravQ = "14";
@@ -313,7 +313,7 @@ function prepareSpecieblock() {
 
 	for (var i = 0; i < sortedElement.length; i++) {
 		var elemento = sortedElement[i];
-		var numeroAtom = jmolEvaluate('{' + _fileData.frameNum + ' and _' + elemento
+		var numeroAtom = jmolEvaluate('{' + _file.frameNum + ' and _' + elemento
 				+ '}[0].label("%l")'); //tobe changed in atomic mass
 		scriptEl = "'" + elemento + " " + eleSymbMass[parseInt(numeroAtom)]
 		+ " #Here goes the psudopotential filename e.g.: " + elemento
@@ -339,7 +339,7 @@ function prepareSpecieblock() {
 function preparePostionblock() {
 	setUnitCell();
 	var atompositionQ = "var posHeader = 'ATOMIC_POSITIONS crystal';"
-		+ 'var posCoord = ' + _fileData.frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
+		+ 'var posCoord = ' + _file.frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
 		// %16.9[fxyz]\");'
 		+ 'posQ = [posHeader,posCoord];';
 	runJmolScriptWait(atompositionQ);

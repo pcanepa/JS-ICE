@@ -1,5 +1,5 @@
 function enterCell() {
-	getUnitcell(_fileData.frameValue);
+	getUnitcell(_file.frameValue);
 //	getSymInfo();
 }
 
@@ -9,14 +9,14 @@ function exitCell() {
 function saveFractionalCoordinate() {
 	warningMsg("Make sure you have selected the model you would like to export.");
 
-	if (_fileData.frameSelection == null)
+	if (_file.frameSelection == null)
 		getUnitcell("1");
 
-	var x = "var cellp = [" + roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b)
-	+ ", " + roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha) + ", "
-	+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_fileData.cell.gamma) + "];"
+	var x = "var cellp = [" + roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.b)
+	+ ", " + roundNumber(_file.cell.c) + ", " + roundNumber(_file.cell.alpha) + ", "
+	+ roundNumber(_file.cell.beta) + ", " + roundNumber(_file.cell.gamma) + "];"
 	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
-	+ _fileData.frameSelection + '.label("%a %16.9[fxyz]");'
+	+ _file.frameSelection + '.label("%a %16.9[fxyz]");'
 	+ 'var lista = [cellparam, xyzfrac];'
 	+ 'WRITE VAR lista "?.XYZfrac" ';
 	runJmolScriptWait(x);
@@ -25,23 +25,23 @@ function saveFractionalCoordinate() {
 //This reads out cell parameters given astructure.
 function getUnitcell(i) {
 	// document.cellGroup.reset();
-	_fileData.cell.typeSystem = "";
+	_file.cell.typeSystem = "";
 	var StringUnitcell = "auxiliaryinfo.models[" + (i || 1) + "].infoUnitCell";
 	var cellparam = extractInfoJmol(StringUnitcell);
 
-	_fileData.cell.a = roundNumber(cellparam[0]);
-	_fileData.cell.b = roundNumber(cellparam[1]);
-	_fileData.cell.c = roundNumber(cellparam[2]);
-	_fileData.cell.dimensionality = parseFloat(cellparam[15]);
-	_fileData.cell.volumeCell = roundNumber(cellparam[16]);
+	_file.cell.a = roundNumber(cellparam[0]);
+	_file.cell.b = roundNumber(cellparam[1]);
+	_file.cell.c = roundNumber(cellparam[2]);
+	_file.cell.dimensionality = parseFloat(cellparam[15]);
+	_file.cell.volumeCell = roundNumber(cellparam[16]);
 
-	var bOvera = roundNumber(parseFloat(_fileData.cell.b / _fileData.cell.c));
-	var cOvera = roundNumber(parseFloat(_fileData.cell.c / _fileData.cell.a));
+	var bOvera = roundNumber(parseFloat(_file.cell.b / _file.cell.c));
+	var cOvera = roundNumber(parseFloat(_file.cell.c / _file.cell.a));
 
-	switch (_fileData.cell.dimensionality) {
+	switch (_file.cell.dimensionality) {
 	case 1:
-		_fileData.cell.b = 0.000;
-		_fileData.cell.c = 0.000;
+		_file.cell.b = 0.000;
+		_file.cell.c = 0.000;
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeDisable("par_b");
@@ -50,11 +50,11 @@ function getUnitcell(i) {
 		setValue("par_c", "1");
 		setValue("bovera", "0");
 		setValue("covera", "0");
-		_fileData.cell.typeSystem = "polymer";
+		_file.cell.typeSystem = "polymer";
 		break;
 	case 2:
-		_fileData.cell.c = 0.000;
-		_fileData.cell.typeSystem = "slab";
+		_file.cell.c = 0.000;
+		_file.cell.typeSystem = "slab";
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeEnable("par_b");
@@ -65,10 +65,10 @@ function getUnitcell(i) {
 		setValue("covera", "0");
 		break;
 	case 3:
-		_fileData.cell.typeSystem = "crystal";
-		_fileData.cell.alpha = cellparam[3];
-		_fileData.cell.beta = cellparam[4];
-		_fileData.cell.gamma = cellparam[5];
+		_file.cell.typeSystem = "crystal";
+		_file.cell.alpha = cellparam[3];
+		_file.cell.beta = cellparam[4];
+		_file.cell.gamma = cellparam[5];
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeEnable("par_b");
@@ -80,33 +80,33 @@ function getUnitcell(i) {
 		break;
 	default:
 	  if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
-		_fileData.cell.a = 0.00;
-		_fileData.cell.b = 0.00;
-		_fileData.cell.c = 0.00;
-		_fileData.cell.alpha = 0.00;
-		_fileData.cell.beta = 0.00;
-		_fileData.cell.gamma = 0.00;
-		_fileData.cell.typeSystem = "molecule";
+		_file.cell.a = 0.00;
+		_file.cell.b = 0.00;
+		_file.cell.c = 0.00;
+		_file.cell.alpha = 0.00;
+		_file.cell.beta = 0.00;
+		_file.cell.gamma = 0.00;
+		_file.cell.typeSystem = "molecule";
 		setValue("bovera", "0");
 		setValue("covera", "0");
 	  }
 	}
-	setValue("cell.a", roundNumber(_fileData.cell.a));
-	setValue("cell.b", roundNumber(_fileData.cell.b));
-	setValue("cell.c", roundNumber(_fileData.cell.c));
-	setValue("cell.alpha", roundNumber(_fileData.cell.alpha));
-	setValue("cell.beta", roundNumber(_fileData.cell.beta));
-	setValue("cell.gamma", roundNumber(_fileData.cell.gamma));
-	setValue("cell.volumeCell", roundNumber(_fileData.cell.volumeCell));
+	setValue("cell.a", roundNumber(_file.cell.a));
+	setValue("cell.b", roundNumber(_file.cell.b));
+	setValue("cell.c", roundNumber(_file.cell.c));
+	setValue("cell.alpha", roundNumber(_file.cell.alpha));
+	setValue("cell.beta", roundNumber(_file.cell.beta));
+	setValue("cell.gamma", roundNumber(_file.cell.gamma));
+	setValue("cell.volumeCell", roundNumber(_file.cell.volumeCell));
 
 }
 
 function setUnitCell() {
-	getUnitcell(_fileData.frameValue);
-	if (_fileData.frameSelection == null || _fileData.frameSelection == "" || _fileData.frameValue == ""
-		|| _fileData.frameValue == null) {
-		_fileData.frameSelection = "{1.1}";
-		_fileData.frameNum = "1.1";
+	getUnitcell(_file.frameValue);
+	if (_file.frameSelection == null || _file.frameSelection == "" || _file.frameValue == ""
+		|| _file.frameValue == null) {
+		_file.frameSelection = "{1.1}";
+		_file.frameNum = "1.1";
 		getUnitcell("1");
 	}
 }
@@ -117,24 +117,24 @@ function setUnitCell() {
 /////////////
 
 function setCellMeasure(value) {
-	_fileData.cell.typeSystem = "";
-	var i = _fileData.frameValue;
+	_file.cell.typeSystem = "";
+	var i = _file.frameValue;
 	var StringUnitcell = "auxiliaryinfo.models[" + (i || 1) + "].infoUnitCell";
 	var cellparam = extractInfoJmol(StringUnitcell);
-	_fileData.cell.a = cellparam[0];
-	_fileData.cell.b = cellparam[1];
-	_fileData.cell.c = cellparam[2];
+	_file.cell.a = cellparam[0];
+	_file.cell.b = cellparam[1];
+	_file.cell.c = cellparam[2];
 	if (value == "a") {
-		setValue("cell.a", roundNumber(_fileData.cell.a));
-		setValue("cell.b", roundNumber(_fileData.cell.b));
-		setValue("cell.c", roundNumber(_fileData.cell.c));
+		setValue("cell.a", roundNumber(_file.cell.a));
+		setValue("cell.b", roundNumber(_file.cell.b));
+		setValue("cell.c", roundNumber(_file.cell.c));
 	} else {
-		_fileData.cell.a *= 1.889725989;
-		_fileData.cell.b *= 1.889725989;
-		_fileData.cell.c *= 1.889725989;
-		setValue("cell.a", roundNumber(_fileData.cell.a));
-		setValue("cell.b", roundNumber(_fileData.cell.b));
-		setValue("cell.c", roundNumber(_fileData.cell.c));
+		_file.cell.a *= 1.889725989;
+		_file.cell.b *= 1.889725989;
+		_file.cell.c *= 1.889725989;
+		setValue("cell.a", roundNumber(_file.cell.a));
+		setValue("cell.b", roundNumber(_file.cell.b));
+		setValue("cell.c", roundNumber(_file.cell.c));
 	}
 }
 

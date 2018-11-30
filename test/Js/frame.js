@@ -1,12 +1,12 @@
 function setFrameValues(i) {
 	if (i == null || i == "") {
-		_fileData.frameSelection = "{1.1}";
-		_fileData.frameNum = "1.1";
-		_fileData.frameValue = 1;
+		_file.frameSelection = "{1.1}";
+		_file.frameNum = "1.1";
+		_file.frameValue = 1;
 	} else {
-		_fileData.frameSelection = "{1." + i + "}";
-		_fileData.frameNum = "1." + i;
-		_fileData.frameValue = i;
+		_file.frameSelection = "{1." + i + "}";
+		_file.frameNum = "1." + i;
+		_file.frameValue = i;
 	}
 }
 

@@ -39,10 +39,10 @@ myPickCallback = function(applet, b, c, d) {
 }
 
 setMinimizationCallbackFunction = function(f) {
-	_fileData.fMinim = f;
+	_file.fMinim = f;
 }
 
 myMinimizationCallback = function(applet,b,c,d) {
-	_fileData.fMinim && _fileData.fMinim(b, c, d);
+	_file.fMinim && _file.fMinim(b, c, d);
 }
 

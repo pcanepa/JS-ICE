@@ -30,25 +30,25 @@
 ///////////////////////// LOAD & ON LOAD functions
 
 loadDone_crystal = function() {
-	_fileData.energyUnits = ENERGY_HARTREE;
-	_fileData.StrUnitEnergy = "H";
+	_file.energyUnits = ENERGY_HARTREE;
+	_file.StrUnitEnergy = "H";
 	var vib = getbyID('vib');
-	for (var i = 0; i < _fileData.info.length; i++) {
-		var line = _fileData.info[i].name;
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 		if (line != null) {
 			if (line.search(/Energy/i) != -1) { // Energy
-//				if (i > 0 && i < _fileData.info.length)
-//					var previous = substringEnergyToFloat(_fileData.info[i - 1].name);
-//				if (_fileData.info[i].name != null) {
+//				if (i > 0 && i < _file.info.length)
+//					var previous = substringEnergyToFloat(_file.info[i - 1].name);
+//				if (_file.info[i].name != null) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
+				_file.geomData[i] = line;
+				_file.counterFreq++;
 //				}
 			} else if (line.search(/cm/i) != -1) {
 				if (line.search(/LO/) == -1) {
-					_fileData.freqInfo.push(_fileData.info[i]);
-					_fileData.vibLine.push((i - _fileData.counterFreq) + " " + line); 
-					_fileData.freqData.push(line);
+					_file.freqInfo.push(_file.info[i]);
+					_file.vibLine.push((i - _file.counterFreq) + " " + line); 
+					_file.freqData.push(line);
 				}
 			}
 	
@@ -76,30 +76,30 @@ function exportCRYSTAL() {
 
 	setUnitCell();
 
-	var  numAtomCRYSTAL = _fileData.frameSelection + ".length";
-	var fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[fxyz]")';
+	var  numAtomCRYSTAL = _file.frameSelection + ".length";
+	var fractionalCRYSTAL = _file.frameSelection + '.label("%l %16.9[fxyz]")';
 
-	switch (_fileData.cell.typeSystem) {
+	switch (_file.cell.typeSystem) {
 	case "crystal":
 		systemCRYSTAL = "'CRYSTAL'";
 		keywordCRYSTAL = "'0 0 0'";
 		symmetryCRYSTAL = "'1'";
 
-		if (!_fileData.exportNoSymmetry)
+		if (!_file.exportNoSymmetry)
 			flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			script = "var cellp = ["
-					+ roundNumber(_fileData.cell.a)
+					+ roundNumber(_file.cell.a)
 					+ ", "
-					+ roundNumber(_fileData.cell.b)
+					+ roundNumber(_file.cell.b)
 					+ ", "
-					+ roundNumber(_fileData.cell.c)
+					+ roundNumber(_file.cell.c)
 					+ ", "
-					+ roundNumber(_fileData.cell.alpha)
+					+ roundNumber(_file.cell.alpha)
 					+ ", "
-					+ roundNumber(_fileData.cell.beta)
+					+ roundNumber(_file.cell.beta)
 					+ ", "
-					+ roundNumber(_fileData.cell.gamma)
+					+ roundNumber(_file.cell.gamma)
 					+ "];"
 					+ 'var cellparam = cellp.join(" ");'
 					+ 'cellparam = cellparam.replace("\n\n","\n");'
@@ -148,8 +148,8 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = [" + roundNumber(_fileData.cell.a) + ", "
-				+ roundNumber(_fileData.cell.b) + ", " + roundNumber(_fileData.cell.gamma) + "];"
+		script = "var cellp = [" + roundNumber(_file.cell.a) + ", "
+				+ roundNumber(_file.cell.b) + ", " + roundNumber(_file.cell.gamma) + "];"
 				+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
 				+ titleCRYS + "', " + systemCRYSTAL + ", " + symmetryCRYSTAL
 				+ "];" + 'crystalArr = crystalArr.replace("\n\n","\n");'
@@ -167,7 +167,7 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = " + roundNumber(_fileData.cell.a) + ";"
+		script = "var cellp = " + roundNumber(_file.cell.a) + ";"
 				+ "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
 				+ ", " + symmetryCRYSTAL + "];"
 				+ 'crystalArr = crystalArr.replace("\n\n","\n");'

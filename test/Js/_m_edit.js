@@ -47,15 +47,15 @@ function applyConnect(r) {
 	} else {
 		var flagBond = checkBoxX("allBondconnect");
 		// alert(flagBond);
-		// alert(_fileData.frameNum);
-		if (_fileData.frameNum == null || _fileData.frameNum == '') {
+		// alert(_file.frameNum);
+		if (_file.frameNum == null || _file.frameNum == '') {
 			getUnitcell("1");
-			_fileData.frameNum = 1.1;
+			_file.frameNum = 1.1;
 		} else {
 
 		}
 		if (flagBond == 'off') {
-			runJmolScriptWait("select " + _fileData.frameNum
+			runJmolScriptWait("select " + _file.frameNum
 					+ "; connect  (selected) (selected)  DELETE");
 			runJmolScriptWait("connect " + r
 					+ " (selected) (selected) single ModifyOrCreate;");
