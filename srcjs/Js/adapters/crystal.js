@@ -76,10 +76,6 @@ function exportCRYSTAL() {
 
 	setUnitCell();
 
-	if (_fileData.cell.typeSystem == "molecule")
-		fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[xyz]")';
-	runJmolScriptWait("print " + fractionalCRYSTAL)
-
 	var  numAtomCRYSTAL = _fileData.frameSelection + ".length";
 	var fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[fxyz]")';
 
@@ -89,7 +85,7 @@ function exportCRYSTAL() {
 		keywordCRYSTAL = "'0 0 0'";
 		symmetryCRYSTAL = "'1'";
 
-		if (!flagSiesta && !flagOutcar && !flagCryVasp)
+		if (!_fileData.exportNoSymmetry)
 			flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			script = "var cellp = ["
@@ -130,7 +126,7 @@ function exportCRYSTAL() {
 			warningMsg("This procedure is not fully tested.");
 			
 			// BH: THIS METHOD WILL RELOAD THE FILE!
-			figureOutSpaceGroup();
+			figureOutSpaceGroup(true, true);
 			var endCRYSTAL = "TEST', 'END";
 			var script = "var cellp = [" + stringCellParam + "];"
 					+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
@@ -205,20 +201,4 @@ function exportCRYSTAL() {
 
 ////////////////////////END SAVE INPUT
 
-/////////////////////////
-
-//// this method was called when the Geometry Optimize and Spectra tabs
-//// were clicked via a complex sequence of callbacks
-//// but that is not done now, because all this should be done from a loadStructCallback.
-//function reloadFastModels() {
-//	setDefaultJmolSettings();
-//	if (flagCryVasp) {
-//		getUnitcell("1");
-//		runJmolScriptWait("echo");
-//		setTitleEcho();
-//		setGeomAndFreqData();
-//		enableFreqOpts();
-//		//getSymInfo();
-//	}
-//}
 

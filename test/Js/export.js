@@ -1,4 +1,15 @@
 
+function scaleModelCoordinates(xyz, op1, f1, op2, f2, etc) {
+	// e.g. {1.1}.xyz.all.mul(2);
+	var atomArray = _fileData.frameSelection + '.' + xyz;
+	var s = "";
+	for (int i = 1; i < arguments.length;) {
+		s += atomArray + " = " + atomArray + ".all." + arguments[i++] + "(" + arguments[i++] + ");";
+	}
+	runJmolScriptWait(s);
+	
+}
+
 function setVacuum() {
 	var newCell_c;
 	var vacuum;
@@ -12,12 +23,10 @@ function setVacuum() {
 		vacuum = parseFloat(vacuum);
 		newCell_c = (zMaxCoord * 2) + vacuum;
 		var factor = roundNumber(zMaxCoord + vacuum);
-		if (_fileData._export.fractionalCoord) { // from VASP only?
-			runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; ( i.z +'
-					+ factor + ') /' + newcell + ')');
+		if (_fileData._exportFractionalCoord) { // from VASP only?
+			scaleModelCoordinates("z", "add", factor, "div", newcell_c);
 		} else {
-			runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z +'
-					+ factor + ')');
+			scaleModelCoordinates("z", "add", factor);
 		}
 		fromfractionaltoCartesian(null, null, newCell_c, null, 90, 90);
 		break;
@@ -30,10 +39,8 @@ function setVacuum() {
 		vacuum = parseFloat(vacuum);
 		newCell_c = (zMaxCoord * 2) + vacuum;
 		var factor = roundNumber(zMaxCoord + vacuum);
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z +' + factor
-				+ ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y +' + factor
-				+ ')');
+		scaleModelCoordinates("z", "add", factor);
+		scaleModelCoordinates("y", "add", factor);
 		fromfractionaltoCartesian(null, newCell_c, newCell_c, 90, 90, 90);
 		break;
 	case "molecule":
@@ -45,12 +52,7 @@ function setVacuum() {
 		vacuum = parseFloat(vacuum);
 		newCell_c = (zMaxCoord * 2) + vacuum;
 		var factor = roundNumber(zMaxCoord + vacuum);
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z +' + factor
-				+ ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y +' + factor
-				+ ')');
-		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x +' + factor
-				+ ')');
+		scaleModelCoordinates("xyz", "add", factor);
 		fromfractionaltoCartesian(newCell_c, newCell_c, newCell_c, 90, 90, 90);
 		break;
 
@@ -78,20 +80,17 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 	// formula repeated from
 	// http://en.wikipedia.org/wiki/Fractional_coordinates
 	var v = Math.sqrt(1
-			- (Math.cos(_fileData.cell.alpha * _conversion.radiant) * Math.cos(_fileData.cell.alpha * _conversion.radiant))
-			- (Math.cos(_fileData.cell.beta * _conversion.radiant) * Math.cos(_fileData.cell.beta * _conversion.radiant))
-			- (Math.cos(_fileData.cell.gamma * _conversion.radiant) * Math.cos(_fileData.cell.gamma * _conversion.radiant))
-			+ 2
-			* (Math.cos(_fileData.cell.alpha * _conversion.radiant) * Math.cos(_fileData.cell.beta * _conversion.radiant) * Math
-					.cos(_fileData.cell.gamma * _conversion.radiant)));
-	xx = _fileData.cell.a * Math.sin(_fileData.cell.beta * _conversion.radiant);
+			- (cosDeg(_fileData.cell.alpha) * cosDeg(_fileData.cell.alpha))
+			- (cosDeg(_fileData.cell.beta) * cosDeg(_fileData.cell.beta))
+			- (cosDeg(_fileData.cell.gamma) * cosDeg(_fileData.cell.gamma))
+			+ 2	* (cosDeg(_fileData.cell.alpha) * cosDeg(_fileData.cell.beta) * cosDeg(_fileData.cell.gamma)));
+	xx = _fileData.cell.a * sinDeg(_fileData.cell.beta);
 	xy = parseFloat(0.000);
-	xz = _fileData.cell.a * Math.cos(_fileData.cell.beta * _conversion.radiant);
+	xz = _fileData.cell.a * cosDeg(_fileData.cell.beta);
 	yx = _fileData.cell.b
-	* (((Math.cos(_fileData.cell.gamma * _conversion.radiant)) - ((Math.cos(_fileData.cell.beta * _conversion.radiant)) * (Math
-			.cos(_fileData.cell.alpha * _conversion.radiant)))) / Math.sin(_fileData.cell.beta * _conversion.radiant));
-	yy = _fileData.cell.b * (v / Math.sin(_fileData.cell.beta * _conversion.radiant));
-	yz = _fileData.cell.b * Math.cos(_fileData.cell.alpha * _conversion.radiant);
+	* (((cosDeg(_fileData.cell.gamma)) - ((cosDeg(_fileData.cell.beta)) * (cosDeg(_fileData.cell.alpha)))) / sinDeg(_fileData.cell.beta));
+	yy = _fileData.cell.b * (v / sinDeg(_fileData.cell.beta));
+	yz = _fileData.cell.b * cosDeg(_fileData.cell.alpha);
 	zx = parseFloat(0.000);
 	zy = parseFloat(0.000);
 	zz = _fileData.cell.c;
@@ -105,20 +104,20 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 //var prevFrame = null;
 	
 
-function figureOutSpaceGroup() {
+function figureOutSpaceGroup(doReload, isConv, quantumEspresso) {
 	var stringCellParam;
 	var cellDimString = null;
 	var ibravQ = "";
 	saveStateAndOrientation_a();
 	//prevframeSelection = _fileData.frameSelection;
-	if (_fileData.frameValue == null || _fileData.frameValue == "" || flagCif)
-		frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
+	if (_fileData.frameValue == null || _fileData.frameValue == "" || _fileData.exportModelOne)
+		_fileData.frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
 	var prevFrame = _fileData.frameValue;
 	var magnetic = confirm('It\'s the primitive cell ?')
 	// crystalPrev = confirm('Does the structure come from a previous CRYSTAL
 	// calculation?')
 	reload(null, 
-			flagCrystal ? "conv" : null, 
+			isConv ? "conv" : null, 
 			magnetic ? "delete not cell=555;" : null
 	);
 	var s = ""
@@ -145,20 +144,20 @@ function figureOutSpaceGroup() {
 		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_fileData.cell.a)
 				+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
 				+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
-				+ " \n celdm(4) =  " + cosRadiant(_fileData.cell.alpha) + " \n celdm(5) =  "
-				+ (cosRadiant(_fileData.cell.beta)) + " \n celdm(6) =  "
-				+ (cosRadiant(_fileData.cell.gamma)) + " \n\n";
+				+ " \n celdm(4) =  " + cosRounded(_fileData.cell.alpha) + " \n celdm(5) =  "
+				+ (cosRounded(_fileData.cell.beta)) + " \n celdm(6) =  "
+				+ (cosRounded(_fileData.cell.gamma)) + " \n\n";
 		ibravQ = "14";
 		break;
 
 	case ((interNumber > 2) && (interNumber <= 15)): // Monoclinic lattices
 		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
 				+ roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha);
-		if (!flagCrystal && quantumEspresso) {
+		if (quantumEspresso) {
 			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_fileData.cell.a)
 					+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
 					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
-					+ " \n celdm(4) =  " + (cosRadiant(_fileData.cell.alpha))
+					+ " \n celdm(4) =  " + (cosRounded(_fileData.cell.alpha))
 					+ " \n\n";
 			ibravQ = "12"; // Monoclinic base centered
 
@@ -171,7 +170,7 @@ function figureOutSpaceGroup() {
 	case ((interNumber > 15) && (interNumber <= 74)): // Orthorhombic lattices
 		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
 				+ roundNumber(_fileData.cell.c);
-		if (!flagCrystal && quantumEspresso) {
+		if (quantumEspresso) {
 			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
 					+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
 					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
@@ -195,7 +194,7 @@ function figureOutSpaceGroup() {
 	case ((interNumber > 74) && (interNumber <= 142)): // Tetragonal lattices
 
 		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
-		if (!flagCrystal && quantumEspresso) {
+		if (quantumEspresso) {
 			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
 					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
 			ibravQ = "6";
@@ -209,24 +208,24 @@ function figureOutSpaceGroup() {
 		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.alpha) + ", "
 				+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_fileData.cell.gamma);
 		cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-				+ " \n celdm(4) =  " + (cosRadiant(_fileData.cell.alpha))
-				+ " \n celdm(5) = " + (cosRadiant(_fileData.cell.beta))
-				+ " \n celdm(6) =  " + (cosRadiant(_fileData.cell.gamma));
+				+ " \n celdm(4) =  " + (cosRounded(_fileData.cell.alpha))
+				+ " \n celdm(5) = " + (cosRounded(_fileData.cell.beta))
+				+ " \n celdm(6) =  " + (cosRounded(_fileData.cell.gamma));
 		ibravQ = "5";
 		var question = confirm("Is a romboheadral lattice?")
 		if (question) {
 			stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
 			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-					+ " \n celdm(4) =  " + (cosRadiant(_fileData.cell.alpha))
-					+ " \n celdm(5) = " + (cosRadiant(_fileData.cell.beta))
-					+ " \n celdm(6) =  " + (cosRadiant(_fileData.cell.gamma))
+					+ " \n celdm(4) =  " + (cosRounded(_fileData.cell.alpha))
+					+ " \n celdm(5) = " + (cosRounded(_fileData.cell.beta))
+					+ " \n celdm(6) =  " + (cosRounded(_fileData.cell.gamma))
 					+ " \n\n";
 			ibravQ = "4";
 		}
 		break;
 	case ((interNumber > 167) && (interNumber <= 194)): // Hexagonal lattices
 		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
-		if (!flagCrystal && quantumEspresso) {
+		if (quantumEspresso) {
 			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
 					+ " \n celdm(3) = " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
 			ibravQ = "4";
@@ -234,7 +233,7 @@ function figureOutSpaceGroup() {
 		break;
 	case ((interNumber > 194) && (interNumber <= 230)): // Cubic lattices
 		stringCellParam = roundNumber(_fileData.cell.a);
-		if (!flagCrystal && quantumEspresso) {
+		if (quantumEspresso) {
 			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a);
 			// alert("I am here");
 			ibravQ = "1";
@@ -260,7 +259,7 @@ function figureOutSpaceGroup() {
 //			+ roundNumber(_fileData.cell.c) + ' ' + roundNumber(_fileData.cell.alpha) + ' '
 //			+ roundNumber(_fileData.cell.beta) + ' ' + roundNumber(_fileData.cell.gamma);
 	//	alert(stringCellparamgulp)
-	if (!flagGulp) {
+	if (doReload) {
 		reload("primitive");
 		restoreStateAndOrientation_a();
 	}

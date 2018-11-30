@@ -288,19 +288,6 @@ function createMenuCell(i) {
 
       		
 ///js// Js/_m_file.js /////
-var flagCif = false; 
-var flagCrystal = false; 
-var flagGromos = false;
-var flagGulp = false;
-var flagOutcar = false;
-var flagGaussian = false;
-var flagQuantumEspresso = false;
-var flagSiesta = false;
-var flagDmol = false;
-var flagMolden = false;
-var flagCastep = false;
-var quantumEspresso = false;
-
 
 var sampleOptionArr = ["Load a Sample File", 
 	"MgO slab", 
@@ -490,14 +477,16 @@ function file_loadedCallback(filePath) {
 			counterMD 	: 0,
 			fMinim 		: null,
 			frameSelection : null,
-			frameNum 	: null,
-			frameValue 	: null,
-			haveGraphOptimize : false
+			frameNum       : null,
+			frameValue 	   : null,
+			haveGraphOptimize  : false,
+			exportModelOne        : false,
+			exportFractionalCoord : false
 	};
 	
 	counterFreq = 0;
 	_fileData.info = extractInfoJmol("auxiliaryInfo.models");
-	setFlags(_fileData.fileType);
+	setFlags();
 	setFileName();
 	getUnitcell(1);
 	runJmolScriptWait('unitcell on');
@@ -528,110 +517,97 @@ function cleanAndReloadForm() {
 resetLoadFlags = function(isCrystal) {
 	if (isCrystal)
 		_fileData.cell.typeSystem = "crystal";
-	flagCrystal = 
-	flagGromos = 
-	flagGulp = 
-	flagOutcar = 
-	flagGaussian = 
-	flagQuantumEspresso = 
-	flagCif = 
-	flagSiesta = 
-	flagDmol = 
-	flagMolden =
-	flagCastep = false;
 }
 
-setFlags = function(type) {
+setFlags = function() {
 	// BH TODO: missing xmlvasp?
-	type = type.replace('load', '').toLowerCase();
-	switch (type) {
+	switch (_fileData.fileType) {
 	default:
 	case "xyz":
 		break;
 	case "shelx":
-	case "shel":
 		resetLoadFlags(true); // BH 2018 added -- Q: Why no clearing of flags?
-		flagCif = true;
+		_fileData.exportModelOne = true;
 		break;
 	case "crystal":
 		resetLoadFlags();
-		flagCrystal = true;
+		_fileData.plotEnergyType = "crystal";
+		_fileData.plotEnergyForces = true;
 		break;
 	case "cube":
 		break;
 	case "aims":
 	case "aimsfhi":
-		resetLoadFlags(true);
-		flagCif = true;
-		break;
 	case "castep":
 		resetLoadFlags(true);
-		flagCif = true;
+		_fileData.exportModelOne = true;
 		break;
 	case "vasp":
 		resetLoadFlags(true);
+		_fileData.plotEnergyType = "vasp";
+		_fileData.exportNoSymmetry = true;
 		break;
 	case "vaspoutcar":
 		resetLoadFlags(true);
-		flagOutcar = true;
+		_fileData.plotEnergyType = "outcar";
+		_fileData.exportNoSymmetry = true;		
 		break;
 	case "dmol":
 		resetLoadFlags();
-		flagDmol = true;
+		_fileData.plotEnergyType = "dmol";
 		break;
 	case "espresso":
 	case "quantum":
 		resetLoadFlags(true);
-		flagQuantumEspresso = true;
+		_fileData.plotEnergyType = "qespresso";
 		break;
 	case "gulp":
 		resetLoadFlags();
-		flagGulp = true;
+		_fileData.plotEnergyType = "gulp";
 		break;
 	case "material":
 		resetLoadFlags(); // BH Added
 		break;
 	case "wien":
 		resetLoadFlags(true); // BH Added
-		flagCif = true;
+		_fileData.exportModelOne = true;
 		break;
 	case "cif":
 		resetLoadFlags(true); // BH Added
-		flagCif = true;
+		_fileData.exportModelOne = true;
 		break;
 	case "siesta":
 		resetLoadFlags(true); // BH Added
-		flagSiesta = true;
+		_fileData.exportNoSymmetry = true;
 		break;
 	case "pdb":
 		resetLoadFlags(true); // BH Added
-		flagCif = true;
+		_fileData.exportModelOne = true;
 		break;
 	case "gromacs":
 		resetLoadFlags(); // BH Added
-		flagGromos = true;
 		break;
 	case "gaussian":
 	case "gauss":
 		resetLoadFlags(); // BH Added
-		flagGaussian = true;
 		_fileData.cell.typeSystem = "molecule";
+		_fileData.plotEnergyType = "gaussian";
 		break;
 	case "molden":
 		// WE USE SAME SETTINGS AS VASP
 		// IT WORKS
 		resetLoadFlags(); // BH Added
 		_fileData.cell.typeSystem = "molecule";
-		flagOutcar = true;
+		_fileData.plotEnergyType = "outcar";
+		_fileData.exportNoSymmetry = true;
 		break;
 	case "crysden":
 		resetLoadFlags(true); // BH Added
-		flagCif = true;
+		_fileData.exportModelOne = true;
 		break;
 	case "castep":
 	case "outcastep":
 		resetLoadFlags(true); // BH Added
-		flagCastep = true;
 		break;
 	}
 }
@@ -652,12 +628,10 @@ function onChangeSave(save) {
 		saveFractionalCoordinate();
 		break;
 	case "saveCRYSTAL":
-		//flagCrystal = true;
 		_fileData._export = {};
 		exportCRYSTAL();
 		break;
 	case "saveVASP":
-		//flagCrystal = false;
 		_fileData._export = {};
 		exportVASP();
 		break;
@@ -669,14 +643,10 @@ function onChangeSave(save) {
 		exportCASTEP();
 		break;
 	case "saveQuantum":
-		quantumEspresso = true;
-		//flagCrystal = false;
 		_fileData._export = {};
 		exportQuantum();
 		break;
 	case "saveGULP":
-		flagGulp = true;
-		flagCrystal = false;
 		_fileData._export = {};
 		exportGULP();
 		break;
@@ -822,9 +792,7 @@ function saveFractionalCoordinate() {
 function getUnitcell(i) {
 	// document.cellGroup.reset();
 	_fileData.cell.typeSystem = "";
-	i || (i = 1);
-	var StringUnitcell = "auxiliaryinfo.models[" + i + "].infoUnitCell";
-
+	var StringUnitcell = "auxiliaryinfo.models[" + (i || 1) + "].infoUnitCell";
 	var cellparam = extractInfoJmol(StringUnitcell);
 
 	_fileData.cell.a = roundNumber(cellparam[0]);
@@ -904,7 +872,7 @@ function setUnitCell() {
 	if (_fileData.frameSelection == null || _fileData.frameSelection == "" || _fileData.frameValue == ""
 		|| _fileData.frameValue == null) {
 		_fileData.frameSelection = "{1.1}";
-		_fileData.frameNum = 1.1;
+		_fileData.frameNum = "1.1";
 		getUnitcell("1");
 	}
 }
@@ -916,11 +884,8 @@ function setUnitCell() {
 
 function setCellMeasure(value) {
 	_fileData.cell.typeSystem = "";
-	var StringUnitcell = "auxiliaryinfo.models[" + i + "].infoUnitCell";
-
-	if (i == null || i == "")
-		StringUnitcell = " auxiliaryInfo.models[1].infoUnitCell ";
-
+	var i = _fileData.frameValue;
+	var StringUnitcell = "auxiliaryinfo.models[" + (i || 1) + "].infoUnitCell";
 	var cellparam = extractInfoJmol(StringUnitcell);
 	_fileData.cell.a = cellparam[0];
 	_fileData.cell.b = cellparam[1];
@@ -930,15 +895,15 @@ function setCellMeasure(value) {
 		setValue("cell.b", roundNumber(_fileData.cell.b));
 		setValue("cell.c", roundNumber(_fileData.cell.c));
 	} else {
-		_fileData.cell.a = _fileData.cell.a * 1.889725989;
-		_fileData.cell.b = _fileData.cell.b * 1.889725989;
-		_fileData.cell.c = _fileData.cell.c * 1.889725989;
+		_fileData.cell.a *= 1.889725989;
+		_fileData.cell.b *= 1.889725989;
+		_fileData.cell.c *= 1.889725989;
 		setValue("cell.a", roundNumber(_fileData.cell.a));
 		setValue("cell.b", roundNumber(_fileData.cell.b));
 		setValue("cell.c", roundNumber(_fileData.cell.c));
 	}
-
 }
+
 function setCellDotted() {
 	var cella = checkBoxX('cellDott');
 	if (cella == "on") {
@@ -2693,6 +2658,115 @@ function enterOptimize() {
 function exitOptimize() {
 }
 
+function doConvertPlotUnits(unitEnergy) {
+	switch (unitEnergy) {
+	case "h": // Hartree
+		switch (_fileData.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtohartree, "Hartree");
+			break;
+		case ENERGY_EV:
+			convertGeomData(fromevToHartree, "Hartree");
+			break;
+		case ENERGY_HARTREE:
+			convertGeomData(fromHartreetoHartree, "Hartree");
+			break;
+		}
+		break;
+	case "e": // eV
+		switch (_fileData.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtoEV, "eV");
+			break;
+		case ENERGY_EV:
+			convertGeomData(fromevToev, "eV");
+			break;
+		case ENERGY_HARTREE:
+			convertGeomData(fromHartreetoEv, "eV");
+			break;
+		}
+		break;
+
+	case "r": // Rydberg
+		switch (_fileData.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtorydberg, "Ry");
+			break;
+		case ENERGY_EV:
+			convertGeomData(fromevTorydberg, "Ry");
+			break;
+		case ENERGY_HARTREE:
+			convertGeomData(fromHartreetoRydberg, "Ry");
+			break;
+		}
+		break;
+
+	case "kj": // Kj/mol
+			switch (_fileData.energyUnits) {
+			case ENERGY_RYDBERG:
+				convertGeomData(fromRydbergtoKj, "kJ/mol");
+				break;
+			case ENERGY_EV:
+				convertGeomData(fromevTokJ, "kJ/mol");
+				break;
+			case ENERGY_HARTREE:
+				convertGeomData(fromHartreetoKj, "kJ/mol");
+				break;
+			}
+		break;
+
+	case "kc": // Kcal*mol
+		switch (_fileData.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtokcalmol, "kcal/mol");
+			break;
+		case ENERGY_EV:
+			convertGeomData(fromevTokcalmol, "kcal/mol");
+			break;
+		case ENERGY_HARTREE:
+			convertGeomData(fromHartreetokcalmol, "kcal/mol");
+			break;
+		}
+		break;
+	}
+}
+
+function convertGeomData(f, toUnits) {
+	
+	var geom = getbyID('geom');
+	if (geom != null)
+		cleanList('geom');
+
+	toUnits = " " + toUnits;
+	
+	var u = _fileData.unitGeomEnergy;
+	switch (_fileData.energyUnits) {
+	case ENERGY_RYDBERG:
+		u = "R";
+		break;
+	case ENERGY_EV:
+		u = "e";
+		break;
+	case ENERGY_HARTREE:
+		u = "H";
+		break;
+//	case ENERGY_KJ_PER_MOLE:
+//		u = "k";
+//		break;
+	}
+
+	// The required value is the end of the string Energy = -123.456 Hartree.
+	
+	for (var i = (_fileData.hasInputModel ? 1 : 0); i < geomData.length; i++) {
+		var data = _fileInfo.geomData[i];
+		var val = f(data.substring(data.indexOf('=') + 1, 
+				data.indexOf(u) - 1));
+		addOption(geom, i + " E = " + val + toUnits, i + 1);
+	}
+
+}
+
+
 //function saveFrame() {
 // TODO: Not something we can do in JavaScript -- too many files, unless we zip them up (which we can do)
 //	messageMsg("This is to save frame by frame your geometry optimization.");
@@ -2706,11 +2780,9 @@ function createOptimizeGrp() {
 			"set animationFps 10", "set animationFps 15",
 			"set animationFps 20", "set animationFps 25",
 			"set animationFps 30", "set animationFps 35");
-	var vecAnimText = new Array("select", "5", "10", "15", "20", "25", "30",
-	"35");
+	var vecAnimText = new Array("select", "5", "10", "15", "20", "25", "30", "35");
 	var vecUnitEnergyVal = new Array("h", "e", "r", "kj", "kc");
-	var vecUnitEnergyText = new Array("Hartree", "eV", "Rydberg", "kJ*mol-1",
-	"kcal*mol-1");
+	var vecUnitEnergyText = new Array("Hartree", "eV", "Rydberg", "kJ*mol-1", "kcal*mol-1");
 
 	var graphdiv = "<table><tr><td>&#916E (kJ/mol)<br>"
 		  + createDiv("plotarea", "width:170px;height:180px;background-color:#EFEFEF;", "")
@@ -2749,7 +2821,7 @@ function createOptimizeGrp() {
 //	strGeom += createCheck('saveFrames', ' save video frames', 'saveFrame()',
 //			0, 0, "");
 	strGeom += "<br> Energy unit measure: ";
-	strGeom += createSelect("unitMeasureEnergy", "convertPlot(value)", 0, 1,
+	strGeom += createSelect("unitMeasureEnergy", "doConvertPlotUnits(value)", 0, 1,
 			vecUnitEnergyVal, vecUnitEnergyText);
 	strGeom += "</td></tr><tr><td>";
 	strGeom += "<select id='geom' name='models' onchange='showFrame(value)'  class='selectmodels' size='10'></select>";
@@ -4577,12 +4649,6 @@ eleSymbMass[99] = 252.00;
 
 //////////////////////////////////////VALUE conversion AND ROUNDOFF
 
-_conversion = {
-	radiant 		: Math.PI / 180,
-	finalGeomUnit 	: "",
-	unitGeomEnergy 	: ""
-};
-
 function substringEnergyToFloat(value) {
 	if (value != null) {
 		var grab = parseFloat(
@@ -4676,17 +4742,25 @@ function substringIntFreqToFloat(value) {
 	return grab;
 }
 
-function cosRadiant(value) {
+function cosRounded(value) {
 	if (value != null) {
 		var angle = parseFloat(value).toPrecision(7);
-		angle = Math.cos(value * _conversion.radiant);
+		angle = cos(value * Math.PI/180);
 		angle = Math.round(angle * 10000000) / 10000000;
 	}
 	return angle;
 }
 
-roundNumber = function(value) { //BH 2018 was 10000000
-	return Math.round(value * 10000) / 10000;
+function cosDeg(angle) {
+	return Math.cos(angle * Math.PI/180);
+}
+
+function sinDeg(angle) {
+	return Math.sin(angle * Math.PI/180);
+}
+
+roundNumber = function(v) { //BH 2018 was 10000000
+	return Math.round(v * 10000) / 10000;
 }
 
 function roundoff(value, precision) {
@@ -4709,205 +4783,6 @@ function roundoff(value, precision) {
 
 
 ////////////////////////////////ENERGY CONV
-
-function convertPlot(value) {
-	var unitEnergy = value;
-
-	// ////var vecUnitEnergyVal = new Array ("h", "e", "r", "kj", "kc");
-	setconversionParam();
-	switch (unitEnergy) {
-	case "h": // Hartree
-		_conversion.finalGeomUnit = " Hartree";
-		switch (_fileData.energyUnits) {
-		case ENERGY_RYDBERG:
-			convertGeomData(fromRydbergtohartree);
-			break;
-		case ENERGY_EV:
-			convertGeomData(fromevToHartree);
-			break;
-		case ENERGY_HARTREE:
-			convertGeomData(fromHartreetoHartree);
-			break;
-		}
-		break;
-	case "e": // eV
-		_conversion.finalGeomUnit = " eV";
-		switch (_fileData.energyUnits) {
-		case ENERGY_RYDBERG:
-			convertGeomData(fromRydbergtoEV);
-			break;
-		case ENERGY_EV:
-			convertGeomData(fromevToev);
-			break;
-		case ENERGY_HARTREE:
-			convertGeomData(fromHartreetoEv);
-			break;
-		}
-		break;
-
-	case "r": // Rydberg
-		_conversiomn.finalGeomUnit = " Ry";
-		switch (_fileData.energyUnits) {
-		case ENERGY_RYDBERG:
-			convertGeomData(fromRydbergtorydberg);
-			break;
-		case ENERGY_EV:
-			convertGeomData(fromevTorydberg);
-			break;
-		case ENERGY_HARTREE:
-			convertGeomData(fromHartreetoRydberg);
-			break;
-		}
-		break;
-
-	case "kj": // Kj/mol
-		_conversion.finalGeomUnit = " kJ/mol"
-			switch (_fileData.energyUnits) {
-			case ENERGY_RYDBERG:
-				convertGeomData(fromRydbergtoKj);
-				break;
-			case ENERGY_EV:
-				convertGeomData(fromevTokJ);
-				break;
-			case ENERGY_HARTREE:
-				convertGeomData(fromHartreetoKj);
-				break;
-			}
-		break;
-
-	case "kc": // Kcal*mol
-		_conversion.finalGeomUnit = " kcal/mol"			
-		switch (_fileData.energyUnits) {
-		case ENERGY_RYDBERG:
-			convertGeomData(fromRydbergtokcalmol);
-			break;
-		case ENERGY_EV:
-			convertGeomData(fromevTokcalmol);
-			break;
-		case ENERGY_HARTREE:
-			convertGeomData(fromHartreetokcalmol);
-			break;
-		}
-		break;
-	}
-}
-
-function setconversionParam() {
-	_conversion.unitGeomEnergy = _fileData.unitGeomEnergy;
-	switch (_fileData.energyUnits) {
-	case ENERGY_RYDBERG:
-		_conversion.unitGeomEnergy = "R";
-		break;
-	case ENERGY_EV:
-		_conversion.unitGeomEnergy = "e";
-		break;
-	case ENERGY_HARTREE:
-		_conversion.unitGeomEnergy = "H";
-		break;
-// TODO: why 'k'
-//	case ENERGY_KJ_PER_MOLE:
-//		_conversion.unitGeomEnergy = "k";
-	}
-}
-
-
-//function convertPlot(value) {
-//	var unitEnergy = value;
-//
-//	// ////var vecUnitEnergyVal = new Array ("h", "e", "r", "kj", "kc");
-//	setconversionParam();
-//	switch (unitEnergy) {
-//
-//	case "h": // Hartree
-//		_conversion.finalGeomUnit = " Hartree";
-//		if (flagQuantumEspresso) {
-//			convertGeomData(fromRydbergtohartree);
-//		} else if (!flagCrystal || flagOutcar || flagGulp) {
-//			convertGeomData(fromevToHartree);
-//		} else if (flagCrystal || flagDmol) {
-//			convertGeomData(fromHartreetoHartree);
-//		}
-//		break;
-//	case "e": // eV
-//		_conversion.finalGeomUnit = " eV";
-//		if (flagCrystal || flagDmol) {
-//			convertGeomData(fromHartreetoEv);
-//		} else if (flagQuantumEspresso) {
-//			convertGeomData(fromRydbergtoEv);
-//		} else if (!flagCrystal || flagOutcar || flagGulp) {
-//			convertGeomData(fromevtoev);
-//		}
-//
-//		break;
-//
-//	case "r": // Rydberg
-//		_conversion.finalGeomUnit = " Ry";
-//		if (flagCrystal || flagDmol) {
-//			convertGeomData(fromHartreetoRydberg);
-//		} else if (!flagCrystal || flagOutcar || flagGulp) {
-//			convertGeomData(fromevTorydberg);
-//		} else if (flagQuantumEspresso) {
-//			convertGeomData(fromRydbergTorydberg);
-//		}
-//		break;
-//
-//	case "kj": // Kj/mol
-//		_conversion.finalGeomUnit = " kJ/mol"
-//
-//			if (flagCrystal || flagDmol) {
-//				convertGeomData(fromHartreetokJ);
-//			} else if (!flagCrystal || flagOutcar || flagGulp) {
-//				convertGeomData(fromevTokJ);
-//			} else if (flagQuantumEspresso) {
-//				convertGeomData(fromRydbergToKj);
-//			}
-//		break;
-//
-//	case "kc": // Kcal*mol
-//		_conversion.finalGeomUnit = " kcal/mol"
-//			
-//			if (flagCrystal || flagDmol) {
-//				convertGeomData(fromHartreetokcalmol);
-//			} else if (!flagCrystal || flagOutcar || flagGulp) {
-//				convertGeomData(fromevtokcalmol);
-//			} else if (flagQuantumEspresso) {
-//				convertGeomData(fromRytokcalmol);
-//			}
-//		break;
-//	}
-//}
-//
-//function setconversionParam() {
-//	if (flagCrystal || flagDmol) {
-//		_conversion.unitGeomEnergy = "H"; // Hartree
-//	} else if ((!flagCrystal && !flagQuantumEspresso) || (flagOutcar && !flagQuantumEspresso)) {
-//		_conversion.unitGeomEnergy = "e"; // VASP
-//	} else if (flagGulp) {
-//		_conversion.unitGeomEnergy = "k";
-//	} else if (flagQuantumEspresso || !flagOutcar) {
-//		_conversion.unitGeomEnergy = "R";
-//	}
-//}
-
-
-
-function convertGeomData(f) {
-	// The required value is the end of the string Energy = -123.456 Hartree.
-	var geom = getbyID('geom');
-	if (geom != null)
-		cleanList('geom');
-
-	var val = 0;
-
-	var n = (_fileData.hasInputModel ? 1 : 0);
-	for (var i = n; i < geomData.length; i++) {
-		var data = _fileInfo.geomData[i];
-		val = f(data.substring(data.indexOf('=') + 1, 
-				data.indexOf(_conversion.unitGeomEnergy) - 1));
-		addOption(geom, i + " E = " + val + _conversion.finalGeomUnit, i + 1);
-	}
-
-}
 
 ///Hartree
 function fromHartreetoEv(value) { // 1 Hartree = 27.211396132eV
@@ -5099,6 +4974,17 @@ debugShowHistory = function() {
       		
 ///js// Js/export.js /////
 
+function scaleModelCoordinates(xyz, op1, f1, op2, f2, etc) {
+	// e.g. {1.1}.xyz.all.mul(2);
+	var atomArray = _fileData.frameSelection + '.' + xyz;
+	var s = "";
+	for (int i = 1; i < arguments.length;) {
+		s += atomArray + " = " + atomArray + ".all." + arguments[i++] + "(" + arguments[i++] + ");";
+	}
+	runJmolScriptWait(s);
+	
+}
+
 function setVacuum() {
 	var newCell_c;
 	var vacuum;
@@ -5112,12 +4998,10 @@ function setVacuum() {
 		vacuum = parseFloat(vacuum);
 		newCell_c = (zMaxCoord * 2) + vacuum;
 		var factor = roundNumber(zMaxCoord + vacuum);
-		if (_fileData._export.fractionalCoord) { // from VASP only?
-			runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; ( i.z +'
-					+ factor + ') /' + newcell + ')');
+		if (_fileData._exportFractionalCoord) { // from VASP only?
+			scaleModelCoordinates("z", "add", factor, "div", newcell_c);
 		} else {
-			runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z +'
-					+ factor + ')');
+			scaleModelCoordinates("z", "add", factor);
 		}
 		fromfractionaltoCartesian(null, null, newCell_c, null, 90, 90);
 		break;
@@ -5130,10 +5014,8 @@ function setVacuum() {
 		vacuum = parseFloat(vacuum);
 		newCell_c = (zMaxCoord * 2) + vacuum;
 		var factor = roundNumber(zMaxCoord + vacuum);
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z +' + factor
-				+ ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y +' + factor
-				+ ')');
+		scaleModelCoordinates("z", "add", factor);
+		scaleModelCoordinates("y", "add", factor);
 		fromfractionaltoCartesian(null, newCell_c, newCell_c, 90, 90, 90);
 		break;
 	case "molecule":
@@ -5145,12 +5027,7 @@ function setVacuum() {
 		vacuum = parseFloat(vacuum);
 		newCell_c = (zMaxCoord * 2) + vacuum;
 		var factor = roundNumber(zMaxCoord + vacuum);
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z +' + factor
-				+ ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y +' + factor
-				+ ')');
-		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x +' + factor
-				+ ')');
+		scaleModelCoordinates("xyz", "add", factor);
 		fromfractionaltoCartesian(newCell_c, newCell_c, newCell_c, 90, 90, 90);
 		break;
 
@@ -5178,20 +5055,17 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 	// formula repeated from
 	// http://en.wikipedia.org/wiki/Fractional_coordinates
 	var v = Math.sqrt(1
-			- (Math.cos(_fileData.cell.alpha * _conversion.radiant) * Math.cos(_fileData.cell.alpha * _conversion.radiant))
-			- (Math.cos(_fileData.cell.beta * _conversion.radiant) * Math.cos(_fileData.cell.beta * _conversion.radiant))
-			- (Math.cos(_fileData.cell.gamma * _conversion.radiant) * Math.cos(_fileData.cell.gamma * _conversion.radiant))
-			+ 2
-			* (Math.cos(_fileData.cell.alpha * _conversion.radiant) * Math.cos(_fileData.cell.beta * _conversion.radiant) * Math
-					.cos(_fileData.cell.gamma * _conversion.radiant)));
-	xx = _fileData.cell.a * Math.sin(_fileData.cell.beta * _conversion.radiant);
+			- (cosDeg(_fileData.cell.alpha) * cosDeg(_fileData.cell.alpha))
+			- (cosDeg(_fileData.cell.beta) * cosDeg(_fileData.cell.beta))
+			- (cosDeg(_fileData.cell.gamma) * cosDeg(_fileData.cell.gamma))
+			+ 2	* (cosDeg(_fileData.cell.alpha) * cosDeg(_fileData.cell.beta) * cosDeg(_fileData.cell.gamma)));
+	xx = _fileData.cell.a * sinDeg(_fileData.cell.beta);
 	xy = parseFloat(0.000);
-	xz = _fileData.cell.a * Math.cos(_fileData.cell.beta * _conversion.radiant);
+	xz = _fileData.cell.a * cosDeg(_fileData.cell.beta);
 	yx = _fileData.cell.b
-	* (((Math.cos(_fileData.cell.gamma * _conversion.radiant)) - ((Math.cos(_fileData.cell.beta * _conversion.radiant)) * (Math
-			.cos(_fileData.cell.alpha * _conversion.radiant)))) / Math.sin(_fileData.cell.beta * _conversion.radiant));
-	yy = _fileData.cell.b * (v / Math.sin(_fileData.cell.beta * _conversion.radiant));
-	yz = _fileData.cell.b * Math.cos(_fileData.cell.alpha * _conversion.radiant);
+	* (((cosDeg(_fileData.cell.gamma)) - ((cosDeg(_fileData.cell.beta)) * (cosDeg(_fileData.cell.alpha)))) / sinDeg(_fileData.cell.beta));
+	yy = _fileData.cell.b * (v / sinDeg(_fileData.cell.beta));
+	yz = _fileData.cell.b * cosDeg(_fileData.cell.alpha);
 	zx = parseFloat(0.000);
 	zy = parseFloat(0.000);
 	zz = _fileData.cell.c;
@@ -5205,20 +5079,20 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 //var prevFrame = null;
 	
 
-function figureOutSpaceGroup() {
+function figureOutSpaceGroup(doReload, isConv, quantumEspresso) {
 	var stringCellParam;
 	var cellDimString = null;
 	var ibravQ = "";
 	saveStateAndOrientation_a();
 	//prevframeSelection = _fileData.frameSelection;
-	if (_fileData.frameValue == null || _fileData.frameValue == "" || flagCif)
-		frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
+	if (_fileData.frameValue == null || _fileData.frameValue == "" || _fileData.exportModelOne)
+		_fileData.frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
 	var prevFrame = _fileData.frameValue;
 	var magnetic = confirm('It\'s the primitive cell ?')
 	// crystalPrev = confirm('Does the structure come from a previous CRYSTAL
 	// calculation?')
 	reload(null, 
-			flagCrystal ? "conv" : null, 
+			isConv ? "conv" : null, 
 			magnetic ? "delete not cell=555;" : null
 	);
 	var s = ""
@@ -5245,20 +5119,20 @@ function figureOutSpaceGroup() {
 		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_fileData.cell.a)
 				+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
 				+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
-				+ " \n celdm(4) =  " + cosRadiant(_fileData.cell.alpha) + " \n celdm(5) =  "
-				+ (cosRadiant(_fileData.cell.beta)) + " \n celdm(6) =  "
-				+ (cosRadiant(_fileData.cell.gamma)) + " \n\n";
+				+ " \n celdm(4) =  " + cosRounded(_fileData.cell.alpha) + " \n celdm(5) =  "
+				+ (cosRounded(_fileData.cell.beta)) + " \n celdm(6) =  "
+				+ (cosRounded(_fileData.cell.gamma)) + " \n\n";
 		ibravQ = "14";
 		break;
 
 	case ((interNumber > 2) && (interNumber <= 15)): // Monoclinic lattices
 		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
 				+ roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha);
-		if (!flagCrystal && quantumEspresso) {
+		if (quantumEspresso) {
 			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_fileData.cell.a)
 					+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
 					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
-					+ " \n celdm(4) =  " + (cosRadiant(_fileData.cell.alpha))
+					+ " \n celdm(4) =  " + (cosRounded(_fileData.cell.alpha))
 					+ " \n\n";
 			ibravQ = "12"; // Monoclinic base centered
 
@@ -5271,7 +5145,7 @@ function figureOutSpaceGroup() {
 	case ((interNumber > 15) && (interNumber <= 74)): // Orthorhombic lattices
 		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
 				+ roundNumber(_fileData.cell.c);
-		if (!flagCrystal && quantumEspresso) {
+		if (quantumEspresso) {
 			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
 					+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
 					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
@@ -5295,7 +5169,7 @@ function figureOutSpaceGroup() {
 	case ((interNumber > 74) && (interNumber <= 142)): // Tetragonal lattices
 
 		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
-		if (!flagCrystal && quantumEspresso) {
+		if (quantumEspresso) {
 			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
 					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
 			ibravQ = "6";
@@ -5309,24 +5183,24 @@ function figureOutSpaceGroup() {
 		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.alpha) + ", "
 				+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_fileData.cell.gamma);
 		cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-				+ " \n celdm(4) =  " + (cosRadiant(_fileData.cell.alpha))
-				+ " \n celdm(5) = " + (cosRadiant(_fileData.cell.beta))
-				+ " \n celdm(6) =  " + (cosRadiant(_fileData.cell.gamma));
+				+ " \n celdm(4) =  " + (cosRounded(_fileData.cell.alpha))
+				+ " \n celdm(5) = " + (cosRounded(_fileData.cell.beta))
+				+ " \n celdm(6) =  " + (cosRounded(_fileData.cell.gamma));
 		ibravQ = "5";
 		var question = confirm("Is a romboheadral lattice?")
 		if (question) {
 			stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
 			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-					+ " \n celdm(4) =  " + (cosRadiant(_fileData.cell.alpha))
-					+ " \n celdm(5) = " + (cosRadiant(_fileData.cell.beta))
-					+ " \n celdm(6) =  " + (cosRadiant(_fileData.cell.gamma))
+					+ " \n celdm(4) =  " + (cosRounded(_fileData.cell.alpha))
+					+ " \n celdm(5) = " + (cosRounded(_fileData.cell.beta))
+					+ " \n celdm(6) =  " + (cosRounded(_fileData.cell.gamma))
 					+ " \n\n";
 			ibravQ = "4";
 		}
 		break;
 	case ((interNumber > 167) && (interNumber <= 194)): // Hexagonal lattices
 		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
-		if (!flagCrystal && quantumEspresso) {
+		if (quantumEspresso) {
 			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
 					+ " \n celdm(3) = " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
 			ibravQ = "4";
@@ -5334,7 +5208,7 @@ function figureOutSpaceGroup() {
 		break;
 	case ((interNumber > 194) && (interNumber <= 230)): // Cubic lattices
 		stringCellParam = roundNumber(_fileData.cell.a);
-		if (!flagCrystal && quantumEspresso) {
+		if (quantumEspresso) {
 			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a);
 			// alert("I am here");
 			ibravQ = "1";
@@ -5360,7 +5234,7 @@ function figureOutSpaceGroup() {
 //			+ roundNumber(_fileData.cell.c) + ' ' + roundNumber(_fileData.cell.alpha) + ' '
 //			+ roundNumber(_fileData.cell.beta) + ' ' + roundNumber(_fileData.cell.gamma);
 	//	alert(stringCellparamgulp)
-	if (!flagGulp) {
+	if (doReload) {
 		reload("primitive");
 		restoreStateAndOrientation_a();
 	}
@@ -6256,27 +6130,36 @@ function plotEnergies(){
 	var stringa = _fileData.info[3].name;
 	var f = null;
 	var pattern = null;
-	if(flagCrystal){
+
+	switch (_fileData.plotEnergyType) {
+	case "crystal":
 		if(stringa.search(/Energy/i) < 0)
 			return false;
 		f = substringEnergyToFloat;
-	} else if (flagDmol){
+		break;
+	case "dmol":
 		if(stringa.search(/E/i) < 0) 
 			return false;
 		f = substringEnergyToFloat;
-	} else if (flagOutcar){
+		break;
+	case "outcar":
 		pattern = new RegExp("G =", "i");
 		f = substringEnergyVaspToFloat;
-	}else if (flagQuantumEspresso) { 
+		break;
+	case "qespresso":
 		pattern = new RegExp("E =", "i");
 		f = substringEnergyQuantumToFloat;
-	} else if (flagGulp) { 
+		break;
+	case "gulp":
 		pattern = new RegExp("E =", "i");
 		f = substringEnergyGulpToFloat;
-	} else if (flagGaussian){
+		break;
+	case "gaussian":
 		// special case
-	} else {
+		break;
+	default:
 		f = substringEnergyVaspToFloat;
+		break;
 	}
 	
 	if (f) {
@@ -6338,7 +6221,7 @@ function plotEnergies(){
 	//function plotGradient(){
 
 
-	if(!flagCrystal)
+	if(!_fileData.plotEnergyForces)
 		return;
 	var data = [];
 	var A = [];
@@ -6832,13 +6715,17 @@ function newAppletWindowFeed() {
 version = "3.0.0"; // BH 2018
 
 
-// from _m_file.js
+// _m_file.js
 
 _fileData = {};
 
 _fileIsReload = false;
 
-// from plotgraph.js
+// pick.js
+
+_pick = {};
+
+// plotgraph.js
 
 _plot = {};
 
@@ -6939,22 +6826,16 @@ function exportCASTEP() {
 	setVacuum();
 	switch (_fileData.cell.typeSystem) {
 	case "slab":
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
+		scaleModelCoordinates("z", "div", roundNumber(_fileData.cell.c));
 		break;
 	case "polymer":
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/'
-				+ roundNumber(_fileData.cell.b) + ')');
+		scaleModelCoordinates("z", "div", roundNumber(_fileData.cell.c));
+		scaleModelCoordinates("y", "div", roundNumber(_fileData.cell.b));
 		break;
 	case "molecule":
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/'
-				+ roundNumber(_fileData.cell.b) + ')');
-		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/'
-				+ roundNumber(_fileData.cell.a) + ')');
+		scaleModelCoordinates("z", "div", roundNumber(_fileData.cell.c));
+		scaleModelCoordinates("y", "div", roundNumber(_fileData.cell.b));
+		scaleModelCoordinates("x", "div", roundNumber(_fileData.cell.a));
 		break;
 	}
 
@@ -7061,10 +6942,6 @@ function exportCRYSTAL() {
 
 	setUnitCell();
 
-	if (_fileData.cell.typeSystem == "molecule")
-		fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[xyz]")';
-	runJmolScriptWait("print " + fractionalCRYSTAL)
-
 	var  numAtomCRYSTAL = _fileData.frameSelection + ".length";
 	var fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[fxyz]")';
 
@@ -7074,7 +6951,7 @@ function exportCRYSTAL() {
 		keywordCRYSTAL = "'0 0 0'";
 		symmetryCRYSTAL = "'1'";
 
-		if (!flagSiesta && !flagOutcar && !flagCryVasp)
+		if (!_fileData.exportNoSymmetry)
 			flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			script = "var cellp = ["
@@ -7115,7 +6992,7 @@ function exportCRYSTAL() {
 			warningMsg("This procedure is not fully tested.");
 			
 			// BH: THIS METHOD WILL RELOAD THE FILE!
-			figureOutSpaceGroup();
+			figureOutSpaceGroup(true, true);
 			var endCRYSTAL = "TEST', 'END";
 			var script = "var cellp = [" + stringCellParam + "];"
 					+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
@@ -7190,22 +7067,6 @@ function exportCRYSTAL() {
 
 ////////////////////////END SAVE INPUT
 
-/////////////////////////
-
-//// this method was called when the Geometry Optimize and Spectra tabs
-//// were clicked via a complex sequence of callbacks
-//// but that is not done now, because all this should be done from a loadStructCallback.
-//function reloadFastModels() {
-//	setDefaultJmolSettings();
-//	if (flagCryVasp) {
-//		getUnitcell("1");
-//		runJmolScriptWait("echo");
-//		setTitleEcho();
-//		setGeomAndFreqData();
-//		enableFreqOpts();
-//		//getSymInfo();
-//	}
-//}
 
       		
 ///js// Js/adapters/dmol.js /////
@@ -7361,25 +7222,22 @@ function exportGromacs() {
 
 	setUnitCell();
 	
-	runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/10);'
-		+ _fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/10);'
-		+ _fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/10);');
+	scaleModelCoordinates("xyz", "div", 10);
 	
 	var numatomsGrom = " " + _fileData.frameSelection + ".length";
 	var coordinateGrom = _fileData.frameSelection
 			+ '.label("  %i%e %i %e %8.3[xyz] %8.4fy %8.4fz")';
-	var cellbox = +roundNumber(_fileData.cell.a) * (cosRadiant(_fileData.cell.alpha)) + ' '
-			+ roundNumber(_fileData.cell.b) * (cosRadiant(_fileData.cell.beta)) + ' '
-			+ roundNumber(_fileData.cell.c) * (cosRadiant(_fileData.cell.gamma));
+	var cellbox = +roundNumber(_fileData.cell.a) * (cosRounded(_fileData.cell.alpha)) + ' '
+			+ roundNumber(_fileData.cell.b) * (cosRounded(_fileData.cell.beta)) + ' '
+			+ roundNumber(_fileData.cell.c) * (cosRounded(_fileData.cell.gamma));
 	var coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
 			+ 'var coordGrom = ' + coordinateGrom + ';'
 			+ 'var cellGrom = \" \n\t' + cellbox + '\"; '
 			+ 'coordinate = [numatomGrom,coordGrom,cellGrom];';
 	runJmolScriptWait(coordinateGromacs);
-
-	runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z*10);'
-			+ _fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y*10);'
-			+ _fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x*10);');
+	
+	scaleModelCoordinates("xyz", "mul", 10);
+	
 	var finalInputGromacs = "var final = [titleg,coordinate];"
 			+ 'final = final.replace("\n\n","");' + 'WRITE VAR final "?.gro" ';
 	runJmolScriptWait(finalInputGromacs);
@@ -7464,7 +7322,7 @@ function exportGULP() {
 
 		if (flagsymmetryGulp) {
 			warningMsg("This procedure is not fully tested.");
-			figureOutSpaceGroup();
+			figureOutSpaceGroup(false, false);
 		} else {
 			stringCellparamgulp = roundNumber(_fileData.cell.a) + ' ' + roundNumber(_fileData.cell.b)
 					+ ' ' + roundNumber(_fileData.cell.c) + ' ' + roundNumber(_fileData.cell.alpha) + ' '
@@ -7772,12 +7630,9 @@ function prepareSystemblock() {
 	// /here goes the symmetry part
 
 	setUnitCell();
-	// celldim(1) = \' \'\,
 
-	// this returns the number of atom
+	var numberAtom = jmolEvaluate(_fileData.frameSelection + ".length");
 
-	atomCRYSTAL();
-	var numberAtom = jmolEvaluate(numAtomCRYSTAL);
 	var stringCutoff = null;
 	var stringCutoffrho = null;
 	var stringElec = null;
@@ -7794,7 +7649,77 @@ function prepareSystemblock() {
 	 * if(stringElec != ""){ stringElec = parseInt(stringElec); stringBand =
 	 * parseInt((stringElec / 2) + (stringElec / 2 * 0.20)); }
 	 */
-	symmetryQuantum();
+
+	setUnitCell();
+	
+	var cellDimString, ibravQ;	
+	switch (_fileData.cell.typeSystem) {
+	case "crystal":
+		var flagsymmetry = confirm("Do you want to introduce symmetry ?")
+		if (!flagsymmetry) {
+			cellDimString = "           celldm(1) = "
+				+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+				+ "  \n           celldm(2) =  "
+				+ roundNumber(_fileData.cell.b / _fileData.cell.a)
+				+ "  \n           celldm(3) =  "
+				+ roundNumber(_fileData.cell.c / _fileData.cell.a)
+				+ "  \n           celldm(4) =  "
+				+ (cosRounded(_fileData.cell.alpha))
+				+ "  \n           celldm(5) =  "
+				+ (cosRounded(_fileData.cell.beta))
+				+ "  \n           celldm(6) =  "
+				+ (cosRounded(_fileData.cell.gamma));
+			ibravQ = "14";
+		} else {
+			warningMsg("This procedure is not fully tested.");
+			// magnetic = confirm("Does this structure have magnetic properties?
+			// \n Cancel for NO.")
+			figureOutSpaceGroup(true, false, true);
+		}
+		break;
+	case "slab":
+		setVacuum();
+		scaleModelCoordinates("z", "div", _fileData.cell.c);
+		cellDimString = "            celldm(1) = "
+			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
+			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
+			+ "  \n            celldm(4) =  "
+			+ (cosRounded(_fileData.cell.alpha))
+			+ "  \n            celldm(5) =  " + (cosRounded(90))
+			+ "  \n            celldm(6) =  " + (cosRounded(90));
+		ibravQ = "14";
+		break;
+	case "polymer":
+		setVacuum();
+		scaleModelCoordinates("z", "div", _fileData.cell.c);
+		scaleModelCoordinates("y", "div", _fileData.cell.b);
+		cellDimString = "            celldm(1) = "
+			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
+			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
+			+ "  \n            celldm(4) =  " + (cosRounded(90))
+			+ "  \n            celldm(5) =  " + (cosRounded(90))
+			+ "  \n            celldm(6) =  " + (cosRounded(90));
+		ibravQ = "14";
+		break;
+	case "molecule":
+		setVacuum();
+		scaleModelCoordinates("x", "div", _fileData.cell.a);
+		scaleModelCoordinates("y", "div", _fileData.cell.b);
+		scaleModelCoordinates("z", "div", _fileData.cell.c);
+		cellDimString = "            celldm(1) = "
+			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
+			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
+			+ "  \n            celldm(4) =  "
+			+ (cosRounded(_fileData.cell.alpha))
+			+ "  \n            celldm(5) =  " + (cosRounded(90))
+			+ "  \n            celldm(6) =  " + (cosRounded(90));
+		ibravQ = "14";
+		break;
+	}
+
 	var elements = getElementList();
 
 	var systemQ = "var systemHeader = '\&SYSTEM';"
@@ -7866,7 +7791,7 @@ function prepareSpecieblock() {
 
 	for (var i = 0; i < sortedElement.length; i++) {
 		var elemento = sortedElement[i];
-		var numeroAtom = jmolEvaluate('{' + frameNum + ' and _' + elemento
+		var numeroAtom = jmolEvaluate('{' + _fileData.frameNum + ' and _' + elemento
 				+ '}[0].label("%l")'); //tobe changed in atomic mass
 		scriptEl = "'" + elemento + " " + eleSymbMass[parseInt(numeroAtom)]
 		+ " #Here goes the psudopotential filename e.g.: " + elemento
@@ -7890,14 +7815,12 @@ function prepareSpecieblock() {
 }
 
 function preparePostionblock() {
-
 	setUnitCell();
 	var atompositionQ = "var posHeader = 'ATOMIC_POSITIONS crystal';"
 		+ 'var posCoord = ' + _fileData.frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
 		// %16.9[fxyz]\");'
 		+ 'posQ = [posHeader,posCoord];';
 	runJmolScriptWait(atompositionQ);
-
 }
 
 function prepareKpoint() {
@@ -7906,84 +7829,6 @@ function prepareKpoint() {
 		+ "var kpointgr = ' X X X 0 0 0';"
 		+ 'kpo = [kpointWh, kpointHeader, kpointgr];';
 	runJmolScriptWait(kpointQ);
-}
-
-function symmetryQuantum() {
-	setUnitCell();
-	switch (_fileData.cell.typeSystem) {
-	case "crystal":
-		var flagsymmetry = confirm("Do you want to introduce symmetry ?")
-		if (!flagsymmetry) {
-			cellDimString = "           celldm(1) = "
-				+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-				+ "  \n           celldm(2) =  "
-				+ roundNumber(_fileData.cell.b / _fileData.cell.a)
-				+ "  \n           celldm(3) =  "
-				+ roundNumber(_fileData.cell.c / _fileData.cell.a)
-				+ "  \n           celldm(4) =  "
-				+ (cosRadiant(_fileData.cell.alpha))
-				+ "  \n           celldm(5) =  "
-				+ (cosRadiant(_fileData.cell.beta))
-				+ "  \n           celldm(6) =  "
-				+ (cosRadiant(_fileData.cell.gamma));
-			ibravQ = "14";
-		} else {
-			warningMsg("This procedure is not fully tested.");
-			// magnetic = confirm("Does this structure have magnetic properties?
-			// \n Cancel for NO.")
-			flagCrystal = false;
-			quantumEspresso = true;
-			figureOutSpaceGroup();
-		}
-		break;
-	case "slab":
-		setVacuum();
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/' + _fileData.cell.c
-				+ ')');
-		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
-			+ "  \n            celldm(4) =  "
-			+ (cosRadiant(_fileData.cell.alpha))
-			+ "  \n            celldm(5) =  " + (cosRadiant(90))
-			+ "  \n            celldm(6) =  " + (cosRadiant(90));
-		ibravQ = "14";
-		break;
-	case "polymer":
-		setVacuum();
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/' + _fileData.cell.c
-				+ ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/' + _fileData.cell.b
-				+ ')');
-		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-			+ "  \n            celldm(4) =  " + (cosRadiant(90))
-			+ "  \n            celldm(5) =  " + (cosRadiant(90))
-			+ "  \n            celldm(6) =  " + (cosRadiant(90));
-		ibravQ = "14";
-		break;
-	case "molecule":
-		setVacuum();
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/' + _fileData.cell.c
-				+ ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/' + _fileData.cell.b
-				+ ')');
-		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/' + _fileData.cell.a
-				+ ')');
-		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
-			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
-			+ "  \n            celldm(4) =  "
-			+ (cosRadiant(_fileData.cell.alpha))
-			+ "  \n            celldm(5) =  " + (cosRadiant(90))
-			+ "  \n            celldm(6) =  " + (cosRadiant(90));
-		ibravQ = "14";
-		break;
-	}
 }
 
       		
@@ -8134,12 +7979,12 @@ function exportVASP() {
 	var stringList = "";
 	var stringElement = "";
 	numAtomelement = null;
-	getUnitcell(frameValue);
+	getUnitcell(_fileData.frameValue);
 	setUnitCell();
 	var sortedElement = getElementList();
 	for (var i = 0; i < sortedElement.length; i++) {
 		// scriptEl = "";
-		scriptEl = "{" + frameNum + " and _" + sortedElement[i] + "}.length";
+		scriptEl = "{" + _fileData.frameNum + " and _" + sortedElement[i] + "}.length";
 
 		if (i != (sortedElement.length - 1)) {
 			stringList = stringList + " " + scriptEl + ", ";
@@ -8169,11 +8014,11 @@ function exportVASP() {
 	if (exportType) {
 		_measure.kindCoord = "Direct"
 			fractString = "[fxyz]";
-		_fileData._export.fractionalCoord = true;
+		_fileData._exportFractionalCoord = true;
 	} else {
 		_measure.kindCoord = "Cartesian"
 			fractString = "[xyz]";
-		_fileData._export.fractionalCoord = false;
+		_fileData._exportFractionalCoord = false;
 	}
 
 	setVacuum();

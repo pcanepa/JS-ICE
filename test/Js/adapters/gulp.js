@@ -75,7 +75,7 @@ function exportGULP() {
 
 		if (flagsymmetryGulp) {
 			warningMsg("This procedure is not fully tested.");
-			figureOutSpaceGroup();
+			figureOutSpaceGroup(false, false);
 		} else {
 			stringCellparamgulp = roundNumber(_fileData.cell.a) + ' ' + roundNumber(_fileData.cell.b)
 					+ ' ' + roundNumber(_fileData.cell.c) + ' ' + roundNumber(_fileData.cell.alpha) + ' '

@@ -1,16 +1,3 @@
-var flagCif = false; 
-var flagCrystal = false; 
-var flagGromos = false;
-var flagGulp = false;
-var flagOutcar = false;
-var flagGaussian = false;
-var flagQuantumEspresso = false;
-var flagSiesta = false;
-var flagDmol = false;
-var flagMolden = false;
-var flagCastep = false;
-var quantumEspresso = false;
-
 
 var sampleOptionArr = ["Load a Sample File", 
 	"MgO slab", 
@@ -200,14 +187,16 @@ function file_loadedCallback(filePath) {
 			counterMD 	: 0,
 			fMinim 		: null,
 			frameSelection : null,
-			frameNum 	: null,
-			frameValue 	: null,
-			haveGraphOptimize : false
+			frameNum       : null,
+			frameValue 	   : null,
+			haveGraphOptimize  : false,
+			exportModelOne        : false,
+			exportFractionalCoord : false
 	};
 	
 	counterFreq = 0;
 	_fileData.info = extractInfoJmol("auxiliaryInfo.models");
-	setFlags(_fileData.fileType);
+	setFlags();
 	setFileName();
 	getUnitcell(1);
 	runJmolScriptWait('unitcell on');
@@ -238,110 +227,97 @@ function cleanAndReloadForm() {
 resetLoadFlags = function(isCrystal) {
 	if (isCrystal)
 		_fileData.cell.typeSystem = "crystal";
-	flagCrystal = 
-	flagGromos = 
-	flagGulp = 
-	flagOutcar = 
-	flagGaussian = 
-	flagQuantumEspresso = 
-	flagCif = 
-	flagSiesta = 
-	flagDmol = 
-	flagMolden =
-	flagCastep = false;
 }
 
-setFlags = function(type) {
+setFlags = function() {
 	// BH TODO: missing xmlvasp?
-	type = type.replace('load', '').toLowerCase();
-	switch (type) {
+	switch (_fileData.fileType) {
 	default:
 	case "xyz":
 		break;
 	case "shelx":
-	case "shel":
 		resetLoadFlags(true); // BH 2018 added -- Q: Why no clearing of flags?
-		flagCif = true;
+		_fileData.exportModelOne = true;
 		break;
 	case "crystal":
 		resetLoadFlags();
-		flagCrystal = true;
+		_fileData.plotEnergyType = "crystal";
+		_fileData.plotEnergyForces = true;
 		break;
 	case "cube":
 		break;
 	case "aims":
 	case "aimsfhi":
-		resetLoadFlags(true);
-		flagCif = true;
-		break;
 	case "castep":
 		resetLoadFlags(true);
-		flagCif = true;
+		_fileData.exportModelOne = true;
 		break;
 	case "vasp":
 		resetLoadFlags(true);
+		_fileData.plotEnergyType = "vasp";
+		_fileData.exportNoSymmetry = true;
 		break;
 	case "vaspoutcar":
 		resetLoadFlags(true);
-		flagOutcar = true;
+		_fileData.plotEnergyType = "outcar";
+		_fileData.exportNoSymmetry = true;		
 		break;
 	case "dmol":
 		resetLoadFlags();
-		flagDmol = true;
+		_fileData.plotEnergyType = "dmol";
 		break;
 	case "espresso":
 	case "quantum":
 		resetLoadFlags(true);
-		flagQuantumEspresso = true;
+		_fileData.plotEnergyType = "qespresso";
 		break;
 	case "gulp":
 		resetLoadFlags();
-		flagGulp = true;
+		_fileData.plotEnergyType = "gulp";
 		break;
 	case "material":
 		resetLoadFlags(); // BH Added
 		break;
 	case "wien":
 		resetLoadFlags(true); // BH Added
-		flagCif = true;
+		_fileData.exportModelOne = true;
 		break;
 	case "cif":
 		resetLoadFlags(true); // BH Added
-		flagCif = true;
+		_fileData.exportModelOne = true;
 		break;
 	case "siesta":
 		resetLoadFlags(true); // BH Added
-		flagSiesta = true;
+		_fileData.exportNoSymmetry = true;
 		break;
 	case "pdb":
 		resetLoadFlags(true); // BH Added
-		flagCif = true;
+		_fileData.exportModelOne = true;
 		break;
 	case "gromacs":
 		resetLoadFlags(); // BH Added
-		flagGromos = true;
 		break;
 	case "gaussian":
 	case "gauss":
 		resetLoadFlags(); // BH Added
-		flagGaussian = true;
 		_fileData.cell.typeSystem = "molecule";
+		_fileData.plotEnergyType = "gaussian";
 		break;
 	case "molden":
 		// WE USE SAME SETTINGS AS VASP
 		// IT WORKS
 		resetLoadFlags(); // BH Added
 		_fileData.cell.typeSystem = "molecule";
-		flagOutcar = true;
+		_fileData.plotEnergyType = "outcar";
+		_fileData.exportNoSymmetry = true;
 		break;
 	case "crysden":
 		resetLoadFlags(true); // BH Added
-		flagCif = true;
+		_fileData.exportModelOne = true;
 		break;
 	case "castep":
 	case "outcastep":
 		resetLoadFlags(true); // BH Added
-		flagCastep = true;
 		break;
 	}
 }
@@ -362,12 +338,10 @@ function onChangeSave(save) {
 		saveFractionalCoordinate();
 		break;
 	case "saveCRYSTAL":
-		//flagCrystal = true;
 		_fileData._export = {};
 		exportCRYSTAL();
 		break;
 	case "saveVASP":
-		//flagCrystal = false;
 		_fileData._export = {};
 		exportVASP();
 		break;
@@ -379,14 +353,10 @@ function onChangeSave(save) {
 		exportCASTEP();
 		break;
 	case "saveQuantum":
-		quantumEspresso = true;
-		//flagCrystal = false;
 		_fileData._export = {};
 		exportQuantum();
 		break;
 	case "saveGULP":
-		flagGulp = true;
-		flagCrystal = false;
 		_fileData._export = {};
 		exportGULP();
 		break;

@@ -26,9 +26,7 @@ function saveFractionalCoordinate() {
 function getUnitcell(i) {
 	// document.cellGroup.reset();
 	_fileData.cell.typeSystem = "";
-	i || (i = 1);
-	var StringUnitcell = "auxiliaryinfo.models[" + i + "].infoUnitCell";
-
+	var StringUnitcell = "auxiliaryinfo.models[" + (i || 1) + "].infoUnitCell";
 	var cellparam = extractInfoJmol(StringUnitcell);
 
 	_fileData.cell.a = roundNumber(cellparam[0]);
@@ -108,7 +106,7 @@ function setUnitCell() {
 	if (_fileData.frameSelection == null || _fileData.frameSelection == "" || _fileData.frameValue == ""
 		|| _fileData.frameValue == null) {
 		_fileData.frameSelection = "{1.1}";
-		_fileData.frameNum = 1.1;
+		_fileData.frameNum = "1.1";
 		getUnitcell("1");
 	}
 }
@@ -120,11 +118,8 @@ function setUnitCell() {
 
 function setCellMeasure(value) {
 	_fileData.cell.typeSystem = "";
-	var StringUnitcell = "auxiliaryinfo.models[" + i + "].infoUnitCell";
-
-	if (i == null || i == "")
-		StringUnitcell = " auxiliaryInfo.models[1].infoUnitCell ";
-
+	var i = _fileData.frameValue;
+	var StringUnitcell = "auxiliaryinfo.models[" + (i || 1) + "].infoUnitCell";
 	var cellparam = extractInfoJmol(StringUnitcell);
 	_fileData.cell.a = cellparam[0];
 	_fileData.cell.b = cellparam[1];
@@ -134,15 +129,15 @@ function setCellMeasure(value) {
 		setValue("cell.b", roundNumber(_fileData.cell.b));
 		setValue("cell.c", roundNumber(_fileData.cell.c));
 	} else {
-		_fileData.cell.a = _fileData.cell.a * 1.889725989;
-		_fileData.cell.b = _fileData.cell.b * 1.889725989;
-		_fileData.cell.c = _fileData.cell.c * 1.889725989;
+		_fileData.cell.a *= 1.889725989;
+		_fileData.cell.b *= 1.889725989;
+		_fileData.cell.c *= 1.889725989;
 		setValue("cell.a", roundNumber(_fileData.cell.a));
 		setValue("cell.b", roundNumber(_fileData.cell.b));
 		setValue("cell.c", roundNumber(_fileData.cell.c));
 	}
-
 }
+
 function setCellDotted() {
 	var cella = checkBoxX('cellDott');
 	if (cella == "on") {

@@ -152,12 +152,9 @@ function prepareSystemblock() {
 	// /here goes the symmetry part
 
 	setUnitCell();
-	// celldim(1) = \' \'\,
 
-	// this returns the number of atom
+	var numberAtom = jmolEvaluate(_fileData.frameSelection + ".length");
 
-	atomCRYSTAL();
-	var numberAtom = jmolEvaluate(numAtomCRYSTAL);
 	var stringCutoff = null;
 	var stringCutoffrho = null;
 	var stringElec = null;
@@ -174,7 +171,77 @@ function prepareSystemblock() {
 	 * if(stringElec != ""){ stringElec = parseInt(stringElec); stringBand =
 	 * parseInt((stringElec / 2) + (stringElec / 2 * 0.20)); }
 	 */
-	symmetryQuantum();
+
+	setUnitCell();
+	
+	var cellDimString, ibravQ;	
+	switch (_fileData.cell.typeSystem) {
+	case "crystal":
+		var flagsymmetry = confirm("Do you want to introduce symmetry ?")
+		if (!flagsymmetry) {
+			cellDimString = "           celldm(1) = "
+				+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+				+ "  \n           celldm(2) =  "
+				+ roundNumber(_fileData.cell.b / _fileData.cell.a)
+				+ "  \n           celldm(3) =  "
+				+ roundNumber(_fileData.cell.c / _fileData.cell.a)
+				+ "  \n           celldm(4) =  "
+				+ (cosRounded(_fileData.cell.alpha))
+				+ "  \n           celldm(5) =  "
+				+ (cosRounded(_fileData.cell.beta))
+				+ "  \n           celldm(6) =  "
+				+ (cosRounded(_fileData.cell.gamma));
+			ibravQ = "14";
+		} else {
+			warningMsg("This procedure is not fully tested.");
+			// magnetic = confirm("Does this structure have magnetic properties?
+			// \n Cancel for NO.")
+			figureOutSpaceGroup(true, false, true);
+		}
+		break;
+	case "slab":
+		setVacuum();
+		scaleModelCoordinates("z", "div", _fileData.cell.c);
+		cellDimString = "            celldm(1) = "
+			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
+			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
+			+ "  \n            celldm(4) =  "
+			+ (cosRounded(_fileData.cell.alpha))
+			+ "  \n            celldm(5) =  " + (cosRounded(90))
+			+ "  \n            celldm(6) =  " + (cosRounded(90));
+		ibravQ = "14";
+		break;
+	case "polymer":
+		setVacuum();
+		scaleModelCoordinates("z", "div", _fileData.cell.c);
+		scaleModelCoordinates("y", "div", _fileData.cell.b);
+		cellDimString = "            celldm(1) = "
+			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
+			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
+			+ "  \n            celldm(4) =  " + (cosRounded(90))
+			+ "  \n            celldm(5) =  " + (cosRounded(90))
+			+ "  \n            celldm(6) =  " + (cosRounded(90));
+		ibravQ = "14";
+		break;
+	case "molecule":
+		setVacuum();
+		scaleModelCoordinates("x", "div", _fileData.cell.a);
+		scaleModelCoordinates("y", "div", _fileData.cell.b);
+		scaleModelCoordinates("z", "div", _fileData.cell.c);
+		cellDimString = "            celldm(1) = "
+			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
+			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
+			+ "  \n            celldm(4) =  "
+			+ (cosRounded(_fileData.cell.alpha))
+			+ "  \n            celldm(5) =  " + (cosRounded(90))
+			+ "  \n            celldm(6) =  " + (cosRounded(90));
+		ibravQ = "14";
+		break;
+	}
+
 	var elements = getElementList();
 
 	var systemQ = "var systemHeader = '\&SYSTEM';"
@@ -246,7 +313,7 @@ function prepareSpecieblock() {
 
 	for (var i = 0; i < sortedElement.length; i++) {
 		var elemento = sortedElement[i];
-		var numeroAtom = jmolEvaluate('{' + frameNum + ' and _' + elemento
+		var numeroAtom = jmolEvaluate('{' + _fileData.frameNum + ' and _' + elemento
 				+ '}[0].label("%l")'); //tobe changed in atomic mass
 		scriptEl = "'" + elemento + " " + eleSymbMass[parseInt(numeroAtom)]
 		+ " #Here goes the psudopotential filename e.g.: " + elemento
@@ -270,14 +337,12 @@ function prepareSpecieblock() {
 }
 
 function preparePostionblock() {
-
 	setUnitCell();
 	var atompositionQ = "var posHeader = 'ATOMIC_POSITIONS crystal';"
 		+ 'var posCoord = ' + _fileData.frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
 		// %16.9[fxyz]\");'
 		+ 'posQ = [posHeader,posCoord];';
 	runJmolScriptWait(atompositionQ);
-
 }
 
 function prepareKpoint() {
@@ -286,83 +351,5 @@ function prepareKpoint() {
 		+ "var kpointgr = ' X X X 0 0 0';"
 		+ 'kpo = [kpointWh, kpointHeader, kpointgr];';
 	runJmolScriptWait(kpointQ);
-}
-
-function symmetryQuantum() {
-	setUnitCell();
-	switch (_fileData.cell.typeSystem) {
-	case "crystal":
-		var flagsymmetry = confirm("Do you want to introduce symmetry ?")
-		if (!flagsymmetry) {
-			cellDimString = "           celldm(1) = "
-				+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-				+ "  \n           celldm(2) =  "
-				+ roundNumber(_fileData.cell.b / _fileData.cell.a)
-				+ "  \n           celldm(3) =  "
-				+ roundNumber(_fileData.cell.c / _fileData.cell.a)
-				+ "  \n           celldm(4) =  "
-				+ (cosRadiant(_fileData.cell.alpha))
-				+ "  \n           celldm(5) =  "
-				+ (cosRadiant(_fileData.cell.beta))
-				+ "  \n           celldm(6) =  "
-				+ (cosRadiant(_fileData.cell.gamma));
-			ibravQ = "14";
-		} else {
-			warningMsg("This procedure is not fully tested.");
-			// magnetic = confirm("Does this structure have magnetic properties?
-			// \n Cancel for NO.")
-			flagCrystal = false;
-			quantumEspresso = true;
-			figureOutSpaceGroup();
-		}
-		break;
-	case "slab":
-		setVacuum();
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/' + _fileData.cell.c
-				+ ')');
-		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
-			+ "  \n            celldm(4) =  "
-			+ (cosRadiant(_fileData.cell.alpha))
-			+ "  \n            celldm(5) =  " + (cosRadiant(90))
-			+ "  \n            celldm(6) =  " + (cosRadiant(90));
-		ibravQ = "14";
-		break;
-	case "polymer":
-		setVacuum();
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/' + _fileData.cell.c
-				+ ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/' + _fileData.cell.b
-				+ ')');
-		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-			+ "  \n            celldm(4) =  " + (cosRadiant(90))
-			+ "  \n            celldm(5) =  " + (cosRadiant(90))
-			+ "  \n            celldm(6) =  " + (cosRadiant(90));
-		ibravQ = "14";
-		break;
-	case "molecule":
-		setVacuum();
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/' + _fileData.cell.c
-				+ ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/' + _fileData.cell.b
-				+ ')');
-		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/' + _fileData.cell.a
-				+ ')');
-		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
-			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
-			+ "  \n            celldm(4) =  "
-			+ (cosRadiant(_fileData.cell.alpha))
-			+ "  \n            celldm(5) =  " + (cosRadiant(90))
-			+ "  \n            celldm(6) =  " + (cosRadiant(90));
-		ibravQ = "14";
-		break;
-	}
 }
 

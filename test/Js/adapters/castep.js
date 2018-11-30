@@ -80,22 +80,16 @@ function exportCASTEP() {
 	setVacuum();
 	switch (_fileData.cell.typeSystem) {
 	case "slab":
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
+		scaleModelCoordinates("z", "div", roundNumber(_fileData.cell.c));
 		break;
 	case "polymer":
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/'
-				+ roundNumber(_fileData.cell.b) + ')');
+		scaleModelCoordinates("z", "div", roundNumber(_fileData.cell.c));
+		scaleModelCoordinates("y", "div", roundNumber(_fileData.cell.b));
 		break;
 	case "molecule":
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/'
-				+ roundNumber(_fileData.cell.b) + ')');
-		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/'
-				+ roundNumber(_fileData.cell.a) + ')');
+		scaleModelCoordinates("z", "div", roundNumber(_fileData.cell.c));
+		scaleModelCoordinates("y", "div", roundNumber(_fileData.cell.b));
+		scaleModelCoordinates("x", "div", roundNumber(_fileData.cell.a));
 		break;
 	}
 

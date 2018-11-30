@@ -4,13 +4,17 @@
 version = "3.0.0"; // BH 2018
 
 
-// from _m_file.js
+// _m_file.js
 
 _fileData = {};
 
 _fileIsReload = false;
 
-// from plotgraph.js
+// pick.js
+
+_pick = {};
+
+// plotgraph.js
 
 _plot = {};
 

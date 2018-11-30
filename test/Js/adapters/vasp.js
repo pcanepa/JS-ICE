@@ -82,12 +82,12 @@ function exportVASP() {
 	var stringList = "";
 	var stringElement = "";
 	numAtomelement = null;
-	getUnitcell(frameValue);
+	getUnitcell(_fileData.frameValue);
 	setUnitCell();
 	var sortedElement = getElementList();
 	for (var i = 0; i < sortedElement.length; i++) {
 		// scriptEl = "";
-		scriptEl = "{" + frameNum + " and _" + sortedElement[i] + "}.length";
+		scriptEl = "{" + _fileData.frameNum + " and _" + sortedElement[i] + "}.length";
 
 		if (i != (sortedElement.length - 1)) {
 			stringList = stringList + " " + scriptEl + ", ";
@@ -117,11 +117,11 @@ function exportVASP() {
 	if (exportType) {
 		_measure.kindCoord = "Direct"
 			fractString = "[fxyz]";
-		_fileData._export.fractionalCoord = true;
+		_fileData._exportFractionalCoord = true;
 	} else {
 		_measure.kindCoord = "Cartesian"
 			fractString = "[xyz]";
-		_fileData._export.fractionalCoord = false;
+		_fileData._exportFractionalCoord = false;
 	}
 
 	setVacuum();

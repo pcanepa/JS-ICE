@@ -104,27 +104,36 @@ function plotEnergies(){
 	var stringa = _fileData.info[3].name;
 	var f = null;
 	var pattern = null;
-	if(flagCrystal){
+
+	switch (_fileData.plotEnergyType) {
+	case "crystal":
 		if(stringa.search(/Energy/i) < 0)
 			return false;
 		f = substringEnergyToFloat;
-	} else if (flagDmol){
+		break;
+	case "dmol":
 		if(stringa.search(/E/i) < 0) 
 			return false;
 		f = substringEnergyToFloat;
-	} else if (flagOutcar){
+		break;
+	case "outcar":
 		pattern = new RegExp("G =", "i");
 		f = substringEnergyVaspToFloat;
-	}else if (flagQuantumEspresso) { 
+		break;
+	case "qespresso":
 		pattern = new RegExp("E =", "i");
 		f = substringEnergyQuantumToFloat;
-	} else if (flagGulp) { 
+		break;
+	case "gulp":
 		pattern = new RegExp("E =", "i");
 		f = substringEnergyGulpToFloat;
-	} else if (flagGaussian){
+		break;
+	case "gaussian":
 		// special case
-	} else {
+		break;
+	default:
 		f = substringEnergyVaspToFloat;
+		break;
 	}
 	
 	if (f) {
@@ -186,7 +195,7 @@ function plotEnergies(){
 	//function plotGradient(){
 
 
-	if(!flagCrystal)
+	if(!_fileData.plotEnergyForces)
 		return;
 	var data = [];
 	var A = [];
