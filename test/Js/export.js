@@ -3,7 +3,7 @@ function scaleModelCoordinates(xyz, op1, f1, op2, f2, etc) {
 	// e.g. {1.1}.xyz.all.mul(2);
 	var atomArray = _file.frameSelection + '.' + xyz;
 	var s = "";
-	for (int i = 1; i < arguments.length;) {
+	for (var i = 1; i < arguments.length;) {
 		s += atomArray + " = " + atomArray + ".all." + arguments[i++] + "(" + arguments[i++] + ");";
 	}
 	runJmolScriptWait(s);
