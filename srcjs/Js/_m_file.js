@@ -363,13 +363,16 @@ function onChangeSave(save) {
 		break;
 	case "saveCRYSTAL":
 		//flagCrystal = true;
+		_fileData._export = {};
 		exportCRYSTAL();
 		break;
 	case "saveVASP":
 		//flagCrystal = false;
+		_fileData._export = {};
 		exportVASP();
 		break;
 	case "saveGROMACS":
+		_fileData._export = {};
 		exportGromacs();
 		break;
 	case "saveCASTEP":
@@ -378,7 +381,14 @@ function onChangeSave(save) {
 	case "saveQuantum":
 		quantumEspresso = true;
 		//flagCrystal = false;
+		_fileData._export = {};
 		exportQuantum();
+		break;
+	case "saveGULP":
+		flagGulp = true;
+		flagCrystal = false;
+		_fileData._export = {};
+		exportGULP();
 		break;
 	case "savePOV":
 		runJmoLScript('write POVRAY jice.pov');
@@ -388,11 +398,6 @@ function onChangeSave(save) {
 		break;
 	case "saveState":
 		runJmoLScript('write STATE jice.spt');
-		break;
-	case "saveGULP":
-		flagGulp = true;
-		flagCrystal = false;
-		exportGULP();
 		break;
 	case "savefreqHtml":
 		newAppletWindowFreq();

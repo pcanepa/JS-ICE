@@ -25,12 +25,31 @@
 
 function exportGromacs() {
 	warningMsg("Make sure you have selected the model you would like to export.");
-	setTitleGromacs();
+
+	var titleGromacs = prompt("Type here the job title:", "");
+	(titleGromacs == "") ? (titleGromacs = 'Input prepared with J-ICE ')
+			: (titleGromacs = 'Input prepared with J-ICE ' + titleGromacs);
+	titleGromacs = 'titleg = \"' + titleGromacs + '\"; ';
+	runJmolScriptWait(titleGromacs);
+
 	setUnitCell();
+	
 	runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/10);'
 		+ _fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/10);'
 		+ _fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/10);');
-	setCoordinatesGromacs();
+	
+	var numatomsGrom = " " + _fileData.frameSelection + ".length";
+	var coordinateGrom = _fileData.frameSelection
+			+ '.label("  %i%e %i %e %8.3[xyz] %8.4fy %8.4fz")';
+	var cellbox = +roundNumber(_fileData.cell.a) * (cosRadiant(_fileData.cell.alpha)) + ' '
+			+ roundNumber(_fileData.cell.b) * (cosRadiant(_fileData.cell.beta)) + ' '
+			+ roundNumber(_fileData.cell.c) * (cosRadiant(_fileData.cell.gamma));
+	var coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
+			+ 'var coordGrom = ' + coordinateGrom + ';'
+			+ 'var cellGrom = \" \n\t' + cellbox + '\"; '
+			+ 'coordinate = [numatomGrom,coordGrom,cellGrom];';
+	runJmolScriptWait(coordinateGromacs);
+
 	runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z*10);'
 			+ _fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y*10);'
 			+ _fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x*10);');
@@ -39,24 +58,3 @@ function exportGromacs() {
 	runJmolScriptWait(finalInputGromacs);
 }
 
-function setTitleGromacs() {
-	var titleGromacs = prompt("Type here the job title:", "");
-	(titleGromacs == "") ? (titleGromacs = 'Input prepared with J-ICE ')
-			: (titleGromacs = 'Input prepared with J-ICE ' + titleGromacs);
-	titleGromacs = 'titleg = \"' + titleGromacs + '\"; ';
-	runJmolScriptWait(titleGromacs);
-}
-
-function setCoordinatesGromacs() {
-	var numatomsGrom = " " + _fileData.frameSelection + ".length";
-	var coordinateGrom = _fileData.frameSelection
-			+ '.label("  %i%e %i %e %8.3[xyz] %8.4fy %8.4fz")';
-	var cellbox = +roundNumber(_fileData.cell.a) * (cosRadiant(alpha)) + ' '
-			+ roundNumber(_fileData.cell.b) * (cosRadiant(beta)) + ' '
-			+ roundNumber(_fileData.cell.c) * (cosRadiant(gamma));
-	var coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
-			+ 'var coordGrom = ' + coordinateGrom + ';'
-			+ 'var cellGrom = \" \n\t' + cellbox + '\"; '
-			+ 'coordinate = [numatomGrom,coordGrom,cellGrom];';
-	runJmolScriptWait(coordinateGromacs);
-}

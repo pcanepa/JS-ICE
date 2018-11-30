@@ -91,12 +91,12 @@ function formResetAll() {
 }
 
 function createSlider(name, label) {
-	var s = '<div tabIndex="1" class="slider" id="_Slider-div" style="float:left;width:150px;" >'
-		+ '<input class="slider-input" id="_Slider-input" name="_Slider-input" />'
+	var s = '<div tabIndex="1" class="slider" id="_-div" style="float:left;width:150px;" >'
+		+ '<input class="slider-input" id="_-input" name="_-input" />'
 	    + '</div>'
 	    + (label || "") 
 	    + ' <span id="_Msg" class="msgSlider"></span>';
-	return s.replace(/_/g, name);
+	return s.replace(/_/g, "slider." + name);
 	
 }
 

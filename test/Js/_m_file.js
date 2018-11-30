@@ -114,9 +114,9 @@ loadFile = function(fileName, packing, filter, more) {
 
 function setDefaultJmolSettings() {
 	runJmolScriptWait('select all; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
-	radiiSlider.setValue(20);
-	bondSlider.setValue(15);
-	// radiiConnectSlider.setValue(20);
+	_slider.radii.setValue(20);
+	_slider.bond.setValue(15);
+	// _slider.radiiConnect.setValue(20);
 //	getbyID('radiiMsg').innerHTML = 20 + "%";
 //	getbyID('bondMsg').innerHTML = 0.15 + " &#197";
 
@@ -198,11 +198,15 @@ function file_loadedCallback(filePath) {
 			vibLine		: [],
 			counterFreq : 0,
 			counterMD 	: 0,
+			fMinim 		: null,
+			frameSelection : null,
+			frameNum 	: null,
+			frameValue 	: null,
 			haveGraphOptimize : false
 	};
 	
 	counterFreq = 0;
-	extractAuxiliaryJmol();
+	_fileData.info = extractInfoJmol("auxiliaryInfo.models");
 	setFlags(_fileData.fileType);
 	setFileName();
 	getUnitcell(1);
@@ -359,13 +363,16 @@ function onChangeSave(save) {
 		break;
 	case "saveCRYSTAL":
 		//flagCrystal = true;
+		_fileData._export = {};
 		exportCRYSTAL();
 		break;
 	case "saveVASP":
 		//flagCrystal = false;
+		_fileData._export = {};
 		exportVASP();
 		break;
 	case "saveGROMACS":
+		_fileData._export = {};
 		exportGromacs();
 		break;
 	case "saveCASTEP":
@@ -374,7 +381,14 @@ function onChangeSave(save) {
 	case "saveQuantum":
 		quantumEspresso = true;
 		//flagCrystal = false;
+		_fileData._export = {};
 		exportQuantum();
+		break;
+	case "saveGULP":
+		flagGulp = true;
+		flagCrystal = false;
+		_fileData._export = {};
+		exportGULP();
 		break;
 	case "savePOV":
 		runJmoLScript('write POVRAY jice.pov');
@@ -384,11 +398,6 @@ function onChangeSave(save) {
 		break;
 	case "saveState":
 		runJmoLScript('write STATE jice.spt');
-		break;
-	case "saveGULP":
-		flagGulp = true;
-		flagCrystal = false;
-		exportGULP();
 		break;
 	case "savefreqHtml":
 		newAppletWindowFreq();

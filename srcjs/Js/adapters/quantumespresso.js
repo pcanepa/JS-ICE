@@ -22,6 +22,48 @@
  *  02111-1307  USA.
  */
 
+///// QUANTUM ESPRESSO READER
+
+loadDone_espresso = function() {
+	
+	_fileData.energyUnits = ENERGY_RYDBERG;
+	_fileData.StrUnitEnergy = "R";
+	_fileData.hasInputModel = true;
+
+	for (var i = 0; i < _fileData.info.length; i++) {
+		var line = _fileData.info[i].name;
+
+		if (i == 0) {
+			_fileData.geomData[0] = line;
+			addOption(getbyID('geom'), "0 initial", 1);
+		}
+		if (line != null) {
+			if (line.search(/E =/i) != -1) {
+				addOption(getbyID('geom'), i + 1 + " " + line, i + 1);
+				_fileData.geomData[i + 1] = line;
+				_fileData.counterFreq++;
+			} /*
+			 * else if (line.search(/cm/i) != -1) { // alert("vibration")
+			 * freqData[i - counterFreq] = _fileData.info[i].name; counterMD++; } else
+			 * if (line.search(/Temp/i) != -1) { addOption(getbyID('geom'),
+			 * (i - counterMD) + " " + _fileData.info[i].name, i + 1); }
+			 */
+		}
+	}
+	/*
+	 * if (freqData != null) { for (var i = 1; i < freqData.length; i++) { if
+	 * (freqData[i] != null) var data =
+	 * parseFloat(freqData[i].substring(0,freqData[i].indexOf("c") - 1));
+	 * addOption(getbyID('vib'), i + " A " + data + " cm^-1", i + counterFreq +
+	 * 1 ); } }
+	 */
+	getUnitcell("1");
+	setFrameValues("1");
+	getSymInfo();
+	loadDone();
+}
+
+
 /*&CONTROL
  title = 'alpha_PbO_PBE' ,
  calculation = 'vc-relax' ,
@@ -64,16 +106,6 @@
  4 4 4   0 0 0
  */
 
-//Following functions are to export file for QuantumEspresso
-var controlQ = null;
-var systemQ = null;
-var electronQ = null;
-var ionsQ = null;
-var cellQ = null;
-var atomspQ = null;
-var atompositionQ = null;
-var kpointQ = null;
-
 //Main block
 function exportQuantum() {
 	warningMsg("Make sure you have selected the model you would like to export.");
@@ -98,7 +130,7 @@ function prepareControlblock() {
 			: (stringTitleNew = 'Input prepared with J-ICE ' + stringTitle);
 
 	// stringa = 'title= \'prova\','
-	controlQ = "var controlHeader = '\&CONTROL';"
+	var controlQ = "var controlHeader = '\&CONTROL';"
 		+ 'var controlTitle = "           title = \''
 		+ stringTitleNew
 		+ '\'";'
@@ -145,7 +177,7 @@ function prepareSystemblock() {
 	symmetryQuantum();
 	var elements = getElementList();
 
-	systemQ = "var systemHeader = '\&SYSTEM';"
+	var systemQ = "var systemHeader = '\&SYSTEM';"
 		+ 'var systemIbrav = "           ibrav = '
 		+ ibravQ
 		+ '";' // This variable is defined in the crystal function
@@ -176,7 +208,7 @@ function prepareSystemblock() {
 
 //to be completed
 function prepareElectronblock() {
-	electronQ = "var electronHeader = '\&ELECTRONS';"
+	var electronQ = "var electronHeader = '\&ELECTRONS';"
 		+ 'var electronBeta = "           mixing_beta = \'  \'";'
 		+ "var electronClose= '\/';"
 		+ ' electron = [electronHeader, electronBeta, electronClose];';
@@ -186,7 +218,7 @@ function prepareElectronblock() {
 //ask what algorithm to use window?
 //set Tolerance as well!
 function prepareIonsblock() {
-	ionsQ = "var ionHeader = '\&IONS';"
+	var ionsQ = "var ionHeader = '\&IONS';"
 		+ 'var ionDyn = "           ion_dynamics= \'  \'";'
 		+ "var ionClose= '\/';" + 'ions = [ionHeader, ionDyn, ionClose];';
 	runJmolScriptWait(ionsQ);
@@ -194,7 +226,7 @@ function prepareIonsblock() {
 }
 
 function prepareCellblock() {
-	cellQ = "var cellHeader = '\&CELL';"
+	var cellQ = "var cellHeader = '\&CELL';"
 		+ 'var cellDyn = "           cell_dynamics= \'  \'";'
 		+ "var cellClose= '\/';"
 		+ 'cell = [cellHeader, cellDyn, cellClose];'
@@ -230,7 +262,7 @@ function prepareSpecieblock() {
 
 	}
 
-	atomspQ = "var atomsHeader = 'ATOMIC_SPECIES';" + 'var atomsList = ['
+	var atomspQ = "var atomsHeader = 'ATOMIC_SPECIES';" + 'var atomsList = ['
 	+ stringList + '];' + 'atomsList = atomsList.replace("\n", " ");'
 	// + 'atomList = atomList.join(" ");'
 	+ 'atomsp =  [atomsHeader,atomsList];';
@@ -240,7 +272,7 @@ function prepareSpecieblock() {
 function preparePostionblock() {
 
 	setUnitCell();
-	atompositionQ = "var posHeader = 'ATOMIC_POSITIONS crystal';"
+	var atompositionQ = "var posHeader = 'ATOMIC_POSITIONS crystal';"
 		+ 'var posCoord = ' + _fileData.frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
 		// %16.9[fxyz]\");'
 		+ 'posQ = [posHeader,posCoord];';
@@ -249,7 +281,7 @@ function preparePostionblock() {
 }
 
 function prepareKpoint() {
-	kpointQ = "var kpointWh = '\n\n'  ;"
+	var kpointQ = "var kpointWh = '\n\n'  ;"
 		+ "var kpointHeader = 'K_POINTS automatic';"
 		+ "var kpointgr = ' X X X 0 0 0';"
 		+ 'kpo = [kpointWh, kpointHeader, kpointgr];';
@@ -258,7 +290,7 @@ function prepareKpoint() {
 
 function symmetryQuantum() {
 	setUnitCell();
-	switch (typeSystem) {
+	switch (_fileData.cell.typeSystem) {
 	case "crystal":
 		var flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
@@ -269,11 +301,11 @@ function symmetryQuantum() {
 				+ "  \n           celldm(3) =  "
 				+ roundNumber(_fileData.cell.c / _fileData.cell.a)
 				+ "  \n           celldm(4) =  "
-				+ (cosRadiant(alpha))
+				+ (cosRadiant(_fileData.cell.alpha))
 				+ "  \n           celldm(5) =  "
-				+ (cosRadiant(beta))
+				+ (cosRadiant(_fileData.cell.beta))
 				+ "  \n           celldm(6) =  "
-				+ (cosRadiant(gamma));
+				+ (cosRadiant(_fileData.cell.gamma));
 			ibravQ = "14";
 		} else {
 			warningMsg("This procedure is not fully tested.");
@@ -293,7 +325,7 @@ function symmetryQuantum() {
 			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
 			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
 			+ "  \n            celldm(4) =  "
-			+ (cosRadiant(alpha))
+			+ (cosRadiant(_fileData.cell.alpha))
 			+ "  \n            celldm(5) =  " + (cosRadiant(90))
 			+ "  \n            celldm(6) =  " + (cosRadiant(90));
 		ibravQ = "14";
@@ -326,52 +358,11 @@ function symmetryQuantum() {
 			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(4) =  "
-			+ (cosRadiant(alpha))
+			+ (cosRadiant(_fileData.cell.alpha))
 			+ "  \n            celldm(5) =  " + (cosRadiant(90))
 			+ "  \n            celldm(6) =  " + (cosRadiant(90));
 		ibravQ = "14";
 		break;
 	}
-}
-
-///// QUANTUM ESPRESSO READER
-
-loadDone_espresso = function() {
-	
-	_fileData.energyUnits = ENERGY_RYDBERG;
-	_fileData.StrUnitEnergy = "R";
-	_fileData.hasInputModel = true;
-
-	for (var i = 0; i < _fileData.info.length; i++) {
-		var line = _fileData.info[i].name;
-
-		if (i == 0) {
-			_fileData.geomData[0] = line;
-			addOption(getbyID('geom'), "0 initial", 1);
-		}
-		if (line != null) {
-			if (line.search(/E =/i) != -1) {
-				addOption(getbyID('geom'), i + 1 + " " + line, i + 1);
-				_fileData.geomData[i + 1] = line;
-				_fileData.counterFreq++;
-			} /*
-			 * else if (line.search(/cm/i) != -1) { // alert("vibration")
-			 * freqData[i - counterFreq] = _fileData.info[i].name; counterMD++; } else
-			 * if (line.search(/Temp/i) != -1) { addOption(getbyID('geom'),
-			 * (i - counterMD) + " " + _fileData.info[i].name, i + 1); }
-			 */
-		}
-	}
-	/*
-	 * if (freqData != null) { for (var i = 1; i < freqData.length; i++) { if
-	 * (freqData[i] != null) var data =
-	 * parseFloat(freqData[i].substring(0,freqData[i].indexOf("c") - 1));
-	 * addOption(getbyID('vib'), i + " A " + data + " cm^-1", i + counterFreq +
-	 * 1 ); } }
-	 */
-	getUnitcell("1");
-	setFrameValues("1");
-	getSymInfo();
-	loadDone();
 }
 

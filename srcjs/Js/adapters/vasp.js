@@ -22,6 +22,37 @@
  *  02111-1307  USA.
  */
 
+
+loadDone_vaspoutcar = function() {
+	_fileData.energyUnits = ENERGY_EV;
+	_fileData.StrUnitEnergy = "e";
+	_fileData.counterFreq = 1; 
+	for (var i = 0; i < _fileData.info.length; i++) {
+		if (_fileData.info[i].name != null) {
+			var line = _fileData.info[i].name;
+			if (line.search(/G =/i) != -1) {
+				addOption(getbyID('geom'), i + " " + line, i + 1);
+				_fileData.geomData[i] = line;
+				_fileData.counterFreq++;
+			} else if (line.search(/cm/i) != -1) {
+				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));	
+				_fileData.freqInfo.push(_fileData.info[i]);
+				_fileData.freqData.push(line);
+				_fileData.vibLine.push(i + " A " + data + " cm^-1");
+				_fileData.counterMD++;
+			} else if (line.search(/Temp/i) != -1) {
+				addOption(getbyID('geom'), (i - _fileData.counterMD) + " " + line, i + 1);
+			}
+		}
+	}
+
+	getUnitcell("1");
+	setFrameValues("1");
+	disableFreqOpts();
+	getSymInfo();
+	loadDone();
+}
+
 loadDone_xmlvasp = function() {
 
 	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
@@ -44,7 +75,6 @@ loadDone_xmlvasp = function() {
 }
 
 ////EXPORT FUNCTIONS
-var fractionalCoord = false;
 function exportVASP() {
 	var newElement = [];
 	var scriptEl = "";
@@ -87,11 +117,11 @@ function exportVASP() {
 	if (exportType) {
 		_measure.kindCoord = "Direct"
 			fractString = "[fxyz]";
-		fractionalCoord = true;
+		_fileData._export.fractionalCoord = true;
 	} else {
 		_measure.kindCoord = "Cartesian"
 			fractString = "[xyz]";
-		fractionalCoord = false;
+		_fileData._export.fractionalCoord = false;
 	}
 
 	setVacuum();
@@ -135,38 +165,4 @@ function exportVASP() {
 }
 
 /////// END EXPORT VASP
-
-/////////// IMPORT OUTCAR
-
-
-
-loadDone_vaspoutcar = function() {
-	_fileData.energyUnits = ENERGY_EV;
-	_fileData.StrUnitEnergy = "e";
-	_fileData.counterFreq = 1; 
-	for (var i = 0; i < _fileData.info.length; i++) {
-		if (_fileData.info[i].name != null) {
-			var line = _fileData.info[i].name;
-			if (line.search(/G =/i) != -1) {
-				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
-			} else if (line.search(/cm/i) != -1) {
-				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));	
-				_fileData.freqInfo.push(_fileData.info[i]);
-				_fileData.freqData.push(line);
-				_fileData.vibLine.push(i + " A " + data + " cm^-1");
-				_fileData.counterMD++;
-			} else if (line.search(/Temp/i) != -1) {
-				addOption(getbyID('geom'), (i - _fileData.counterMD) + " " + line, i + 1);
-			}
-		}
-	}
-
-	getUnitcell("1");
-	setFrameValues("1");
-	disableFreqOpts();
-	getSymInfo();
-	loadDone();
-}
 

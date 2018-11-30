@@ -43,64 +43,6 @@
  %ENDBLOCK SPECIES_POT
  */
 
-
-function exportCASTEP() {
-	warningMsg("Make sure you have selected the model you would like to export.");
-	setUnitCell();
-	saveStateAndOrientation_a();
-	var lattice = fromfractionaltoCartesian();
-	setVacuum();
-	switch (typeSystem) {
-	case "slab":
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
-		break;
-	case "polymer":
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/'
-				+ roundNumber(_fileData.cell.b) + ')');
-		break;
-	case "molecule":
-		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
-		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/'
-				+ roundNumber(_fileData.cell.b) + ')');
-		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/'
-				+ roundNumber(_fileData.cell.a) + ')');
-		break;
-	}
-
-	prepareLatticeblockcastep(lattice);
-	prepareCoordinateblockCastep();
-	restoreStateAndOrientation_a();
-
-	var finalInputCastep = 'var final = [latticeCastep, positionCastep].replace("\n\n","\n");'
-			+ 'WRITE VAR final "?.cell"';
-	runJmolScript(finalInputCastep);
-}
-
-function prepareLatticeblockcastep(lattice) {
-	var cellCastep = "var latticeHeader = '\%block LATTICE_CART';"
-			+ "var latticeOne = [" + lattice[0] +"].join(' ');"
-			+ "var latticeTwo = [" + lattice[1] + "].join(' ');"
-			+ "var latticeThree = [" + lattice[2] + "].join(' ');"
-			+ "var latticeClose = '\%endblock LATTICE_CART';"
-			+ "latticeCastep = [latticeHeader, latticeOne, latticeTwo,latticeThree, latticeClose];"
-	runJmolScriptWait(cellCastep);
-}
-
-// /Frac coordinates
-function prepareCoordinateblockCastep() {
-	var positionCastep = "var positionHeader = '\%block POSITIONS_FRAC';"
-			+ 'var xyzCoord = ' + _fileData.frameSelection + '.label("%e %16.9[fxyz]");'
-			+ 'xyzCoord = xyzCoord.replace("\n\n","\n");'
-			+ "var positionClose = '\%endblock POSITIONS_FRAC';"
-			+ "positionCastep = [positionHeader, xyzCoord, positionClose];"
-			+ 'positionCastep = positionCastep.replace("\n\n","\n");'
-	runJmolScriptWait(positionCastep);
-}
-
 // /// FUNCTION LOAD
 
 loadDone_castep = function() {
@@ -128,5 +70,55 @@ loadDone_castep = function() {
 	disableFreqOpts();
 	getSymInfo();
 	loadDone();
+}
+
+function exportCASTEP() {
+	warningMsg("Make sure you have selected the model you would like to export.");
+	setUnitCell();
+	saveStateAndOrientation_a();
+	var lattice = fromfractionaltoCartesian();
+	setVacuum();
+	switch (_fileData.cell.typeSystem) {
+	case "slab":
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
+				+ roundNumber(_fileData.cell.c) + ')');
+		break;
+	case "polymer":
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
+				+ roundNumber(_fileData.cell.c) + ')');
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/'
+				+ roundNumber(_fileData.cell.b) + ')');
+		break;
+	case "molecule":
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
+				+ roundNumber(_fileData.cell.c) + ')');
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/'
+				+ roundNumber(_fileData.cell.b) + ')');
+		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/'
+				+ roundNumber(_fileData.cell.a) + ')');
+		break;
+	}
+
+	var cellCastep = "var latticeHeader = '\%block LATTICE_CART';"
+		+ "var latticeOne = [" + lattice[0] +"].join(' ');"
+		+ "var latticeTwo = [" + lattice[1] + "].join(' ');"
+		+ "var latticeThree = [" + lattice[2] + "].join(' ');"
+		+ "var latticeClose = '\%endblock LATTICE_CART';"
+		+ "latticeCastep = [latticeHeader, latticeOne, latticeTwo,latticeThree, latticeClose];";
+	runJmolScriptWait(cellCastep);
+	
+	var positionCastep = "var positionHeader = '\%block POSITIONS_FRAC';"
+		+ 'var xyzCoord = ' + _fileData.frameSelection + '.label("%e %16.9[fxyz]");'
+		+ 'xyzCoord = xyzCoord.replace("\n\n","\n");'
+		+ "var positionClose = '\%endblock POSITIONS_FRAC';"
+		+ "positionCastep = [positionHeader, xyzCoord, positionClose];"
+		+ 'positionCastep = positionCastep.replace("\n\n","\n");';
+	runJmolScriptWait(positionCastep);
+	
+	restoreStateAndOrientation_a();
+
+	var finalInputCastep = 'var final = [latticeCastep, positionCastep].replace("\n\n","\n");'
+			+ 'WRITE VAR final "?.cell"';
+	runJmolScript(finalInputCastep);
 }
 

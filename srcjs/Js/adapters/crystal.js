@@ -27,165 +27,6 @@
 ////////////////SAVE INPUT
 /////////
 
-var titleCRYS = null;
-
-function titleCRYSTAL() {
-	titleCRYS = prompt("Type here the job title:", "");
-	(titleCRYS == "" || titleCRYS == null) ? (titleCRYS = ' .d12 prepared with J-ICE ')
-			: (titleCRYS = titleCRYS + ' .d12 prepared with J-ICE')
-}
-
-var numAtomCRYSTAL = null;
-var fractionalCRYSTAL = null;
-function atomCRYSTAL() {
-	if (typeSystem == "molecule")
-		fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[xyz]")';
-	runJmolScriptWait("print " + fractionalCRYSTAL)
-	// alert(typeSystem);
-
-	numAtomCRYSTAL = _fileData.frameSelection + ".length";
-	fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[fxyz]")';
-	// alert(typeSystem);
-}
-
-var systemCRYSTAL = null;
-var keywordCRYSTAL = null;
-var symmetryCRYSTAL = null;
-function exportCRYSTAL() {
-	var endCRYSTAL = "TEST', 'END";
-	var script = "";
-	var flagsymmetry;
-	warningMsg("Make sure you have selected the model you would like to export.")
-	titleCRYSTAL();
-	setUnitCell();
-	atomCRYSTAL();
-
-	switch (typeSystem) {
-	case "crystal":
-		systemCRYSTAL = "'CRYSTAL'";
-		keywordCRYSTAL = "'0 0 0'";
-		symmetryCRYSTAL = "'1'";
-
-		if (!flagSiesta && !flagOutcar && !flagCryVasp)
-			flagsymmetry = confirm("Do you want to introduce symmetry ?")
-		if (!flagsymmetry) {
-			script = "var cellp = ["
-					+ roundNumber(_fileData.cell.a)
-					+ ", "
-					+ roundNumber(_fileData.cell.b)
-					+ ", "
-					+ roundNumber(_fileData.cell.c)
-					+ ", "
-					+ roundNumber(alpha)
-					+ ", "
-					+ roundNumber(beta)
-					+ ", "
-					+ roundNumber(gamma)
-					+ "];"
-					+ 'var cellparam = cellp.join(" ");'
-					+ 'cellparam = cellparam.replace("\n\n","\n");'
-					+ "var crystalArr = ['"
-					+ titleCRYS
-					+ "', "
-					+ systemCRYSTAL
-					+ ", "
-					+ keywordCRYSTAL
-					+ ", "
-					+ symmetryCRYSTAL
-					+ "];"
-					+ "var crystalRestArr = ["
-					+ numAtomCRYSTAL
-					+ ", "
-					+ fractionalCRYSTAL
-					+ ", '"
-					+ endCRYSTAL
-					+ "'];"
-					+ 'var finalArr = [crystalArr, cellparam , crystalRestArr];'
-					+ 'finalArr = finalArr.replace("\n\n","\n");'
-					+ 'WRITE VAR finalArr "?.d12"';
-		} else {
-			warningMsg("This procedure is not fully tested.");
-			figureOutSpaceGroup();
-		}
-		break;
-	case "slab":
-		systemCRYSTAL = "'SLAB'";
-		keywordCRYSTAL = "";
-		symmetryCRYSTAL = "'1'";
-
-		warningMsg("Symmetry not exploited!");
-
-		script = "var cellp = [" + roundNumber(_fileData.cell.a) + ", "
-				+ roundNumber(_fileData.cell.b) + ", " + roundNumber(gamma) + "];"
-				+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
-				+ titleCRYS + "', " + systemCRYSTAL + ", " + symmetryCRYSTAL
-				+ "];" + 'crystalArr = crystalArr.replace("\n\n","\n");'
-				+ "var crystalRestArr = [" + numAtomCRYSTAL + ", "
-				+ fractionalCRYSTAL + ", '" + endCRYSTAL + "'];"
-				+ 'crystalRestArr = crystalRestArr.replace("\n\n","\n");'
-				+ 'var finalArr = [crystalArr, cellparam , crystalRestArr];'
-				+ 'finalArr = finalArr.replace("\n\n","\n");'
-				+ 'WRITE VAR finalArr "?.d12"';
-		break;
-	case "polymer":
-		systemCRYSTAL = "'POLYMER'";
-		keywordCRYSTAL = "";
-		symmetryCRYSTAL = "'1'";
-
-		warningMsg("Symmetry not exploited!");
-
-		script = "var cellp = " + roundNumber(_fileData.cell.a) + ";"
-				+ "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
-				+ ", " + symmetryCRYSTAL + "];"
-				+ 'crystalArr = crystalArr.replace("\n\n","\n");'
-				+ "var crystalRestArr = [" + numAtomCRYSTAL + ", "
-				+ fractionalCRYSTAL + ", '" + endCRYSTAL + "'];"
-				+ 'crystalRestArr = crystalRestArr.replace("\n\n","\n");'
-				+ 'var finalArr = [crystalArr, cellp , crystalRestArr];'
-				+ 'finalArr = finalArr.replace("\n\n","\n");'
-				+ 'WRITE VAR finalArr "?.d12"';
-		break;
-	case "molecule":
-		// alert("prov")
-		systemCRYSTAL = "'MOLECULE'";
-		symmetryCRYSTAL = "'1'"; // see how jmol exploits the punctual TODO:
-		// show POINTGROUP
-		// symmetry
-		fractionalCRYSTAL
-		warningMsg("Symmetry not exploited!");
-		script = "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
-				+ ", " + symmetryCRYSTAL + "];"
-				+ 'crystalArr = crystalArr.replace("\n\n","\n");'
-				+ "var crystalRestArr = [" + numAtomCRYSTAL + ", "
-				+ fractionalCRYSTAL + ", '" + endCRYSTAL + "'];"
-				+ 'crystalRestArr = crystalRestArr.replace("\n\n","\n");'
-				+ 'var finalArr = [crystalArr, crystalRestArr];'
-				+ 'finalArr = finalArr.replace("\n\n","\n");'
-				+ 'WRITE VAR finalArr "?.d12"';
-		break;
-	}// end switch
-	script = script.replace("\n\n", "\n");
-	runJmolScriptWait(script);
-}
-
-function savCRYSTALSpace() {
-	var endCRYSTAL = "TEST', 'END";
-	var script = "var cellp = [" + stringCellParam + "];"
-			+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
-			+ titleCRYS + "', " + systemCRYSTAL + ", " + keywordCRYSTAL + ", "
-			+ interNumber + "];" + 'crystalArr = crystalArr.replace("\n\n"," ");'
-			+ "var crystalRestArr = [" + numAtomCRYSTAL + ", " + fractionalCRYSTAL
-			+ ", '" + endCRYSTAL + "'];"
-			+ 'crystalRestArr = crystalRestArr.replace("\n\n"," ");'
-			+ 'var finalArr = [crystalArr, cellparam , crystalRestArr];'
-			+ 'finalArr = finalArr.replace("\n\n","\n");'
-			+ 'WRITE VAR finalArr "?.d12"';
-	runJmolScript(script);
-}
-
-////////////////////////END SAVE INPUT
-
-/////////////////////////
 ///////////////////////// LOAD & ON LOAD functions
 
 loadDone_crystal = function() {
@@ -218,6 +59,153 @@ loadDone_crystal = function() {
 	setTitleEcho();
 	loadDone();
 }
+
+function exportCRYSTAL() {
+	var systemCRYSTAL = null;
+	var keywordCRYSTAL = null;
+	var symmetryCRYSTAL = null;
+
+	var endCRYSTAL = "TEST', 'END";
+	var script = "";
+	var flagsymmetry;
+	warningMsg("Make sure you have selected the model you would like to export.")
+
+	var titleCRYS = prompt("Type here the job title:", "");
+	(titleCRYS == "" || titleCRYS == null) ? (titleCRYS = ' .d12 prepared with J-ICE ')
+			: (titleCRYS = titleCRYS + ' .d12 prepared with J-ICE');
+
+	setUnitCell();
+
+	if (_fileData.cell.typeSystem == "molecule")
+		fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[xyz]")';
+	runJmolScriptWait("print " + fractionalCRYSTAL)
+
+	var  numAtomCRYSTAL = _fileData.frameSelection + ".length";
+	var fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[fxyz]")';
+
+	switch (_fileData.cell.typeSystem) {
+	case "crystal":
+		systemCRYSTAL = "'CRYSTAL'";
+		keywordCRYSTAL = "'0 0 0'";
+		symmetryCRYSTAL = "'1'";
+
+		if (!flagSiesta && !flagOutcar && !flagCryVasp)
+			flagsymmetry = confirm("Do you want to introduce symmetry ?")
+		if (!flagsymmetry) {
+			script = "var cellp = ["
+					+ roundNumber(_fileData.cell.a)
+					+ ", "
+					+ roundNumber(_fileData.cell.b)
+					+ ", "
+					+ roundNumber(_fileData.cell.c)
+					+ ", "
+					+ roundNumber(_fileData.cell.alpha)
+					+ ", "
+					+ roundNumber(_fileData.cell.beta)
+					+ ", "
+					+ roundNumber(_fileData.cell.gamma)
+					+ "];"
+					+ 'var cellparam = cellp.join(" ");'
+					+ 'cellparam = cellparam.replace("\n\n","\n");'
+					+ "var crystalArr = ['"
+					+ titleCRYS
+					+ "', "
+					+ systemCRYSTAL
+					+ ", "
+					+ keywordCRYSTAL
+					+ ", "
+					+ symmetryCRYSTAL
+					+ "];"
+					+ "var crystalRestArr = ["
+					+ numAtomCRYSTAL
+					+ ", "
+					+ fractionalCRYSTAL
+					+ ", '"
+					+ endCRYSTAL
+					+ "'];"
+					+ 'var finalArr = [crystalArr, cellparam , crystalRestArr];'
+					+ 'finalArr = finalArr.replace("\n\n","\n");'
+					+ 'WRITE VAR finalArr "?.d12"';
+		} else {
+			warningMsg("This procedure is not fully tested.");
+			
+			// BH: THIS METHOD WILL RELOAD THE FILE!
+			figureOutSpaceGroup();
+			var endCRYSTAL = "TEST', 'END";
+			var script = "var cellp = [" + stringCellParam + "];"
+					+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
+					+ titleCRYS + "', " + systemCRYSTAL + ", " + keywordCRYSTAL + ", "
+					+ interNumber + "];" + 'crystalArr = crystalArr.replace("\n\n"," ");'
+					+ "var crystalRestArr = [" + numAtomCRYSTAL + ", " + fractionalCRYSTAL
+					+ ", '" + endCRYSTAL + "'];"
+					+ 'crystalRestArr = crystalRestArr.replace("\n\n"," ");'
+					+ 'var finalArr = [crystalArr, cellparam , crystalRestArr];'
+					+ 'finalArr = finalArr.replace("\n\n","\n");'
+					+ 'WRITE VAR finalArr "?.d12"';
+			runJmolScript(script);
+		}
+		break;
+	case "slab":
+		systemCRYSTAL = "'SLAB'";
+		keywordCRYSTAL = "";
+		symmetryCRYSTAL = "'1'";
+
+		warningMsg("Symmetry not exploited!");
+
+		script = "var cellp = [" + roundNumber(_fileData.cell.a) + ", "
+				+ roundNumber(_fileData.cell.b) + ", " + roundNumber(_fileData.cell.gamma) + "];"
+				+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
+				+ titleCRYS + "', " + systemCRYSTAL + ", " + symmetryCRYSTAL
+				+ "];" + 'crystalArr = crystalArr.replace("\n\n","\n");'
+				+ "var crystalRestArr = [" + numAtomCRYSTAL + ", "
+				+ fractionalCRYSTAL + ", '" + endCRYSTAL + "'];"
+				+ 'crystalRestArr = crystalRestArr.replace("\n\n","\n");'
+				+ 'var finalArr = [crystalArr, cellparam , crystalRestArr];'
+				+ 'finalArr = finalArr.replace("\n\n","\n");'
+				+ 'WRITE VAR finalArr "?.d12"';
+		break;
+	case "polymer":
+		systemCRYSTAL = "'POLYMER'";
+		keywordCRYSTAL = "";
+		symmetryCRYSTAL = "'1'";
+
+		warningMsg("Symmetry not exploited!");
+
+		script = "var cellp = " + roundNumber(_fileData.cell.a) + ";"
+				+ "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
+				+ ", " + symmetryCRYSTAL + "];"
+				+ 'crystalArr = crystalArr.replace("\n\n","\n");'
+				+ "var crystalRestArr = [" + numAtomCRYSTAL + ", "
+				+ fractionalCRYSTAL + ", '" + endCRYSTAL + "'];"
+				+ 'crystalRestArr = crystalRestArr.replace("\n\n","\n");'
+				+ 'var finalArr = [crystalArr, cellp , crystalRestArr];'
+				+ 'finalArr = finalArr.replace("\n\n","\n");'
+				+ 'WRITE VAR finalArr "?.d12"';
+		break;
+	case "molecule":
+		// alert("prov")
+		systemCRYSTAL = "'MOLECULE'";
+		symmetryCRYSTAL = "'1'"; // see how jmol exploits the punctual TODO:
+		warningMsg("Symmetry not exploited!");
+		script = "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
+				+ ", " + symmetryCRYSTAL + "];"
+				+ 'crystalArr = crystalArr.replace("\n\n","\n");'
+				+ "var crystalRestArr = [" + numAtomCRYSTAL + ", "
+				+ fractionalCRYSTAL + ", '" + endCRYSTAL + "'];"
+				+ 'crystalRestArr = crystalRestArr.replace("\n\n","\n");'
+				+ 'var finalArr = [crystalArr, crystalRestArr];'
+				+ 'finalArr = finalArr.replace("\n\n","\n");'
+				+ 'WRITE VAR finalArr "?.d12"';
+		break;
+	}
+	script = script.replace("\n\n", "\n");
+	runJmolScriptWait(script);
+}
+
+
+////////////////////////END SAVE INPUT
+
+/////////////////////////
 
 //// this method was called when the Geometry Optimize and Spectra tabs
 //// were clicked via a complex sequence of callbacks

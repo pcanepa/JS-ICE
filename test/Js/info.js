@@ -1,4 +1,3 @@
-var Info;
 
 function extractInfoJmol(whatToExtract) {
 	return jmolGetPropertyAsArray(whatToExtract);
@@ -6,10 +5,6 @@ function extractInfoJmol(whatToExtract) {
 
 function extractInfoJmolString(whatToExtract) {
 	return jmolGetPropertyAsString(whatToExtract);
-}
-
-function extractAuxiliaryJmol() {
-	Info = extractInfoJmol("auxiliaryInfo.models");
 }
 
 function getElementList(arr) {

@@ -264,11 +264,13 @@ is based on IR or Raman type. These lists are then pushed into specData as the f
 function setVibList(specData) {
 	var vib = getbyID('vib');	
 	cleanList('vib');
+	console.log("clear vib");
 	var xmin = specData.minX;
 	var xmax = specData.maxX;	
 	for (var i = 0, pt = 0, n = specData.vibList.length; i < n; i++) {
 		if (specData.freqs[i] >= xmin && specData.freqs[i] <= xmax) {
 			addOption(vib, specData.vibList[i][0], specData.vibList[i][1]);
+			console.log("adding vib " + i + " " + specData.vibList[i]);
 			specData.vibList[pt][3] = i;  // reverse loop-up
 			specData.vibList[i][2] = pt++;
 		}
@@ -738,8 +740,8 @@ function createFreqGrp() {
 		+ "<br>"
 		+ "Band width " + createText2("sigma", "30", "3", "") + " (cm<sup>-1</sup>)" 
 		+ "&nbsp;"
-		+ "Min freq. " + createText2("nMin", "onClickModSpec()", "4", "")
-		+ " Max " + createText2("nMax", "onClickModSpec()", "4", "") + "(cm<sup>-1</sup>)"
+		+ "Min freq. " + createText2("nMin", "0", "4", "")
+		+ " Max " + createText2("nMax", "4000", "4", "") + "(cm<sup>-1</sup>)"
 		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "") + "<br>"
 		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 1, "", "stick")
 		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 0, "", "gaus")

@@ -26,7 +26,7 @@
 
 addCommandBox = function() {
 	// see debug.js
-	return "<div id='debugpanel'>"
+	return "<div id='debugpanel'><hr>"
 		+ createCheck("debugMode", "Show Commands", "debugShowCommands(this.checked)", 0,
 			0, "")
 		+ "&nbsp;" + createButton("removeText", "Clear", 'debugShowCommands(true);debugSay(null)', 0)

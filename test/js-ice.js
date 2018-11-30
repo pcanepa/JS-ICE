@@ -404,9 +404,9 @@ loadFile = function(fileName, packing, filter, more) {
 
 function setDefaultJmolSettings() {
 	runJmolScriptWait('select all; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
-	radiiSlider.setValue(20);
-	bondSlider.setValue(15);
-	// radiiConnectSlider.setValue(20);
+	_slider.radii.setValue(20);
+	_slider.bond.setValue(15);
+	// _slider.radiiConnect.setValue(20);
 //	getbyID('radiiMsg').innerHTML = 20 + "%";
 //	getbyID('bondMsg').innerHTML = 0.15 + " &#197";
 
@@ -488,11 +488,15 @@ function file_loadedCallback(filePath) {
 			vibLine		: [],
 			counterFreq : 0,
 			counterMD 	: 0,
+			fMinim 		: null,
+			frameSelection : null,
+			frameNum 	: null,
+			frameValue 	: null,
 			haveGraphOptimize : false
 	};
 	
 	counterFreq = 0;
-	extractAuxiliaryJmol();
+	_fileData.info = extractInfoJmol("auxiliaryInfo.models");
 	setFlags(_fileData.fileType);
 	setFileName();
 	getUnitcell(1);
@@ -649,13 +653,16 @@ function onChangeSave(save) {
 		break;
 	case "saveCRYSTAL":
 		//flagCrystal = true;
+		_fileData._export = {};
 		exportCRYSTAL();
 		break;
 	case "saveVASP":
 		//flagCrystal = false;
+		_fileData._export = {};
 		exportVASP();
 		break;
 	case "saveGROMACS":
+		_fileData._export = {};
 		exportGromacs();
 		break;
 	case "saveCASTEP":
@@ -664,7 +671,14 @@ function onChangeSave(save) {
 	case "saveQuantum":
 		quantumEspresso = true;
 		//flagCrystal = false;
+		_fileData._export = {};
 		exportQuantum();
+		break;
+	case "saveGULP":
+		flagGulp = true;
+		flagCrystal = false;
+		_fileData._export = {};
+		exportGULP();
 		break;
 	case "savePOV":
 		runJmoLScript('write POVRAY jice.pov');
@@ -674,11 +688,6 @@ function onChangeSave(save) {
 		break;
 	case "saveState":
 		runJmoLScript('write STATE jice.spt');
-		break;
-	case "saveGULP":
-		flagGulp = true;
-		flagCrystal = false;
-		exportGULP();
 		break;
 	case "savefreqHtml":
 		newAppletWindowFreq();
@@ -786,7 +795,7 @@ function createFileGrp() { // Here the order is crucial
       		
 ///js// Js/_m_cell.js /////
 function enterCell() {
-	getUnitcell(_frame.frameValue);
+	getUnitcell(_fileData.frameValue);
 //	getSymInfo();
 }
 
@@ -796,14 +805,14 @@ function exitCell() {
 function saveFractionalCoordinate() {
 	warningMsg("Make sure you have selected the model you would like to export.");
 
-	if (_frame.frameSelection == null)
+	if (_fileData.frameSelection == null)
 		getUnitcell("1");
 
 	var x = "var cellp = [" + roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b)
 	+ ", " + roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha) + ", "
-	+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(gamma) + "];"
+	+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_fileData.cell.gamma) + "];"
 	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
-	+ _frame.frameSelection + '.label("%a %16.9[fxyz]");'
+	+ _fileData.frameSelection + '.label("%a %16.9[fxyz]");'
 	+ 'var lista = [cellparam, xyzfrac];'
 	+ 'WRITE VAR lista "?.XYZfrac" ';
 	runJmolScriptWait(x);
@@ -821,13 +830,14 @@ function getUnitcell(i) {
 	_fileData.cell.a = roundNumber(cellparam[0]);
 	_fileData.cell.b = roundNumber(cellparam[1]);
 	_fileData.cell.c = roundNumber(cellparam[2]);
-	dimensionality = parseFloat(cellparam[15]);
-	volumeCell = roundNumber(cellparam[16]);
+	_fileData.cell.dimensionality = parseFloat(cellparam[15]);
+	_fileData.cell.volumeCell = roundNumber(cellparam[16]);
 
 	var bOvera = roundNumber(parseFloat(_fileData.cell.b / _fileData.cell.c));
 	var cOvera = roundNumber(parseFloat(_fileData.cell.c / _fileData.cell.a));
 
-	if (dimensionality == 1) {
+	switch (_fileData.cell.dimensionality) {
+	case 1:
 		_fileData.cell.b = 0.000;
 		_fileData.cell.c = 0.000;
 		makeEnable("par_a");
@@ -839,7 +849,8 @@ function getUnitcell(i) {
 		setValue("bovera", "0");
 		setValue("covera", "0");
 		_fileData.cell.typeSystem = "polymer";
-	} else if (dimensionality == 2) {
+		break;
+	case 2:
 		_fileData.cell.c = 0.000;
 		_fileData.cell.typeSystem = "slab";
 		makeEnable("par_a");
@@ -850,11 +861,12 @@ function getUnitcell(i) {
 		setValue("par_c", "1");
 		setValue("bovera", bOvera);
 		setValue("covera", "0");
-	} else if (dimensionality == 3) {
+		break;
+	case 3:
 		_fileData.cell.typeSystem = "crystal";
 		_fileData.cell.alpha = cellparam[3];
 		_fileData.cell.beta = cellparam[4];
-		gamma = cellparam[5];
+		_fileData.cell.gamma = cellparam[5];
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeEnable("par_b");
@@ -863,33 +875,36 @@ function getUnitcell(i) {
 		setValue("par_c", "");
 		setValue("bovera", bOvera);
 		setValue("covera", cOvera);
-	} else if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
+		break;
+	default:
+	  if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
 		_fileData.cell.a = 0.00;
 		_fileData.cell.b = 0.00;
 		_fileData.cell.c = 0.00;
 		_fileData.cell.alpha = 0.00;
 		_fileData.cell.beta = 0.00;
-		gamma = 0.00;
+		_fileData.cell.gamma = 0.00;
 		_fileData.cell.typeSystem = "molecule";
 		setValue("bovera", "0");
 		setValue("covera", "0");
+	  }
 	}
-	setValue("_fileData.cell.a", roundNumber(_fileData.cell.a));
-	setValue("_fileData.cell.b", roundNumber(_fileData.cell.b));
-	setValue("_fileData.cell.c", roundNumber(_fileData.cell.c));
-	setValue("alph_fileData.cell.a", roundNumber(_fileData.cell.alpha));
-	setValue("bet_fileData.cell.a", roundNumber(_fileData.cell.beta));
-	setValue("gamm_fileData.cell.a", roundNumber(gamma));
-	setValue("volumeCell", roundNumber(volumeCell));
+	setValue("cell.a", roundNumber(_fileData.cell.a));
+	setValue("cell.b", roundNumber(_fileData.cell.b));
+	setValue("cell.c", roundNumber(_fileData.cell.c));
+	setValue("cell.alpha", roundNumber(_fileData.cell.alpha));
+	setValue("cell.beta", roundNumber(_fileData.cell.beta));
+	setValue("cell.gamma", roundNumber(_fileData.cell.gamma));
+	setValue("cell.volumeCell", roundNumber(_fileData.cell.volumeCell));
 
 }
 
 function setUnitCell() {
-	getUnitcell(_frame.frameValue);
-	if (_frame.frameSelection == null || _frame.frameSelection == "" || _frame.frameValue == ""
-		|| _frame.frameValue == null) {
-		_frame.frameSelection = "{1.1}";
-		_frame.frameNum = 1.1;
+	getUnitcell(_fileData.frameValue);
+	if (_fileData.frameSelection == null || _fileData.frameSelection == "" || _fileData.frameValue == ""
+		|| _fileData.frameValue == null) {
+		_fileData.frameSelection = "{1.1}";
+		_fileData.frameNum = 1.1;
 		getUnitcell("1");
 	}
 }
@@ -911,16 +926,16 @@ function setCellMeasure(value) {
 	_fileData.cell.b = cellparam[1];
 	_fileData.cell.c = cellparam[2];
 	if (value == "a") {
-		setValue("_fileData.cell.a", roundNumber(_fileData.cell.a));
-		setValue("_fileData.cell.b", roundNumber(_fileData.cell.b));
-		setValue("_fileData.cell.c", roundNumber(_fileData.cell.c));
+		setValue("cell.a", roundNumber(_fileData.cell.a));
+		setValue("cell.b", roundNumber(_fileData.cell.b));
+		setValue("cell.c", roundNumber(_fileData.cell.c));
 	} else {
 		_fileData.cell.a = _fileData.cell.a * 1.889725989;
 		_fileData.cell.b = _fileData.cell.b * 1.889725989;
 		_fileData.cell.c = _fileData.cell.c * 1.889725989;
-		setValue("_fileData.cell.a", roundNumber(_fileData.cell.a));
-		setValue("_fileData.cell.b", roundNumber(_fileData.cell.b));
-		setValue("_fileData.cell.c", roundNumber(_fileData.cell.c));
+		setValue("cell.a", roundNumber(_fileData.cell.a));
+		setValue("cell.b", roundNumber(_fileData.cell.b));
+		setValue("cell.c", roundNumber(_fileData.cell.c));
 	}
 
 }
@@ -985,7 +1000,7 @@ function setPackRangeAndReload(val) {
 function checkPack() {
 	uncheckBox("superPack");
 	// This initialize the bar
-	getbyID("packMsg").innerHTML = 0 + " &#197";
+	getbyID("slider.packMsg").innerHTML = 0 + " &#197";
 }
 
 function uncheckPack() {
@@ -1010,7 +1025,7 @@ function setCellType(value) {
 
 function applyPack(range) {
 	setPackRangeAndReload(parseFloat(range).toPrecision(2));
-	getbyID("packMsg").innerHTML = packRange + " &#197";
+	getbyID("slider.packMsg").innerHTML = packRange + " &#197";
 }
 
 function setManualOrigin() {
@@ -1149,14 +1164,14 @@ function createCellGrp() {
 	strCell += createRadio("cellMeasure", "Bohr", 'setCellMeasure(value)', 0,
 			0, "", "b")
 			+ "\n <br>";
-	strCell += "<i>a</i> " + createText2("_fileData.cell.a", "", 7, 1);
-	strCell += "<i>b</i> " + createText2("_fileData.cell.b", "", 7, 1);
-	strCell += "<i>c</i> " + createText2("_fileData.cell.c", "", 7, 1) + "<br><br>\n";
-	strCell += "<i>&#945;</i> " + createText2("alph_fileData.cell.a", "", 7, 1);
-	strCell += "<i>&#946;</i> " + createText2("bet_fileData.cell.a", "", 7, 1);
-	strCell += "<i>&#947;</i> " + createText2("gamm_fileData.cell.a", "", 7, 1)
+	strCell += "<i>a</i> " + createText2("cell.a", "", 7, 1);
+	strCell += "<i>b</i> " + createText2("cell.b", "", 7, 1);
+	strCell += "<i>c</i> " + createText2("cell.c", "", 7, 1) + "<br><br>\n";
+	strCell += "<i>&#945;</i> " + createText2("cell.alpha", "", 7, 1);
+	strCell += "<i>&#946;</i> " + createText2("cell.beta", "", 7, 1);
+	strCell += "<i>&#947;</i> " + createText2("cell.gamma", "", 7, 1)
 	+ " degrees <br><br>\n";
-	strCell += "Volume cell " + createText2("volumeCell", "", 10, 1)
+	strCell += "Volume cell " + createText2("cell.volumeCell", "", 10, 1)
 	+ "  &#197<sup>3</sup><br><br>";
 //	strCell += createButton('advanceCell', '+',
 //			'toggleDivValue(true,"advanceCellDiv",this)', '')
@@ -1176,16 +1191,15 @@ function createCellGrp() {
       		
 ///js// Js/_m_show.js /////
 _show = {
-	firstTimeBond : true,
-	colorWhat : ""
+	firstTimeBond : true
 }
 
 function enterShow() {
 	if (_show.firstTimeBond) {
-		bondSlider.setValue(20);
-		radiiSlider.setValue(22);
-		getbyID('radiiMsg').innerHTML = 20 + " %";
-		getbyID('bondMsg').innerHTML = 0.20 + " &#197";
+		_slider.bond.setValue(20);
+		_slider.radii.setValue(22);
+		getbyID('slider.radiiMsg').innerHTML = 20 + " %";
+		getbyID('slider.bondMsg').innerHTML = 0.20 + " &#197";
 	}
 	_show.firstTimeBond = false;
 }
@@ -1199,21 +1213,21 @@ function showPickPlaneCallback() {
 		runJmolScriptWait('select within(' + distance + ',plane,$plane1)');
 //			_edit.hideMode = " hide selected";
 //			_edit.deleteMode = " delete selected";
-		colorWhat = "color atoms";
+		_pick.colorWhat = "color atoms";
 	}
 }
 
 
 
 function setColorWhat(rgb, colorscript) {
-	var colorcmd = (colorscript[1] == "colorwhat" ? colorWhat : "color " + colorscript[1]);
+	var colorcmd = (colorscript[1] == "colorwhat" ? _pick.colorWhat : "color " + colorscript[1]);
 	runJmolScriptWait(colorcmd + " " + rgb);// BH?? should be elsewhere + ";draw off");
 }
 
 function elementSelected(element) {
 	selectElement(element);
-	colorWhat = "color atom ";
-	return colorWhat;
+	_pick.colorWhat = "color atom ";
+	return _pick.colorWhat;
 }
 
 //function showSelected(chosenSelection) {
@@ -1235,62 +1249,62 @@ function elementSelected(element) {
 //}
 
 function applyTrans(t) {
-	getbyID('transMsg').innerHTML = t + " %"
+	getbyID('slider.transMsg').innerHTML = t + " %"
 	runJmolScript("color " + getValueSel("setFashion") + " TRANSLUCENT " + (t/100));
 }
 
 function applyRadii(rpercent) {
-	getbyID('radiiMsg').innerHTML = rpercent.toPrecision(2) + " %"
+	getbyID('slider.radiiMsg').innerHTML = rpercent.toPrecision(2) + " %"
 	runJmolScript("cpk " + rpercent + " %;");
 }
 
 function onClickCPK() {
-	getbyID('radiiMsg').innerHTML = "100%";
-	getbyID('bondMsg').innerHTML = 0.3 + " &#197";
-	radiiSlider.setValue(100);
-	bondSlider.setValue(30);
+	getbyID('slider.radiiMsg').innerHTML = "100%";
+	getbyID('slider.bondMsg').innerHTML = 0.3 + " &#197";
+	_slider.radii.setValue(100);
+	_slider.bond.setValue(30);
 	runJmolScript("wireframe 0.30; spacefill 100% ;cartoon off;backbone off; draw off");
 }
 
 function onClickWire() {
-	getbyID('radiiMsg').innerHTML = "0.0 %";
-	getbyID('bondMsg').innerHTML = 0.01 + " &#197";
-	radiiSlider.setValue(0);
-	bondSlider.setValue(1);
+	getbyID('slider.radiiMsg').innerHTML = "0.0 %";
+	getbyID('slider.bondMsg').innerHTML = 0.01 + " &#197";
+	_slider.radii.setValue(0);
+	_slider.bond.setValue(1);
 	// BH Q: why spacefill 1%?
 	runJmolScript('wireframe 0.01; spacefill off;ellipsoids off;cartoon off;backbone off;');
 }
 
 function onClickIonic() {
-	getbyID('radiiMsg').innerHTML = parseFloat(0).toPrecision(2) + " %";
-	getbyID('bondMsg').innerHTML = 0.30 + " &#197";
-	radiiSlider.setValue(0);
-	bondSlider.setValue(30);
+	getbyID('slider.radiiMsg').innerHTML = parseFloat(0).toPrecision(2) + " %";
+	getbyID('slider.bondMsg').innerHTML = 0.30 + " &#197";
+	_slider.radii.setValue(0);
+	_slider.bond.setValue(30);
 	runJmolScript("spacefill IONIC; wireframe 0.15; draw off");
 }
 
 function onStickClick() {
-	getbyID('radiiMsg').innerHTML = "1%";
-	getbyID('bondMsg').innerHTML = 0.30 + " &#197";
-	radiiSlider.setValue(0);
-	bondSlider.setValue(30);
+	getbyID('slider.radiiMsg').innerHTML = "1%";
+	getbyID('slider.bondMsg').innerHTML = 0.30 + " &#197";
+	_slider.radii.setValue(0);
+	_slider.bond.setValue(30);
 	runJmolScript("wireframe 0.15;spacefill 1%;cartoon off;backbone off; draw off");
 }
 
 function onClickBallAndStick() {
-	getbyID('radiiMsg').innerHTML = "20%";
-	getbyID('bondMsg').innerHTML = 0.20 + " &#197";
-	radiiSlider.setValue(20);
-	bondSlider.setValue(20);
+	getbyID('slider.radiiMsg').innerHTML = "20%";
+	getbyID('slider.bondMsg').innerHTML = 0.20 + " &#197";
+	_slider.radii.setValue(20);
+	_slider.bond.setValue(20);
 	runJmolScript("wireframe 0.15; spacefill 20%;cartoon off;backbone off; draw off");
 
 }
 
 function onClickBall() {
-	getbyID('radiiMsg').innerHTML = "20%";
-	getbyID('bondMsg').innerHTML = 0.00 + " &#197";
-	radiiSlider.setValue(20);
-	bondSlider.setValue(0);
+	getbyID('slider.radiiMsg').innerHTML = "20%";
+	getbyID('slider.bondMsg').innerHTML = 0.00 + " &#197";
+	_slider.radii.setValue(20);
+	_slider.bond.setValue(0);
 	runJmolScript("select *; spacefill 20%; wireframe off ; draw off");
 }
 
@@ -1435,13 +1449,13 @@ _edit = {
 
 function enterEdit() {
 
-	radiiConnectSlider.recalculate();
+	_slider.radiiConnect.recalculate();
 
-	setRadiiConnectMessage(radiiConnectSlider.getValue());
+	setRadiiConnectMessage(_slider.radiiConnect.getValue());
 	
 	// BH 2018: Disabled -- unexpected behavior should not be on tab entry
 //	if (_edit.firstTimeEdit) {
-//		radiiConnectSlider.setValue(50);
+//		_slider.radiiConnect.setValue(50);
 //		runJmolScriptWait("set forceAutoBond ON; set bondMode AND");
 //	}
 //	getbyID("radiiConnectMsg").innerHTML = " " + 2.5 + " &#197";
@@ -1459,13 +1473,13 @@ function showPickPlaneCallback() {
 		runJmolScriptWait('select within(' + distance + ',plane,$plane1)');
 //		_edit.hideMode = " hide selected";
 //		_edit.deleteMode = " delete selected";
-//		colorWhat = "color atoms";
+//		_pick.colorWhat = "color atoms";
 	}
 }
 
 
 function setRadiiConnectMessage(r) {
-	getbyID('radiiConnectMsg').innerHTML = " " + r.toPrecision(2) + " &#197";
+	getbyID('slider.radiiConnectMsg').innerHTML = " " + r.toPrecision(2) + " &#197";
 }
 
 function applyConnect(r) {
@@ -1474,15 +1488,15 @@ function applyConnect(r) {
 	} else {
 		var flagBond = checkBoxX("allBondconnect");
 		// alert(flagBond);
-		// alert(_frame.frameNum);
-		if (_frame.frameNum == null || _frame.frameNum == '') {
+		// alert(_fileData.frameNum);
+		if (_fileData.frameNum == null || _fileData.frameNum == '') {
 			getUnitcell("1");
-			_frame.frameNum = 1.1;
+			_fileData.frameNum = 1.1;
 		} else {
 
 		}
 		if (flagBond == 'off') {
-			runJmolScriptWait("select " + _frame.frameNum
+			runJmolScriptWait("select " + _fileData.frameNum
 					+ "; connect  (selected) (selected)  DELETE");
 			runJmolScriptWait("connect " + r
 					+ " (selected) (selected) single ModifyOrCreate;");
@@ -1941,7 +1955,7 @@ function createMeasureGrp() {
 	
 	var strMeas = "<form autocomplete='nope'  id='measureGroup' name='measureGroup' style='display:none'>";
 	strMeas += "<table class='contents'><tr><td > \n";
-	strMeas += "<h2>Measure and Info</h2>\n";
+	strMeas += "<h2>Measure and _fileData.info</h2>\n";
 	strMeas += "</td></tr>\n";
 	strMeas += "<tr><td colspan='2'>\n";
 	strMeas += "Measure<br>\n";
@@ -1992,8 +2006,8 @@ _orient = {
 }
 
 function enterOrient() {
-	slabSlider.setValue(100 - jmolEvaluate("slab"));
-	depthSlider.setValue(jmolEvaluate("depth"));
+	_slider.slab.setValue(100 - jmolEvaluate("slab"));
+	_slider.depth.setValue(jmolEvaluate("depth"));
 	if (jmolEvaluate("slabEnabled") == "true")
 		checkBox("slabToggle");
 	else
@@ -2004,12 +2018,12 @@ function exitOrient() {
 }
 
 function applySlab(x) {
-	getbyID('slabMsg').innerHTML = x + "%" // display
+	getbyID('slider.slabMsg').innerHTML = x + "%" // display
 	runJmolScriptWait("slab " + (100 - x) + ";")
 }
 
 function applyDepth(x) { // alternative displays:
-	getbyID('depthMsg').innerHTML = (100 - x) + "%" // 100%
+	getbyID('slider.depthMsg').innerHTML = (100 - x) + "%" // 100%
 	runJmolScriptWait("depth " + (100 - x) + ";")
 }
 
@@ -2017,16 +2031,16 @@ function toggleSlab() {
 	var ctl = getbyID("slabToggle")
 	if (ctl.checked) {
 		runJmolScriptWait("slab on;");
-//		applySlab(slabSlider.getValue());
-//		applyDepth(depthSlider.getValue());
-//		slabSlider.setValue(20);
+//		applySlab(_slider.slab.getValue());
+//		applyDepth(_slider.depth.getValue());
+//		_slider.slab.setValue(20);
 //		applySlab(defaultFront);
-//		depthSlider.setValue(defaultBack);
+//		_slider.depth.setValue(defaultBack);
 //		applyDepth(defaultBack);
 	} else {
 		runJmolScriptWait("slab off; ")
-//		slabSlider.setValue(0);
-//		depthSlider.setValue(0);
+//		_slider.slab.setValue(0);
+//		_slider.depth.setValue(0);
 	}
 }
 
@@ -3013,11 +3027,13 @@ is based on IR or Raman type. These lists are then pushed into specData as the f
 function setVibList(specData) {
 	var vib = getbyID('vib');	
 	cleanList('vib');
+	console.log("clear vib");
 	var xmin = specData.minX;
 	var xmax = specData.maxX;	
 	for (var i = 0, pt = 0, n = specData.vibList.length; i < n; i++) {
 		if (specData.freqs[i] >= xmin && specData.freqs[i] <= xmax) {
 			addOption(vib, specData.vibList[i][0], specData.vibList[i][1]);
+			console.log("adding vib " + i + " " + specData.vibList[i]);
 			specData.vibList[pt][3] = i;  // reverse loop-up
 			specData.vibList[i][2] = pt++;
 		}
@@ -3355,7 +3371,7 @@ function plotHoverCallbackFreq(event, pos, itemFreq) {
  * function scaleSpectrum(){
  * 
  * var vecorFreq = []; var vecorChk = []; var counter; for(var i =0 ; i <
- * Info.length; i++){ vecorFreq[i] = Info[i].name; vecorChk[i] = 0 if(i == 0)
+ * _fileData.info.length; i++){ vecorFreq[i] = _fileData.info[i].name; vecorChk[i] = 0 if(i == 0)
  * vecorChk[i] = 1 counter++ }
  * 
  * var s = " Shift spectrum "; s+= createSelect("Frequencies", "", 0, 1, counter ,
@@ -3381,18 +3397,18 @@ function minValue(irInt) {
 	return parseInt(irInt.sort(sortNumber)[0]);
 }
 
-function symmetryModeAdd() { // extracts vibrational symmetry modes from Info
+function symmetryModeAdd() { // extracts vibrational symmetry modes from _fileData.info
 								// array and lets one get symmetry operations by
 								// ID
 	cleanList('sym');
 	var sym = getbyID('sym');
-	if (Info[3] && Info[3].modelProperties) {
+	if (_fileData.info[3] && _fileData.info[3].modelProperties) {
 		var symm = _fileData.freqSymm;
 		if (!symm) {
 			var symm = [];
-			for (var i = 1; i < Info.length; i++)
-				if (Info[i].name)
-					symm[i] = Info[i].modelProperties.vibrationalSymmetry;
+			for (var i = 1; i < _fileData.info.length; i++)
+				if (_fileData.info[i].name)
+					symm[i] = _fileData.info[i].modelProperties.vibrationalSymmetry;
 		}
 		var sortedSymm = unique(symm);
 		addOption(sym, "any", "any");
@@ -3487,8 +3503,8 @@ function createFreqGrp() {
 		+ "<br>"
 		+ "Band width " + createText2("sigma", "30", "3", "") + " (cm<sup>-1</sup>)" 
 		+ "&nbsp;"
-		+ "Min freq. " + createText2("nMin", "onClickModSpec()", "4", "")
-		+ " Max " + createText2("nMax", "onClickModSpec()", "4", "") + "(cm<sup>-1</sup>)"
+		+ "Min freq. " + createText2("nMin", "0", "4", "")
+		+ " Max " + createText2("nMax", "4000", "4", "") + "(cm<sup>-1</sup>)"
 		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "") + "<br>"
 		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 1, "", "stick")
 		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 0, "", "gaus")
@@ -3662,10 +3678,10 @@ function setValuesOther() {
 //	  set zSlab 50;
 //	  set zShade false;
 	
-	cameraDepthSlider.setValue(jmolEvaluate("cameraDepth") * 25);
-	SpecularPercentSlider.setValue(jmolEvaluate("specularPercent"));
-	AmbientPercentSlider.setValue(jmolEvaluate("ambientPercent"));
-	DiffusePercentSlider.setValue(jmolEvaluate("diffusePercent"));
+	_slider.cameraDepth.setValue(jmolEvaluate("cameraDepth") * 25);
+	_slider.specularPercent.setValue(jmolEvaluate("specularPercent"));
+	_slider.ambientPercent.setValue(jmolEvaluate("ambientPercent"));
+	_slider.diffusePercent.setValue(jmolEvaluate("diffusePercent"));
 //	getbyID("SpecularPercentMsg").innerHTML = 40 + " %";
 //	getbyID("AmbientPercentMsg").innerHTML = 40 + " %";
 //	getbyID("DiffusePercentMsg").innerHTML = 40 + " %";
@@ -3674,22 +3690,22 @@ function setValuesOther() {
 
 function applyCameraDepth(depth) {
 	runJmolScriptWait("set cameraDepth " + depth + ";")
-	getbyID("cameraDepthMsg").innerHTML = depth
+	getbyID("slider.cameraDepthMsg").innerHTML = depth
 }
 
 function applySpecularPercent(x) {
 	runJmolScriptWait(" set specularPercent " + x + ";");
-	getbyID("SpecularPercentMsg").innerHTML = x + "%";
+	getbyID("slider.specularPercentMsg").innerHTML = x + "%";
 }
 
 function applyAmbientPercent(x) {
 	runJmolScriptWait(" set ambientPercent " + x + ";");
-	getbyID("AmbientPercentMsg").innerHTML = x + "%";
+	getbyID("slider.ambientPercentMsg").innerHTML = x + "%";
 }
 
 function applyDiffusePercent(x) {
 	runJmolScriptWait(" set diffusePercent " + x + ";");
-	getbyID("DiffusePercentMsg").innerHTML = x + "%";
+	getbyID("slider.diffusePercentMsg").innerHTML = x + "%";
 }
 
 function setTextSize(value) {
@@ -3746,11 +3762,11 @@ function createOtherGrp() {
 	strOther += "Light settings";
 	strOther += "</td></tr>";
 	strOther += "<tr><td>";
-	strOther += createSlider("SpecularPercent", "Reflection");
+	strOther += createSlider("specularPercent", "Reflection");
 	strOther += "</td></tr><tr><td>";
-	strOther += createSlider("AmbientPercent", "Ambient");
+	strOther += createSlider("ambientPercent", "Ambient");
 	strOther += "</td></tr><tr><td>";
-	strOther += createSlider("DiffusePercent", "Diffuse");
+	strOther += createSlider("diffusePercent", "Diffuse");
 	strOther += "</td></tr><tr><td colspan='2'>" + createLine('blue', '');
 	strOther += "</tr><tr><td colspan='2'>"
 		strOther += "3D stereo settings <br>"
@@ -4066,13 +4082,12 @@ myPickCallback = function(applet, b, c, d) {
 	_callback.fPick && _callback.fPick(b,c,d);
 }
 
-fMinim = null;
 setMinimizationCallbackFunction = function(f) {
-	fMinim = f;
+	_fileData.fMinim = f;
 }
 
 myMinimizationCallback = function(applet,b,c,d) {
-	fMinim && fMinim(b, c, d);
+	_fileData.fMinim && _fileData.fMinim(b, c, d);
 }
 
       		
@@ -4563,13 +4578,10 @@ eleSymbMass[99] = 252.00;
 //////////////////////////////////////VALUE conversion AND ROUNDOFF
 
 _conversion = {
-radiant : Math.PI / 180
-}
-
-_conversion = {
-	finalGeomUnit : "",
-	unitGeomEnergy : ""
-}
+	radiant 		: Math.PI / 180,
+	finalGeomUnit 	: "",
+	unitGeomEnergy 	: ""
+};
 
 function substringEnergyToFloat(value) {
 	if (value != null) {
@@ -5088,56 +5100,58 @@ debugShowHistory = function() {
 ///js// Js/export.js /////
 
 function setVacuum() {
-	switch (typeSystem) {
+	var newCell_c;
+	var vacuum;
+	switch (_fileData.cell.typeSystem) {
 	case "slab":
-		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
-		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
-				: (messageMsg("Vacuum set to: " + vaccum + " \305."));
+		vacuum = prompt("Please enter the vacuum thickness (\305).", "");
+		(vacuum == "") ? (errorMsg("Vacuum not entered!"))
+				: (messageMsg("Vacuum set to: " + vacuum + " \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(_frame.frameSelection + '.fz.max'));
-		vaccum = parseFloat(vaccum);
-		new_fileData.cell.c = (zMaxCoord * 2) + vaccum;
-		var factor = roundNumber(zMaxCoord + vaccum);
-		if (fractionalCoord == true) {
-			runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; ( i.z +'
+		var zMaxCoord = parseFloat(jmolEvaluate(_fileData.frameSelection + '.fz.max'));
+		vacuum = parseFloat(vacuum);
+		newCell_c = (zMaxCoord * 2) + vacuum;
+		var factor = roundNumber(zMaxCoord + vacuum);
+		if (_fileData._export.fractionalCoord) { // from VASP only?
+			runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; ( i.z +'
 					+ factor + ') /' + newcell + ')');
 		} else {
-			runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; i.z +'
+			runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z +'
 					+ factor + ')');
 		}
-		fromfractionaltoCartesian(null, null, new_fileData.cell.c, null, 90, 90);
+		fromfractionaltoCartesian(null, null, newCell_c, null, 90, 90);
 		break;
 	case "polymer":
-		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
-		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
-				: (messageMsg("Vacuum set to: " + vaccum + "  \305."));
+		vacuum = prompt("Please enter the vacuum thickness (\305).", "");
+		(vacuum == "") ? (errorMsg("Vacuum not entered!"))
+				: (messageMsg("Vacuum set to: " + vacuum + "  \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(_frame.frameSelection + '.fz.max'));
-		vaccum = parseFloat(vaccum);
-		new_fileData.cell.c = (zMaxCoord * 2) + vaccum;
-		var factor = roundNumber(zMaxCoord + vaccum);
-		runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; i.z +' + factor
+		var zMaxCoord = parseFloat(jmolEvaluate(_fileData.frameSelection + '.fz.max'));
+		vacuum = parseFloat(vacuum);
+		newCell_c = (zMaxCoord * 2) + vacuum;
+		var factor = roundNumber(zMaxCoord + vacuum);
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z +' + factor
 				+ ')');
-		runJmolScriptWait(_frame.frameSelection + '.y = for(i;' + _frame.frameSelection + '; i.y +' + factor
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y +' + factor
 				+ ')');
-		fromfractionaltoCartesian(null, new_fileData.cell.c, new_fileData.cell.c, 90, 90, 90);
+		fromfractionaltoCartesian(null, newCell_c, newCell_c, 90, 90, 90);
 		break;
 	case "molecule":
-		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
-		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
-				: (messageMsg("Vacuum set to: " + vaccum + " \305."));
+		vacuum = prompt("Please enter the vacuum thickness (\305).", "");
+		(vacuum == "") ? (errorMsg("Vacuum not entered!"))
+				: (messageMsg("Vacuum set to: " + vacuum + " \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(_frame.frameSelection + '.fz.max'));
-		vaccum = parseFloat(vaccum);
-		new_fileData.cell.c = (zMaxCoord * 2) + vaccum;
-		var factor = roundNumber(zMaxCoord + vaccum);
-		runJmolScriptWait(_frame.frameSelection + '.z = for(i;' + _frame.frameSelection + '; i.z +' + factor
+		var zMaxCoord = parseFloat(jmolEvaluate(_fileData.frameSelection + '.fz.max'));
+		vacuum = parseFloat(vacuum);
+		newCell_c = (zMaxCoord * 2) + vacuum;
+		var factor = roundNumber(zMaxCoord + vacuum);
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z +' + factor
 				+ ')');
-		runJmolScriptWait(_frame.frameSelection + '.y = for(i;' + _frame.frameSelection + '; i.y +' + factor
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y +' + factor
 				+ ')');
-		runJmolScriptWait(_frame.frameSelection + '.x = for(i;' + _frame.frameSelection + '; i.x +' + factor
+		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x +' + factor
 				+ ')');
-		fromfractionaltoCartesian(new_fileData.cell.c, new_fileData.cell.c, new_fileData.cell.c, 90, 90, 90);
+		fromfractionaltoCartesian(newCell_c, newCell_c, newCell_c, 90, 90, 90);
 		break;
 
 	}
@@ -5184,6 +5198,174 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 	return [[xx, xy, xz], [yx, yy, yz], [zx, zy, zz]];
 
 }
+
+
+//prevframeSelection needs because of the conventional
+//var prevframeSelection = null;
+//var prevFrame = null;
+	
+
+function figureOutSpaceGroup() {
+	var stringCellParam;
+	var cellDimString = null;
+	var ibravQ = "";
+	saveStateAndOrientation_a();
+	//prevframeSelection = _fileData.frameSelection;
+	if (_fileData.frameValue == null || _fileData.frameValue == "" || flagCif)
+		frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
+	var prevFrame = _fileData.frameValue;
+	var magnetic = confirm('It\'s the primitive cell ?')
+	// crystalPrev = confirm('Does the structure come from a previous CRYSTAL
+	// calculation?')
+	reload(null, 
+			flagCrystal ? "conv" : null, 
+			magnetic ? "delete not cell=555;" : null
+	);
+	var s = ""
+	var info = jmolEvaluate('show("spacegroup")')
+	if (info.indexOf("x,") < 0) {
+		s = "no space group"
+	} else {
+		var S = info.split("\n")
+		for (var i = 0; i < S.length; i++) {
+			var line = S[i].split(":")
+			if (line[0].indexOf("international table number") == 0)
+				s = parseInt(S[i]
+						.replace(/international table number:/, ""));
+		}
+	}
+	var interNumber = parseInt(s);
+	getUnitcell(prevFrame);
+	// /from crystal manual http://www.crystal.unito.it/Manuals/crystal09.pdf
+	switch (true) {
+	case ((interNumber <= 2)): // Triclinic lattices
+		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
+				+ roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha) + ", "
+				+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_fileData.cell.gamma);
+		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_fileData.cell.a)
+				+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
+				+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
+				+ " \n celdm(4) =  " + cosRadiant(_fileData.cell.alpha) + " \n celdm(5) =  "
+				+ (cosRadiant(_fileData.cell.beta)) + " \n celdm(6) =  "
+				+ (cosRadiant(_fileData.cell.gamma)) + " \n\n";
+		ibravQ = "14";
+		break;
+
+	case ((interNumber > 2) && (interNumber <= 15)): // Monoclinic lattices
+		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
+				+ roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha);
+		if (!flagCrystal && quantumEspresso) {
+			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_fileData.cell.a)
+					+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
+					+ " \n celdm(4) =  " + (cosRadiant(_fileData.cell.alpha))
+					+ " \n\n";
+			ibravQ = "12"; // Monoclinic base centered
+
+			var question = confirm("Is this a Monoclinic base centered lattice?")
+			if (question)
+				ibravQ = "13";
+		}
+		break;
+
+	case ((interNumber > 15) && (interNumber <= 74)): // Orthorhombic lattices
+		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
+				+ roundNumber(_fileData.cell.c);
+		if (!flagCrystal && quantumEspresso) {
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
+					+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
+			ibravQ = "8";
+
+			var question = confirm("Is this a Orthorhombic base-centered lattice?")
+			if (question) {
+				ibravQ = "9";
+			} else {
+				var questionfcc = confirm("Is this a Orthorhombic face-centered (fcc) lattice?");
+				if (questionfcc) {
+					ibravQ = "10";
+				} else {
+					ibravQ = "11";// Orthorhombic body-centered
+				}
+			}
+
+		}
+		break;
+
+	case ((interNumber > 74) && (interNumber <= 142)): // Tetragonal lattices
+
+		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
+		if (!flagCrystal && quantumEspresso) {
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
+			ibravQ = "6";
+			var question = confirm("Is this a Tetragonal I body centered (bct) lattice?");
+			if (question)
+				ibravQ = "7";
+		}
+		break;
+
+	case ((interNumber > 142) && (interNumber <= 167)): // Trigonal lattices
+		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.alpha) + ", "
+				+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_fileData.cell.gamma);
+		cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
+				+ " \n celdm(4) =  " + (cosRadiant(_fileData.cell.alpha))
+				+ " \n celdm(5) = " + (cosRadiant(_fileData.cell.beta))
+				+ " \n celdm(6) =  " + (cosRadiant(_fileData.cell.gamma));
+		ibravQ = "5";
+		var question = confirm("Is a romboheadral lattice?")
+		if (question) {
+			stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
+					+ " \n celdm(4) =  " + (cosRadiant(_fileData.cell.alpha))
+					+ " \n celdm(5) = " + (cosRadiant(_fileData.cell.beta))
+					+ " \n celdm(6) =  " + (cosRadiant(_fileData.cell.gamma))
+					+ " \n\n";
+			ibravQ = "4";
+		}
+		break;
+	case ((interNumber > 167) && (interNumber <= 194)): // Hexagonal lattices
+		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
+		if (!flagCrystal && quantumEspresso) {
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
+					+ " \n celdm(3) = " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
+			ibravQ = "4";
+		}
+		break;
+	case ((interNumber > 194) && (interNumber <= 230)): // Cubic lattices
+		stringCellParam = roundNumber(_fileData.cell.a);
+		if (!flagCrystal && quantumEspresso) {
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a);
+			// alert("I am here");
+			ibravQ = "1";
+			var question = confirm("Is a face centered cubic lattice?")
+			if (question) {
+				var questionBase = confirm("Is a body centered cubic lattice?")
+				if (questionBase) {
+					ibravQ = "3";
+				} else {
+					ibravQ = "2";
+				}
+			}
+	
+		}
+		break;
+	default:
+		errorMsg("SpaceGroup not found in range.");
+		return false;
+		break;
+	}// end switch
+	
+//	stringCellparamgulp = roundNumber(_fileData.cell.a) + ' ' + roundNumber(_fileData.cell.b) + ' '
+//			+ roundNumber(_fileData.cell.c) + ' ' + roundNumber(_fileData.cell.alpha) + ' '
+//			+ roundNumber(_fileData.cell.beta) + ' ' + roundNumber(_fileData.cell.gamma);
+	//	alert(stringCellparamgulp)
+	if (!flagGulp) {
+		reload("primitive");
+		restoreStateAndOrientation_a();
+	}
+}
+
 
       		
 ///js// Js/form.js /////
@@ -5280,12 +5462,12 @@ function formResetAll() {
 }
 
 function createSlider(name, label) {
-	var s = '<div tabIndex="1" class="slider" id="_Slider-div" style="float:left;width:150px;" >'
-		+ '<input class="slider-input" id="_Slider-input" name="_Slider-input" />'
+	var s = '<div tabIndex="1" class="slider" id="_-div" style="float:left;width:150px;" >'
+		+ '<input class="slider-input" id="_-input" name="_-input" />'
 	    + '</div>'
 	    + (label || "") 
 	    + ' <span id="_Msg" class="msgSlider"></span>';
-	return s.replace(/_/g, name);
+	return s.replace(/_/g, "slider." + name);
 	
 }
 
@@ -5711,24 +5893,15 @@ function selectListItem(list, itemToSelect) {
 
       		
 ///js// Js/frame.js /////
-_frame = {
-	frameSelection : null,
-	frameNum : null,
-	frameValue : null
-}
-
-
 function setFrameValues(i) {
-	_frame.frameSelection = null;
-	_frame.frameNum = null;
-	_frame.frameValue = null;
-	_frame.frameSelection = "{1." + i + "}";
-	_frame.frameNum = "1." + i;
-	_frame.frameValue = i;
 	if (i == null || i == "") {
-		_frame.frameSelection = "{1.1}";
-		_frame.frameNum = "1.1";
-		_frame.frameValue = 1;
+		_fileData.frameSelection = "{1.1}";
+		_fileData.frameNum = "1.1";
+		_fileData.frameValue = 1;
+	} else {
+		_fileData.frameSelection = "{1." + i + "}";
+		_fileData.frameNum = "1." + i;
+		_fileData.frameValue = i;
 	}
 }
 
@@ -5740,7 +5913,6 @@ function showFrame(model) {
 }
       		
 ///js// Js/info.js /////
-var Info;
 
 function extractInfoJmol(whatToExtract) {
 	return jmolGetPropertyAsArray(whatToExtract);
@@ -5748,10 +5920,6 @@ function extractInfoJmol(whatToExtract) {
 
 function extractInfoJmolString(whatToExtract) {
 	return jmolGetPropertyAsString(whatToExtract);
-}
-
-function extractAuxiliaryJmol() {
-	Info = extractInfoJmol("auxiliaryInfo.models");
 }
 
 function getElementList(arr) {
@@ -5794,7 +5962,7 @@ function getElementList(arr) {
 
 addCommandBox = function() {
 	// see debug.js
-	return "<div id='debugpanel'>"
+	return "<div id='debugpanel'><hr>"
 		+ createCheck("debugMode", "Show Commands", "debugShowCommands(this.checked)", 0,
 			0, "")
 		+ "&nbsp;" + createButton("removeText", "Clear", 'debugShowCommands(true);debugSay(null)', 0)
@@ -5820,22 +5988,23 @@ function cleanLists() {
       		
 ///js// Js/pick.js /////
 _pick = {
-	pickingEnabled : false,
-	counterHide : 0,
-	selectedAtoms : [],
-	sortquestion : null,
-	selectCheckbox : null,
-	menuCallback : null
+	pickingEnabled 	: false,
+	counterHide 	: 0,
+	selectedAtoms	: [],
+	sortquestion 	: null,
+	selectCheckbox 	: null,
+	menuCallback 	: null,
+	colorWhat		: "color atom" 
 }
 
 function setPicking(form) {
 	if (form.checked) {
 		runJmolScriptWait('showSelections TRUE; select none;halos on; ');
-		colorWhat = "color atom";
+		_pick.colorWhat = "color atom";
 	} else {
 		runJmolScriptWait('select none;');
 	}
-	return colorWhat;
+	return _pick.colorWhat;
 }
 
 function setPickingDelete(form) {
@@ -5971,7 +6140,7 @@ function pickDistanceCallback() {
 			runJmolScriptWait('select within(' + distance + ',picked); draw sphere1 width ' + distance + '  {picked} translucent;');
 			_edit.hideMode = " hide selected";
 			_edit.deleteMode = " delete selected";
-			colorWhat = "color atoms";
+			_pick.colorWhat = "color atoms";
 			cancelPicking();
 			return true;
 		}
@@ -6021,8 +6190,8 @@ function pickDistanceCallback() {
 //	var data = [];
 //  var A = [];
 //    var nplots = 1;
-//	var modelCount = Info.length;
-//var stringa = Info[3].name;
+//	var modelCount = _fileData.info.length;
+//var stringa = _fileData.info[3].name;
     
 //	var nullValues;
     
@@ -6066,7 +6235,7 @@ function arrayMin(a) {
 
 
 function plotEnergies(){
-	var modelCount = Info.length;
+	var modelCount = _fileData.info.length;
 	if (_fileData.haveGraphOptimize || modelCount < 3)
 		return false;
 	_fileData.haveGraphOptimize = true;
@@ -6084,7 +6253,7 @@ function plotEnergies(){
 	var data = [];
 	var A = [];
 	var nplots = 1;
-	var stringa = Info[3].name;
+	var stringa = _fileData.info[3].name;
 	var f = null;
 	var pattern = null;
 	if(flagCrystal){
@@ -6113,17 +6282,17 @@ function plotEnergies(){
 	if (f) {
 		// not Gaussian
 		for (var i = 0; i < last; i++) {
-			var name = Info[i].name;
+			var name = _fileData.info[i].name;
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = 0+ Info[i].modelNumber;
+			var modelnumber = 0+ _fileData.info[i].modelNumber;
 			if(i > 0)
 				previous = i - 1;
 			var e = f(name);
-//			if(i == 0 || Info[i - 1].name == null) {
-				energy = Math.abs(e - f(Info[last].name));
-//			} else if (previous > 0 && e != f(Info[i - 1].name)) {
-//				energy = Math.abs(e - f(Info[i - 1].name));
+//			if(i == 0 || _fileData.info[i - 1].name == null) {
+				energy = Math.abs(e - f(_fileData.info[last].name));
+//			} else if (previous > 0 && e != f(_fileData.info[i - 1].name)) {
+//				energy = Math.abs(e - f(_fileData.info[i - 1].name));
 //			}
 			label = 'Model = ' + modelnumber + ', &#916 E = ' + energy + ' kJmol^-1';
 			A.push([i+1,energy,modelnumber,label]);
@@ -6136,7 +6305,7 @@ function plotEnergies(){
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
 			var modelnumber = _fileData.energy.length - 1;		
-			if(i > 0 && i < Info.length)
+			if(i > 0 && i < _fileData.info.length)
 				var previous = i - 1;
 			var e = fromHartreetokJ(name);
 			var e1;
@@ -6178,10 +6347,10 @@ function plotEnergies(){
 	if(stringa.search(/Energy/i) != -1){
 		last = modelCount - 1;
 		for (var i = 0; i < last; i++) {
-			var name = Info[i].name;
+			var name = _fileData.info[i].name;
 			if (name == null)
 				continue;
-			var modelnumber = 0 + Info[i].modelNumber;
+			var modelnumber = 0 + _fileData.info[i].modelNumber;
 			// first gradient will be for model 1
 			// This is if is to check if we are dealing with an optimization
 			// or
@@ -6189,10 +6358,10 @@ function plotEnergies(){
 			// frequency calculation
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-				maxGra = parseFloat(Info[i].modelProperties.maxGradient);
+				maxGra = parseFloat(_fileData.info[i].modelProperties.maxGradient);
 //			else if(name && previous > 0) {
-//				if (substringEnergyToFloat(Info[i].name) != substringEnergyToFloat(Info[i - 1].name))
-//					maxGra = parseFloat(Info[i].modelProperties.maxGradient);
+//				if (substringEnergyToFloat(_fileData.info[i].name) != substringEnergyToFloat(_fileData.info[i - 1].name))
+//					maxGra = parseFloat(_fileData.info[i].modelProperties.maxGradient);
 //			}
 			if (isNaN(maxGra))
 				continue;
@@ -6356,14 +6525,14 @@ function showTooltipFreq(x, y, contents, pos) {
 //	window.print()
 //}
 
-function countNullModel(arrayX) {
-	var valueNullelement = 0;
-	for (var i = 0; i < arrayX.length; i++) {
-		if (arrayX[i].name == null || arrayX[i].name == "")
-			valueNullelement = valueNullelement + 1;
-	}
-	return valueNullelement;
-}
+//function countNullModel(arrayX) {
+//	var valueNullelement = 0;
+//	for (var i = 0; i < arrayX.length; i++) {
+//		if (arrayX[i].name == null || arrayX[i].name == "")
+//			valueNullelement = valueNullelement + 1;
+//	}
+//	return valueNullelement;
+//}
 
 //for spectrum.html or new dynamic cool spectrum simulation
 
@@ -6400,302 +6569,147 @@ function countNullModel(arrayX) {
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *  02111-1307  USA.
  */
-
+_slider = {
+	defaultFront	: 20,
+	defaultBack 	: 100,
+	bond 			: null,
+	radii 			: null,
+	radiiConnect	: null,
+	trans			: null,
+	pack			: null,
+	cameraDepth		: null,
+	specularPercent : null,
+	ambientPercent	: null,
+	diffusePercent	: null,
+	slab 			: null,
+	depth			: null
+}	
 function applyBond(angstroms) {
 	if (_show.firstTimeBond) {
 		runJmolScriptWait("wireframe .2;");
 	} else {
 		runJmolScriptWait("wireframe " + angstroms + ";");
-		getbyID('bondMsg').innerHTML = angstroms.toPrecision(1) + " &#197";
+		getbyID('slider.bondMsg').innerHTML = angstroms.toPrecision(1) + " &#197";
 		runJmolScriptWait("save BONDS bondEdit");
 	}
 }
 
-var defaultFront = 20, defaultBack = 100;
 
 loadSliders = function() {
-	bondSlider = new Slider(getbyID("bondSlider-div"), getbyID("bondSlider-input"), "horizontal");
-	bondSlider.setMaximum(100);
-	bondSlider.setMinimum(0);
-	bondSlider.setUnitIncrement(5);
+	_slider.bond = new Slider(getbyID("slider.bond-div"), getbyID("slider.bond-input"), "horizontal");
+	_slider.bond.setMaximum(100);
+	_slider.bond.setMinimum(0);
+	_slider.bond.setUnitIncrement(5);
 	//amount to increment the value when using the arrow keys
-	bondSlider.setValue(15);
-	bondSlider.onchange = function() {
-		applyBond(bondSlider.getValue() / 100)
+	_slider.bond.setValue(15);
+	_slider.bond.onchange = function() {
+		applyBond(_slider.bond.getValue() / 100)
 	}
 	
-	radiiSlider = new Slider(getbyID("radiiSlider-div"), getbyID("radiiSlider-input"), "horizontal");
-	radiiSlider.setMaximum(100);
-	radiiSlider.setMinimum(0);
-	radiiSlider.setUnitIncrement(5);
+	_slider.radii = new Slider(getbyID("slider.radii-div"), getbyID("slider.radii-input"), "horizontal");
+	_slider.radii.setMaximum(100);
+	_slider.radii.setMinimum(0);
+	_slider.radii.setUnitIncrement(5);
 	//amount to increment the value when using the arrow keys
-	radiiSlider.setValue(26);
-	radiiSlider.onchange = function() {
-		applyRadii(radiiSlider.getValue())
+	_slider.radii.setValue(26);
+	_slider.radii.onchange = function() {
+		applyRadii(_slider.radii.getValue())
 	}
 	
-	radiiConnectSlider = new Slider(getbyID("radiiConnectSlider-div"), getbyID("radiiConnectSlider-input"), "horizontal");
-	radiiConnectSlider.setMaximum(100);
+	_slider.radiiConnect = new Slider(getbyID("slider.radiiConnect-div"), getbyID("slider.radiiConnect-input"), "horizontal");
+	_slider.radiiConnect.setMaximum(100);
 	//does not work with values < 1
-	radiiConnectSlider.setMinimum(0);
-	radiiConnectSlider.setUnitIncrement(1);
+	_slider.radiiConnect.setMinimum(0);
+	_slider.radiiConnect.setUnitIncrement(1);
 	//amount to increment the value when using the arrow keys
-	radiiConnectSlider.setValue(80);
-	radiiConnectSlider.onchange = function() {
-		applyConnect(radiiConnectSlider.getValue() / 20)
+	_slider.radiiConnect.setValue(80);
+	_slider.radiiConnect.onchange = function() {
+		applyConnect(_slider.radiiConnect.getValue() / 20)
 	}
 	
-	transSlider = new Slider(getbyID("transSlider-div"), getbyID("transSlider-input"), "horizontal");
-	transSlider.setMaximum(100);
-	transSlider.setMinimum(0);
-	transSlider.setUnitIncrement(4);
+	_slider.trans = new Slider(getbyID("slider.trans-div"), getbyID("slider.trans-input"), "horizontal");
+	_slider.trans.setMaximum(100);
+	_slider.trans.setMinimum(0);
+	_slider.trans.setUnitIncrement(4);
 	//amount to increment the value when using the arrow keys
-	transSlider.setValue(100);
-	transSlider.onchange = function() {
-		applyTrans(transSlider.getValue())
+	_slider.trans.setValue(100);
+	_slider.trans.onchange = function() {
+		applyTrans(_slider.trans.getValue())
 	}
 	
-	packSlider = new Slider(getbyID("packSlider-div"), getbyID("packSlider-input"), "horizontal");
-	packSlider.setMaximum(100);
-	packSlider.setMinimum(0);
-	packSlider.setUnitIncrement(0.5);
+	_slider.pack = new Slider(getbyID("slider.pack-div"), getbyID("slider.pack-input"), "horizontal");
+	_slider.pack.setMaximum(100);
+	_slider.pack.setMinimum(0);
+	_slider.pack.setUnitIncrement(0.5);
 	//amount to increment the value when using the arrow keys
-	packSlider.setValue(1);
-	packSlider.onchange = function() {
-		applyPack(packSlider.getValue() / 20)
+	_slider.pack.setValue(1);
+	_slider.pack.onchange = function() {
+		applyPack(_slider.pack.getValue() / 20)
 	}
 	
 	
-	cameraDepthSlider = new Slider(getbyID("cameraDepthSlider-div"), getbyID("cameraDepthSlider-input"), "horizontal");
-	cameraDepthSlider.setMaximum(100);
-	cameraDepthSlider.setMinimum(1);
-	cameraDepthSlider.setUnitIncrement(2);
+	_slider.cameraDepth = new Slider(getbyID("slider.cameraDepth-div"), getbyID("slider.cameraDepth-input"), "horizontal");
+	_slider.cameraDepth.setMaximum(100);
+	_slider.cameraDepth.setMinimum(1);
+	_slider.cameraDepth.setUnitIncrement(2);
 	//amount to increment the value when using the arrow keys
-	cameraDepthSlider.setValue(5);
-	cameraDepthSlider.onchange = function() {
-		applyCameraDepth(cameraDepthSlider.getValue()/25)
+	_slider.cameraDepth.setValue(5);
+	_slider.cameraDepth.onchange = function() {
+		applyCameraDepth(_slider.cameraDepth.getValue()/25)
 	}
 	
-	SpecularPercentSlider = new Slider(getbyID("SpecularPercentSlider-div"), getbyID("SpecularPercentSlider-input"), "horizontal");
-	SpecularPercentSlider.setMaximum(100);
-	SpecularPercentSlider.setMinimum(0);
-	SpecularPercentSlider.setUnitIncrement(2);
+	_slider.specularPercent = new Slider(getbyID("slider.specularPercent-div"), getbyID("slider.specularPercent-input"), "horizontal");
+	_slider.specularPercent.setMaximum(100);
+	_slider.specularPercent.setMinimum(0);
+	_slider.specularPercent.setUnitIncrement(2);
 	//amount to increment the value when using the arrow keys
-	SpecularPercentSlider.setValue(5);
-	SpecularPercentSlider.onchange = function() {
-		applySpecularPercent(SpecularPercentSlider.getValue())
+	_slider.specularPercent.setValue(5);
+	_slider.specularPercent.onchange = function() {
+		applySpecularPercent(_slider.specularPercent.getValue())
 	}
 	
-	AmbientPercentSlider = new Slider(getbyID("AmbientPercentSlider-div"), getbyID("AmbientPercentSlider-input"), "horizontal");
-	AmbientPercentSlider.setMaximum(100);
-	AmbientPercentSlider.setMinimum(0);
-	AmbientPercentSlider.setUnitIncrement(2);
+	_slider.ambientPercent = new Slider(getbyID("slider.ambientPercent-div"), getbyID("slider.ambientPercent-input"), "horizontal");
+	_slider.ambientPercent.setMaximum(100);
+	_slider.ambientPercent.setMinimum(0);
+	_slider.ambientPercent.setUnitIncrement(2);
 	//amount to increment the value when using the arrow keys
-	AmbientPercentSlider.setValue(5);
-	AmbientPercentSlider.onchange = function() {
-		applyAmbientPercent(AmbientPercentSlider.getValue())
+	_slider.ambientPercent.setValue(5);
+	_slider.ambientPercent.onchange = function() {
+		applyAmbientPercent(_slider.ambientPercent.getValue())
 	}
 	
-	DiffusePercentSlider = new Slider(getbyID("DiffusePercentSlider-div"), getbyID("DiffusePercentSlider-input"), "horizontal");
-	DiffusePercentSlider.setMaximum(100);
-	DiffusePercentSlider.setMinimum(0);
-	DiffusePercentSlider.setUnitIncrement(2);
+	_slider.diffusePercent = new Slider(getbyID("slider.diffusePercent-div"), getbyID("slider.diffusePercent-input"), "horizontal");
+	_slider.diffusePercent.setMaximum(100);
+	_slider.diffusePercent.setMinimum(0);
+	_slider.diffusePercent.setUnitIncrement(2);
 	//amount to increment the value when using the arrow keys
-	DiffusePercentSlider.setValue(5);
-	DiffusePercentSlider.onchange = function() {
-		applyDiffusePercent(DiffusePercentSlider.getValue())
+	_slider.diffusePercent.setValue(5);
+	_slider.diffusePercent.onchange = function() {
+		applyDiffusePercent(_slider.diffusePercent.getValue())
 	}
 	
-	slabSlider = new Slider(getbyID("slabSlider-div"), getbyID("slabSlider-input"), "horizontal");
-	slabSlider.setMaximum(100)
-	slabSlider.setMinimum(0)
-	slabSlider.setUnitIncrement(2) 
+	_slider.slab = new Slider(getbyID("slider.slab-div"), getbyID("slider.slab-input"), "horizontal");
+	_slider.slab.setMaximum(100)
+	_slider.slab.setMinimum(0)
+	_slider.slab.setUnitIncrement(2) 
 	// amount to increment the value when using the
 	// arrow keys
-	slabSlider.setValue(defaultFront)
-	slabSlider.onchange = function() {
-		applySlab(slabSlider.getValue())
+	_slider.slab.setValue(_slider.defaultFront)
+	_slider.slab.onchange = function() {
+		applySlab(_slider.slab.getValue())
 	}
 	
-	depthSlider = new Slider(getbyID("depthSlider-div"), getbyID("depthSlider-input"), "horizontal");
-	depthSlider.setMaximum(100);
-	depthSlider.setMinimum(0);
-	depthSlider.setUnitIncrement(2); // amount to increment the value when using
+	_slider.depth = new Slider(getbyID("slider.depth-div"), getbyID("slider.depth-input"), "horizontal");
+	_slider.depth.setMaximum(100);
+	_slider.depth.setMinimum(0);
+	_slider.depth.setUnitIncrement(2); // amount to increment the value when using
 	// the arrow keys
-	depthSlider.setValue(defaultBack);
-	depthSlider.onchange = function() { // onchange MUST BE all lowercase
-		applyDepth(depthSlider.getValue())
+	_slider.depth.setValue(_slider.defaultBack);
+	_slider.depth.onchange = function() { // onchange MUST BE all lowercase
+		applyDepth(_slider.depth.getValue())
 	}
 }
 
-      		
-///js// Js/symmetry.js /////
-//prevframeSelection needs because of the conventional
-
-
-
-function figureOutSpaceGroup() {
-	var stringCellParam;
-	var cellDimString = null;
-	var ibravQ = "";
-	saveStateAndOrientation_a();
-	prevframeSelection = _frame.frameSelection;
-	if (_frame.frameValue == null || _frame.frameValue == "" || flagCif)
-		frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
-	prevFrame = _frame.frameValue;
-	var magnetic = confirm('It\'s the primitive cell ?')
-	// crystalPrev = confirm('Does the structure come from a previous CRYSTAL
-	// calculation?')
-	reload(null, 
-			flagCrystal ? "conv" : null, 
-			magnetic ? "delete not cell=555;" : null
-	);
-	var s = ""
-	var info = jmolEvaluate('show("spacegroup")')
-	if (info.indexOf("x,") < 0) {
-		s = "no space group"
-	} else {
-		var S = info.split("\n")
-		for (var i = 0; i < S.length; i++) {
-			var line = S[i].split(":")
-			if (line[0].indexOf("international table number") == 0)
-				s = parseInt(S[i]
-						.replace(/international table number:/, ""));
-		}
-	}
-	var interNumber = parseInt(s);
-	getUnitcell(prevFrame);
-	// /from crystal manual http://www.crystal.unito.it/Manuals/crystal09.pdf
-	switch (true) {
-	case ((interNumber <= 2)): // Triclinic lattices
-		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
-				+ roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha) + ", "
-				+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_fileData.cell.gamma);
-		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_fileData.cell.a)
-				+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-				+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
-				+ " \n celdm(4) =  " + cosRadiant(_fileData.cell.alpha) + " \n celdm(5) =  "
-				+ (cosRadiant(_fileData.cell.beta)) + " \n celdm(6) =  "
-				+ (cosRadiant(_fileData.cell.gamma)) + " \n\n";
-		ibravQ = "14";
-		break;
-
-	case ((interNumber > 2) && (interNumber <= 15)): // Monoclinic lattices
-		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
-				+ roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha);
-		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_fileData.cell.a)
-					+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
-					+ " \n celdm(4) =  " + (cosRadiant(_fileData.cell.alpha))
-					+ " \n\n";
-			ibravQ = "12"; // Monoclinic base centered
-
-			var question = confirm("Is this a Monoclinic base centered lattice?")
-			if (question)
-				ibravQ = "13";
-		}
-		break;
-
-	case ((interNumber > 15) && (interNumber <= 74)): // Orthorhombic lattices
-		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b) + ", "
-				+ roundNumber(_fileData.cell.c);
-		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-					+ " \n celdm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
-					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
-			ibravQ = "8";
-
-			var question = confirm("Is this a Orthorhombic base-centered lattice?")
-			if (question) {
-				ibravQ = "9";
-			} else {
-				var questionfcc = confirm("Is this a Orthorhombic face-centered (fcc) lattice?");
-				if (questionfcc) {
-					ibravQ = "10";
-				} else {
-					ibravQ = "11";// Orthorhombic body-centered
-				}
-			}
-
-		}
-		break;
-
-	case ((interNumber > 74) && (interNumber <= 142)): // Tetragonal lattices
-
-		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
-		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-					+ " \n celdm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
-			ibravQ = "6";
-			var question = confirm("Is this a Tetragonal I body centered (bct) lattice?");
-			if (question)
-				ibravQ = "7";
-		}
-		break;
-
-	case ((interNumber > 142) && (interNumber <= 167)): // Trigonal lattices
-		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.alpha) + ", "
-				+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_fileData.cell.gamma);
-		cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-				+ " \n celdm(4) =  " + (cosRadiant(_fileData.cell.alpha))
-				+ " \n celdm(5) = " + (cosRadiant(_fileData.cell.beta))
-				+ " \n celdm(6) =  " + (cosRadiant(_fileData.cell.gamma));
-		ibravQ = "5";
-		var question = confirm("Is a romboheadral lattice?")
-		if (question) {
-			stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-					+ " \n celdm(4) =  " + (cosRadiant(_fileData.cell.alpha))
-					+ " \n celdm(5) = " + (cosRadiant(_fileData.cell.beta))
-					+ " \n celdm(6) =  " + (cosRadiant(_fileData.cell.gamma))
-					+ " \n\n";
-			ibravQ = "4";
-		}
-		break;
-	case ((interNumber > 167) && (interNumber <= 194)): // Hexagonal lattices
-		stringCellParam = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.c);
-		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a)
-					+ " \n celdm(3) = " + roundNumber(_fileData.cell.c / _fileData.cell.a) + " \n\n";
-			ibravQ = "4";
-		}
-		break;
-	case ((interNumber > 194) && (interNumber <= 230)): // Cubic lattices
-		stringCellParam = roundNumber(_fileData.cell.a);
-		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_fileData.cell.a);
-			// alert("I am here");
-			ibravQ = "1";
-			var question = confirm("Is a face centered cubic lattice?")
-			if (question) {
-				var questionBase = confirm("Is a body centered cubic lattice?")
-				if (questionBase) {
-					ibravQ = "3";
-				} else {
-					ibravQ = "2";
-				}
-			}
-	
-		}
-		break;
-	default:
-		errorMsg("SpaceGroup not found in range.");
-		return false;
-		break;
-	}// end switch
-	
-//	stringCellparamgulp = roundNumber(_fileData.cell.a) + ' ' + roundNumber(_fileData.cell.b) + ' '
-//			+ roundNumber(_fileData.cell.c) + ' ' + roundNumber(_fileData.cell.alpha) + ' '
-//			+ roundNumber(_fileData.cell.beta) + ' ' + roundNumber(_fileData.cell.gamma);
-	//	alert(stringCellparamgulp)
-	if (flagCrystal)
-		savCRYSTALSpace();
-	if (!flagGulp) {
-		reload("primitive");
-		restoreStateAndOrientation_a();
-	}
-}
       		
 ///js// Js/uff.js /////
 /*  J-ICE library 
@@ -6781,18 +6795,16 @@ function scriptUffCallback(b, step, d, e, f, g) {
 }
       		
 ///js// Js/windows.js /////
-_window = {
-	windowoptions : "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50"
-}
-
 function newAppletWindow() {
+	var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50"
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);
 	var newwin = open("OutputResized.html", "jmol_" + sm, _window.windowoptions);
 }
 
-var windowfreq = "menubar=no,resizable=no,scrollbars=yes,resizable=yes;alwaysRaised,width=1024,height=768";
+
 function newAppletWindowFreq() {
+	var windowfreq = "menubar=no,resizable=no,scrollbars=yes,resizable=yes;alwaysRaised,width=1024,height=768";
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);
 	var newwin = open("exportfreq.html", sm, windowfreq);
@@ -6805,8 +6817,9 @@ function onClickAcknow() {
 	var newwin = open("acn.html", sm, woption);
 }
 
-var windowfeed = "menubar=no,resizable=no,scrollbars=yes,resizable=yes;alwaysRaised,width=1024,height=768";
+
 function newAppletWindowFeed() {
+	var windowfeed = "menubar=no,resizable=no,scrollbars=yes,resizable=yes;alwaysRaised,width=1024,height=768";
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);
 	var newwin = open("http://j-ice.sourceforge.net/?page_id=9", sm, windowfeed);
@@ -6816,27 +6829,22 @@ function newAppletWindowFeed() {
 // global variables used in JS-ICE
 // Geoff van Dover 2018.10.26
 
-var version = "3.0.0"; // BH 2018
+version = "3.0.0"; // BH 2018
 
 
 // from _m_file.js
 
 _fileData = {};
 
-var _fileIsReload = false;
+_fileIsReload = false;
 
-// from symmetry.js
-
-var prevframeSelection = null;
-var prevFrame = null;
-	
 // from plotgraph.js
 
-var _plot = {};
+_plot = {};
 
 // for citations:
 
-var _global = {
+_global = {
 	citations : [
 	   { title:				
 		'J-ICE: a new Jmol interface for handling and visualizing crystallographic and electronic properties' 
@@ -6894,81 +6902,22 @@ var _global = {
  %ENDBLOCK SPECIES_POT
  */
 
-var positionCastep = null;
-
-function exportCASTEP() {
-	warningMsg("Make sure you have selected the model you would like to export.");
-	setUnitCell();
-	saveStateAndOrientation_a();
-	var lattice = fromfractionaltoCartesian();
-	setVacuum();
-	switch (typeSystem) {
-	case "slab":
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
-		break;
-	case "polymer":
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/'
-				+ roundNumber(_fileData.cell.b) + ')');
-		break;
-	case "molecule":
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
-				+ roundNumber(_fileData.cell.c) + ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/'
-				+ roundNumber(_fileData.cell.b) + ')');
-		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/'
-				+ roundNumber(_fileData.cell.a) + ')');
-		break;
-	}
-
-	prepareLatticeblockcastep(lattice);
-	prepareCoordinateblockCastep();
-	restoreStateAndOrientation_a();
-
-	var finalInputCastep = 'var final = [latticeCastep, positionCastep].replace("\n\n","\n");'
-			+ 'WRITE VAR final "?.cell"';
-	runJmolScript(finalInputCastep);
-}
-
-function prepareLatticeblockcastep(lattice) {
-	var cellCastep = "var latticeHeader = '\%block LATTICE_CART';"
-			+ "var latticeOne = [" + lattice[0] +"].join(' ');"
-			+ "var latticeTwo = [" + lattice[1] + "].join(' ');"
-			+ "var latticeThree = [" + lattice[2] + "].join(' ');"
-			+ "var latticeClose = '\%endblock LATTICE_CART';"
-			+ "latticeCastep = [latticeHeader, latticeOne, latticeTwo,latticeThree, latticeClose];"
-	runJmolScriptWait(cellCastep);
-}
-
-// /Frac coordinates
-function prepareCoordinateblockCastep() {
-	positionCastep = "var positionHeader = '\%block POSITIONS_FRAC';"
-			+ 'var xyzCoord = ' + frameSelection + '.label("%e %16.9[fxyz]");'
-			+ 'xyzCoord = xyzCoord.replace("\n\n","\n");'
-			+ "var positionClose = '\%endblock POSITIONS_FRAC';"
-			+ "positionCastep = [positionHeader, xyzCoord, positionClose];"
-			+ 'positionCastep = positionCastep.replace("\n\n","\n");'
-	runJmolScriptWait(positionCastep);
-}
-
 // /// FUNCTION LOAD
 
 loadDone_castep = function() {
 	_fileData.energyUnits = ENERGY_EV;
 	_fileData.counterFreq = 0;
 	_fileData.counterMD = 0;
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		if (_fileData.info[i].name != null) {
+			var line = _fileData.info[i].name;
 			if (line.search(/Energy =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
 				_fileData.geomData[i] = line;
 				_fileData.counterFreq++;
 			} else if (line.search(/cm-1/i) != -1) {
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
-				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqInfo.push(_fileData.info[i]);
 				_fileData.freqData.push(line);
 				_fileData.vibLine.push(i + " A " + data + " cm^-1");
 				_fileData.counterMD++;
@@ -6980,6 +6929,56 @@ loadDone_castep = function() {
 	disableFreqOpts();
 	getSymInfo();
 	loadDone();
+}
+
+function exportCASTEP() {
+	warningMsg("Make sure you have selected the model you would like to export.");
+	setUnitCell();
+	saveStateAndOrientation_a();
+	var lattice = fromfractionaltoCartesian();
+	setVacuum();
+	switch (_fileData.cell.typeSystem) {
+	case "slab":
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
+				+ roundNumber(_fileData.cell.c) + ')');
+		break;
+	case "polymer":
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
+				+ roundNumber(_fileData.cell.c) + ')');
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/'
+				+ roundNumber(_fileData.cell.b) + ')');
+		break;
+	case "molecule":
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/'
+				+ roundNumber(_fileData.cell.c) + ')');
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/'
+				+ roundNumber(_fileData.cell.b) + ')');
+		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/'
+				+ roundNumber(_fileData.cell.a) + ')');
+		break;
+	}
+
+	var cellCastep = "var latticeHeader = '\%block LATTICE_CART';"
+		+ "var latticeOne = [" + lattice[0] +"].join(' ');"
+		+ "var latticeTwo = [" + lattice[1] + "].join(' ');"
+		+ "var latticeThree = [" + lattice[2] + "].join(' ');"
+		+ "var latticeClose = '\%endblock LATTICE_CART';"
+		+ "latticeCastep = [latticeHeader, latticeOne, latticeTwo,latticeThree, latticeClose];";
+	runJmolScriptWait(cellCastep);
+	
+	var positionCastep = "var positionHeader = '\%block POSITIONS_FRAC';"
+		+ 'var xyzCoord = ' + _fileData.frameSelection + '.label("%e %16.9[fxyz]");'
+		+ 'xyzCoord = xyzCoord.replace("\n\n","\n");'
+		+ "var positionClose = '\%endblock POSITIONS_FRAC';"
+		+ "positionCastep = [positionHeader, xyzCoord, positionClose];"
+		+ 'positionCastep = positionCastep.replace("\n\n","\n");';
+	runJmolScriptWait(positionCastep);
+	
+	restoreStateAndOrientation_a();
+
+	var finalInputCastep = 'var final = [latticeCastep, positionCastep].replace("\n\n","\n");'
+			+ 'WRITE VAR final "?.cell"';
+	runJmolScript(finalInputCastep);
 }
 
       		
@@ -7013,40 +7012,63 @@ loadDone_castep = function() {
 ////////////////SAVE INPUT
 /////////
 
-var titleCRYS = null;
+///////////////////////// LOAD & ON LOAD functions
 
-function titleCRYSTAL() {
-	titleCRYS = prompt("Type here the job title:", "");
-	(titleCRYS == "" || titleCRYS == null) ? (titleCRYS = ' .d12 prepared with J-ICE ')
-			: (titleCRYS = titleCRYS + ' .d12 prepared with J-ICE')
+loadDone_crystal = function() {
+	_fileData.energyUnits = ENERGY_HARTREE;
+	_fileData.StrUnitEnergy = "H";
+	var vib = getbyID('vib');
+	for (var i = 0; i < _fileData.info.length; i++) {
+		var line = _fileData.info[i].name;
+		if (line != null) {
+			if (line.search(/Energy/i) != -1) { // Energy
+//				if (i > 0 && i < _fileData.info.length)
+//					var previous = substringEnergyToFloat(_fileData.info[i - 1].name);
+//				if (_fileData.info[i].name != null) {
+				addOption(getbyID('geom'), i + " " + line, i + 1);
+				_fileData.geomData[i] = line;
+				_fileData.counterFreq++;
+//				}
+			} else if (line.search(/cm/i) != -1) {
+				if (line.search(/LO/) == -1) {
+					_fileData.freqInfo.push(_fileData.info[i]);
+					_fileData.vibLine.push((i - _fileData.counterFreq) + " " + line); 
+					_fileData.freqData.push(line);
+				}
+			}
+	
+		}
+	} 
+	getUnitcell("1");
+	runJmolScriptWait("echo");
+	setTitleEcho();
+	loadDone();
 }
 
-var numAtomCRYSTAL = null;
-var fractionalCRYSTAL = null;
-function atomCRYSTAL() {
-	if (typeSystem == "molecule")
-		fractionalCRYSTAL = frameSelection + '.label("%l %16.9[xyz]")';
-	runJmolScriptWait("print " + fractionalCRYSTAL)
-	// alert(typeSystem);
-
-	numAtomCRYSTAL = frameSelection + ".length";
-	fractionalCRYSTAL = frameSelection + '.label("%l %16.9[fxyz]")';
-	// alert(typeSystem);
-}
-
-var systemCRYSTAL = null;
-var keywordCRYSTAL = null;
-var symmetryCRYSTAL = null;
 function exportCRYSTAL() {
+	var systemCRYSTAL = null;
+	var keywordCRYSTAL = null;
+	var symmetryCRYSTAL = null;
+
 	var endCRYSTAL = "TEST', 'END";
 	var script = "";
 	var flagsymmetry;
 	warningMsg("Make sure you have selected the model you would like to export.")
-	titleCRYSTAL();
-	setUnitCell();
-	atomCRYSTAL();
 
-	switch (typeSystem) {
+	var titleCRYS = prompt("Type here the job title:", "");
+	(titleCRYS == "" || titleCRYS == null) ? (titleCRYS = ' .d12 prepared with J-ICE ')
+			: (titleCRYS = titleCRYS + ' .d12 prepared with J-ICE');
+
+	setUnitCell();
+
+	if (_fileData.cell.typeSystem == "molecule")
+		fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[xyz]")';
+	runJmolScriptWait("print " + fractionalCRYSTAL)
+
+	var  numAtomCRYSTAL = _fileData.frameSelection + ".length";
+	var fractionalCRYSTAL = _fileData.frameSelection + '.label("%l %16.9[fxyz]")';
+
+	switch (_fileData.cell.typeSystem) {
 	case "crystal":
 		systemCRYSTAL = "'CRYSTAL'";
 		keywordCRYSTAL = "'0 0 0'";
@@ -7062,11 +7084,11 @@ function exportCRYSTAL() {
 					+ ", "
 					+ roundNumber(_fileData.cell.c)
 					+ ", "
-					+ roundNumber(alpha)
+					+ roundNumber(_fileData.cell.alpha)
 					+ ", "
-					+ roundNumber(beta)
+					+ roundNumber(_fileData.cell.beta)
 					+ ", "
-					+ roundNumber(gamma)
+					+ roundNumber(_fileData.cell.gamma)
 					+ "];"
 					+ 'var cellparam = cellp.join(" ");'
 					+ 'cellparam = cellparam.replace("\n\n","\n");'
@@ -7091,7 +7113,21 @@ function exportCRYSTAL() {
 					+ 'WRITE VAR finalArr "?.d12"';
 		} else {
 			warningMsg("This procedure is not fully tested.");
+			
+			// BH: THIS METHOD WILL RELOAD THE FILE!
 			figureOutSpaceGroup();
+			var endCRYSTAL = "TEST', 'END";
+			var script = "var cellp = [" + stringCellParam + "];"
+					+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
+					+ titleCRYS + "', " + systemCRYSTAL + ", " + keywordCRYSTAL + ", "
+					+ interNumber + "];" + 'crystalArr = crystalArr.replace("\n\n"," ");'
+					+ "var crystalRestArr = [" + numAtomCRYSTAL + ", " + fractionalCRYSTAL
+					+ ", '" + endCRYSTAL + "'];"
+					+ 'crystalRestArr = crystalRestArr.replace("\n\n"," ");'
+					+ 'var finalArr = [crystalArr, cellparam , crystalRestArr];'
+					+ 'finalArr = finalArr.replace("\n\n","\n");'
+					+ 'WRITE VAR finalArr "?.d12"';
+			runJmolScript(script);
 		}
 		break;
 	case "slab":
@@ -7102,7 +7138,7 @@ function exportCRYSTAL() {
 		warningMsg("Symmetry not exploited!");
 
 		script = "var cellp = [" + roundNumber(_fileData.cell.a) + ", "
-				+ roundNumber(_fileData.cell.b) + ", " + roundNumber(gamma) + "];"
+				+ roundNumber(_fileData.cell.b) + ", " + roundNumber(_fileData.cell.gamma) + "];"
 				+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
 				+ titleCRYS + "', " + systemCRYSTAL + ", " + symmetryCRYSTAL
 				+ "];" + 'crystalArr = crystalArr.replace("\n\n","\n");'
@@ -7135,9 +7171,6 @@ function exportCRYSTAL() {
 		// alert("prov")
 		systemCRYSTAL = "'MOLECULE'";
 		symmetryCRYSTAL = "'1'"; // see how jmol exploits the punctual TODO:
-		// show POINTGROUP
-		// symmetry
-		fractionalCRYSTAL
 		warningMsg("Symmetry not exploited!");
 		script = "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
 				+ ", " + symmetryCRYSTAL + "];"
@@ -7149,61 +7182,15 @@ function exportCRYSTAL() {
 				+ 'finalArr = finalArr.replace("\n\n","\n");'
 				+ 'WRITE VAR finalArr "?.d12"';
 		break;
-	}// end switch
+	}
 	script = script.replace("\n\n", "\n");
 	runJmolScriptWait(script);
 }
 
-function savCRYSTALSpace() {
-	var endCRYSTAL = "TEST', 'END";
-	var script = "var cellp = [" + stringCellParam + "];"
-			+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
-			+ titleCRYS + "', " + systemCRYSTAL + ", " + keywordCRYSTAL + ", "
-			+ interNumber + "];" + 'crystalArr = crystalArr.replace("\n\n"," ");'
-			+ "var crystalRestArr = [" + numAtomCRYSTAL + ", " + fractionalCRYSTAL
-			+ ", '" + endCRYSTAL + "'];"
-			+ 'crystalRestArr = crystalRestArr.replace("\n\n"," ");'
-			+ 'var finalArr = [crystalArr, cellparam , crystalRestArr];'
-			+ 'finalArr = finalArr.replace("\n\n","\n");'
-			+ 'WRITE VAR finalArr "?.d12"';
-	runJmolScript(script);
-}
 
 ////////////////////////END SAVE INPUT
 
 /////////////////////////
-///////////////////////// LOAD & ON LOAD functions
-
-loadDone_crystal = function() {
-	_fileData.energyUnits = ENERGY_HARTREE;
-	_fileData.StrUnitEnergy = "H";
-	var vib = getbyID('vib');
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
-		if (line != null) {
-			if (line.search(/Energy/i) != -1) { // Energy
-//				if (i > 0 && i < Info.length)
-//					var previous = substringEnergyToFloat(Info[i - 1].name);
-//				if (Info[i].name != null) {
-				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
-//				}
-			} else if (line.search(/cm/i) != -1) {
-				if (line.search(/LO/) == -1) {
-					_fileData.freqInfo.push(Info[i]);
-					_fileData.vibLine.push((i - _fileData.counterFreq) + " " + line); 
-					_fileData.freqData.push(line);
-				}
-			}
-	
-		}
-	} 
-	getUnitcell("1");
-	runJmolScriptWait("echo");
-	setTitleEcho();
-	loadDone();
-}
 
 //// this method was called when the Geometry Optimize and Spectra tabs
 //// were clicked via a complex sequence of callbacks
@@ -7251,15 +7238,15 @@ loadDone_crystal = function() {
 loadDone_dmol = function() {
 	_fileData.energyUnits = ENERGY_HARTREE;
 	_fileData.StrUnitEnergy = "H";
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		var line = _fileData.info[i].name;
 		if (line != null) {
 			if (line.search(/E =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
 				_fileData.geomData[i] = line;
 				_fileData.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqInfo.push(_fileData.info[i]);
 				_fileData.freqData.push(line);
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
 				_fileData.vibLine.push(i + " A " + data + " cm^-1");
@@ -7313,23 +7300,23 @@ loadDone_gaussian = function() {
 
 	var geom = getbyID('geom');
 	var vib = getbyID('vib');
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		if (_fileData.info[i].name != null) {
+			var line = _fileData.info[i].name;
 			// alert(line)
 			if (line.search(/E/i) != -1) {
-				_fileData.geom[i] = Info[i].name;
+				_fileData.geom[i] = _fileData.info[i].name;
 				addOption(geom, i + " " + _fileData.geom[i], i + 1);
-				if (Info[i].modelProperties.Energy != null
-						|| Info[i].modelProperties.Energy != "")
-					_fileData.energy[i] = Info[i].modelProperties.Energy;
+				if (_fileData.info[i].modelProperties.Energy != null
+						|| _fileData.info[i].modelProperties.Energy != "")
+					_fileData.energy[i] = _fileData.info[i].modelProperties.Energy;
 				_fileData.counterGauss++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.vibLine.push(i + " " + Info[i].name + " (" + Info[i].modelProperties.IRIntensity + ")");
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(Info[i].modelProperties.Frequency);
-				_fileData.freqSymm.push(Info[i].modelProperties.FrequencyLabel);
-				_fileData.freqIntens.push(Info[i].modelProperties.IRIntensity);
+				_fileData.vibLine.push(i + " " + _fileData.info[i].name + " (" + _fileData.info[i].modelProperties.IRIntensity + ")");
+				_fileData.freqInfo.push(_fileData.info[i]);
+				_fileData.freqData.push(_fileData.info[i].modelProperties.Frequency);
+				_fileData.freqSymm.push(_fileData.info[i].modelProperties.FrequencyLabel);
+				_fileData.freqIntens.push(_fileData.info[i].modelProperties.IRIntensity);
 			}
 		}
 	}
@@ -7362,50 +7349,46 @@ loadDone_gaussian = function() {
  *  02111-1307  USA.
  */
 
-var coordinateGromacs = null;
 
 function exportGromacs() {
 	warningMsg("Make sure you have selected the model you would like to export.");
-	setTitleGromacs();
-	setUnitCell();
-	runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/10);'
-		+ frameSelection + '.y = for(i;' + frameSelection + '; i.y/10);'
-		+ frameSelection + '.x = for(i;' + frameSelection + '; i.x/10);');
-	setCoordinatesGromacs();
-	runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z*10);'
-			+ frameSelection + '.y = for(i;' + frameSelection + '; i.y*10);'
-			+ frameSelection + '.x = for(i;' + frameSelection + '; i.x*10);');
-	var finalInputGromacs = "var final = [titleg,coordinate];"
-			+ 'final = final.replace("\n\n","");' + 'WRITE VAR final "?.gro" ';
-	runJmolScriptWait(finalInputGromacs);
-}
 
-function setTitleGromacs() {
 	var titleGromacs = prompt("Type here the job title:", "");
 	(titleGromacs == "") ? (titleGromacs = 'Input prepared with J-ICE ')
 			: (titleGromacs = 'Input prepared with J-ICE ' + titleGromacs);
 	titleGromacs = 'titleg = \"' + titleGromacs + '\"; ';
 	runJmolScriptWait(titleGromacs);
-}
 
-function setCoordinatesGromacs() {
-	var numatomsGrom = " " + frameSelection + ".length";
-	var coordinateGrom = frameSelection
+	setUnitCell();
+	
+	runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/10);'
+		+ _fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/10);'
+		+ _fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/10);');
+	
+	var numatomsGrom = " " + _fileData.frameSelection + ".length";
+	var coordinateGrom = _fileData.frameSelection
 			+ '.label("  %i%e %i %e %8.3[xyz] %8.4fy %8.4fz")';
-	var cellbox = +roundNumber(_fileData.cell.a) * (cosRadiant(alpha)) + ' '
-			+ roundNumber(_fileData.cell.b) * (cosRadiant(beta)) + ' '
-			+ roundNumber(_fileData.cell.c) * (cosRadiant(gamma));
-	coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
+	var cellbox = +roundNumber(_fileData.cell.a) * (cosRadiant(_fileData.cell.alpha)) + ' '
+			+ roundNumber(_fileData.cell.b) * (cosRadiant(_fileData.cell.beta)) + ' '
+			+ roundNumber(_fileData.cell.c) * (cosRadiant(_fileData.cell.gamma));
+	var coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
 			+ 'var coordGrom = ' + coordinateGrom + ';'
 			+ 'var cellGrom = \" \n\t' + cellbox + '\"; '
 			+ 'coordinate = [numatomGrom,coordGrom,cellGrom];';
 	runJmolScriptWait(coordinateGromacs);
+
+	runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z*10);'
+			+ _fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y*10);'
+			+ _fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x*10);');
+	var finalInputGromacs = "var final = [titleg,coordinate];"
+			+ 'final = final.replace("\n\n","");' + 'WRITE VAR final "?.gro" ';
+	runJmolScriptWait(finalInputGromacs);
 }
+
       		
 ///js// Js/adapters/gulp.js /////
-/*  J-ICE library 
 
-    based on:
+ /*   based on:
  *
  *  Copyright (C) 2010-2014 Pieremanuele Canepa http://j-ice.sourceforge.net/
  *
@@ -7427,173 +7410,14 @@ function setCoordinatesGromacs() {
  *  02111-1307  USA.
  */
 
-///THIS ROUTINE IS TO EXPORT INPUT FOR GULP
-var titleGulp = null;
-var cellGulp = null;
-var coordinateGulp = null;
-var spacegroupGulp = null;
-var restGulp = null;
-var flagShelgulp = null;
-var stringCellparamgulp;
-
-function exportGULP() {
-	warningMsg("Make sure you have selected the model you would like to export.");
-	saveStateAndOrientation_a();
-	if (typeSystem != "crystal")
-		setUnitCell();
-	setTitlegulp();
-	setSystem();
-	setCellgulp();
-	setCoordinategulp();
-	if (typeSystem == "crystal")
-		setSpacegroupgulp();
-	setPotentialgulp();
-	if (typeSystem == "crystal") {
-		var finalInputGulp = "var final = [titlegulp,cellgulp,coordgulp,spacegulp,restgulp];"
-				+ 'final = final.replace("\n\n","\n");'
-				+ 'WRITE VAR final "?.gin" ';
-	} else {
-		var finalInputGulp = "var final = [titlegulp,cellgulp,coordgulp,restgulp];"
-				+ 'final = final.replace("\n\n","\n");'
-				+ 'WRITE VAR final "?.gin" ';
-	}
-	run(finalInputGulp);
-	restoreStateAndOrientation_a();
-
-}
-
-function setTitlegulp() {
-	titleGulpinput = prompt("Type here the job title:", "");
-	(titleGulpinput == "") ? (titleGulpinput = 'Input prepared with J-ICE ')
-			: (titleGulpinput = '#Input prepared with J-ICE \n'
-					+ titleGulpinput);
-	titleGulp = 'var optiongulp = \"opti conp propr #GULP options\";'
-			+ 'var titleheader = \"title \"; ' + 'var title = \"'
-			+ titleGulpinput + '\"; ' + 'var titleend = \"end \";'
-			+ 'titlegulp = [optiongulp, titleheader, title, titleend];';
-	runJmolScriptWait(titleGulp);
-
-}
-
-var flagsymmetryGulp = false;
-function setSystem() {
-	switch (typeSystem) {
-	case "crystal":
-		setUnitCell();
-		coordinateAddgulp = ""
-		cellHeadergulp = "cell"
-		var flagsymmetryGulp = confirm("Do you want to introduce symmetry ?");
-
-		if (flagsymmetryGulp) {
-			warningMsg("This procedure is not fully tested.");
-			figureOutSpaceGroup();
-		} else {
-			stringCellparamgulp = roundNumber(_fileData.cell.a) + ' ' + roundNumber(_fileData.cell.b)
-					+ ' ' + roundNumber(_fileData.cell.c) + ' ' + roundNumber(alpha) + ' '
-					+ roundNumber(beta) + ' ' + roundNumber(gamma);
-		}
-		break;
-
-	case "surface":
-		cellHeadergulp = "scell"
-		coordinateAddgulp = "s"
-		stringCellparamgulp = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b)
-				+ ", " + roundNumber(gamma);
-		break;
-
-	case "polymer":
-		cellHeadergulp = "pcell"
-		coordinateAddgulp = ""
-		stringCellparamgulp = roundNumber(_fileData.cell.a);
-		break;
-
-	case "molecule":
-		// TODO
-
-		break;
-	}
-
-}
-var cellHeadergulp
-function setCellgulp() {
-
-	cellGulp = 'var cellheader = \"' + cellHeadergulp + '\";'
-			+ 'var cellparameter = \"' + stringCellparamgulp + '\";'
-			+ 'cellgulp = [cellheader, cellparameter];';
-	runJmolScriptWait(cellGulp);
-}
-
-function setCoordinategulp() {
-
-	var coordinateString;
-	var coordinateShel
-	setCoorgulp();
-	flagShelgulp = confirm("Is the inter-atomic potential a core/shel one? \n Cancel stands for NO core/shel potential.");
-	if (sortofCoordinateGulp && typeSystem == 'crystal') {
-		coordinateString = frameSelection + '.label("%e core %16.9[fxyz]")';
-		coordinateShel = frameSelection + '.label("%e shel %16.9[fxyz]")';
-	} else {
-		coordinateString = frameSelection + '.label("%e core %16.9[xyz]")';
-		coordinateShel = frameSelection + '.label("%e shel %16.9[xyz]")';
-	}
-	if (flagShelgulp) {
-		coordinateGulp = 'var coordtype = \"' + sortofCoordinateGulp + '\";'
-				+ 'var coordcore = ' + coordinateString + ';'
-				+ 'var coordshel = ' + coordinateShel + ';'
-				+ 'coordgulp = [coordtype, coordcore, coordshel];';
-	} else {
-		coordinateGulp = 'var coordtype = \"' + sortofCoordinateGulp + '\";'
-				+ 'var coordcore = ' + coordinateString + ';'
-				+ 'coordgulp = [coordtype, coordcore];';
-	}
-	runJmolScriptWait(coordinateGulp);
-}
-
-var sortofCoordinateGulp = null;
-var coordinateAddgulp = null;
-function setCoorgulp() {
-	if (typeSystem == 'crystal') {
-		var sortofCoordinate = confirm("Do you want the coordinates in Cartesian or fractional? \n OK for Cartesian, Cancel for fractional.")
-		sortofCoordinateGulp = (sortofCoordinate == true) ? (coordinateAddgulp + "cartesian")
-				: (coordinateAddgulp + "fractional");
-	} else {
-		messageMsg("Coordinate will be exported in Cartesian");
-	}
-}
-
-// interNumber from crystalfunction
-function setSpacegroupgulp() {
-	if (!flagsymmetryGulp)
-		interNumber = "P 1"
-	spacegroupGulp = 'var spaceheader = \"spacegroup\";'
-			+ 'var spacegroup = \"' + interNumber + '\";'// TBC
-			+ 'spacegulp = [spaceheader, spacegroup];';
-	runJmolScriptWait(spacegroupGulp);
-}
-
-function setPotentialgulp() {
-	if (flagShelgulp) {
-		restGulp = 'var species= \"species \" \n\n;'
-				+ 'var restpot = \"#here the user should enter the inter-atomic potential setting\";'
-				+ 'var spring = \"spring \"  \n\n;'
-				+ 'restgulp = [species, restpot, spring];';
-	} else {
-		restGulp = 'var species= \"species \" \n\n;'
-				+ 'var restpot = \"#here the user should enter the inter-atomic potential setting\";'
-				+ 'restgulp = [species, restpot];';
-	}
-	runJmolScriptWait(restGulp);
-
-}
-
 // ////////////GULP READER
 
 loadDone_gulp = function() {
 	_fileData.energyUnits = ENERGY_EV;
 	_fileData.StrUnitEnergy = "e";
 	_fileData.counterFreq = 0;
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		var line = _fileData.info[i].name;
 		if (i == 0) {
 			line = "Intial";
 		}
@@ -7607,6 +7431,139 @@ loadDone_gulp = function() {
 	setFrameValues("1");
 	getSymInfo();
 	loadDone();
+}
+
+///THIS ROUTINE IS TO EXPORT INPUT FOR GULP
+
+function exportGULP() {
+	
+	var stringCellparamgulp;
+	var coordinateAddgulp = "";
+	var cellHeadergulp = "cell";
+	var flagsymmetryGulp = false;
+
+	warningMsg("Make sure you have selected the model you would like to export.");
+	saveStateAndOrientation_a();
+	if (_fileData.cell.typeSystem != "crystal")
+		setUnitCell();
+	
+	var titleGulpinput = prompt("Type here the job title:", "");
+	(titleGulpinput == "") ? (titleGulpinput = 'Input prepared with J-ICE ')
+			: (titleGulpinput = '#Input prepared with J-ICE \n'
+					+ titleGulpinput);
+	var titleGulp = 'var optiongulp = \"opti conp propr #GULP options\";'
+			+ 'var titleheader = \"title \"; ' + 'var title = \"'
+			+ titleGulpinput + '\"; ' + 'var titleend = \"end \";'
+			+ 'titlegulp = [optiongulp, titleheader, title, titleend];';
+	runJmolScriptWait(titleGulp);
+
+	switch (_fileData.cell.typeSystem) {
+	case "crystal":
+		setUnitCell();
+		flagsymmetryGulp = confirm("Do you want to introduce symmetry ?");
+
+		if (flagsymmetryGulp) {
+			warningMsg("This procedure is not fully tested.");
+			figureOutSpaceGroup();
+		} else {
+			stringCellparamgulp = roundNumber(_fileData.cell.a) + ' ' + roundNumber(_fileData.cell.b)
+					+ ' ' + roundNumber(_fileData.cell.c) + ' ' + roundNumber(_fileData.cell.alpha) + ' '
+					+ roundNumber(_fileData.cell.beta) + ' ' + roundNumber(_fileData.cell.gamma);
+		}
+		break;
+
+	case "surface":
+		cellHeadergulp = "scell";
+		coordinateAddgulp = "s";
+		stringCellparamgulp = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b)
+				+ ", " + roundNumber(_fileData.cell.gamma);
+		break;
+
+	case "polymer":
+		cellHeadergulp = "pcell";
+		coordinateAddgulp = "";
+		stringCellparamgulp = roundNumber(_fileData.cell.a);
+		break;
+
+	case "molecule":
+		// TODO
+
+		break;
+	}
+
+
+	var cellGulp = 'var cellheader = \"' + cellHeadergulp + '\";'
+		+ 'var cellparameter = \"' + stringCellparamgulp + '\";'
+		+ 'cellgulp = [cellheader, cellparameter];';
+	runJmolScriptWait(cellGulp);
+
+	var coordinateString;
+	var coordinateShel;
+	var sortofCoordinateGulp;
+	if (_fileData.cell.typeSystem == 'crystal') {
+		var sortofCoordinate = confirm("Do you want the coordinates in Cartesian or fractional? \n OK for Cartesian, Cancel for fractional.")
+		sortofCoordinateGulp = (sortofCoordinate == true) ? (coordinateAddgulp + "cartesian")
+				: (coordinateAddgulp + "fractional");
+	} else {
+		messageMsg("Coordinate will be exported in Cartesian");
+	}
+	var flagShelgulp = confirm("Is the inter-atomic potential a core/shel one? \n Cancel stands for NO core/shel potential.");
+	if (sortofCoordinateGulp && _fileData.cell.typeSystem == 'crystal') {
+		coordinateString = _fileData.frameSelection + '.label("%e core %16.9[fxyz]")';
+		coordinateShel = _fileData.frameSelection + '.label("%e shel %16.9[fxyz]")';
+	} else {
+		coordinateString = _fileData.frameSelection + '.label("%e core %16.9[xyz]")';
+		coordinateShel = _fileData.frameSelection + '.label("%e shel %16.9[xyz]")';
+	}
+	var coordinateGulp;
+	if (flagShelgulp) {
+		coordinateGulp = 'var coordtype = \"' + sortofCoordinateGulp + '\";'
+				+ 'var coordcore = ' + coordinateString + ';'
+				+ 'var coordshel = ' + coordinateShel + ';'
+				+ 'coordgulp = [coordtype, coordcore, coordshel];';
+	} else {
+		coordinateGulp = 'var coordtype = \"' + sortofCoordinateGulp + '\";'
+				+ 'var coordcore = ' + coordinateString + ';'
+				+ 'coordgulp = [coordtype, coordcore];';
+	}
+	runJmolScriptWait(coordinateGulp);
+
+	if (_fileData.cell.typeSystem == "crystal") {
+		// interNumber from crystalfunction .. BH??? interNumber is only defined locally in figureOutSpaceGroup
+		if (!flagsymmetryGulp)
+			interNumber = "P 1"
+		var spacegroupGulp = 'var spaceheader = \"spacegroup\";'
+				+ 'var spacegroup = \"' + interNumber + '\";'// TBC
+				+ 'spacegulp = [spaceheader, spacegroup];';
+		runJmolScriptWait(spacegroupGulp);
+	}
+
+	var restGulp;
+	if (flagShelgulp) {
+		restGulp = 'var species= \"species \" \n\n;'
+				+ 'var restpot = \"#here the user should enter the inter-atomic potential setting\";'
+				+ 'var spring = \"spring \"  \n\n;'
+				+ 'restgulp = [species, restpot, spring];';
+	} else {
+		restGulp = 'var species= \"species \" \n\n;'
+				+ 'var restpot = \"#here the user should enter the inter-atomic potential setting\";'
+				+ 'restgulp = [species, restpot];';
+	}
+	runJmolScriptWait(restGulp);
+
+	var finalInputGulp;
+	if (_fileData.cell.typeSystem == "crystal") {
+		finalInputGulp = "var final = [titlegulp,cellgulp,coordgulp,spacegulp,restgulp];"
+				+ 'final = final.replace("\n\n","\n");'
+				+ 'WRITE VAR final "?.gin" ';
+	} else {
+		finalInputGulp = "var final = [titlegulp,cellgulp,coordgulp,restgulp];"
+				+ 'final = final.replace("\n\n","\n");'
+				+ 'WRITE VAR final "?.gin" ';
+	}
+	run(finalInputGulp);
+	restoreStateAndOrientation_a();
+
 }
 
       		
@@ -7635,19 +7592,19 @@ loadDone_gulp = function() {
  *  02111-1307  USA.
  */
 
-var counterFreq = 0;
+//var counterFreq = 0;
 
 loadDone_molden = function(msg) {
 
 	_fileData.energyUnits = ENERGY_EV;
 	_fileData.StrUnitEnergy = "e";
 	
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		if (_fileData.info[i].name != null) {
+			var line = _fileData.info[i].name;
 			if (line.search(/cm/i) != -1) {
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
-				_fileData.freqInfo.push(Info[i]);
+				_fileData.freqInfo.push(_fileData.info[i]);
 				_fileData.freqData.push(line);
 				_fileData.vibLine.push(i + " A " + data + " cm^-1");
 				_fileData.counterMD++;
@@ -7684,6 +7641,48 @@ loadDone_molden = function(msg) {
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *  02111-1307  USA.
  */
+
+///// QUANTUM ESPRESSO READER
+
+loadDone_espresso = function() {
+	
+	_fileData.energyUnits = ENERGY_RYDBERG;
+	_fileData.StrUnitEnergy = "R";
+	_fileData.hasInputModel = true;
+
+	for (var i = 0; i < _fileData.info.length; i++) {
+		var line = _fileData.info[i].name;
+
+		if (i == 0) {
+			_fileData.geomData[0] = line;
+			addOption(getbyID('geom'), "0 initial", 1);
+		}
+		if (line != null) {
+			if (line.search(/E =/i) != -1) {
+				addOption(getbyID('geom'), i + 1 + " " + line, i + 1);
+				_fileData.geomData[i + 1] = line;
+				_fileData.counterFreq++;
+			} /*
+			 * else if (line.search(/cm/i) != -1) { // alert("vibration")
+			 * freqData[i - counterFreq] = _fileData.info[i].name; counterMD++; } else
+			 * if (line.search(/Temp/i) != -1) { addOption(getbyID('geom'),
+			 * (i - counterMD) + " " + _fileData.info[i].name, i + 1); }
+			 */
+		}
+	}
+	/*
+	 * if (freqData != null) { for (var i = 1; i < freqData.length; i++) { if
+	 * (freqData[i] != null) var data =
+	 * parseFloat(freqData[i].substring(0,freqData[i].indexOf("c") - 1));
+	 * addOption(getbyID('vib'), i + " A " + data + " cm^-1", i + counterFreq +
+	 * 1 ); } }
+	 */
+	getUnitcell("1");
+	setFrameValues("1");
+	getSymInfo();
+	loadDone();
+}
+
 
 /*&CONTROL
  title = 'alpha_PbO_PBE' ,
@@ -7727,16 +7726,6 @@ loadDone_molden = function(msg) {
  4 4 4   0 0 0
  */
 
-//Following functions are to export file for QuantumEspresso
-var controlQ = null;
-var systemQ = null;
-var electronQ = null;
-var ionsQ = null;
-var cellQ = null;
-var atomspQ = null;
-var atompositionQ = null;
-var kpointQ = null;
-
 //Main block
 function exportQuantum() {
 	warningMsg("Make sure you have selected the model you would like to export.");
@@ -7761,7 +7750,7 @@ function prepareControlblock() {
 			: (stringTitleNew = 'Input prepared with J-ICE ' + stringTitle);
 
 	// stringa = 'title= \'prova\','
-	controlQ = "var controlHeader = '\&CONTROL';"
+	var controlQ = "var controlHeader = '\&CONTROL';"
 		+ 'var controlTitle = "           title = \''
 		+ stringTitleNew
 		+ '\'";'
@@ -7808,7 +7797,7 @@ function prepareSystemblock() {
 	symmetryQuantum();
 	var elements = getElementList();
 
-	systemQ = "var systemHeader = '\&SYSTEM';"
+	var systemQ = "var systemHeader = '\&SYSTEM';"
 		+ 'var systemIbrav = "           ibrav = '
 		+ ibravQ
 		+ '";' // This variable is defined in the crystal function
@@ -7839,7 +7828,7 @@ function prepareSystemblock() {
 
 //to be completed
 function prepareElectronblock() {
-	electronQ = "var electronHeader = '\&ELECTRONS';"
+	var electronQ = "var electronHeader = '\&ELECTRONS';"
 		+ 'var electronBeta = "           mixing_beta = \'  \'";'
 		+ "var electronClose= '\/';"
 		+ ' electron = [electronHeader, electronBeta, electronClose];';
@@ -7849,7 +7838,7 @@ function prepareElectronblock() {
 //ask what algorithm to use window?
 //set Tolerance as well!
 function prepareIonsblock() {
-	ionsQ = "var ionHeader = '\&IONS';"
+	var ionsQ = "var ionHeader = '\&IONS';"
 		+ 'var ionDyn = "           ion_dynamics= \'  \'";'
 		+ "var ionClose= '\/';" + 'ions = [ionHeader, ionDyn, ionClose];';
 	runJmolScriptWait(ionsQ);
@@ -7857,7 +7846,7 @@ function prepareIonsblock() {
 }
 
 function prepareCellblock() {
-	cellQ = "var cellHeader = '\&CELL';"
+	var cellQ = "var cellHeader = '\&CELL';"
 		+ 'var cellDyn = "           cell_dynamics= \'  \'";'
 		+ "var cellClose= '\/';"
 		+ 'cell = [cellHeader, cellDyn, cellClose];'
@@ -7893,7 +7882,7 @@ function prepareSpecieblock() {
 
 	}
 
-	atomspQ = "var atomsHeader = 'ATOMIC_SPECIES';" + 'var atomsList = ['
+	var atomspQ = "var atomsHeader = 'ATOMIC_SPECIES';" + 'var atomsList = ['
 	+ stringList + '];' + 'atomsList = atomsList.replace("\n", " ");'
 	// + 'atomList = atomList.join(" ");'
 	+ 'atomsp =  [atomsHeader,atomsList];';
@@ -7903,8 +7892,8 @@ function prepareSpecieblock() {
 function preparePostionblock() {
 
 	setUnitCell();
-	atompositionQ = "var posHeader = 'ATOMIC_POSITIONS crystal';"
-		+ 'var posCoord = ' + frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
+	var atompositionQ = "var posHeader = 'ATOMIC_POSITIONS crystal';"
+		+ 'var posCoord = ' + _fileData.frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
 		// %16.9[fxyz]\");'
 		+ 'posQ = [posHeader,posCoord];';
 	runJmolScriptWait(atompositionQ);
@@ -7912,7 +7901,7 @@ function preparePostionblock() {
 }
 
 function prepareKpoint() {
-	kpointQ = "var kpointWh = '\n\n'  ;"
+	var kpointQ = "var kpointWh = '\n\n'  ;"
 		+ "var kpointHeader = 'K_POINTS automatic';"
 		+ "var kpointgr = ' X X X 0 0 0';"
 		+ 'kpo = [kpointWh, kpointHeader, kpointgr];';
@@ -7921,7 +7910,7 @@ function prepareKpoint() {
 
 function symmetryQuantum() {
 	setUnitCell();
-	switch (typeSystem) {
+	switch (_fileData.cell.typeSystem) {
 	case "crystal":
 		var flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
@@ -7932,11 +7921,11 @@ function symmetryQuantum() {
 				+ "  \n           celldm(3) =  "
 				+ roundNumber(_fileData.cell.c / _fileData.cell.a)
 				+ "  \n           celldm(4) =  "
-				+ (cosRadiant(alpha))
+				+ (cosRadiant(_fileData.cell.alpha))
 				+ "  \n           celldm(5) =  "
-				+ (cosRadiant(beta))
+				+ (cosRadiant(_fileData.cell.beta))
 				+ "  \n           celldm(6) =  "
-				+ (cosRadiant(gamma));
+				+ (cosRadiant(_fileData.cell.gamma));
 			ibravQ = "14";
 		} else {
 			warningMsg("This procedure is not fully tested.");
@@ -7949,23 +7938,23 @@ function symmetryQuantum() {
 		break;
 	case "slab":
 		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _fileData.cell.c
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/' + _fileData.cell.c
 				+ ')');
 		cellDimString = "            celldm(1) = "
 			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
 			+ "  \n            celldm(2) =  " + roundNumber(_fileData.cell.b / _fileData.cell.a)
 			+ "  \n            celldm(3) =  " + roundNumber(_fileData.cell.c / _fileData.cell.a)
 			+ "  \n            celldm(4) =  "
-			+ (cosRadiant(alpha))
+			+ (cosRadiant(_fileData.cell.alpha))
 			+ "  \n            celldm(5) =  " + (cosRadiant(90))
 			+ "  \n            celldm(6) =  " + (cosRadiant(90));
 		ibravQ = "14";
 		break;
 	case "polymer":
 		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _fileData.cell.c
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/' + _fileData.cell.c
 				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + _fileData.cell.b
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/' + _fileData.cell.b
 				+ ')');
 		cellDimString = "            celldm(1) = "
 			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
@@ -7978,64 +7967,23 @@ function symmetryQuantum() {
 		break;
 	case "molecule":
 		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _fileData.cell.c
+		runJmolScriptWait(_fileData.frameSelection + '.z = for(i;' + _fileData.frameSelection + '; i.z/' + _fileData.cell.c
 				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + _fileData.cell.b
+		runJmolScriptWait(_fileData.frameSelection + '.y = for(i;' + _fileData.frameSelection + '; i.y/' + _fileData.cell.b
 				+ ')');
-		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/' + _fileData.cell.a
+		runJmolScriptWait(_fileData.frameSelection + '.x = for(i;' + _fileData.frameSelection + '; i.x/' + _fileData.cell.a
 				+ ')');
 		cellDimString = "            celldm(1) = "
 			+ roundNumber(fromAngstromtoBohr(_fileData.cell.a))
 			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
 			+ "  \n            celldm(4) =  "
-			+ (cosRadiant(alpha))
+			+ (cosRadiant(_fileData.cell.alpha))
 			+ "  \n            celldm(5) =  " + (cosRadiant(90))
 			+ "  \n            celldm(6) =  " + (cosRadiant(90));
 		ibravQ = "14";
 		break;
 	}
-}
-
-///// QUANTUM ESPRESSO READER
-
-loadDone_espresso = function() {
-	
-	_fileData.energyUnits = ENERGY_RYDBERG;
-	_fileData.StrUnitEnergy = "R";
-	_fileData.hasInputModel = true;
-
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
-
-		if (i == 0) {
-			_fileData.geomData[0] = line;
-			addOption(getbyID('geom'), "0 initial", 1);
-		}
-		if (line != null) {
-			if (line.search(/E =/i) != -1) {
-				addOption(getbyID('geom'), i + 1 + " " + line, i + 1);
-				_fileData.geomData[i + 1] = line;
-				_fileData.counterFreq++;
-			} /*
-			 * else if (line.search(/cm/i) != -1) { // alert("vibration")
-			 * freqData[i - counterFreq] = Info[i].name; counterMD++; } else
-			 * if (line.search(/Temp/i) != -1) { addOption(getbyID('geom'),
-			 * (i - counterMD) + " " + Info[i].name, i + 1); }
-			 */
-		}
-	}
-	/*
-	 * if (freqData != null) { for (var i = 1; i < freqData.length; i++) { if
-	 * (freqData[i] != null) var data =
-	 * parseFloat(freqData[i].substring(0,freqData[i].indexOf("c") - 1));
-	 * addOption(getbyID('vib'), i + " A " + data + " cm^-1", i + counterFreq +
-	 * 1 ); } }
-	 */
-	getUnitcell("1");
-	setFrameValues("1");
-	getSymInfo();
-	loadDone();
 }
 
       		
@@ -8074,23 +8022,23 @@ loadDone_siesta = function(msg) {
 
 	_fileData.energyUnits = ENERGY_RYDBERG;
 	_fileData.StrUnitEnergy = "R";
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+	for (var i = 0; i < _fileData.info.length; i++) {
+		var line = _fileData.info[i].name;
 		if (line != null) {
 			if (line.search(/E/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
 				_fileData.geomSiesta[i] = line;
-				if (Info[i].modelProperties.Energy != null
-						|| Info[i].modelProperties.Energy != "")
-					_fileData.energy[i] = Info[i].modelProperties.Energy;
+				if (_fileData.info[i].modelProperties.Energy != null
+						|| _fileData.info[i].modelProperties.Energy != "")
+					_fileData.energy[i] = _fileData.info[i].modelProperties.Energy;
 				_fileData.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
 				_fileData.vibLine.push(i + " " + line + " ("
-						+ Info[i].modelProperties.IRIntensity + ")");
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(Info[i].modelProperties.Frequency);
-				_fileData.freqSymm.push(Info[i].modelProperties.FrequencyLabel);
-				_fileData.freqIntens.push(Info[i].modelProperties.IRIntensity);
+						+ _fileData.info[i].modelProperties.IRIntensity + ")");
+				_fileData.freqInfo.push(_fileData.info[i]);
+				_fileData.freqData.push(_fileData.info[i].modelProperties.Frequency);
+				_fileData.freqSymm.push(_fileData.info[i].modelProperties.FrequencyLabel);
+				_fileData.freqIntens.push(_fileData.info[i].modelProperties.IRIntensity);
 			}
 		}
 	}
@@ -8126,16 +8074,47 @@ loadDone_siesta = function(msg) {
  *  02111-1307  USA.
  */
 
+
+loadDone_vaspoutcar = function() {
+	_fileData.energyUnits = ENERGY_EV;
+	_fileData.StrUnitEnergy = "e";
+	_fileData.counterFreq = 1; 
+	for (var i = 0; i < _fileData.info.length; i++) {
+		if (_fileData.info[i].name != null) {
+			var line = _fileData.info[i].name;
+			if (line.search(/G =/i) != -1) {
+				addOption(getbyID('geom'), i + " " + line, i + 1);
+				_fileData.geomData[i] = line;
+				_fileData.counterFreq++;
+			} else if (line.search(/cm/i) != -1) {
+				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));	
+				_fileData.freqInfo.push(_fileData.info[i]);
+				_fileData.freqData.push(line);
+				_fileData.vibLine.push(i + " A " + data + " cm^-1");
+				_fileData.counterMD++;
+			} else if (line.search(/Temp/i) != -1) {
+				addOption(getbyID('geom'), (i - _fileData.counterMD) + " " + line, i + 1);
+			}
+		}
+	}
+
+	getUnitcell("1");
+	setFrameValues("1");
+	disableFreqOpts();
+	getSymInfo();
+	loadDone();
+}
+
 loadDone_xmlvasp = function() {
 
 	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
 
 	// _fileData.... ? 
 	
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var valueEnth = Info[i].name.substring(11, 24);
-			var gibbs = Info[i].name.substring(41, 54);
+	for (var i = 0; i < _fileData.info.length; i++) {
+		if (_fileData.info[i].name != null) {
+			var valueEnth = _fileData.info[i].name.substring(11, 24);
+			var gibbs = _fileData.info[i].name.substring(41, 54);
 			var stringa = "Enth. = " + valueEnth + " eV, Gibbs E.= " + gibbs
 			+ " eV";
 			
@@ -8148,7 +8127,6 @@ loadDone_xmlvasp = function() {
 }
 
 ////EXPORT FUNCTIONS
-var fractionalCoord = false;
 function exportVASP() {
 	var newElement = [];
 	var scriptEl = "";
@@ -8191,11 +8169,11 @@ function exportVASP() {
 	if (exportType) {
 		_measure.kindCoord = "Direct"
 			fractString = "[fxyz]";
-		fractionalCoord = true;
+		_fileData._export.fractionalCoord = true;
 	} else {
 		_measure.kindCoord = "Cartesian"
 			fractString = "[xyz]";
-		fractionalCoord = false;
+		_fileData._export.fractionalCoord = false;
 	}
 
 	setVacuum();
@@ -8226,7 +8204,7 @@ function exportVASP() {
 		+ _measure.kindCoord
 		+ '";' // imp
 		+ 'var xyzCoord = '
-		+ frameSelection
+		+ _fileData.frameSelection
 		+ '.label(" %16.9'
 		+ fractString
 		+ '");' // imp
@@ -8239,38 +8217,4 @@ function exportVASP() {
 }
 
 /////// END EXPORT VASP
-
-/////////// IMPORT OUTCAR
-
-
-
-loadDone_vaspoutcar = function() {
-	_fileData.energyUnits = ENERGY_EV;
-	_fileData.StrUnitEnergy = "e";
-	_fileData.counterFreq = 1; 
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
-			if (line.search(/G =/i) != -1) {
-				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
-			} else if (line.search(/cm/i) != -1) {
-				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));	
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(line);
-				_fileData.vibLine.push(i + " A " + data + " cm^-1");
-				_fileData.counterMD++;
-			} else if (line.search(/Temp/i) != -1) {
-				addOption(getbyID('geom'), (i - _fileData.counterMD) + " " + line, i + 1);
-			}
-		}
-	}
-
-	getUnitcell("1");
-	setFrameValues("1");
-	disableFreqOpts();
-	getSymInfo();
-	loadDone();
-}
 

@@ -14,7 +14,7 @@ function saveFractionalCoordinate() {
 
 	var x = "var cellp = [" + roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b)
 	+ ", " + roundNumber(_fileData.cell.c) + ", " + roundNumber(_fileData.cell.alpha) + ", "
-	+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(gamma) + "];"
+	+ roundNumber(_fileData.cell.beta) + ", " + roundNumber(_fileData.cell.gamma) + "];"
 	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
 	+ _fileData.frameSelection + '.label("%a %16.9[fxyz]");'
 	+ 'var lista = [cellparam, xyzfrac];'
@@ -34,13 +34,14 @@ function getUnitcell(i) {
 	_fileData.cell.a = roundNumber(cellparam[0]);
 	_fileData.cell.b = roundNumber(cellparam[1]);
 	_fileData.cell.c = roundNumber(cellparam[2]);
-	dimensionality = parseFloat(cellparam[15]);
-	volumeCell = roundNumber(cellparam[16]);
+	_fileData.cell.dimensionality = parseFloat(cellparam[15]);
+	_fileData.cell.volumeCell = roundNumber(cellparam[16]);
 
 	var bOvera = roundNumber(parseFloat(_fileData.cell.b / _fileData.cell.c));
 	var cOvera = roundNumber(parseFloat(_fileData.cell.c / _fileData.cell.a));
 
-	if (dimensionality == 1) {
+	switch (_fileData.cell.dimensionality) {
+	case 1:
 		_fileData.cell.b = 0.000;
 		_fileData.cell.c = 0.000;
 		makeEnable("par_a");
@@ -52,7 +53,8 @@ function getUnitcell(i) {
 		setValue("bovera", "0");
 		setValue("covera", "0");
 		_fileData.cell.typeSystem = "polymer";
-	} else if (dimensionality == 2) {
+		break;
+	case 2:
 		_fileData.cell.c = 0.000;
 		_fileData.cell.typeSystem = "slab";
 		makeEnable("par_a");
@@ -63,11 +65,12 @@ function getUnitcell(i) {
 		setValue("par_c", "1");
 		setValue("bovera", bOvera);
 		setValue("covera", "0");
-	} else if (dimensionality == 3) {
+		break;
+	case 3:
 		_fileData.cell.typeSystem = "crystal";
 		_fileData.cell.alpha = cellparam[3];
 		_fileData.cell.beta = cellparam[4];
-		gamma = cellparam[5];
+		_fileData.cell.gamma = cellparam[5];
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeEnable("par_b");
@@ -76,24 +79,27 @@ function getUnitcell(i) {
 		setValue("par_c", "");
 		setValue("bovera", bOvera);
 		setValue("covera", cOvera);
-	} else if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
+		break;
+	default:
+	  if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
 		_fileData.cell.a = 0.00;
 		_fileData.cell.b = 0.00;
 		_fileData.cell.c = 0.00;
 		_fileData.cell.alpha = 0.00;
 		_fileData.cell.beta = 0.00;
-		gamma = 0.00;
+		_fileData.cell.gamma = 0.00;
 		_fileData.cell.typeSystem = "molecule";
 		setValue("bovera", "0");
 		setValue("covera", "0");
+	  }
 	}
-	setValue("_fileData.cell.a", roundNumber(_fileData.cell.a));
-	setValue("_fileData.cell.b", roundNumber(_fileData.cell.b));
-	setValue("_fileData.cell.c", roundNumber(_fileData.cell.c));
-	setValue("alph_fileData.cell.a", roundNumber(_fileData.cell.alpha));
-	setValue("bet_fileData.cell.a", roundNumber(_fileData.cell.beta));
-	setValue("gamm_fileData.cell.a", roundNumber(gamma));
-	setValue("volumeCell", roundNumber(volumeCell));
+	setValue("cell.a", roundNumber(_fileData.cell.a));
+	setValue("cell.b", roundNumber(_fileData.cell.b));
+	setValue("cell.c", roundNumber(_fileData.cell.c));
+	setValue("cell.alpha", roundNumber(_fileData.cell.alpha));
+	setValue("cell.beta", roundNumber(_fileData.cell.beta));
+	setValue("cell.gamma", roundNumber(_fileData.cell.gamma));
+	setValue("cell.volumeCell", roundNumber(_fileData.cell.volumeCell));
 
 }
 
@@ -124,16 +130,16 @@ function setCellMeasure(value) {
 	_fileData.cell.b = cellparam[1];
 	_fileData.cell.c = cellparam[2];
 	if (value == "a") {
-		setValue("_fileData.cell.a", roundNumber(_fileData.cell.a));
-		setValue("_fileData.cell.b", roundNumber(_fileData.cell.b));
-		setValue("_fileData.cell.c", roundNumber(_fileData.cell.c));
+		setValue("cell.a", roundNumber(_fileData.cell.a));
+		setValue("cell.b", roundNumber(_fileData.cell.b));
+		setValue("cell.c", roundNumber(_fileData.cell.c));
 	} else {
 		_fileData.cell.a = _fileData.cell.a * 1.889725989;
 		_fileData.cell.b = _fileData.cell.b * 1.889725989;
 		_fileData.cell.c = _fileData.cell.c * 1.889725989;
-		setValue("_fileData.cell.a", roundNumber(_fileData.cell.a));
-		setValue("_fileData.cell.b", roundNumber(_fileData.cell.b));
-		setValue("_fileData.cell.c", roundNumber(_fileData.cell.c));
+		setValue("cell.a", roundNumber(_fileData.cell.a));
+		setValue("cell.b", roundNumber(_fileData.cell.b));
+		setValue("cell.c", roundNumber(_fileData.cell.c));
 	}
 
 }
@@ -362,14 +368,14 @@ function createCellGrp() {
 	strCell += createRadio("cellMeasure", "Bohr", 'setCellMeasure(value)', 0,
 			0, "", "b")
 			+ "\n <br>";
-	strCell += "<i>a</i> " + createText2("_fileData.cell.a", "", 7, 1);
-	strCell += "<i>b</i> " + createText2("_fileData.cell.b", "", 7, 1);
-	strCell += "<i>c</i> " + createText2("_fileData.cell.c", "", 7, 1) + "<br><br>\n";
-	strCell += "<i>&#945;</i> " + createText2("alph_fileData.cell.a", "", 7, 1);
-	strCell += "<i>&#946;</i> " + createText2("bet_fileData.cell.a", "", 7, 1);
-	strCell += "<i>&#947;</i> " + createText2("gamm_fileData.cell.a", "", 7, 1)
+	strCell += "<i>a</i> " + createText2("cell.a", "", 7, 1);
+	strCell += "<i>b</i> " + createText2("cell.b", "", 7, 1);
+	strCell += "<i>c</i> " + createText2("cell.c", "", 7, 1) + "<br><br>\n";
+	strCell += "<i>&#945;</i> " + createText2("cell.alpha", "", 7, 1);
+	strCell += "<i>&#946;</i> " + createText2("cell.beta", "", 7, 1);
+	strCell += "<i>&#947;</i> " + createText2("cell.gamma", "", 7, 1)
 	+ " degrees <br><br>\n";
-	strCell += "Volume cell " + createText2("volumeCell", "", 10, 1)
+	strCell += "Volume cell " + createText2("cell.volumeCell", "", 10, 1)
 	+ "  &#197<sup>3</sup><br><br>";
 //	strCell += createButton('advanceCell', '+',
 //			'toggleDivValue(true,"advanceCellDiv",this)', '')
