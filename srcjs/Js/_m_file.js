@@ -308,26 +308,21 @@ function onChangeSave(save) {
 		saveFractionalCoordinate();
 		break;
 	case "saveCRYSTAL":
-		_file._export = {};
 		exportCRYSTAL();
 		break;
 	case "saveVASP":
-		_file._export = {};
 		exportVASP();
 		break;
 	case "saveGROMACS":
-		_file._export = {};
 		exportGromacs();
 		break;
 	case "saveCASTEP":
 		exportCASTEP();
 		break;
 	case "saveQuantum":
-		_file._export = {};
 		exportQuantum();
 		break;
 	case "saveGULP":
-		_file._export = {};
 		exportGULP();
 		break;
 	case "savePOV":
