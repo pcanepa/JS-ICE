@@ -224,100 +224,70 @@ function cleanAndReloadForm() {
 	setTitleEcho();
 }
 
-resetLoadFlags = function(isCrystal) {
-	if (isCrystal)
-		_file.cell.typeSystem = "crystal";
-}
-
 setFlags = function() {
 	// BH TODO: missing xmlvasp?
 	switch (_file.fileType) {
 	default:
 	case "xyz":
-		break;
-	case "shelx":
-		resetLoadFlags(true); // BH 2018 added -- Q: Why no clearing of flags?
-		_file.exportModelOne = true;
-		break;
-	case "crystal":
-		resetLoadFlags();
-		_file.plotEnergyType = "crystal";
-		_file.plotEnergyForces = true;
-		break;
 	case "cube":
+	case "gromacs":
+	case "material":
+		break;
+	case "castep":
+	case "outcastep":
+		_file.cell.typeSystem = "crystal";
 		break;
 	case "aims":
 	case "aimsfhi":
 	case "castep":
-		resetLoadFlags(true);
+	case "cif":
+	case "crysden":
+	case "pdb":
+	case "shelx":
+	case "wien":
+		_file.cell.typeSystem = "crystal";
 		_file.exportModelOne = true;
 		break;
+	case "siesta":
+		_file.cell.typeSystem = "crystal";
+		_file.exportNoSymmetry = true;
+		break;
+	case "dmol":
+		_file.plotEnergyType = "dmol";
+		break;
+	case "gulp":
+		_file.plotEnergyType = "gulp";
+		break;
 	case "vasp":
-		resetLoadFlags(true);
+		_file.cell.typeSystem = "crystal";
 		_file.plotEnergyType = "vasp";
 		_file.exportNoSymmetry = true;
 		break;
 	case "vaspoutcar":
-		resetLoadFlags(true);
+		_file.cell.typeSystem = "crystal";
 		_file.plotEnergyType = "outcar";
 		_file.exportNoSymmetry = true;		
 		break;
-	case "dmol":
-		resetLoadFlags();
-		_file.plotEnergyType = "dmol";
-		break;
 	case "espresso":
 	case "quantum":
-		resetLoadFlags(true);
+		_file.cell.typeSystem = "crystal";
 		_file.plotEnergyType = "qespresso";
-		break;
-	case "gulp":
-		resetLoadFlags();
-		_file.plotEnergyType = "gulp";
-		break;
-	case "material":
-		resetLoadFlags(); // BH Added
-		break;
-	case "wien":
-		resetLoadFlags(true); // BH Added
-		_file.exportModelOne = true;
-		break;
-	case "cif":
-		resetLoadFlags(true); // BH Added
-		_file.exportModelOne = true;
-		break;
-	case "siesta":
-		resetLoadFlags(true); // BH Added
-		_file.exportNoSymmetry = true;
-		break;
-	case "pdb":
-		resetLoadFlags(true); // BH Added
-		_file.exportModelOne = true;
-		break;
-	case "gromacs":
-		resetLoadFlags(); // BH Added
 		break;
 	case "gaussian":
 	case "gauss":
-		resetLoadFlags(); // BH Added
 		_file.cell.typeSystem = "molecule";
 		_file.plotEnergyType = "gaussian";
 		break;
 	case "molden":
 		// WE USE SAME SETTINGS AS VASP
 		// IT WORKS
-		resetLoadFlags(); // BH Added
 		_file.cell.typeSystem = "molecule";
 		_file.plotEnergyType = "outcar";
 		_file.exportNoSymmetry = true;
 		break;
-	case "crysden":
-		resetLoadFlags(true); // BH Added
-		_file.exportModelOne = true;
-		break;
-	case "castep":
-	case "outcastep":
-		resetLoadFlags(true); // BH Added
+	case "crystal":
+		_file.plotEnergyType = "crystal";
+		_file.plotEnergyForces = true;
 		break;
 	}
 }
