@@ -1,9 +1,8 @@
 
 // functions for JS-ICE
-// gets and returns the symmetry operation names (e.g. "identity") 
-//not really necessary for current functionality but nice to have 
-//only functional in jsmol as jsice cannot read spacegroupInfo.operations
 
+
+//converts the point data type in jmol into arrays of the 3 coordinates, indexed x,y,z 
 function pointToArray(pointt){
 	var pointt = ""+pointt+"" 
 	var coordinateArray = []
@@ -73,7 +72,6 @@ function readSymmetryVectors() {
  
 
 // returns the points given after performing a symmetry operation a chosen number of times (one point per operation)
-
 function getSymmetricAtomArray(symopSelected,pointt,iterations){
 	var symAtomArray = [];
 	for (var i = 1; i<= iterations;i++) {
@@ -89,14 +87,8 @@ function getSymmetricAtomArray(symopSelected,pointt,iterations){
 	}
 	return symAtomArray 
 }
-// adds new element by appending an element and then deleting the newly-created bond
-// needs significant work such that elements that should be strings are strings and that code runs out of javascript and not just jmol script editor
-// A.S. 10.24.18 
-//
-//function dragAtomConstrained
-// set picking dragatom 
-//
-//p1 = $draw_object_name[0]  ; p2 = $draw_object_name[1]
+
+//draws narrow arrows as opposed to the thicker, shorter arrows provided by the default draw symop command 
 function drawCleanSymmetryAxisVectors(symOperation, axisFactor){
 	draw sym_axis* off 
 	draw symop @symOperation
@@ -111,12 +103,14 @@ function drawCleanSymmetryAxisVectors(symOperation, axisFactor){
 	draw ID "sym_axis2" vector @point4 @point3
 } 
 
+//adds new atom to model
 function appendNewAtom(elementName, point) {
 	model last;
 	assign atom @elementName @point //appends new atom, connected to a base atom in original structure 
 
 } 
 
+//provides all the output of all available symops of the current model upon a given point 
 function getSymmetryAtomArrayAllSymops(point){
 	getProperty spacegroupInfo.symmetryInfo
 	symopArray = readSymmetryVectors()
@@ -133,12 +127,13 @@ function getSymmetryAtomArrayAllSymops(point){
 //IDEA: constraint menu
 //UNTESTED
 //Many of the below functions are outlines for future functions 
+//provides the closest point on a line designated by some axis draw object to some selected point if said point is within some distance 
 function bindToVectorConstraint(vectorDrawObjectID,selectedPoint,errorDistance){
-	vectorPointer = ""+vectorDrawObjectID+""
-	errorDistance = 1
-	startPoint = $ @vectorPointer[0]
-	endPoint = $ @vectorPointer[1]
-	constrainedPoint = intersection(startPoint,endPoint-startPoint,selectedPoint) 
+	var vectorPointer = ""+vectorDrawObjectID+"" //IMPORTANT: this is how to designate pointers in jmol
+	var errorDistance = 1
+	var startPoint = $ @vectorPointer[0]
+	var endPoint = $ @vectorPointer[1]
+	var constrainedPoint = intersection(startPoint,endPoint-startPoint,selectedPoint) //second input into intersection is a vector from first point
 	if (selectedPointToNewPointDistance > errorDistance){
 		print selectedPoint 
 	}
@@ -147,10 +142,11 @@ function bindToVectorConstraint(vectorDrawObjectID,selectedPoint,errorDistance){
 	}
 }
 
+//provides the closest point on a plane designated by some draw object to some selected point if said point is within some distance 
 function bindToPlaneConstraint(planeDrawObjectID, selectedPoint, errorDistance){
-	planePointer = ""+planeDrawObjectID+""
-	constrainedPoint = intersection(selectedPoint,planeDrawObjectID)
-	selectedPointToNewPointDistance = @selectedPoint.distance(planePointer)
+	var planePointer = ""+planeDrawObjectID+""
+	var constrainedPoint = intersection(selectedPoint,planeDrawObjectID)
+	var selectedPointToNewPointDistance = @selectedPoint.distance(planePointer)
 	if (selectedPointToNewPointDistance > errorDistance){
 		return selectedPoint 
 	}
@@ -159,7 +155,12 @@ function bindToPlaneConstraint(planeDrawObjectID, selectedPoint, errorDistance){
 	}
 }
 
+
+
 //Unused
+// gets and returns the symmetry operation names (e.g. "identity") 
+//not really necessary for current functionality but nice to have 
+//only functional in jsmol as jsice cannot read spacegroupInfo.operations
 function readSymmetryNames() {
 	var allSymopInfo = _M.getProperty("spacegroupInfo.operations");
 	var numSymops = allSymopInfo.length;
