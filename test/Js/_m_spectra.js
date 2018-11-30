@@ -264,11 +264,13 @@ is based on IR or Raman type. These lists are then pushed into specData as the f
 function setVibList(specData) {
 	var vib = getbyID('vib');	
 	cleanList('vib');
+	console.log("clear vib");
 	var xmin = specData.minX;
 	var xmax = specData.maxX;	
 	for (var i = 0, pt = 0, n = specData.vibList.length; i < n; i++) {
 		if (specData.freqs[i] >= xmin && specData.freqs[i] <= xmax) {
 			addOption(vib, specData.vibList[i][0], specData.vibList[i][1]);
+			console.log("adding vib " + i + " " + specData.vibList[i]);
 			specData.vibList[pt][3] = i;  // reverse loop-up
 			specData.vibList[i][2] = pt++;
 		}
@@ -606,7 +608,7 @@ function plotHoverCallbackFreq(event, pos, itemFreq) {
  * function scaleSpectrum(){
  * 
  * var vecorFreq = []; var vecorChk = []; var counter; for(var i =0 ; i <
- * Info.length; i++){ vecorFreq[i] = Info[i].name; vecorChk[i] = 0 if(i == 0)
+ * _fileData.info.length; i++){ vecorFreq[i] = _fileData.info[i].name; vecorChk[i] = 0 if(i == 0)
  * vecorChk[i] = 1 counter++ }
  * 
  * var s = " Shift spectrum "; s+= createSelect("Frequencies", "", 0, 1, counter ,
@@ -632,18 +634,18 @@ function minValue(irInt) {
 	return parseInt(irInt.sort(sortNumber)[0]);
 }
 
-function symmetryModeAdd() { // extracts vibrational symmetry modes from Info
+function symmetryModeAdd() { // extracts vibrational symmetry modes from _fileData.info
 								// array and lets one get symmetry operations by
 								// ID
 	cleanList('sym');
 	var sym = getbyID('sym');
-	if (Info[3] && Info[3].modelProperties) {
+	if (_fileData.info[3] && _fileData.info[3].modelProperties) {
 		var symm = _fileData.freqSymm;
 		if (!symm) {
 			var symm = [];
-			for (var i = 1; i < Info.length; i++)
-				if (Info[i].name)
-					symm[i] = Info[i].modelProperties.vibrationalSymmetry;
+			for (var i = 1; i < _fileData.info.length; i++)
+				if (_fileData.info[i].name)
+					symm[i] = _fileData.info[i].modelProperties.vibrationalSymmetry;
 		}
 		var sortedSymm = unique(symm);
 		addOption(sym, "any", "any");
@@ -738,8 +740,8 @@ function createFreqGrp() {
 		+ "<br>"
 		+ "Band width " + createText2("sigma", "30", "3", "") + " (cm<sup>-1</sup>)" 
 		+ "&nbsp;"
-		+ "Min freq. " + createText2("nMin", "onClickModSpec()", "4", "")
-		+ " Max " + createText2("nMax", "onClickModSpec()", "4", "") + "(cm<sup>-1</sup>)"
+		+ "Min freq. " + createText2("nMin", "0", "4", "")
+		+ " Max " + createText2("nMax", "4000", "4", "") + "(cm<sup>-1</sup>)"
 		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "") + "<br>"
 		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 1, "", "stick")
 		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 0, "", "gaus")

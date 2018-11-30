@@ -1,20 +1,21 @@
 _pick = {
-	pickingEnabled : false,
-	counterHide : 0,
-	selectedAtoms : [],
-	sortquestion : null,
-	selectCheckbox : null,
-	menuCallback : null
+	pickingEnabled 	: false,
+	counterHide 	: 0,
+	selectedAtoms	: [],
+	sortquestion 	: null,
+	selectCheckbox 	: null,
+	menuCallback 	: null,
+	colorWhat		: "color atom" 
 }
 
 function setPicking(form) {
 	if (form.checked) {
 		runJmolScriptWait('showSelections TRUE; select none;halos on; ');
-		colorWhat = "color atom";
+		_pick.colorWhat = "color atom";
 	} else {
 		runJmolScriptWait('select none;');
 	}
-	return colorWhat;
+	return _pick.colorWhat;
 }
 
 function setPickingDelete(form) {
@@ -150,7 +151,7 @@ function pickDistanceCallback() {
 			runJmolScriptWait('select within(' + distance + ',picked); draw sphere1 width ' + distance + '  {picked} translucent;');
 			_edit.hideMode = " hide selected";
 			_edit.deleteMode = " delete selected";
-			colorWhat = "color atoms";
+			_pick.colorWhat = "color atoms";
 			cancelPicking();
 			return true;
 		}

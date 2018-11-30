@@ -135,11 +135,10 @@ function getSymmetryAtomArrayAllSymops(point){
 //Many of the below functions are outlines for future functions 
 function bindToVectorConstraint(vectorDrawObjectID,selectedPoint,errorDistance){
 	vectorPointer = ""+vectorDrawObjectID+""
-	selectedPoint = {0.0 0.0 0.0}
 	errorDistance = 1
 	startPoint = $ @vectorPointer[0]
 	endPoint = $ @vectorPointer[1]
-	constrainedPoint = intersection(startPoint,endPoint,selectedPoint) 
+	constrainedPoint = intersection(startPoint,endPoint-startPoint,selectedPoint) 
 	if (selectedPointToNewPointDistance > errorDistance){
 		print selectedPoint 
 	}
