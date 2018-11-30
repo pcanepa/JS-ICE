@@ -38,8 +38,8 @@
 //	var data = [];
 //  var A = [];
 //    var nplots = 1;
-//	var modelCount = _fileData.info.length;
-//var stringa = _fileData.info[3].name;
+//	var modelCount = _file.info.length;
+//var stringa = _file.info[3].name;
     
 //	var nullValues;
     
@@ -83,10 +83,10 @@ function arrayMin(a) {
 
 
 function plotEnergies(){
-	var modelCount = _fileData.info.length;
-	if (_fileData.haveGraphOptimize || modelCount < 3)
+	var modelCount = _file.info.length;
+	if (_file.haveGraphOptimize || modelCount < 3)
 		return false;
-	_fileData.haveGraphOptimize = true;
+	_file.haveGraphOptimize = true;
 	_plot = {
 		theplot : null,
 		itemEnergy : 0,
@@ -101,11 +101,11 @@ function plotEnergies(){
 	var data = [];
 	var A = [];
 	var nplots = 1;
-	var stringa = _fileData.info[3].name;
+	var stringa = _file.info[3].name;
 	var f = null;
 	var pattern = null;
 
-	switch (_fileData.plotEnergyType) {
+	switch (_file.plotEnergyType) {
 	case "crystal":
 		if(stringa.search(/Energy/i) < 0)
 			return false;
@@ -139,35 +139,35 @@ function plotEnergies(){
 	if (f) {
 		// not Gaussian
 		for (var i = 0; i < last; i++) {
-			var name = _fileData.info[i].name;
+			var name = _file.info[i].name;
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = 0+ _fileData.info[i].modelNumber;
+			var modelnumber = 0+ _file.info[i].modelNumber;
 			if(i > 0)
 				previous = i - 1;
 			var e = f(name);
-//			if(i == 0 || _fileData.info[i - 1].name == null) {
-				energy = Math.abs(e - f(_fileData.info[last].name));
-//			} else if (previous > 0 && e != f(_fileData.info[i - 1].name)) {
-//				energy = Math.abs(e - f(_fileData.info[i - 1].name));
+//			if(i == 0 || _file.info[i - 1].name == null) {
+				energy = Math.abs(e - f(_file.info[last].name));
+//			} else if (previous > 0 && e != f(_file.info[i - 1].name)) {
+//				energy = Math.abs(e - f(_file.info[i - 1].name));
 //			}
 			label = 'Model = ' + modelnumber + ', &#916 E = ' + energy + ' kJmol^-1';
 			A.push([i+1,energy,modelnumber,label]);
 		}
 	} else {
 		// Gaussian
-		last = _fileData.energy.length;
+		last = _file.energy.length;
 		for (var i = 1; i < last; i++) {
-			var name = _fileData.energy[i];
+			var name = _file.energy[i];
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = _fileData.energy.length - 1;		
-			if(i > 0 && i < _fileData.info.length)
+			var modelnumber = _file.energy.length - 1;		
+			if(i > 0 && i < _file.info.length)
 				var previous = i - 1;
 			var e = fromHartreetokJ(name);
 			var e1;
 //			if(i == 0 || (e1 = energyGauss[i - 1]) == null) {
-				energy = Math.abs(e - fromHartreetokJ(_fileData.energy[last]));
+				energy = Math.abs(e - fromHartreetokJ(_file.energy[last]));
 //			} else if (previous > 0) {
 //				if (e != e1)
 //					energy = Math.abs(e - e1);
@@ -195,7 +195,7 @@ function plotEnergies(){
 	//function plotGradient(){
 
 
-	if(!_fileData.plotEnergyForces)
+	if(!_file.plotEnergyForces)
 		return;
 	var data = [];
 	var A = [];
@@ -204,10 +204,10 @@ function plotEnergies(){
 	if(stringa.search(/Energy/i) != -1){
 		last = modelCount - 1;
 		for (var i = 0; i < last; i++) {
-			var name = _fileData.info[i].name;
+			var name = _file.info[i].name;
 			if (name == null)
 				continue;
-			var modelnumber = 0 + _fileData.info[i].modelNumber;
+			var modelnumber = 0 + _file.info[i].modelNumber;
 			// first gradient will be for model 1
 			// This is if is to check if we are dealing with an optimization
 			// or
@@ -215,10 +215,10 @@ function plotEnergies(){
 			// frequency calculation
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-				maxGra = parseFloat(_fileData.info[i].modelProperties.maxGradient);
+				maxGra = parseFloat(_file.info[i].modelProperties.maxGradient);
 //			else if(name && previous > 0) {
-//				if (substringEnergyToFloat(_fileData.info[i].name) != substringEnergyToFloat(_fileData.info[i - 1].name))
-//					maxGra = parseFloat(_fileData.info[i].modelProperties.maxGradient);
+//				if (substringEnergyToFloat(_file.info[i].name) != substringEnergyToFloat(_file.info[i - 1].name))
+//					maxGra = parseFloat(_file.info[i].modelProperties.maxGradient);
 //			}
 			if (isNaN(maxGra))
 				continue;

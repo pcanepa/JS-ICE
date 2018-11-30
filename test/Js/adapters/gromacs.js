@@ -36,12 +36,12 @@ function exportGromacs() {
 	
 	scaleModelCoordinates("xyz", "div", 10);
 	
-	var numatomsGrom = " " + _fileData.frameSelection + ".length";
-	var coordinateGrom = _fileData.frameSelection
+	var numatomsGrom = " " + _file.frameSelection + ".length";
+	var coordinateGrom = _file.frameSelection
 			+ '.label("  %i%e %i %e %8.3[xyz] %8.4fy %8.4fz")';
-	var cellbox = +roundNumber(_fileData.cell.a) * (cosRounded(_fileData.cell.alpha)) + ' '
-			+ roundNumber(_fileData.cell.b) * (cosRounded(_fileData.cell.beta)) + ' '
-			+ roundNumber(_fileData.cell.c) * (cosRounded(_fileData.cell.gamma));
+	var cellbox = +roundNumber(_file.cell.a) * (cosRounded(_file.cell.alpha)) + ' '
+			+ roundNumber(_file.cell.b) * (cosRounded(_file.cell.beta)) + ' '
+			+ roundNumber(_file.cell.c) * (cosRounded(_file.cell.gamma));
 	var coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
 			+ 'var coordGrom = ' + coordinateGrom + ';'
 			+ 'var cellGrom = \" \n\t' + cellbox + '\"; '

@@ -6,7 +6,7 @@ version = "3.0.0"; // BH 2018
 
 // _m_file.js
 
-_fileData = {};
+_file = {};
 
 _fileIsReload = false;
 

@@ -8,7 +8,7 @@ function exitOptimize() {
 function doConvertPlotUnits(unitEnergy) {
 	switch (unitEnergy) {
 	case "h": // Hartree
-		switch (_fileData.energyUnits) {
+		switch (_file.energyUnits) {
 		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtohartree, "Hartree");
 			break;
@@ -21,7 +21,7 @@ function doConvertPlotUnits(unitEnergy) {
 		}
 		break;
 	case "e": // eV
-		switch (_fileData.energyUnits) {
+		switch (_file.energyUnits) {
 		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtoEV, "eV");
 			break;
@@ -35,7 +35,7 @@ function doConvertPlotUnits(unitEnergy) {
 		break;
 
 	case "r": // Rydberg
-		switch (_fileData.energyUnits) {
+		switch (_file.energyUnits) {
 		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtorydberg, "Ry");
 			break;
@@ -49,7 +49,7 @@ function doConvertPlotUnits(unitEnergy) {
 		break;
 
 	case "kj": // Kj/mol
-			switch (_fileData.energyUnits) {
+			switch (_file.energyUnits) {
 			case ENERGY_RYDBERG:
 				convertGeomData(fromRydbergtoKj, "kJ/mol");
 				break;
@@ -63,7 +63,7 @@ function doConvertPlotUnits(unitEnergy) {
 		break;
 
 	case "kc": // Kcal*mol
-		switch (_fileData.energyUnits) {
+		switch (_file.energyUnits) {
 		case ENERGY_RYDBERG:
 			convertGeomData(fromRydbergtokcalmol, "kcal/mol");
 			break;
@@ -86,8 +86,8 @@ function convertGeomData(f, toUnits) {
 
 	toUnits = " " + toUnits;
 	
-	var u = _fileData.unitGeomEnergy;
-	switch (_fileData.energyUnits) {
+	var u = _file.unitGeomEnergy;
+	switch (_file.energyUnits) {
 	case ENERGY_RYDBERG:
 		u = "R";
 		break;
@@ -104,7 +104,7 @@ function convertGeomData(f, toUnits) {
 
 	// The required value is the end of the string Energy = -123.456 Hartree.
 	
-	for (var i = (_fileData.hasInputModel ? 1 : 0); i < geomData.length; i++) {
+	for (var i = (_file.hasInputModel ? 1 : 0); i < geomData.length; i++) {
 		var data = _fileInfo.geomData[i];
 		var val = f(data.substring(data.indexOf('=') + 1, 
 				data.indexOf(u) - 1));

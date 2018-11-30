@@ -24,17 +24,17 @@
 // ////////////GULP READER
 
 loadDone_gulp = function() {
-	_fileData.energyUnits = ENERGY_EV;
-	_fileData.StrUnitEnergy = "e";
-	_fileData.counterFreq = 0;
-	for (var i = 0; i < _fileData.info.length; i++) {
-		var line = _fileData.info[i].name;
+	_file.energyUnits = ENERGY_EV;
+	_file.StrUnitEnergy = "e";
+	_file.counterFreq = 0;
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 		if (i == 0) {
 			line = "Intial";
 		}
 		addOption(getbyID('geom'), i + " " + line, i + 1);
-		_fileData.geomData[i] = line;
-		_fileData.counterFreq++;
+		_file.geomData[i] = line;
+		_file.counterFreq++;
 	}
 
 	runJmolScriptWait("script scripts/gulp_name.spt"); 
@@ -55,7 +55,7 @@ function exportGULP() {
 
 	warningMsg("Make sure you have selected the model you would like to export.");
 	saveStateAndOrientation_a();
-	if (_fileData.cell.typeSystem != "crystal")
+	if (_file.cell.typeSystem != "crystal")
 		setUnitCell();
 	
 	var titleGulpinput = prompt("Type here the job title:", "");
@@ -68,7 +68,7 @@ function exportGULP() {
 			+ 'titlegulp = [optiongulp, titleheader, title, titleend];';
 	runJmolScriptWait(titleGulp);
 
-	switch (_fileData.cell.typeSystem) {
+	switch (_file.cell.typeSystem) {
 	case "crystal":
 		setUnitCell();
 		flagsymmetryGulp = confirm("Do you want to introduce symmetry ?");
@@ -77,23 +77,23 @@ function exportGULP() {
 			warningMsg("This procedure is not fully tested.");
 			figureOutSpaceGroup(false, false);
 		} else {
-			stringCellparamgulp = roundNumber(_fileData.cell.a) + ' ' + roundNumber(_fileData.cell.b)
-					+ ' ' + roundNumber(_fileData.cell.c) + ' ' + roundNumber(_fileData.cell.alpha) + ' '
-					+ roundNumber(_fileData.cell.beta) + ' ' + roundNumber(_fileData.cell.gamma);
+			stringCellparamgulp = roundNumber(_file.cell.a) + ' ' + roundNumber(_file.cell.b)
+					+ ' ' + roundNumber(_file.cell.c) + ' ' + roundNumber(_file.cell.alpha) + ' '
+					+ roundNumber(_file.cell.beta) + ' ' + roundNumber(_file.cell.gamma);
 		}
 		break;
 
 	case "surface":
 		cellHeadergulp = "scell";
 		coordinateAddgulp = "s";
-		stringCellparamgulp = roundNumber(_fileData.cell.a) + ", " + roundNumber(_fileData.cell.b)
-				+ ", " + roundNumber(_fileData.cell.gamma);
+		stringCellparamgulp = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.b)
+				+ ", " + roundNumber(_file.cell.gamma);
 		break;
 
 	case "polymer":
 		cellHeadergulp = "pcell";
 		coordinateAddgulp = "";
-		stringCellparamgulp = roundNumber(_fileData.cell.a);
+		stringCellparamgulp = roundNumber(_file.cell.a);
 		break;
 
 	case "molecule":
@@ -111,7 +111,7 @@ function exportGULP() {
 	var coordinateString;
 	var coordinateShel;
 	var sortofCoordinateGulp;
-	if (_fileData.cell.typeSystem == 'crystal') {
+	if (_file.cell.typeSystem == 'crystal') {
 		var sortofCoordinate = confirm("Do you want the coordinates in Cartesian or fractional? \n OK for Cartesian, Cancel for fractional.")
 		sortofCoordinateGulp = (sortofCoordinate == true) ? (coordinateAddgulp + "cartesian")
 				: (coordinateAddgulp + "fractional");
@@ -119,12 +119,12 @@ function exportGULP() {
 		messageMsg("Coordinate will be exported in Cartesian");
 	}
 	var flagShelgulp = confirm("Is the inter-atomic potential a core/shel one? \n Cancel stands for NO core/shel potential.");
-	if (sortofCoordinateGulp && _fileData.cell.typeSystem == 'crystal') {
-		coordinateString = _fileData.frameSelection + '.label("%e core %16.9[fxyz]")';
-		coordinateShel = _fileData.frameSelection + '.label("%e shel %16.9[fxyz]")';
+	if (sortofCoordinateGulp && _file.cell.typeSystem == 'crystal') {
+		coordinateString = _file.frameSelection + '.label("%e core %16.9[fxyz]")';
+		coordinateShel = _file.frameSelection + '.label("%e shel %16.9[fxyz]")';
 	} else {
-		coordinateString = _fileData.frameSelection + '.label("%e core %16.9[xyz]")';
-		coordinateShel = _fileData.frameSelection + '.label("%e shel %16.9[xyz]")';
+		coordinateString = _file.frameSelection + '.label("%e core %16.9[xyz]")';
+		coordinateShel = _file.frameSelection + '.label("%e shel %16.9[xyz]")';
 	}
 	var coordinateGulp;
 	if (flagShelgulp) {
@@ -139,7 +139,7 @@ function exportGULP() {
 	}
 	runJmolScriptWait(coordinateGulp);
 
-	if (_fileData.cell.typeSystem == "crystal") {
+	if (_file.cell.typeSystem == "crystal") {
 		// interNumber from crystalfunction .. BH??? interNumber is only defined locally in figureOutSpaceGroup
 		if (!flagsymmetryGulp)
 			interNumber = "P 1"
@@ -163,7 +163,7 @@ function exportGULP() {
 	runJmolScriptWait(restGulp);
 
 	var finalInputGulp;
-	if (_fileData.cell.typeSystem == "crystal") {
+	if (_file.cell.typeSystem == "crystal") {
 		finalInputGulp = "var final = [titlegulp,cellgulp,coordgulp,spacegulp,restgulp];"
 				+ 'final = final.replace("\n\n","\n");'
 				+ 'WRITE VAR final "?.gin" ';

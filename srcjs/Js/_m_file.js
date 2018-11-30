@@ -68,7 +68,7 @@ file_method = function(methodName, defaultMethod, params) {
 	// Execute a method specific to a given file type, for example:
 	// loadDone_crystal
 	params || (params = []);
-	methodName += "_" + _fileData.fileType;
+	methodName += "_" + _file.fileType;
 	var f = self[methodName] || defaultMethod;
 	return (f && f.apply(null, params));
 }
@@ -170,7 +170,7 @@ function onChangeLoad(load) {
 }
 
 function file_loadedCallback(filePath) {
-	_fileData = {
+	_file = {
 			cell        : {},
 			fileType    : jmolEvaluate("_fileType").toLowerCase(), 
 			energyUnits : ENERGY_EV,
@@ -195,7 +195,7 @@ function file_loadedCallback(filePath) {
 	};
 	
 	counterFreq = 0;
-	_fileData.info = extractInfoJmol("auxiliaryInfo.models");
+	_file.info = extractInfoJmol("auxiliaryInfo.models");
 	setFlags();
 	setFileName();
 	getUnitcell(1);
@@ -226,23 +226,23 @@ function cleanAndReloadForm() {
 
 resetLoadFlags = function(isCrystal) {
 	if (isCrystal)
-		_fileData.cell.typeSystem = "crystal";
+		_file.cell.typeSystem = "crystal";
 }
 
 setFlags = function() {
 	// BH TODO: missing xmlvasp?
-	switch (_fileData.fileType) {
+	switch (_file.fileType) {
 	default:
 	case "xyz":
 		break;
 	case "shelx":
 		resetLoadFlags(true); // BH 2018 added -- Q: Why no clearing of flags?
-		_fileData.exportModelOne = true;
+		_file.exportModelOne = true;
 		break;
 	case "crystal":
 		resetLoadFlags();
-		_fileData.plotEnergyType = "crystal";
-		_fileData.plotEnergyForces = true;
+		_file.plotEnergyType = "crystal";
+		_file.plotEnergyForces = true;
 		break;
 	case "cube":
 		break;
@@ -250,49 +250,49 @@ setFlags = function() {
 	case "aimsfhi":
 	case "castep":
 		resetLoadFlags(true);
-		_fileData.exportModelOne = true;
+		_file.exportModelOne = true;
 		break;
 	case "vasp":
 		resetLoadFlags(true);
-		_fileData.plotEnergyType = "vasp";
-		_fileData.exportNoSymmetry = true;
+		_file.plotEnergyType = "vasp";
+		_file.exportNoSymmetry = true;
 		break;
 	case "vaspoutcar":
 		resetLoadFlags(true);
-		_fileData.plotEnergyType = "outcar";
-		_fileData.exportNoSymmetry = true;		
+		_file.plotEnergyType = "outcar";
+		_file.exportNoSymmetry = true;		
 		break;
 	case "dmol":
 		resetLoadFlags();
-		_fileData.plotEnergyType = "dmol";
+		_file.plotEnergyType = "dmol";
 		break;
 	case "espresso":
 	case "quantum":
 		resetLoadFlags(true);
-		_fileData.plotEnergyType = "qespresso";
+		_file.plotEnergyType = "qespresso";
 		break;
 	case "gulp":
 		resetLoadFlags();
-		_fileData.plotEnergyType = "gulp";
+		_file.plotEnergyType = "gulp";
 		break;
 	case "material":
 		resetLoadFlags(); // BH Added
 		break;
 	case "wien":
 		resetLoadFlags(true); // BH Added
-		_fileData.exportModelOne = true;
+		_file.exportModelOne = true;
 		break;
 	case "cif":
 		resetLoadFlags(true); // BH Added
-		_fileData.exportModelOne = true;
+		_file.exportModelOne = true;
 		break;
 	case "siesta":
 		resetLoadFlags(true); // BH Added
-		_fileData.exportNoSymmetry = true;
+		_file.exportNoSymmetry = true;
 		break;
 	case "pdb":
 		resetLoadFlags(true); // BH Added
-		_fileData.exportModelOne = true;
+		_file.exportModelOne = true;
 		break;
 	case "gromacs":
 		resetLoadFlags(); // BH Added
@@ -300,20 +300,20 @@ setFlags = function() {
 	case "gaussian":
 	case "gauss":
 		resetLoadFlags(); // BH Added
-		_fileData.cell.typeSystem = "molecule";
-		_fileData.plotEnergyType = "gaussian";
+		_file.cell.typeSystem = "molecule";
+		_file.plotEnergyType = "gaussian";
 		break;
 	case "molden":
 		// WE USE SAME SETTINGS AS VASP
 		// IT WORKS
 		resetLoadFlags(); // BH Added
-		_fileData.cell.typeSystem = "molecule";
-		_fileData.plotEnergyType = "outcar";
-		_fileData.exportNoSymmetry = true;
+		_file.cell.typeSystem = "molecule";
+		_file.plotEnergyType = "outcar";
+		_file.exportNoSymmetry = true;
 		break;
 	case "crysden":
 		resetLoadFlags(true); // BH Added
-		_fileData.exportModelOne = true;
+		_file.exportModelOne = true;
 		break;
 	case "castep":
 	case "outcastep":
@@ -338,26 +338,26 @@ function onChangeSave(save) {
 		saveFractionalCoordinate();
 		break;
 	case "saveCRYSTAL":
-		_fileData._export = {};
+		_file._export = {};
 		exportCRYSTAL();
 		break;
 	case "saveVASP":
-		_fileData._export = {};
+		_file._export = {};
 		exportVASP();
 		break;
 	case "saveGROMACS":
-		_fileData._export = {};
+		_file._export = {};
 		exportGromacs();
 		break;
 	case "saveCASTEP":
 		exportCASTEP();
 		break;
 	case "saveQuantum":
-		_fileData._export = {};
+		_file._export = {};
 		exportQuantum();
 		break;
 	case "saveGULP":
-		_fileData._export = {};
+		_file._export = {};
 		exportGULP();
 		break;
 	case "savePOV":

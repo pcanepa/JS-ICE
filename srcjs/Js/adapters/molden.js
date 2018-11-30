@@ -26,18 +26,18 @@
 
 loadDone_molden = function(msg) {
 
-	_fileData.energyUnits = ENERGY_EV;
-	_fileData.StrUnitEnergy = "e";
+	_file.energyUnits = ENERGY_EV;
+	_file.StrUnitEnergy = "e";
 	
-	for (var i = 0; i < _fileData.info.length; i++) {
-		if (_fileData.info[i].name != null) {
-			var line = _fileData.info[i].name;
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var line = _file.info[i].name;
 			if (line.search(/cm/i) != -1) {
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
-				_fileData.freqInfo.push(_fileData.info[i]);
-				_fileData.freqData.push(line);
-				_fileData.vibLine.push(i + " A " + data + " cm^-1");
-				_fileData.counterMD++;
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(line);
+				_file.vibLine.push(i + " A " + data + " cm^-1");
+				_file.counterMD++;
 			}
 		}
 	}
