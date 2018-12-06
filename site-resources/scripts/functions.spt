@@ -1,7 +1,6 @@
 
 // functions for JS-ICE
 
-
 //converts the point data type in jmol into arrays of the 3 coordinates, indexed x,y,z 
 function pointToArray(pointt){
 	var pointt = ""+pointt+"" 
