@@ -302,7 +302,7 @@ Clazz.defineMethod (c$, "getDefaultStructure",
 function (bsAtoms, bsModified) {
 return (this.haveBioModels ? this.bioModelset.getAllDefaultStructures (bsAtoms, bsModified) : "");
 }, "JU.BS,JU.BS");
-Clazz.defineMethod (c$, "_edit.deleteModelBonds", 
+Clazz.defineMethod (c$, "deleteModelBonds", 
 function (modelIndex) {
 var bsAtoms = this.getModelAtomBitSetIncludingDeleted (modelIndex, false);
 this.makeConnections (0, 3.4028235E38, 131071, 12291, bsAtoms, bsAtoms, null, false, false, 0);
@@ -375,7 +375,7 @@ return;
 bsModels.set (i);
 }}
 }, "JU.BS");
-Clazz.defineMethod (c$, "_edit.deleteModels", 
+Clazz.defineMethod (c$, "deleteModels", 
 function (bsModels) {
 this.includeAllRelatedFrames (bsModels);
 var nModelsDeleted = bsModels.cardinality ();
@@ -413,7 +413,7 @@ if (nAtoms == 0) continue;
 var bsModelAtoms = oldModels[i].bsAtoms;
 var firstAtomIndex = oldModels[i].firstAtomIndex;
 JU.BSUtil.deleteBits (this.bsSymmetry, bsModelAtoms);
-this._edit.deleteModel (mpt, firstAtomIndex, nAtoms, bsModelAtoms, bsBonds);
+this.deleteModel (mpt, firstAtomIndex, nAtoms, bsModelAtoms, bsBonds);
 for (var j = oldModelCount; --j > i; ) oldModels[j].fixIndices (mpt, nAtoms, bsModelAtoms);
 
 this.vwr.shm.deleteShapeAtoms ( Clazz.newArray (-1, [newModels, this.at,  Clazz.newIntArray (-1, [mpt, firstAtomIndex, nAtoms])]), bsModelAtoms);
@@ -447,7 +447,7 @@ a.setCIPChirality (0);
 if (a.mi != modelIndex) this.am[modelIndex = a.mi].hasChirality = false;
 }
 }});
-Clazz.defineMethod (c$, "_edit.deleteModel", 
+Clazz.defineMethod (c$, "deleteModel", 
  function (modelIndex, firstAtomIndex, nAtoms, bsModelAtoms, bsBonds) {
 if (modelIndex < 0) {
 return;
@@ -474,8 +474,8 @@ this.unitCells = JU.AU.deleteElements (this.unitCells, modelIndex, 1);
 if (!this.stateScripts.get (i).deleteAtoms (modelIndex, bsBonds, bsModelAtoms)) {
 this.stateScripts.removeItemAt (i);
 }}
-this._edit.deleteModelAtoms (firstAtomIndex, nAtoms, bsModelAtoms);
-this.vwr._edit.deleteModelAtoms (modelIndex, firstAtomIndex, nAtoms, bsModelAtoms);
+this.deleteModelAtoms (firstAtomIndex, nAtoms, bsModelAtoms);
+this.vwr.deleteModelAtoms (modelIndex, firstAtomIndex, nAtoms, bsModelAtoms);
 }, "~N,~N,~N,JU.BS,JU.BS");
 Clazz.defineMethod (c$, "setAtomProperty", 
 function (bs, tok, iValue, fValue, sValue, values, list) {

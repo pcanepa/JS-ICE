@@ -21,10 +21,10 @@ function setValuesOther() {
 //	  set zSlab 50;
 //	  set zShade false;
 	
-	cameraDepthSlider.setValue(jmolEvaluate("cameraDepth") * 25);
-	SpecularPercentSlider.setValue(jmolEvaluate("specularPercent"));
-	AmbientPercentSlider.setValue(jmolEvaluate("ambientPercent"));
-	DiffusePercentSlider.setValue(jmolEvaluate("diffusePercent"));
+	_slider.cameraDepth.setValue(jmolEvaluate("cameraDepth") * 25);
+	_slider.specularPercent.setValue(jmolEvaluate("specularPercent"));
+	_slider.ambientPercent.setValue(jmolEvaluate("ambientPercent"));
+	_slider.diffusePercent.setValue(jmolEvaluate("diffusePercent"));
 //	getbyID("SpecularPercentMsg").innerHTML = 40 + " %";
 //	getbyID("AmbientPercentMsg").innerHTML = 40 + " %";
 //	getbyID("DiffusePercentMsg").innerHTML = 40 + " %";
@@ -33,22 +33,22 @@ function setValuesOther() {
 
 function applyCameraDepth(depth) {
 	runJmolScriptWait("set cameraDepth " + depth + ";")
-	getbyID("cameraDepthMsg").innerHTML = depth
+	getbyID("slider.cameraDepthMsg").innerHTML = depth
 }
 
 function applySpecularPercent(x) {
 	runJmolScriptWait(" set specularPercent " + x + ";");
-	getbyID("SpecularPercentMsg").innerHTML = x + "%";
+	getbyID("slider.specularPercentMsg").innerHTML = x + "%";
 }
 
 function applyAmbientPercent(x) {
 	runJmolScriptWait(" set ambientPercent " + x + ";");
-	getbyID("AmbientPercentMsg").innerHTML = x + "%";
+	getbyID("slider.ambientPercentMsg").innerHTML = x + "%";
 }
 
 function applyDiffusePercent(x) {
 	runJmolScriptWait(" set diffusePercent " + x + ";");
-	getbyID("DiffusePercentMsg").innerHTML = x + "%";
+	getbyID("slider.diffusePercentMsg").innerHTML = x + "%";
 }
 
 function setTextSize(value) {
@@ -105,11 +105,11 @@ function createOtherGrp() {
 	strOther += "Light settings";
 	strOther += "</td></tr>";
 	strOther += "<tr><td>";
-	strOther += createSlider("SpecularPercent", "Reflection");
+	strOther += createSlider("specularPercent", "Reflection");
 	strOther += "</td></tr><tr><td>";
-	strOther += createSlider("AmbientPercent", "Ambient");
+	strOther += createSlider("ambientPercent", "Ambient");
 	strOther += "</td></tr><tr><td>";
-	strOther += createSlider("DiffusePercent", "Diffuse");
+	strOther += createSlider("diffusePercent", "Diffuse");
 	strOther += "</td></tr><tr><td colspan='2'>" + createLine('blue', '');
 	strOther += "</tr><tr><td colspan='2'>"
 		strOther += "3D stereo settings <br>"

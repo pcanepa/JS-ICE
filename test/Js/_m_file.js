@@ -1,17 +1,3 @@
-var flagCif = false; 
-var flagCrystal = false; 
-var flagGromos = false;
-var flagGulp = false;
-var flagOutcar = false;
-var flagGaussian = false;
-var flagQuantumEspresso = false;
-var flagSiesta = false;
-var flagDmol = false;
-var flagMolden = false;
-var flagCastep = false;
-
-var quantumEspresso = false;
-
 
 var sampleOptionArr = ["Load a Sample File", 
 	"MgO slab", 
@@ -19,16 +5,27 @@ var sampleOptionArr = ["Load a Sample File",
 	"benzene single-point calculation", 
 	"NH3 geometry optimization", 
 	"NH3 vibrations", 
+	"Formic acid slab fragment vibrations",
 	"quartz CIF", 
 	"ice.out", 
-	"=AMS/rutile (11 models)"
+	"=AMS/rutile (11 models)",
+	"urea VASP test"
 ]
 
 function onChangeLoadSample(value) {
 	var fname = null;
 	switch(value) {
+	case "urea VASP test":
+		fname = "output/vasp/Urea_vasp5.dat"
+		break;
 	case "=AMS/rutile (11 models)":
 		fname = "output/rutile.cif";
+		break;
+	case "Formic acid slab fragment vibrations":
+		fname = "output/vib-freq/formic_on_ha.out";
+		break;
+	case "quartz CIF":
+		fname = "output/quartz.cif";
 		break;
 	case "quartz CIF":
 		fname = "output/quartz.cif";
@@ -71,7 +68,7 @@ file_method = function(methodName, defaultMethod, params) {
 	// Execute a method specific to a given file type, for example:
 	// loadDone_crystal
 	params || (params = []);
-	methodName += "_" + _fileData.fileType;
+	methodName += "_" + _file.fileType;
 	var f = self[methodName] || defaultMethod;
 	return (f && f.apply(null, params));
 }
@@ -104,9 +101,9 @@ loadFile = function(fileName, packing, filter, more) {
 
 function setDefaultJmolSettings() {
 	runJmolScriptWait('select all; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
-	radiiSlider.setValue(20);
-	bondSlider.setValue(15);
-	// radiiConnectSlider.setValue(20);
+	_slider.radii.setValue(20);
+	_slider.bond.setValue(15);
+	// _slider.radiiConnect.setValue(20);
 //	getbyID('radiiMsg').innerHTML = 20 + "%";
 //	getbyID('bondMsg').innerHTML = 0.15 + " &#197";
 
@@ -173,24 +170,33 @@ function onChangeLoad(load) {
 }
 
 function file_loadedCallback(filePath) {
-	_specData = null;
-	_fileData = {
+	_file = {
+			cell        : {},
 			fileType    : jmolEvaluate("_fileType").toLowerCase(), 
 			energyUnits : ENERGY_EV,
 			strUnitEnergy : "e",
 			hasInputModel : false,
-			haveSpecData : false,
+			symmetry    : null,
+			specData    : null,
+			plotFreq    : null,
 			geomData    : [],
 			freqInfo 	: [],
 			freqData	: [],
 			vibLine		: [],
 			counterFreq : 0,
-			counterMD 	: 0
+			counterMD 	: 0,
+			fMinim 		: null,
+			frameSelection : null,
+			frameNum       : null,
+			frameValue 	   : null,
+			haveGraphOptimize  : false,
+			exportModelOne        : false,
+			exportFractionalCoord : false
 	};
-	resetGraphs();
+	
 	counterFreq = 0;
-	extractAuxiliaryJmol();
-	setFlags(_fileData.fileType);
+	_file.info = extractInfoJmol("auxiliaryInfo.models");
+	setFlags();
 	setFileName();
 	getUnitcell(1);
 	runJmolScriptWait('unitcell on');
@@ -218,113 +224,70 @@ function cleanAndReloadForm() {
 	setTitleEcho();
 }
 
-resetLoadFlags = function(isCrystal) {
-	if (isCrystal)
-		typeSystem = "crystal";
-	flagCrystal = 
-	flagGromos = 
-	flagGulp = 
-	flagOutcar = 
-	flagGaussian = 
-	flagQuantumEspresso = 
-	flagCif = 
-	flagSiesta = 
-	flagDmol = 
-	flagMolden =
-	flagCastep = false;
-}
-
-setFlags = function(type) {
+setFlags = function() {
 	// BH TODO: missing xmlvasp?
-	type = type.replace('load', '').toLowerCase();
-	switch (type) {
+	switch (_file.fileType) {
 	default:
 	case "xyz":
-		break;
-	case "shelx":
-	case "shel":
-		resetLoadFlags(true); // BH 2018 added -- Q: Why no clearing of flags?
-		flagCif = true;
-		break;
-	case "crystal":
-		resetLoadFlags();
-		flagCrystal = true;
-		break;
 	case "cube":
+	case "gromacs":
+	case "material":
+		break;
+	case "castep":
+	case "outcastep":
+		_file.cell.typeSystem = "crystal";
 		break;
 	case "aims":
 	case "aimsfhi":
-		resetLoadFlags(true);
-		flagCif = true;
-		break;
 	case "castep":
-		resetLoadFlags(true);
-		flagCif = true;
+	case "cif":
+	case "crysden":
+	case "pdb":
+	case "shelx":
+	case "wien":
+		_file.cell.typeSystem = "crystal";
+		_file.exportModelOne = true;
 		break;
-	case "vasp":
-		resetLoadFlags(true);
-		break;
-	case "vaspoutcar":
-		resetLoadFlags(true);
-		flagOutcar = true;
+	case "siesta":
+		_file.cell.typeSystem = "crystal";
+		_file.exportNoSymmetry = true;
 		break;
 	case "dmol":
-		resetLoadFlags();
-		flagDmol = true;
+		_file.plotEnergyType = "dmol";
+		break;
+	case "gulp":
+		_file.plotEnergyType = "gulp";
+		break;
+	case "vasp":
+		_file.cell.typeSystem = "crystal";
+		_file.plotEnergyType = "vasp";
+		_file.exportNoSymmetry = true;
+		break;
+	case "vaspoutcar":
+		_file.cell.typeSystem = "crystal";
+		_file.plotEnergyType = "outcar";
+		_file.exportNoSymmetry = true;		
 		break;
 	case "espresso":
 	case "quantum":
-		resetLoadFlags(true);
-		flagQuantumEspresso = true;
-		break;
-	case "gulp":
-		resetLoadFlags();
-		flagGulp = true;
-		break;
-	case "material":
-		resetLoadFlags(); // BH Added
-		break;
-	case "wien":
-		resetLoadFlags(true); // BH Added
-		flagCif = true;
-		break;
-	case "cif":
-		resetLoadFlags(true); // BH Added
-		flagCif = true;
-		break;
-	case "siesta":
-		resetLoadFlags(true); // BH Added
-		flagSiesta = true;
-		break;
-	case "pdb":
-		resetLoadFlags(true); // BH Added
-		flagCif = true;
-		break;
-	case "gromacs":
-		resetLoadFlags(); // BH Added
-		flagGromos = true;
+		_file.cell.typeSystem = "crystal";
+		_file.plotEnergyType = "qespresso";
 		break;
 	case "gaussian":
 	case "gauss":
-		resetLoadFlags(); // BH Added
-		flagGaussian = true;
-		typeSystem = "molecule";
+		_file.cell.typeSystem = "molecule";
+		_file.plotEnergyType = "gaussian";
 		break;
 	case "molden":
 		// WE USE SAME SETTINGS AS VASP
 		// IT WORKS
-		resetLoadFlags(); // BH Added
-		typeSystem = "molecule";
-		flagOutcar = true;
+		_file.cell.typeSystem = "molecule";
+		_file.plotEnergyType = "outcar";
+		_file.exportNoSymmetry = true;
 		break;
-	case "crysden":
-		resetLoadFlags(true); // BH Added
-		flagCif = true;
-		break;
-	case "castep":
-	case "outcastep":
-		resetLoadFlags(true); // BH Added
-		flagCastep = true;
+	case "crystal":
+		_file.plotEnergyType = "crystal";
+		_file.plotEnergyForces = true;
 		break;
 	}
 }
@@ -345,11 +308,9 @@ function onChangeSave(save) {
 		saveFractionalCoordinate();
 		break;
 	case "saveCRYSTAL":
-		//flagCrystal = true;
 		exportCRYSTAL();
 		break;
 	case "saveVASP":
-		//flagCrystal = false;
 		exportVASP();
 		break;
 	case "saveGROMACS":
@@ -359,9 +320,10 @@ function onChangeSave(save) {
 		exportCASTEP();
 		break;
 	case "saveQuantum":
-		quantumEspresso = true;
-		//flagCrystal = false;
 		exportQuantum();
+		break;
+	case "saveGULP":
+		exportGULP();
 		break;
 	case "savePOV":
 		runJmoLScript('write POVRAY jice.pov');
@@ -371,11 +333,6 @@ function onChangeSave(save) {
 		break;
 	case "saveState":
 		runJmoLScript('write STATE jice.spt');
-		break;
-	case "saveGULP":
-		flagGulp = true;
-		flagCrystal = false;
-		exportGULP();
 		break;
 	case "savefreqHtml":
 		newAppletWindowFreq();
@@ -455,11 +412,28 @@ function createFileGrp() { // Here the order is crucial
 	strFile += createSelectmenu('Export File', 'onChangeSave(value)', 0, 1,
 			elSOptionArr, elSOptionText);
 	strFile += "<p ><img src='images/j-ice.png' alt='logo'/></p>";
-	strFile += "<div style='margin-top:50px;'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
-	strFile += "<blockquote>\"J-ICE: a new Jmol interface for handling<br> and visualizing Crystallographic<br> and Electronics properties.<br>"
-	strFile += "P. Canepa, R.M. Hanson, P. Ugliengo, M. Alfredsson, <br>  J. Appl. Cryst. 44, 225 (2011). <a href='http://dx.doi.org/10.1107/S0021889810049411' target'blank'>[doi]</a> \"</blockquote> </p></div>";
+	strFile += "<div style='margin-top:50px;width:350px'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
+	strFile += createCitations();
+	strFile += "</p></div>";
 	strFile += "</form>\n";
 	return strFile;
 }
+
+ 	createCitations = function() {
+		var citations = _global.citations; 
+		var s = "";
+		for (var i = 0; i < citations.length; i++) {
+			var cite = citations[i];
+			s += "<blockquote><b>";
+			s += cite.title;
+			s += "</b><br>";
+			s += cite.authors.join(", ");
+			s += " <br>";  
+			s+= cite.journal;
+			s += " <a href='" + cite.link + "' target='_blank'>[doi]</a>";
+			s += "</blockquote>"; 
+		};
+		return s
+	}
 
 

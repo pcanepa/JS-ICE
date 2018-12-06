@@ -12,26 +12,6 @@ function doClickReloadCurrentState() {
 	runJmolScriptWait('restore ORIENTATION orask; restore STATE stask; restore BOND bask;');
 }
 
-
-// BH 2018.09.21 never used
-//Array.prototype.max = function() {
-//	var max = this[0];
-//	var len = this.length;
-//	for (var i = 1; i < len; i++)
-//		if (this[i] > max)
-//			max = this[i];
-//	return max;
-//}
-//
-//Array.prototype.min = function() {
-//	var min = this[0];
-//	var len = this.length;
-//	for (var i = 1; i < len; i++)
-//		if (this[i] < min)
-//			min = this[i];
-//	return min;
-//}
-
 runJmolScript = function(script) {
 	debugSay(script);
 	jmolScript(script);	
@@ -114,12 +94,13 @@ function docWriteRightFrame() {
 
 function docWriteSpectrumHeader() {
 	// for spectrum.html
-	var s = "Min Freq. " + createTextSpectrum("minValue", "", "5", "")
-	+ " Max " + createTextSpectrum("maxValue", "", "5", "")
-	+ " cm<sup>-1</sup> ";
-	s += createButton("rescaleSpectraButton", "Rescale", "replotSpectrumHTML()", "");
-	s += createButton("savespectra", "Save spectrum", "writeSpectumHTML()", "");
-	document.write(s);
+//	var s = 
+	//"Min Freq. " + createTextSpectrum("minValue", "", "5", "")
+	//+ " Max " + createTextSpectrum("maxValue", "", "5", "")
+	//+ " cm<sup>-1</sup> ";
+//	createButton("rescaleSpectraButton", "Rescale", "replotSpectrumHTML()", "");
+	//+ createButton("savespectra", "Save spectrum", "writeSpectumHTML()", "");
+//	document.write(s);
 }
 
       		
@@ -307,20 +288,6 @@ function createMenuCell(i) {
 
       		
 ///js// Js/_m_file.js /////
-var flagCif = false; 
-var flagCrystal = false; 
-var flagGromos = false;
-var flagGulp = false;
-var flagOutcar = false;
-var flagGaussian = false;
-var flagQuantumEspresso = false;
-var flagSiesta = false;
-var flagDmol = false;
-var flagMolden = false;
-var flagCastep = false;
-
-var quantumEspresso = false;
-
 
 var sampleOptionArr = ["Load a Sample File", 
 	"MgO slab", 
@@ -328,16 +295,27 @@ var sampleOptionArr = ["Load a Sample File",
 	"benzene single-point calculation", 
 	"NH3 geometry optimization", 
 	"NH3 vibrations", 
+	"Formic acid slab fragment vibrations",
 	"quartz CIF", 
 	"ice.out", 
-	"=AMS/rutile (11 models)"
+	"=AMS/rutile (11 models)",
+	"urea VASP test"
 ]
 
 function onChangeLoadSample(value) {
 	var fname = null;
 	switch(value) {
+	case "urea VASP test":
+		fname = "output/vasp/Urea_vasp5.dat"
+		break;
 	case "=AMS/rutile (11 models)":
 		fname = "output/rutile.cif";
+		break;
+	case "Formic acid slab fragment vibrations":
+		fname = "output/vib-freq/formic_on_ha.out";
+		break;
+	case "quartz CIF":
+		fname = "output/quartz.cif";
 		break;
 	case "quartz CIF":
 		fname = "output/quartz.cif";
@@ -380,7 +358,7 @@ file_method = function(methodName, defaultMethod, params) {
 	// Execute a method specific to a given file type, for example:
 	// loadDone_crystal
 	params || (params = []);
-	methodName += "_" + _fileData.fileType;
+	methodName += "_" + _file.fileType;
 	var f = self[methodName] || defaultMethod;
 	return (f && f.apply(null, params));
 }
@@ -413,9 +391,9 @@ loadFile = function(fileName, packing, filter, more) {
 
 function setDefaultJmolSettings() {
 	runJmolScriptWait('select all; wireframe 0.15; spacefill 20% ;cartoon off; backbone off;');
-	radiiSlider.setValue(20);
-	bondSlider.setValue(15);
-	// radiiConnectSlider.setValue(20);
+	_slider.radii.setValue(20);
+	_slider.bond.setValue(15);
+	// _slider.radiiConnect.setValue(20);
 //	getbyID('radiiMsg').innerHTML = 20 + "%";
 //	getbyID('bondMsg').innerHTML = 0.15 + " &#197";
 
@@ -482,24 +460,33 @@ function onChangeLoad(load) {
 }
 
 function file_loadedCallback(filePath) {
-	_specData = null;
-	_fileData = {
+	_file = {
+			cell        : {},
 			fileType    : jmolEvaluate("_fileType").toLowerCase(), 
 			energyUnits : ENERGY_EV,
 			strUnitEnergy : "e",
 			hasInputModel : false,
-			haveSpecData : false,
+			symmetry    : null,
+			specData    : null,
+			plotFreq    : null,
 			geomData    : [],
 			freqInfo 	: [],
 			freqData	: [],
 			vibLine		: [],
 			counterFreq : 0,
-			counterMD 	: 0
+			counterMD 	: 0,
+			fMinim 		: null,
+			frameSelection : null,
+			frameNum       : null,
+			frameValue 	   : null,
+			haveGraphOptimize  : false,
+			exportModelOne        : false,
+			exportFractionalCoord : false
 	};
-	resetGraphs();
+	
 	counterFreq = 0;
-	extractAuxiliaryJmol();
-	setFlags(_fileData.fileType);
+	_file.info = extractInfoJmol("auxiliaryInfo.models");
+	setFlags();
 	setFileName();
 	getUnitcell(1);
 	runJmolScriptWait('unitcell on');
@@ -527,113 +514,70 @@ function cleanAndReloadForm() {
 	setTitleEcho();
 }
 
-resetLoadFlags = function(isCrystal) {
-	if (isCrystal)
-		typeSystem = "crystal";
-	flagCrystal = 
-	flagGromos = 
-	flagGulp = 
-	flagOutcar = 
-	flagGaussian = 
-	flagQuantumEspresso = 
-	flagCif = 
-	flagSiesta = 
-	flagDmol = 
-	flagMolden =
-	flagCastep = false;
-}
-
-setFlags = function(type) {
+setFlags = function() {
 	// BH TODO: missing xmlvasp?
-	type = type.replace('load', '').toLowerCase();
-	switch (type) {
+	switch (_file.fileType) {
 	default:
 	case "xyz":
-		break;
-	case "shelx":
-	case "shel":
-		resetLoadFlags(true); // BH 2018 added -- Q: Why no clearing of flags?
-		flagCif = true;
-		break;
-	case "crystal":
-		resetLoadFlags();
-		flagCrystal = true;
-		break;
 	case "cube":
+	case "gromacs":
+	case "material":
+		break;
+	case "castep":
+	case "outcastep":
+		_file.cell.typeSystem = "crystal";
 		break;
 	case "aims":
 	case "aimsfhi":
-		resetLoadFlags(true);
-		flagCif = true;
-		break;
 	case "castep":
-		resetLoadFlags(true);
-		flagCif = true;
+	case "cif":
+	case "crysden":
+	case "pdb":
+	case "shelx":
+	case "wien":
+		_file.cell.typeSystem = "crystal";
+		_file.exportModelOne = true;
 		break;
-	case "vasp":
-		resetLoadFlags(true);
-		break;
-	case "vaspoutcar":
-		resetLoadFlags(true);
-		flagOutcar = true;
+	case "siesta":
+		_file.cell.typeSystem = "crystal";
+		_file.exportNoSymmetry = true;
 		break;
 	case "dmol":
-		resetLoadFlags();
-		flagDmol = true;
+		_file.plotEnergyType = "dmol";
+		break;
+	case "gulp":
+		_file.plotEnergyType = "gulp";
+		break;
+	case "vasp":
+		_file.cell.typeSystem = "crystal";
+		_file.plotEnergyType = "vasp";
+		_file.exportNoSymmetry = true;
+		break;
+	case "vaspoutcar":
+		_file.cell.typeSystem = "crystal";
+		_file.plotEnergyType = "outcar";
+		_file.exportNoSymmetry = true;		
 		break;
 	case "espresso":
 	case "quantum":
-		resetLoadFlags(true);
-		flagQuantumEspresso = true;
-		break;
-	case "gulp":
-		resetLoadFlags();
-		flagGulp = true;
-		break;
-	case "material":
-		resetLoadFlags(); // BH Added
-		break;
-	case "wien":
-		resetLoadFlags(true); // BH Added
-		flagCif = true;
-		break;
-	case "cif":
-		resetLoadFlags(true); // BH Added
-		flagCif = true;
-		break;
-	case "siesta":
-		resetLoadFlags(true); // BH Added
-		flagSiesta = true;
-		break;
-	case "pdb":
-		resetLoadFlags(true); // BH Added
-		flagCif = true;
-		break;
-	case "gromacs":
-		resetLoadFlags(); // BH Added
-		flagGromos = true;
+		_file.cell.typeSystem = "crystal";
+		_file.plotEnergyType = "qespresso";
 		break;
 	case "gaussian":
 	case "gauss":
-		resetLoadFlags(); // BH Added
-		flagGaussian = true;
-		typeSystem = "molecule";
+		_file.cell.typeSystem = "molecule";
+		_file.plotEnergyType = "gaussian";
 		break;
 	case "molden":
 		// WE USE SAME SETTINGS AS VASP
 		// IT WORKS
-		resetLoadFlags(); // BH Added
-		typeSystem = "molecule";
-		flagOutcar = true;
+		_file.cell.typeSystem = "molecule";
+		_file.plotEnergyType = "outcar";
+		_file.exportNoSymmetry = true;
 		break;
-	case "crysden":
-		resetLoadFlags(true); // BH Added
-		flagCif = true;
-		break;
-	case "castep":
-	case "outcastep":
-		resetLoadFlags(true); // BH Added
-		flagCastep = true;
+	case "crystal":
+		_file.plotEnergyType = "crystal";
+		_file.plotEnergyForces = true;
 		break;
 	}
 }
@@ -654,11 +598,9 @@ function onChangeSave(save) {
 		saveFractionalCoordinate();
 		break;
 	case "saveCRYSTAL":
-		//flagCrystal = true;
 		exportCRYSTAL();
 		break;
 	case "saveVASP":
-		//flagCrystal = false;
 		exportVASP();
 		break;
 	case "saveGROMACS":
@@ -668,9 +610,10 @@ function onChangeSave(save) {
 		exportCASTEP();
 		break;
 	case "saveQuantum":
-		quantumEspresso = true;
-		//flagCrystal = false;
 		exportQuantum();
+		break;
+	case "saveGULP":
+		exportGULP();
 		break;
 	case "savePOV":
 		runJmoLScript('write POVRAY jice.pov');
@@ -680,11 +623,6 @@ function onChangeSave(save) {
 		break;
 	case "saveState":
 		runJmoLScript('write STATE jice.spt');
-		break;
-	case "saveGULP":
-		flagGulp = true;
-		flagCrystal = false;
-		exportGULP();
 		break;
 	case "savefreqHtml":
 		newAppletWindowFreq();
@@ -764,19 +702,36 @@ function createFileGrp() { // Here the order is crucial
 	strFile += createSelectmenu('Export File', 'onChangeSave(value)', 0, 1,
 			elSOptionArr, elSOptionText);
 	strFile += "<p ><img src='images/j-ice.png' alt='logo'/></p>";
-	strFile += "<div style='margin-top:50px;'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
-	strFile += "<blockquote>\"J-ICE: a new Jmol interface for handling<br> and visualizing Crystallographic<br> and Electronics properties.<br>"
-	strFile += "P. Canepa, R.M. Hanson, P. Ugliengo, M. Alfredsson, <br>  J. Appl. Cryst. 44, 225 (2011). <a href='http://dx.doi.org/10.1107/S0021889810049411' target'blank'>[doi]</a> \"</blockquote> </p></div>";
+	strFile += "<div style='margin-top:50px;width:350px'><p style='color:#000'> <b style='color:#f00'>Please DO CITE:</b>";
+	strFile += createCitations();
+	strFile += "</p></div>";
 	strFile += "</form>\n";
 	return strFile;
 }
+
+ 	createCitations = function() {
+		var citations = _global.citations; 
+		var s = "";
+		for (var i = 0; i < citations.length; i++) {
+			var cite = citations[i];
+			s += "<blockquote><b>";
+			s += cite.title;
+			s += "</b><br>";
+			s += cite.authors.join(", ");
+			s += " <br>";  
+			s+= cite.journal;
+			s += " <a href='" + cite.link + "' target='_blank'>[doi]</a>";
+			s += "</blockquote>"; 
+		};
+		return s
+	}
 
 
       		
 ///js// Js/_m_cell.js /////
 function enterCell() {
-	getUnitcell(frameValue);
-	getSymInfo();
+	getUnitcell(_file.frameValue);
+//	getSymInfo();
 }
 
 function exitCell() {
@@ -785,14 +740,14 @@ function exitCell() {
 function saveFractionalCoordinate() {
 	warningMsg("Make sure you have selected the model you would like to export.");
 
-	if (frameSelection == null)
+	if (_file.frameSelection == null)
 		getUnitcell("1");
 
-	var x = "var cellp = [" + roundNumber(_cell.a) + ", " + roundNumber(_cell.b)
-	+ ", " + roundNumber(_cell.c) + ", " + roundNumber(alpha) + ", "
-	+ roundNumber(beta) + ", " + roundNumber(gamma) + "];"
+	var x = "var cellp = [" + roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.b)
+	+ ", " + roundNumber(_file.cell.c) + ", " + roundNumber(_file.cell.alpha) + ", "
+	+ roundNumber(_file.cell.beta) + ", " + roundNumber(_file.cell.gamma) + "];"
 	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
-	+ frameSelection + '.label("%a %16.9[fxyz]");'
+	+ _file.frameSelection + '.label("%a %16.9[fxyz]");'
 	+ 'var lista = [cellparam, xyzfrac];'
 	+ 'WRITE VAR lista "?.XYZfrac" ';
 	runJmolScriptWait(x);
@@ -801,24 +756,23 @@ function saveFractionalCoordinate() {
 //This reads out cell parameters given astructure.
 function getUnitcell(i) {
 	// document.cellGroup.reset();
-	typeSystem = "";
-	i || (i = 1);
-	var StringUnitcell = "auxiliaryinfo.models[" + i + "].infoUnitCell";
-
+	_file.cell.typeSystem = "";
+	var StringUnitcell = "auxiliaryinfo.models[" + (i || 1) + "].infoUnitCell";
 	var cellparam = extractInfoJmol(StringUnitcell);
 
-	_cell.a = roundNumber(cellparam[0]);
-	_cell.b = roundNumber(cellparam[1]);
-	_cell.c = roundNumber(cellparam[2]);
-	dimensionality = parseFloat(cellparam[15]);
-	volumeCell = roundNumber(cellparam[16]);
+	_file.cell.a = roundNumber(cellparam[0]);
+	_file.cell.b = roundNumber(cellparam[1]);
+	_file.cell.c = roundNumber(cellparam[2]);
+	_file.cell.dimensionality = parseFloat(cellparam[15]);
+	_file.cell.volumeCell = roundNumber(cellparam[16]);
 
-	var bOvera = roundNumber(parseFloat(_cell.b / _cell.c));
-	var cOvera = roundNumber(parseFloat(_cell.c / _cell.a));
+	var bOvera = roundNumber(parseFloat(_file.cell.b / _file.cell.c));
+	var cOvera = roundNumber(parseFloat(_file.cell.c / _file.cell.a));
 
-	if (dimensionality == 1) {
-		_cell.b = 0.000;
-		_cell.c = 0.000;
+	switch (_file.cell.dimensionality) {
+	case 1:
+		_file.cell.b = 0.000;
+		_file.cell.c = 0.000;
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeDisable("par_b");
@@ -827,10 +781,11 @@ function getUnitcell(i) {
 		setValue("par_c", "1");
 		setValue("bovera", "0");
 		setValue("covera", "0");
-		typeSystem = "polymer";
-	} else if (dimensionality == 2) {
-		_cell.c = 0.000;
-		typeSystem = "slab";
+		_file.cell.typeSystem = "polymer";
+		break;
+	case 2:
+		_file.cell.c = 0.000;
+		_file.cell.typeSystem = "slab";
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeEnable("par_b");
@@ -839,11 +794,12 @@ function getUnitcell(i) {
 		setValue("par_c", "1");
 		setValue("bovera", bOvera);
 		setValue("covera", "0");
-	} else if (dimensionality == 3) {
-		typeSystem = "crystal";
-		alpha = cellparam[3];
-		beta = cellparam[4];
-		gamma = cellparam[5];
+		break;
+	case 3:
+		_file.cell.typeSystem = "crystal";
+		_file.cell.alpha = cellparam[3];
+		_file.cell.beta = cellparam[4];
+		_file.cell.gamma = cellparam[5];
 		makeEnable("par_a");
 		setValue("par_a", "");
 		makeEnable("par_b");
@@ -852,33 +808,36 @@ function getUnitcell(i) {
 		setValue("par_c", "");
 		setValue("bovera", bOvera);
 		setValue("covera", cOvera);
-	} else if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
-		_cell.a = 0.00;
-		_cell.b = 0.00;
-		_cell.c = 0.00;
-		alpha = 0.00;
-		beta = 0.00;
-		gamma = 0.00;
-		typeSystem = "molecule";
+		break;
+	default:
+	  if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
+		_file.cell.a = 0.00;
+		_file.cell.b = 0.00;
+		_file.cell.c = 0.00;
+		_file.cell.alpha = 0.00;
+		_file.cell.beta = 0.00;
+		_file.cell.gamma = 0.00;
+		_file.cell.typeSystem = "molecule";
 		setValue("bovera", "0");
 		setValue("covera", "0");
+	  }
 	}
-	setValue("_cell.a", roundNumber(_cell.a));
-	setValue("_cell.b", roundNumber(_cell.b));
-	setValue("_cell.c", roundNumber(_cell.c));
-	setValue("alph_cell.a", roundNumber(alpha));
-	setValue("bet_cell.a", roundNumber(beta));
-	setValue("gamm_cell.a", roundNumber(gamma));
-	setValue("volumeCell", roundNumber(volumeCell));
+	setValue("cell.a", roundNumber(_file.cell.a));
+	setValue("cell.b", roundNumber(_file.cell.b));
+	setValue("cell.c", roundNumber(_file.cell.c));
+	setValue("cell.alpha", roundNumber(_file.cell.alpha));
+	setValue("cell.beta", roundNumber(_file.cell.beta));
+	setValue("cell.gamma", roundNumber(_file.cell.gamma));
+	setValue("cell.volumeCell", roundNumber(_file.cell.volumeCell));
 
 }
 
 function setUnitCell() {
-	getUnitcell(frameValue);
-	if (frameSelection == null || frameSelection == "" || frameValue == ""
-		|| frameValue == null) {
-		frameSelection = "{1.1}";
-		frameNum = 1.1;
+	getUnitcell(_file.frameValue);
+	if (_file.frameSelection == null || _file.frameSelection == "" || _file.frameValue == ""
+		|| _file.frameValue == null) {
+		_file.frameSelection = "{1.1}";
+		_file.frameNum = "1.1";
 		getUnitcell("1");
 	}
 }
@@ -889,30 +848,27 @@ function setUnitCell() {
 /////////////
 
 function setCellMeasure(value) {
-	typeSystem = "";
-	var StringUnitcell = "auxiliaryinfo.models[" + i + "].infoUnitCell";
-
-	if (i == null || i == "")
-		StringUnitcell = " auxiliaryInfo.models[1].infoUnitCell ";
-
+	_file.cell.typeSystem = "";
+	var i = _file.frameValue;
+	var StringUnitcell = "auxiliaryinfo.models[" + (i || 1) + "].infoUnitCell";
 	var cellparam = extractInfoJmol(StringUnitcell);
-	_cell.a = cellparam[0];
-	_cell.b = cellparam[1];
-	_cell.c = cellparam[2];
+	_file.cell.a = cellparam[0];
+	_file.cell.b = cellparam[1];
+	_file.cell.c = cellparam[2];
 	if (value == "a") {
-		setValue("_cell.a", roundNumber(_cell.a));
-		setValue("_cell.b", roundNumber(_cell.b));
-		setValue("_cell.c", roundNumber(_cell.c));
+		setValue("cell.a", roundNumber(_file.cell.a));
+		setValue("cell.b", roundNumber(_file.cell.b));
+		setValue("cell.c", roundNumber(_file.cell.c));
 	} else {
-		_cell.a = _cell.a * 1.889725989;
-		_cell.b = _cell.b * 1.889725989;
-		_cell.c = _cell.c * 1.889725989;
-		setValue("_cell.a", roundNumber(_cell.a));
-		setValue("_cell.b", roundNumber(_cell.b));
-		setValue("_cell.c", roundNumber(_cell.c));
+		_file.cell.a *= 1.889725989;
+		_file.cell.b *= 1.889725989;
+		_file.cell.c *= 1.889725989;
+		setValue("cell.a", roundNumber(_file.cell.a));
+		setValue("cell.b", roundNumber(_file.cell.b));
+		setValue("cell.c", roundNumber(_file.cell.c));
 	}
-
 }
+
 function setCellDotted() {
 	var cella = checkBoxX('cellDott');
 	if (cella == "on") {
@@ -974,7 +930,7 @@ function setPackRangeAndReload(val) {
 function checkPack() {
 	uncheckBox("superPack");
 	// This initialize the bar
-	getbyID("packMsg").innerHTML = 0 + " &#197";
+	getbyID("slider.packMsg").innerHTML = 0 + " &#197";
 }
 
 function uncheckPack() {
@@ -999,7 +955,7 @@ function setCellType(value) {
 
 function applyPack(range) {
 	setPackRangeAndReload(parseFloat(range).toPrecision(2));
-	getbyID("packMsg").innerHTML = packRange + " &#197";
+	getbyID("slider.packMsg").innerHTML = packRange + " &#197";
 }
 
 function setManualOrigin() {
@@ -1138,14 +1094,14 @@ function createCellGrp() {
 	strCell += createRadio("cellMeasure", "Bohr", 'setCellMeasure(value)', 0,
 			0, "", "b")
 			+ "\n <br>";
-	strCell += "<i>a</i> " + createText2("_cell.a", "", 7, 1);
-	strCell += "<i>b</i> " + createText2("_cell.b", "", 7, 1);
-	strCell += "<i>c</i> " + createText2("_cell.c", "", 7, 1) + "<br><br>\n";
-	strCell += "<i>&#945;</i> " + createText2("alph_cell.a", "", 7, 1);
-	strCell += "<i>&#946;</i> " + createText2("bet_cell.a", "", 7, 1);
-	strCell += "<i>&#947;</i> " + createText2("gamm_cell.a", "", 7, 1)
+	strCell += "<i>a</i> " + createText2("cell.a", "", 7, 1);
+	strCell += "<i>b</i> " + createText2("cell.b", "", 7, 1);
+	strCell += "<i>c</i> " + createText2("cell.c", "", 7, 1) + "<br><br>\n";
+	strCell += "<i>&#945;</i> " + createText2("cell.alpha", "", 7, 1);
+	strCell += "<i>&#946;</i> " + createText2("cell.beta", "", 7, 1);
+	strCell += "<i>&#947;</i> " + createText2("cell.gamma", "", 7, 1)
 	+ " degrees <br><br>\n";
-	strCell += "Voulme cell " + createText2("volumeCell", "", 10, 1)
+	strCell += "Volume cell " + createText2("cell.volumeCell", "", 10, 1)
 	+ "  &#197<sup>3</sup><br><br>";
 //	strCell += createButton('advanceCell', '+',
 //			'toggleDivValue(true,"advanceCellDiv",this)', '')
@@ -1164,14 +1120,18 @@ function createCellGrp() {
 
       		
 ///js// Js/_m_show.js /////
+_show = {
+	firstTimeBond : true
+}
+
 function enterShow() {
-	if (firstTimeBond) {
-		bondSlider.setValue(20);
-		radiiSlider.setValue(22);
-		getbyID('radiiMsg').innerHTML = 20 + " %";
-		getbyID('bondMsg').innerHTML = 0.20 + " &#197";
+	if (_show.firstTimeBond) {
+		_slider.bond.setValue(20);
+		_slider.radii.setValue(22);
+		getbyID('slider.radiiMsg').innerHTML = 20 + " %";
+		getbyID('slider.bondMsg').innerHTML = 0.20 + " &#197";
 	}
-	firstTimeBond = false;
+	_show.firstTimeBond = false;
 }
 
 function exitShow() {
@@ -1183,21 +1143,21 @@ function showPickPlaneCallback() {
 		runJmolScriptWait('select within(' + distance + ',plane,$plane1)');
 //			_edit.hideMode = " hide selected";
 //			_edit.deleteMode = " delete selected";
-		colorWhat = "color atoms";
+		_pick.colorWhat = "color atoms";
 	}
 }
 
 
 
 function setColorWhat(rgb, colorscript) {
-	var colorcmd = (colorscript[1] == "colorwhat" ? colorWhat : "color " + colorscript[1]);
+	var colorcmd = (colorscript[1] == "colorwhat" ? _pick.colorWhat : "color " + colorscript[1]);
 	runJmolScriptWait(colorcmd + " " + rgb);// BH?? should be elsewhere + ";draw off");
 }
 
 function elementSelected(element) {
 	selectElement(element);
-	colorWhat = "color atom ";
-	return colorWhat;
+	_pick.colorWhat = "color atom ";
+	return _pick.colorWhat;
 }
 
 //function showSelected(chosenSelection) {
@@ -1219,62 +1179,62 @@ function elementSelected(element) {
 //}
 
 function applyTrans(t) {
-	getbyID('transMsg').innerHTML = t + " %"
+	getbyID('slider.transMsg').innerHTML = t + " %"
 	runJmolScript("color " + getValueSel("setFashion") + " TRANSLUCENT " + (t/100));
 }
 
 function applyRadii(rpercent) {
-	getbyID('radiiMsg').innerHTML = rpercent.toPrecision(2) + " %"
+	getbyID('slider.radiiMsg').innerHTML = rpercent.toPrecision(2) + " %"
 	runJmolScript("cpk " + rpercent + " %;");
 }
 
 function onClickCPK() {
-	getbyID('radiiMsg').innerHTML = "100%";
-	getbyID('bondMsg').innerHTML = 0.3 + " &#197";
-	radiiSlider.setValue(100);
-	bondSlider.setValue(30);
+	getbyID('slider.radiiMsg').innerHTML = "100%";
+	getbyID('slider.bondMsg').innerHTML = 0.3 + " &#197";
+	_slider.radii.setValue(100);
+	_slider.bond.setValue(30);
 	runJmolScript("wireframe 0.30; spacefill 100% ;cartoon off;backbone off; draw off");
 }
 
 function onClickWire() {
-	getbyID('radiiMsg').innerHTML = "0.0 %";
-	getbyID('bondMsg').innerHTML = 0.01 + " &#197";
-	radiiSlider.setValue(0);
-	bondSlider.setValue(1);
+	getbyID('slider.radiiMsg').innerHTML = "0.0 %";
+	getbyID('slider.bondMsg').innerHTML = 0.01 + " &#197";
+	_slider.radii.setValue(0);
+	_slider.bond.setValue(1);
 	// BH Q: why spacefill 1%?
 	runJmolScript('wireframe 0.01; spacefill off;ellipsoids off;cartoon off;backbone off;');
 }
 
 function onClickIonic() {
-	getbyID('radiiMsg').innerHTML = parseFloat(0).toPrecision(2) + " %";
-	getbyID('bondMsg').innerHTML = 0.30 + " &#197";
-	radiiSlider.setValue(0);
-	bondSlider.setValue(30);
+	getbyID('slider.radiiMsg').innerHTML = parseFloat(0).toPrecision(2) + " %";
+	getbyID('slider.bondMsg').innerHTML = 0.30 + " &#197";
+	_slider.radii.setValue(0);
+	_slider.bond.setValue(30);
 	runJmolScript("spacefill IONIC; wireframe 0.15; draw off");
 }
 
 function onStickClick() {
-	getbyID('radiiMsg').innerHTML = "1%";
-	getbyID('bondMsg').innerHTML = 0.30 + " &#197";
-	radiiSlider.setValue(0);
-	bondSlider.setValue(30);
+	getbyID('slider.radiiMsg').innerHTML = "1%";
+	getbyID('slider.bondMsg').innerHTML = 0.30 + " &#197";
+	_slider.radii.setValue(0);
+	_slider.bond.setValue(30);
 	runJmolScript("wireframe 0.15;spacefill 1%;cartoon off;backbone off; draw off");
 }
 
 function onClickBallAndStick() {
-	getbyID('radiiMsg').innerHTML = "20%";
-	getbyID('bondMsg').innerHTML = 0.20 + " &#197";
-	radiiSlider.setValue(20);
-	bondSlider.setValue(20);
+	getbyID('slider.radiiMsg').innerHTML = "20%";
+	getbyID('slider.bondMsg').innerHTML = 0.20 + " &#197";
+	_slider.radii.setValue(20);
+	_slider.bond.setValue(20);
 	runJmolScript("wireframe 0.15; spacefill 20%;cartoon off;backbone off; draw off");
 
 }
 
 function onClickBall() {
-	getbyID('radiiMsg').innerHTML = "20%";
-	getbyID('bondMsg').innerHTML = 0.00 + " &#197";
-	radiiSlider.setValue(20);
-	bondSlider.setValue(0);
+	getbyID('slider.radiiMsg').innerHTML = "20%";
+	getbyID('slider.bondMsg').innerHTML = 0.00 + " &#197";
+	_slider.radii.setValue(20);
+	_slider.bond.setValue(0);
 	runJmolScript("select *; spacefill 20%; wireframe off ; draw off");
 }
 
@@ -1409,16 +1369,23 @@ function createShowGrp() {
 
       		
 ///js// Js/_m_edit.js /////
+_edit = {
+	deleteMode : "",
+	hideMode : "",
+	displayMode : "",
+	firstTimeEdit : true,
+	radBondRange : ""
+}
 
 function enterEdit() {
 
-	radiiConnectSlider.recalculate();
+	_slider.radiiConnect.recalculate();
 
-	setRadiiConnectMessage(radiiConnectSlider.getValue());
+	setRadiiConnectMessage(_slider.radiiConnect.getValue());
 	
 	// BH 2018: Disabled -- unexpected behavior should not be on tab entry
 //	if (_edit.firstTimeEdit) {
-//		radiiConnectSlider.setValue(50);
+//		_slider.radiiConnect.setValue(50);
 //		runJmolScriptWait("set forceAutoBond ON; set bondMode AND");
 //	}
 //	getbyID("radiiConnectMsg").innerHTML = " " + 2.5 + " &#197";
@@ -1436,13 +1403,13 @@ function showPickPlaneCallback() {
 		runJmolScriptWait('select within(' + distance + ',plane,$plane1)');
 //		_edit.hideMode = " hide selected";
 //		_edit.deleteMode = " delete selected";
-//		colorWhat = "color atoms";
+//		_pick.colorWhat = "color atoms";
 	}
 }
 
 
 function setRadiiConnectMessage(r) {
-	getbyID('radiiConnectMsg').innerHTML = " " + r.toPrecision(2) + " &#197";
+	getbyID('slider.radiiConnectMsg').innerHTML = " " + r.toPrecision(2) + " &#197";
 }
 
 function applyConnect(r) {
@@ -1451,15 +1418,15 @@ function applyConnect(r) {
 	} else {
 		var flagBond = checkBoxX("allBondconnect");
 		// alert(flagBond);
-		// alert(frameNum);
-		if (frameNum == null || frameNum == '') {
+		// alert(_file.frameNum);
+		if (_file.frameNum == null || _file.frameNum == '') {
 			getUnitcell("1");
-			frameNum = 1.1;
+			_file.frameNum = 1.1;
 		} else {
 
 		}
 		if (flagBond == 'off') {
-			runJmolScriptWait("select " + frameNum
+			runJmolScriptWait("select " + _file.frameNum
 					+ "; connect  (selected) (selected)  DELETE");
 			runJmolScriptWait("connect " + r
 					+ " (selected) (selected) single ModifyOrCreate;");
@@ -1800,6 +1767,14 @@ function createEditGrp() {
 }
       		
 ///js// Js/_m_measure.js /////
+
+_measure = {
+	kindCoord: "",
+	measureCoord : false,
+	unitMeasure : "",
+	mesCount : 0
+}
+
 function enterMeasure() {
 
 }
@@ -1809,7 +1784,7 @@ function exitMeasure() {
 }
 
 function viewCoord(value) {
-	kindCoord = value;
+	_measure.kindCoord = value;
 	measureCoord = true;
 	messageMsg("Pick the atom you are interested in, please.");
 	setPickingCallbackFunction(showCoord);
@@ -1820,7 +1795,7 @@ function viewCoord(value) {
 
 function showCoord() {
 	if (measureCoord) {
-		if (kindCoord == "fractional") {
+		if (_measure.kindCoord == "fractional") {
 			runJmolScriptWait('Label "%a: %.2[fX] %.2[fY] %.2[fZ]"');
 		} else {
 			runJmolScriptWait('Label "%a: %1.2[atomX] %1.2[atomY] %1.2[atomZ]"');
@@ -1910,7 +1885,7 @@ function createMeasureGrp() {
 	
 	var strMeas = "<form autocomplete='nope'  id='measureGroup' name='measureGroup' style='display:none'>";
 	strMeas += "<table class='contents'><tr><td > \n";
-	strMeas += "<h2>Measure and Info</h2>\n";
+	strMeas += "<h2>Measure and _file.info</h2>\n";
 	strMeas += "</td></tr>\n";
 	strMeas += "<tr><td colspan='2'>\n";
 	strMeas += "Measure<br>\n";
@@ -1956,9 +1931,13 @@ function createMeasureGrp() {
 
       		
 ///js// Js/_m_orient.js /////
+_orient = {
+	motion : ""
+}
+
 function enterOrient() {
-	slabSlider.setValue(100 - jmolEvaluate("slab"));
-	depthSlider.setValue(jmolEvaluate("depth"));
+	_slider.slab.setValue(100 - jmolEvaluate("slab"));
+	_slider.depth.setValue(jmolEvaluate("depth"));
 	if (jmolEvaluate("slabEnabled") == "true")
 		checkBox("slabToggle");
 	else
@@ -1969,12 +1948,12 @@ function exitOrient() {
 }
 
 function applySlab(x) {
-	getbyID('slabMsg').innerHTML = x + "%" // display
+	getbyID('slider.slabMsg').innerHTML = x + "%" // display
 	runJmolScriptWait("slab " + (100 - x) + ";")
 }
 
 function applyDepth(x) { // alternative displays:
-	getbyID('depthMsg').innerHTML = (100 - x) + "%" // 100%
+	getbyID('slider.depthMsg').innerHTML = (100 - x) + "%" // 100%
 	runJmolScriptWait("depth " + (100 - x) + ";")
 }
 
@@ -1982,36 +1961,36 @@ function toggleSlab() {
 	var ctl = getbyID("slabToggle")
 	if (ctl.checked) {
 		runJmolScriptWait("slab on;");
-//		applySlab(slabSlider.getValue());
-//		applyDepth(depthSlider.getValue());
-//		slabSlider.setValue(20);
+//		applySlab(_slider.slab.getValue());
+//		applyDepth(_slider.depth.getValue());
+//		_slider.slab.setValue(20);
 //		applySlab(defaultFront);
-//		depthSlider.setValue(defaultBack);
+//		_slider.depth.setValue(defaultBack);
 //		applyDepth(defaultBack);
 	} else {
 		runJmolScriptWait("slab off; ")
-//		slabSlider.setValue(0);
-//		depthSlider.setValue(0);
+//		_slider.slab.setValue(0);
+//		_slider.depth.setValue(0);
 	}
 }
 
 //This controls the refined motion of the structure
 function setKindMotion(valueList) {
-	motion = valueList;
-	if (motion == "select")
+	_orient.motion = valueList;
+	if (_orient.motion == "select")
 		errorMsg("Please select the motion");
-	return motion;
+	return _orient.motion;
 }
 
 function setMotion(axis) {
 	var magnitudeMotion = getbyID("fineOrientMagn").value;
 
-	if (motion == "select" || motion == "") {
+	if (_orient.motion == "select" || _orient.motion == "") {
 		errorMsg("Please select the motion");
 		return false;
 	}
 
-	// /(motion == "translate" )? (makeDisable("-z") + makeDisable("z")) :
+	// /(_orient.motion == "translate" )? (makeDisable("-z") + makeDisable("z")) :
 	// (makeEnable("-z") + makeEnable("z"))
 
 	if (magnitudeMotion == "") {
@@ -2020,12 +1999,12 @@ function setMotion(axis) {
 	}
 
 	var stringa = "Selected" + " " + axis + " " + magnitudeMotion;
-	if (motion == "translate" && (axis == "-x" || axis == "-y" || axis == "-z")) {
+	if (_orient.motion == "translate" && (axis == "-x" || axis == "-y" || axis == "-z")) {
 		axis = axis.replace("-", "");
 		stringa = "Selected" + " " + axis + " -" + magnitudeMotion;
 	}
 
-	stringa = motion + (getbyID("moveByselection").checked ? "Selected " : " ") + stringa;
+	stringa = _orient.motion + (getbyID("moveByselection").checked ? "Selected " : " ") + stringa;
 	 
 	runJmolScriptWait(stringa);
 
@@ -2644,6 +2623,115 @@ function enterOptimize() {
 function exitOptimize() {
 }
 
+function doConvertPlotUnits(unitEnergy) {
+	switch (unitEnergy) {
+	case "h": // Hartree
+		switch (_file.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtohartree, "Hartree");
+			break;
+		case ENERGY_EV:
+			convertGeomData(fromevToHartree, "Hartree");
+			break;
+		case ENERGY_HARTREE:
+			convertGeomData(fromHartreetoHartree, "Hartree");
+			break;
+		}
+		break;
+	case "e": // eV
+		switch (_file.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtoEV, "eV");
+			break;
+		case ENERGY_EV:
+			convertGeomData(fromevToev, "eV");
+			break;
+		case ENERGY_HARTREE:
+			convertGeomData(fromHartreetoEv, "eV");
+			break;
+		}
+		break;
+
+	case "r": // Rydberg
+		switch (_file.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtorydberg, "Ry");
+			break;
+		case ENERGY_EV:
+			convertGeomData(fromevTorydberg, "Ry");
+			break;
+		case ENERGY_HARTREE:
+			convertGeomData(fromHartreetoRydberg, "Ry");
+			break;
+		}
+		break;
+
+	case "kj": // Kj/mol
+			switch (_file.energyUnits) {
+			case ENERGY_RYDBERG:
+				convertGeomData(fromRydbergtoKj, "kJ/mol");
+				break;
+			case ENERGY_EV:
+				convertGeomData(fromevTokJ, "kJ/mol");
+				break;
+			case ENERGY_HARTREE:
+				convertGeomData(fromHartreetoKj, "kJ/mol");
+				break;
+			}
+		break;
+
+	case "kc": // Kcal*mol
+		switch (_file.energyUnits) {
+		case ENERGY_RYDBERG:
+			convertGeomData(fromRydbergtokcalmol, "kcal/mol");
+			break;
+		case ENERGY_EV:
+			convertGeomData(fromevTokcalmol, "kcal/mol");
+			break;
+		case ENERGY_HARTREE:
+			convertGeomData(fromHartreetokcalmol, "kcal/mol");
+			break;
+		}
+		break;
+	}
+}
+
+function convertGeomData(f, toUnits) {
+	
+	var geom = getbyID('geom');
+	if (geom != null)
+		cleanList('geom');
+
+	toUnits = " " + toUnits;
+	
+	var u = _file.unitGeomEnergy;
+	switch (_file.energyUnits) {
+	case ENERGY_RYDBERG:
+		u = "R";
+		break;
+	case ENERGY_EV:
+		u = "e";
+		break;
+	case ENERGY_HARTREE:
+		u = "H";
+		break;
+//	case ENERGY_KJ_PER_MOLE:
+//		u = "k";
+//		break;
+	}
+
+	// The required value is the end of the string Energy = -123.456 Hartree.
+	
+	for (var i = (_file.hasInputModel ? 1 : 0); i < geomData.length; i++) {
+		var data = _fileInfo.geomData[i];
+		var val = f(data.substring(data.indexOf('=') + 1, 
+				data.indexOf(u) - 1));
+		addOption(geom, i + " E = " + val + toUnits, i + 1);
+	}
+
+}
+
+
 //function saveFrame() {
 // TODO: Not something we can do in JavaScript -- too many files, unless we zip them up (which we can do)
 //	messageMsg("This is to save frame by frame your geometry optimization.");
@@ -2657,18 +2745,15 @@ function createOptimizeGrp() {
 			"set animationFps 10", "set animationFps 15",
 			"set animationFps 20", "set animationFps 25",
 			"set animationFps 30", "set animationFps 35");
-	var vecAnimText = new Array("select", "5", "10", "15", "20", "25", "30",
-	"35");
+	var vecAnimText = new Array("select", "5", "10", "15", "20", "25", "30", "35");
 	var vecUnitEnergyVal = new Array("h", "e", "r", "kj", "kc");
-	var vecUnitEnergyText = new Array("Hartree", "eV", "Rydberg", "kJ*mol-1",
-	"kcal*mol-1");
+	var vecUnitEnergyText = new Array("Hartree", "eV", "Rydberg", "kJ*mol-1", "kcal*mol-1");
 
-	var graphdiv = createDiv("graphdiv", "width:180;height:180;background-color:#EFEFEF; margin-left:0px;display:none", 
-			createDiv("plottitle", "display:none", "&#916E (kJ/mol)")
-		  + createDiv("plotarea", "width:180px;height:180px;background-color:#EFEFEF; display:none", "")
-		  + createDiv("plottitle1", "display:none","ForceMax")
-		  + createDiv("plotarea1", "width:180px;height:180px;background-color:#efefEF;display:none","")
-	);
+	var graphdiv = "<table><tr><td>&#916E (kJ/mol)<br>"
+		  + createDiv("plotarea", "width:170px;height:180px;background-color:#EFEFEF;", "")
+		  + "</td><td>Force<br>"
+		  + createDiv("plotarea1", "width:170px;height:180px;background-color:#efefEF;","")
+		  + "</td></tr></table>";
 
 	var strGeom = "<form autocomplete='nope'  id='geometryGroup' name='modelsGeom' style='display:none'>";
 	strGeom += "<table class='contents'><tr><td>";
@@ -2696,18 +2781,18 @@ function createOptimizeGrp() {
 			+ "\n";
 	strGeom += "<br>"
 		+ createSelect("framepersec", "runJmolScriptWait(value)", 0, 1, vecAnimValue,
-				vecAnimText) + " motion speed | ";
+				vecAnimText) + " _orient.motion speed | ";
 // this is problematic in JavaScript -- too many files created
 //	strGeom += createCheck('saveFrames', ' save video frames', 'saveFrame()',
 //			0, 0, "");
 	strGeom += "<br> Energy unit measure: ";
-	strGeom += createSelect("unitMeasureEnergy", "convertPlot(value)", 0, 1,
+	strGeom += createSelect("unitMeasureEnergy", "doConvertPlotUnits(value)", 0, 1,
 			vecUnitEnergyVal, vecUnitEnergyText);
 	strGeom += "</td></tr><tr><td>";
 	strGeom += "<select id='geom' name='models' onchange='showFrame(value)'  class='selectmodels' size='10'></select>";
-	strGeom += "</td></tr><tr><td style='margin=0px; padding=0px;'><div id='appletdiv' style='display:none'>\n";	
+	strGeom += "</td></tr><tr><td style='margin=0px; padding=0px;'>\n";	
 	strGeom += graphdiv;
-	strGeom += "</table></form>\n";
+	strGeom += "</td></tr></table></form>\n";
 	return strGeom;
 }
 
@@ -2741,85 +2826,146 @@ function createOptimizeGrp() {
 
 function enterSpectra() {
 
-// from vaspoutcar
-//	if (fileData.vibLine) {
-//		var vib = getbyID('vib');
-//		for (var i = 1; i < _fileData.fileData.vibLine.length; i++) {
-//			 addOption(vib, _fileData.vibLine[i], i + 1);
-//		}
-//	}
-	
-	if (!_fileData.haveSpecData) {
-		_specData = null;
-		_fileData.haveSpecData = true;
+	if (!_file.plotFreq) {
+		_file.plotFreq = {
+				yscale: 1,
+				minX0: 0,
+				maxX0: 4000,
+				selectedFreq: -1
+		};
+		_file.specData = null;
 		symmetryModeAdd();	
-		onClickModSpec(true);
+		onClickModSpec(true, true);	
+		if (!_file.specData)
+			return;		
+		setValue("nMax", _file.specData.maxX);
+		setValue("nMin", _file.specData.minX);
 	}
+	$("#nMin").keypress(function(event) {
+	if (event.which == 13) {
+		event.preventDefault();
+		onClickModSpec();
+		}
+	});
+	$("#nMax").keypress(function(event) {
+	if (event.which == 13) {
+		event.preventDefault();
+		onClickModSpec();
+		}
+	});
+	$("#sigma").keypress(function(event) {
+	if (event.which == 13) {
+		event.preventDefault();
+		onClickModSpec(false, true);
+		}
+	});
 }
+/*enterSpectra gets information from fileData in order to set up the plot frequency. This includes nmin, nmax and selected 
+frequency values. nMin, nMax and sigma values are also changeable by hitting the enter key. */ 
+
 
 function exitSpectra() {
 	runJmolScriptWait('vibration off; vectors off');
 }
+/*Leaving the spectra page turns off the vibration and vectors. */ 
+
 
 function doSpectraNewWindow() {
-	// this opens the window that contains the spectrum
-	//var win = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=800,height=600,left=50";
 	var newwin = open("spectrum.html");
 }
-
-//This resets the frequency state
-function resetFreq() {
-	checkBox("radVibrationOff");
-	uncheckBox("vectors");
-}
+/* This opens the spectra graph in the new window. */ 
 
 
 /////////LOAD FUNCTIONS
 
 function disableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
+	/*for (var i = 0; i < document.modelsVib.modAct.length; i++)
 		document.modelsVib.modAct[i].disabled = true;
 	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = true;
+		document.modelsVib.kindspectra[i].disabled = true;*/
 }
 
 function enableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
+	/*for (var i = 0; i < document.modelsVib.modAct.length; i++)
 		document.modelsVib.modAct[i].disabled = false;
 	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = false;
+		document.modelsVib.kindspectra[i].disabled = false;*/
 
 }
+/* called by fily types, but currently do nothing. */
 
-function onClickSelectVib(value) {
-	showFrame(value);	
-	updateJmolForFreqParams();
+
+function onClickSelectVib() {
+	var vib = getbyID('vib');
+	var model = parseInt(vib.value);
+	showFrame(model);	
+	updateJmolForFreqParams(true);
+	// trigger to make sure selectedIndex has been set.
+	setTimeout(function() {selectVib(vib.selectedIndex)}, 50);
 }
 
+function selectVib(index) {
+	var vib = getbyID('vib');
+	_file.plotFreq.selectedFreq = (index < 0 ? -1 
+			: _file.specData.freqs[_file.specData.vibList[index][3]]);
+	showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);
+}
+/* When triggered (by a click), the vibration is retrieved from the file data. The graph is then
+updated to show a larger red line at the selected frequency. The correct frame is also shown for the 
+specific vibration. */ 
 
-function onClickModSpec(isPageOpen) {
-	if (_fileData.freqData.length == 0) {
+
+function setYMax() {
+	var specData = setUpSpecData("all", "any"); 
+	getFrequencyList(specData);
+	createSpectrum(specData);
+	 _file.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
+}
+/* The maxY value is found from the information taken from the file and put into specData. 
+The max y value of both Raman and IR arrays becomes the ymax value in fileData. */
+
+
+function onClickModSpec(isPageOpen, doSetYMax) {
+	if (_file.freqData.length == 0) {
 		return;
 	}
-	simSpectrum(isPageOpen);
-}
-
-function simSpectrum(isPageOpen) {
-	cleanList('vib');
-	resetFreq();
+	if (doSetYMax) {
+		setYMax();
+	}
+	if (isPageOpen) {
+		checkBox("radVibrationOff");
+		uncheckBox("vectorsON");
+	}
 	var typeIRorRaman = getRadioSetValue(document.modelsVib.modSpec);
-	var typeConvolve = getRadioSetValue(document.modelsVib.convol);
 	var irrep = getValueSel('sym');		
-	var specData = _specData = {
+	_file.specData = setUpSpecData(typeIRorRaman,irrep);
+	getFrequencyList(_file.specData);
+	createSpectrum(_file.specData);
+	setVibList(_file.specData);
+	if (isPageOpen){
+		setMaxMinPlot(_file.specData);
+	}
+	return showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);	
+}
+/* Gets information on the symmetry, IR or Raman, etc. in specData that is chosen by the user 
+and/or file data. It then remakes the spectra plot with the updated information.*/ 
+
+
+function setUpSpecData(typeIRorRaman,irrep) {
+	return {
 			typeIRorRaman : typeIRorRaman, 
-			typeConvolve  : typeConvolve, 
+			typeConvolve  : getRadioSetValue(document.modelsVib.convol), 
 			irrep     : irrep,
-			sigma     : getValue('sigma'), 
-			rescale   : isChecked('rescaleSpectra'),
-			freqCount : _fileData.freqInfo.length,
-			minX      : 0,
-			maxX      : 4000,
+			sigma     : parseFloat(getValue('sigma')), 
+			rescale   : true,
+			invertx   : isChecked('invertX'),
+			freqCount : _file.freqInfo.length,
+			minX      : Math.min(parseInt(getValue("nMin")), parseInt(getValue("nMax"))),
+			maxX      : Math.max(parseInt(getValue("nMin")), parseInt(getValue("nMax"))),
+			maxY      : _file.spectraYMax,
+			maxR      : 3700,
 			previousPointFreq : -1,
+			vibList   : [],
 			freqInfo  : [],
 			irInt     : [],
 			irFreq    : [],
@@ -2832,28 +2978,28 @@ function simSpectrum(isPageOpen) {
 			freqs     : [],
 			ranges    : [] 
 	};
-	setFrequencyList(specData);
-	switch (typeIRorRaman) {
-	case "ir":
-		extractIRData(specData);
-		break;
-	case "raman":
-		extractRamanData(specData);
-		break;
-	default:
-		extractIRData(specData);
-		extractRamanData(specData);
-		break;
-	}
-	if (isPageOpen)
-		setMaxMinPlot(specData);
 	
-	specData.minX = getValue("nMin");
-	specData.maxX = getValue("nMax");
+}
+/* This sets up specData, which is used throughout the code as an easy way to store all 
+necessary information in terms of plotting the spectra.*/ 
 
-	var create = (typeConvolve == "stick" ? createStickSpectrum : createCoolSpectrum);
+function createSpectrum(specData) {
+	switch (specData.typeIRorRaman) {
+	case "ir":
+		extractIRData(specData);
+		break;
+	case "raman":
+		extractRamanData(specData);
+		break;
+	default:
+		extractIRData(specData);
+		extractRamanData(specData);
+		break;
+	}
+	
+	var create = (specData.typeConvolve == "stick" ? createStickSpectrum : createCoolSpectrum);
 
-	switch (typeIRorRaman) {
+	switch (specData.typeIRorRaman) {
 	case "ir":
 		create(specData, "ir");
 		break;
@@ -2865,26 +3011,76 @@ function simSpectrum(isPageOpen) {
 		create(specData, "raman");
 		break;
 	}
-
-	showFreqGraph(specData);
 }
+/* This function creates the spectrum (either stick or cool) based on whether the spectrum includes
+Raman data, IR data, or both (decided on by user and found in specData).*/ 
 
-function setFrequencyList(specData) {
-	var vib = getbyID('vib');			
+
+function setMaxMinPlot(specData) {
+	var n = specData.freqCount;
+	var sum = 0;
+	try { 
+		for (var i = 0; i < n; i++) {
+			
+			System.out.println(i + " " + specData.freqInfo[i].modelProperties.Frequency);
+			
+			sum += roundoff(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency), 0);
+		}
+		specData.maxR = (isNaN(sum) ? 3700 : sum / n);
+
+	} catch (err){
+			specData.maxR = 3700;
+	}
+		
+	_file.plotFreq.minX0 = specData.minX = 0;
+	_file.plotFreq.maxX0 = specData.maxX = specData.maxR + 300;
+
+}
+/* This function gets the max and min data for the plot. The max x is defined as being 4000, or 300 
+greater than the last peak if the final peak is at a much lower value.*/ 
+
+
+function getFrequencyList(specData) {
+	// fill specData.freqInfo[] and specData.vibList[]
 	var vibLinesFromIrrep = getVibLinesFromIrrep(specData);
 	var prop = (specData.typeIRorRaman == "ir" ? "IRactivity" 
 			: specData.typeIRorRaman == "raman" ? "Ramanactivity" 
 			: null);
-
+	specData.vibList = [];
+	specData.freqInfo = [];
 	for (var i = 0; i < specData.freqCount; i++) {
 		var label = null;
 		if ((vibLinesFromIrrep == null || (label = vibLinesFromIrrep[i]))
-			  && (prop == null || _fileData.freqInfo[i].modelProperties[prop] == "A")) {
-			specData.freqInfo.push(_fileData.freqInfo[i]);
-			addOption(vib, (label || i + " " + _fileData.freqInfo[i].name), _fileData.freqInfo[i].modelNumber);
+			  && (prop == null || _file.freqInfo[i].modelProperties[prop] == "A")) {
+			specData.freqInfo.push(_file.freqInfo[i]);
+			specData.vibList.push([(label || (i+1) + " " + _file.freqInfo[i].name), _file.freqInfo[i].modelNumber, -1]);
 		}
 	}
 }
+/* This function finds the frequency list and vibration list from modelProperties in fileData, and
+is based on IR or Raman type. These lists are then pushed into specData as the freqInfo and VibList.*/
+
+
+function setVibList(specData) {
+	var vib = getbyID('vib');	
+	cleanList('vib');
+	console.log("clear vib");
+	var xmin = specData.minX;
+	var xmax = specData.maxX;	
+	for (var i = 0, pt = 0, n = specData.vibList.length; i < n; i++) {
+		if (specData.freqs[i] >= xmin && specData.freqs[i] <= xmax) {
+			addOption(vib, specData.vibList[i][0], specData.vibList[i][1]);
+			console.log("adding vib " + i + " " + specData.vibList[i]);
+			specData.vibList[pt][3] = i;  // reverse loop-up
+			specData.vibList[i][2] = pt++;
+		}
+	}
+	var script = ";set echo bottom left;echo \"\";";	
+	runJmolScriptWait(script)
+
+}
+/* This function makes vibList include only frequencies in the xmax and xmin range. */
+
 
 function getVibLinesFromIrrep(specData) {
 	var vibLinesFromIrrep = [];
@@ -2894,18 +3090,18 @@ function getVibLinesFromIrrep(specData) {
 	
 	// check for F, E, or A irreducible representations
 	
-	if (_fileData.freqSymm) {
+	if (_file.freqSymm) {
 		// gaussian and others
-		for (var i = 0, val; i < _fileData.freqSymm.length; i++) {
-			if (irep == _fileData.freqSymm[i])
+		for (var i = 0, val; i < _file.freqSymm.length; i++) {
+			if (irep == _file.freqSymm[i])
 				vibLinesFromIrrep[i] = 
-					i + " " + irep + " "+ _fileData.freqData[i] 
-					+ (_fileData.freqIntens[i] ? " (" + _fileData.freqIntens[i] + ")" : "");
+					(i+1) + " " + irep + " "+ _file.freqData[i] 
+					+ (_file.freqIntens[i] ? " (" + _file.freqIntens[i] + ")" : "");
 		}
 	} else {
-		for (var i = 1, val; i < _fileData.freqInfo.length; i++) {
-			if (irep == _fileData.freqInfo[i].modelProperties.vibrationalSymmetry)
-				vibLinesFromIrrep[i] = i + " " + _fileData.freqInfo[i].name;
+		for (var i = 0, val; i < _file.freqInfo.length; i++) {
+			if (irep == _file.freqInfo[i].modelProperties.vibrationalSymmetry)
+				vibLinesFromIrrep[i] = (i+1) + " " + _file.freqInfo[i].name;
 		}
 	}
 	return vibLinesFromIrrep;
@@ -2933,7 +3129,7 @@ function extractIRData_crystal(specData) {
 function extractIRData_vaspoutcar(specData) {
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
-		specData.freqs[i] = specData.irFreq[i] = Math.round(substringFreqToFloat(_fileData.freqData[i]));
+		specData.freqs[i] = specData.irFreq[i] = Math.round(substringFreqToFloat(_file.freqData[i]));
 		specData.specIR[specData.irFreq[i]] = 100;
 		specData.model[specData.irFreq[i]] = specData.freqInfo[i].modelNumber;
 		specData.irInt[i] = 100;
@@ -2969,30 +3165,6 @@ function extractRamanData(specData) {
 	}
 	return specData;
 }
-
-function getModelForSpec(specData) {
-	var freqs = specData.freqs
-	var sigma = specData.sigma;
-	n = specData.freqs.length;
-	
-	for (var i = 0, x1, x2, last=n-1; i <= last; i++) { 
-		switch (i) {
-		case 0:
-			x1 = specData.minX;
-			x2 = (freqs[i] + freqs[i + 1])/2;
-			break;
-		case last:
-			x1 = (freqs[i] + freqs[i - 1])/2;
-			x2 = specData.maxX;
-			break;
-		default:
-			x1 = (freqs[i] + freqs[i - 1])/2;
-			x2 = (freqs[i] + freqs[i + 1])/2;
-			break;
-		}
-		specData.ranges.push([Math.max(x1, freqs[i] - sigma/2), Math.min(x2, freqs[i] + sigma/2), freqs[i], i]);
-	}
-}	
 
 function createStickSpectrum(specData, type) {
 	var rescale = specData.rescale;
@@ -3051,11 +3223,7 @@ function createConvolvedSpectrum(specData, type) {
 	var maxInt = specData.maxInt;
 
 	var allZero = (maxValue(spec) == 0);
-	var fscale = (specData.rescale && !allZero ? 100 * 0.3 / maxInt : 1);
 
-	if (!isGaussian)
-		fscale *= 100;
-	
 	// Gaussian Convolution
 	var cx = 4 * Math.LN2;
 	var ssa = sigma * sigma / cx;	
@@ -3065,7 +3233,7 @@ function createConvolvedSpectrum(specData, type) {
 	var ssc = xgamma * 0.5 / Math.PI;
 	var ssd = (xgamma * 0.5) * (xgamma * 0.5);
 	
-	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI)) * fscale;
+	var sb = Math.sqrt(cx) / (sigma * Math.sqrt(Math.PI));
 
 	var freq = (type == "ir" ? irFreq : ramanFreq);
 	var int = (type == "ir" ? irInt : ramanInt);
@@ -3077,7 +3245,7 @@ function createConvolvedSpectrum(specData, type) {
 			if (!freq[k]) 
 				continue;
 			int[k] || (int[k] = 0);
-			v = (allZero ? maxInt / 4 : int[k]);
+			v = (allZero ? 100 : int[k]);
 			var xnn = i - freq[k];
 			sp += (isGaussian ? Math.exp(-xnn * xnn / ssa) : ssc / (xnn * xnn + ssd)) * v * sb;
 		}
@@ -3085,121 +3253,154 @@ function createConvolvedSpectrum(specData, type) {
 	}
 }
 
-function showFreqGraph(specData, specMinX, specMaxX) {
-	if (specData) {
-		specMinX = specData.minX;
-		specMaxX = specData.maxX;
-	} else {
-		specData = opener._specData;
+function showFreqGraph(plotDiv, specData, plot) {
+	var isHTMLPage = (!specData);
+	if (isHTMLPage) {
+		specData = _file.specData = opener._file.specData;
+		plot = _file.plotFreq = opener._file.plotFreq;
 	}
-	getModelForSpec(specData);
+	var minX = specData.minX;
+	var maxX = specData.maxX;
+	var maxY = specData.maxY;
+	if (maxY == 0)
+		maxY = 200;
+	maxY *= 1.2;
+	var minY = -0.05*maxY;
+	var plotArea = $("#" + plotDiv);
+	getRanges(specData);
 	var A = specData.specIR, B = specData.specRaman;	
 	var model = specData.model;
 	var nplots = (B && B.length && A && A.length ? 2 : 1);
-	var minY = 999999;
-	var maxY = 0;
-	for (var i = 0; i < A.length; i++) {
-		if (A[i] > maxY)
-			maxY = A[i];
-		if (A[i] < minY)
-			minY = A[i];
-	}
-	for (var i = 0; i < B.length; i++) {
-		if (B[i] > maxY)
-			maxY = B[i];	
-		if (B[i] < minY)
-			minY = B[i];
-	}
-	if (minY == maxY)
-		maxY = (maxY == 0 ? 200 : maxY * 2);
-	maxY *= 1.2;
-	
 	var options = {
       series:{
     	  	lines: { show: true, fill: false }
       },
       xaxis: { 
-    	  min : specMinX, 
-    	  max : specMaxX, 
-    	  ticks : 10, 
+    	  min : minX, 
+    	  max : maxX, 
+    	  ticks : (maxX - minX < 2000 ? 5 : 10), 
+    	  invert : specData.invertx,
     	  tickDecimals: 0 
       },
-      yaxis: { ticks: 0, tickDecimals: 0, min: -0.1, max: maxY },
+      yaxis: { ticks: 0, tickDecimals: 0, min: minY, max: maxY },
       selection: { 
-    	  	mode: (nplots == 1 ? "x" : "xy"), 
-    	  	hoverMode: (nplots == 1 ? "x" : "xy") 
+    	  	mode: "x", 
+    	  	hoverMode: "x" 
       },
       grid: { 
 			hoverable: true, 
 			clickable: true, 
 			hoverDelay: 10, 
 		    autoHighlight: false,
-			hoverDelayDefault: 10
+			hoverDelayDefault: 10,
       }
 	};
-	
 	var ir = [];
 	var raman = [];
 	for (var i = specData.minX, pt = 0; i < specData.maxX; i++, pt++) {
 		if (A.length)
-			ir[pt] = [i, A[i], model[i]];
+			ir[pt] = [i, A[i]*plot.yscale, model[i]];
 		if (B.length)
-			raman[pt] = [i, B[i], model[i]];		
+			raman[pt] = [i, B[i]*plot.yscale, model[i]];		
 	}
+
+	var data = [];
 	if (A.length && B.length) {
-		theplot = $.plot($("#plotareafreq"), [{label:"IR", data:ir}, {label:"Raman", data: raman}], options)
+		data.push({label:"IR", data:ir, color:"orange"});
+		data.push({label:"Raman", data: raman, color:"blue"});
 	} else if (A.length) {
-		theplot = $.plot($("#plotareafreq"), [{data: ir}], options)
+		data.push({label:"IR", data:ir, color:"orange"});
 	} else if (B.length) {
-		theplot = $.plot($("#plotareafreq"), [{data: raman}], options)
+		data.push({label:"Raman", data: raman, color:"blue"});
 	}
-	
-	_specData.previousPointFreq = -1;
-	
-	$("#plotareafreq").unbind("plothover plotclick", null)
-	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
-	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
+	var haveSelected = false;
+	for(var i= 0; specData.freqs.length > i; i++){
+		var specfreq= specData.freqs[i];
+		var y0 = (!isHTMLPage && plot.selectedFreq == specfreq ? minY : maxY * 0.95)
+		data.push({data: [[specfreq, y0],[specfreq, maxY]], color:"red", lineWidth:1});
+		if (y0 == minY)
+			haveSelected = true;
+	}
+	plotArea.unbind("plothover plotclick plotselected", null)
+	plotArea.bind("plothover", plotHoverCallbackFreq);
+	if (!isHTMLPage) {
+		plotArea.bind("plotclick", plotClickCallbackFreq);
+		plotArea.bind( "plotselected", plotSelectCallbackFreq);
+	}
+	$.plot(plotArea, data, options);	
+	_file.specData.previousPointFreq = -1;
+	return haveSelected;
 }
 
-function plotClickCallbackFreq(event, pos, itemFreq) {
-	if (!itemFreq) return
-	// itemFreq is [x,y] so [freq,int]
-	var range = getFreqForClick(itemFreq.datapoint);
-	// range is [min,max,freq,i]
-	if (!range)
-		return;
-	var freq = range[2];
-	var listIndex = range[3];	
-	var model = _specData.model[freq];
-	var vibrationProp = 'vibration on; ' +  getValue("vecscale") + '; '+ getValue("vectors") + ';  '+ getValue("vecsamplitude"); 
-	var script = ' model '+ model +  '; ' + vibrationProp;  // 'set
-	runJmolScriptWait(script);
-//	setVibrationOn(true);
-	getbyID('vib').options[listIndex].selected = true;
+function plotSelectCallbackFreq(event, ranges) {
+	var x1 = ranges.xaxis.from | 0;
+	var x2 = ranges.xaxis.to | 0;
+	if (Math.abs(x2-x1) > 100) {
+		setValue("nMin", Math.min(x1, x2));
+		setValue("nMax", Math.max(x1, x2));
+		setTimeout(onClickModSpec,50);
+	}
+}
+
+function getRanges(specData) {
+	var freqs = specData.freqs
+	var sigma = specData.sigma;
+	n = specData.freqs.length;
 	
+	for (var i = 0, x1, x2, last=n-1; i <= last; i++) { 
+		switch (i) {
+		case 0:
+			x1 = specData.minX;
+			x2 = (freqs[i] + freqs[i + 1])/2;
+			break;
+		case last:
+			x1 = (freqs[i] + freqs[i - 1])/2;
+			x2 = specData.maxX;
+			break;
+		default:
+			x1 = (freqs[i] + freqs[i - 1])/2;
+			x2 = (freqs[i] + freqs[i + 1])/2;
+			break;
+		}
+		specData.ranges.push([Math.max(x1, freqs[i] - sigma/2), Math.min(x2, freqs[i] + sigma/2), freqs[i], i]);
+	}
+}	
+
+function plotClickCallbackFreq(event, pos, itemFreq) {
+	var range = (itemFreq ? getFreqForClick(itemFreq.datapoint) : null);
+	// itemFreq is [x,y] so [freq,int]
+	// range is [min,max,freq,i]
+	var listIndex = (range ? _file.specData.vibList[range[3]][2] : -1);
+	if (listIndex < 0) {
+		setTimeout(function() { selectVib(-1) }, 50);
+		return;		
+	}
+	getbyID('vib').options[listIndex].selected = true;
+	setTimeout(function(){onClickSelectVib();},50);
 }
 
 function plotHoverCallbackFreq(event, pos, itemFreq) {
 	hideTooltip();
 	if(!itemFreq)return
-	if (_specData.previousPointFreq != itemFreq.datapoint) {
+	if (_file.specData.previousPointFreq != itemFreq.datapoint) {
 		previousPointFreq = itemFreq.datapoint;
 		var range = getFreqForClick(itemFreq.datapoint);
 		if (!range)
 			return;
 		var freq = range[2];
-		var listIndex = range[3];	
-		var model = _specData.model[freq];
-		
+		var listIndex = _file.specData.vibList[range[3]][2];	
+		if (listIndex < 0)
+			return;		
+		var model = _file.specData.model[freq];
 		var x = roundoff(itemFreq.datapoint[0],2);
 		var y = roundoff(itemFreq.datapoint[1],1);
 		var model = itemFreq.datapoint[2];
-
+		
 		label = getbyID('vib').options[listIndex].text;
 
 		showTooltipFreq(itemFreq.pageX, itemFreq.pageY + 10, label, pos);
 	}
-	if (pos.canvasY > 350)plotClickCallbackFreq(event, pos, itemFreq);
+	if (pos.canvasY < 30)setTimeout(function(){plotClickCallbackFreq(event, pos, itemFreq)},50);
 }
 
 
@@ -3207,7 +3408,7 @@ function plotHoverCallbackFreq(event, pos, itemFreq) {
  * function scaleSpectrum(){
  * 
  * var vecorFreq = []; var vecorChk = []; var counter; for(var i =0 ; i <
- * Info.length; i++){ vecorFreq[i] = Info[i].name; vecorChk[i] = 0 if(i == 0)
+ * _file.info.length; i++){ vecorFreq[i] = _file.info[i].name; vecorChk[i] = 0 if(i == 0)
  * vecorChk[i] = 1 counter++ }
  * 
  * var s = " Shift spectrum "; s+= createSelect("Frequencies", "", 0, 1, counter ,
@@ -3233,18 +3434,18 @@ function minValue(irInt) {
 	return parseInt(irInt.sort(sortNumber)[0]);
 }
 
-function symmetryModeAdd() { // extracts vibrational symmetry modes from Info
+function symmetryModeAdd() { // extracts vibrational symmetry modes from _file.info
 								// array and lets one get symmetry operations by
 								// ID
 	cleanList('sym');
 	var sym = getbyID('sym');
-	if (Info[3].modelProperties) {
-		var symm = _fileData.freqSymm;
+	if (_file.info[3] && _file.info[3].modelProperties) {
+		var symm = _file.freqSymm;
 		if (!symm) {
 			var symm = [];
-			for (var i = 1; i < Info.length; i++)
-				if (Info[i].name)
-					symm[i] = Info[i].modelProperties.vibrationalSymmetry;
+			for (var i = 1; i < _file.info.length; i++)
+				if (_file.info[i].name)
+					symm[i] = _file.info[i].modelProperties.vibrationalSymmetry;
 		}
 		var sortedSymm = unique(symm);
 		addOption(sym, "any", "any");
@@ -3271,54 +3472,46 @@ function unique(a) {
 	return r;
 }
 
-
-function setVibrationOn(isON) {
-	if (isON)
-		checkBox("radVibrationOn");
-	else
-		checkBox("radVibrationOff");
-	updateJmolForFreqParams();
-}
-
 function onClickFreqParams() {
-	updateJmolForFreqParams();
+	updateJmolForFreqParams(false);
 }
 
-function updateJmolForFreqParams() {
+function updateJmolForFreqParams(isVibClick) {
 	var c = jmolColorPickerBoxes["vectorColorPicker"].getJmolColor();
-	var vectorsON = isChecked("vectors");
-	var script = "vibration " + isChecked("radVibrationOn")
+	var vectorsON = isChecked("vectorsON");
+	var vibON = isChecked("radVibrationOn");
+	var script = "vibration " + vibON
 					+ ";vectors " + vectorsON
 					+ ";" + getValueSel("vecsamplitude")
 					+ ";" + getValueSel("vecscale")
-					+ ";color vectors " + (isChecked("vibVectcolor") ? "none" :  c);
+					+ ";color vectors " + (isChecked("vibVectcolor") ? "none" : "white");
 	if (vectorsON)
-		script += ";" + getValueSel("sizevec");
-	runJmolScriptWait(script)
+		script += ";" + getValueSel("widthvec");	
+	var label = getTextSel('vib');
+	script += ";set echo bottom left;echo \""+label+ "\";";	
+	runJmolScriptWait(script);
+	if (isVibClick && !vectorsON && !vibON) {
+		getbyID('radVibrationOn').checked = true;
+		runJmolScriptWait("vibration ON"); 
+	}
 }
 
-function setMaxMinPlot(specData) {
-	var n = specData.freqCount;
-	var sum = 0;
-	try { 
-		for (var i = 0; i < n; i++) {
-			
-			System.out.println(i + " " + specData.freqInfo[i].modelProperties.Frequency);
-			
-			sum += roundoff(substringFreqToFloat(specData.freqInfo[i].modelProperties.Frequency), 0);
-		}
-		specData.maxR = (isNaN(sum) ? 3700 : sum / n);
-
-	} catch (err){
-			specData.maxR = 3700;
+function onScale(mode) {
+	switch (mode) {
+	case 1:
+		_file.plotFreq.yscale *= 1.414;
+		break;
+	case 0:
+		_file.plotFreq.yscale = 1;
+		setValue("nMin", _file.plotFreq.minX0);
+		setValue("nMax", _file.plotFreq.maxX0);
+		break;
+	case -1:
+		_file.plotFreq.yscale /= 1.414;
+		break;
 	}
-	
-	
-	specData.maxX = specData.maxR + 300;
-	specData.minX = 0;
-	
-	setValue("nMax", specData.maxX);
-	setValue("nMin", specData.minX);
+	onClickModSpec();
+	return true;
 }
 
 // Creates the frequency menu on the web applet
@@ -3333,20 +3526,26 @@ function createFreqGrp() {
 	var vecscaleText = new Array("select", "1", "3", "5", "7", "10", "15", "19");
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
-	var smallGraph =  createDiv("plotareafreq", "background:blue;width:350px;height:180px;background-color:#EFEFEF","");  
-	
+	var smallGraph =  createDiv("plotareafreq", "background:blue;width:300px;height:180px;background-color:#EFEFEF","");  
+	var graphButtons = createButtonB("scaleup", "&#x25b2;","onScale(1)' title='increase Y scale",0,"width:40px") + "<br>"
+		+ createButtonB("scaleup", "&#x25cf;","onScale(0)' title='reset X and Y",0,"width:40px") + "<br>"
+		+ createButtonB("scaleup", "&#x25bc;","onScale(-1)' title='decrease Y scale",0,"width:40px");
+	var smallGraphAndButtons = "<table cellpadding=0 cellspacing=0><tr><td valign=top>" 
+			+ smallGraph + "</td><td valign=center>" 
+			+ graphButtons + "</td></tr></table>";
+
 	var simPanel = createDiv("simPanel", "", "Raman intensities set to 0.0 kmMol<sup>-1</sup>"
 		+ "<br>\n"
 		+ createLine('blue', '')
 		+ "<br>"
-		+ "Band width " + createText2("sigma", "15", "3", "") + " (cm<sup>-1</sup>)" 
+		+ "Band width " + createText2("sigma", "30", "3", "") + " (cm<sup>-1</sup>)" 
 		+ "&nbsp;"
-		+ "Min freq. " + createText2("nMin", "onClickModSpec()", "4", "")
-		+ " Max " + createText2("nMax", "onClickModSpec()", "4", "") + "(cm<sup>-1</sup>)"
-		+ createCheck("rescaleSpectra", "Re-scale", "", 0, 1, "") + "<br>"
-		+ createRadio("convol", "Stick", 'onClickModSpec()', 0, 1, "", "stick")
-		+ createRadio("convol", "Gaussian", 'onClickModSpec()', 0, 0, "", "gaus")
-		+ createRadio("convol", "Lorentzian", 'onClickModSpec()', 0, 0, "", "lor") 
+		+ "Min freq. " + createText2("nMin", "0", "4", "")
+		+ " Max " + createText2("nMax", "4000", "4", "") + "(cm<sup>-1</sup>)"
+		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "") + "<br>"
+		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 1, "", "stick")
+		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 0, "", "gaus")
+		+ createRadio("convol", "Lorentzian", 'onClickModSpec(false, true)', 0, 0, "", "lor") 
 		+ "&nbsp;" + "&nbsp;" + "&nbsp;"
 		+ createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
 
@@ -3357,22 +3556,24 @@ function createFreqGrp() {
 			strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "", "ir");
 			strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "", "raman");
 			strFreq += "<BR>\n";
-			strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeypress='onClickModSpec()' CLASS='select' >";
+			strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeyup='onClickModSpec()' CLASS='select' >";
 			strFreq += "</select> ";
 			strFreq += "<BR>\n";
-			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib(value)' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
+			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib()' onkeyup='onClickSelectVib()' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
 		strFreq += "</td>"; // end of the first column
 		strFreq += "<td valign='bottom'>";
-		strFreq +="<BR>\n" + "<BR>\n";
+		strFreq += "<BR>\n" + "<BR>\n";
 			strFreq += "vibration ";
 			strFreq += createRadio("vibration", "on", 'onClickFreqParams()', 0, 1, "radVibrationOn", "on");
 			strFreq += createRadio("vibration", "off", 'onClickFreqParams()', 0, 0, "radVibrationOff", "off");
 			strFreq += "<BR>\n";
+			strFreq += "view vectors ";
+			strFreq += createRadio("vectors", "on", 'onClickFreqParams()', 0, 1, "vectorsON", "on");
+			strFreq += createRadio("vectors", "off", 'onClickFreqParams()', 0,0, "vectorsOFF", "off");
+			strFreq += "<BR>\n";
 			strFreq += createSelect("vecsamplitude", "onClickFreqParams()", 0, 1,
 					vibAmplitudeValue, vibAmplitudeText,[0,1])
 					+ " vib. amplitude"; 
-			strFreq += "<BR>\n";
-			strFreq += createCheck("vectors", "view vectors", "onClickFreqParams()", 0, 1, "vectors");
 			strFreq += "<BR>\n";
 			strFreq += createSelect("vecscale", "onClickFreqParams()", 0, 1, vecscaleValue, vecscaleText, [0,0,1]) + " vector scale"; 																									// scale
 			strFreq += "<BR>\n";
@@ -3385,7 +3586,13 @@ function createFreqGrp() {
 		strFreq += "</td></tr>";
 		strFreq += "<tr><td colspan=2>";
 		strFreq += createDiv("graphfreqdiv", // making small graph
-				"width:350px;height:200px;background-color:#EFEFEF;margin-left:5px;display:inline", smallGraph + simPanel);
+				"width:320px;height:200px;background-color:#EFEFEF;margin-left:5px;display:inline", 
+				
+				
+				smallGraphAndButtons 
+				
+				
+				+ simPanel);
 		strFreq += "</td></tr>";
 	strFreq += "</table></form> ";
 
@@ -3397,8 +3604,8 @@ function getFreqForClick(p) {
 	var int = p[1];
 	var listIndex = -1;
 	
-	for (var i = 0; i < _specData.ranges.length; i++) {
-		var range = _specData.ranges[i];
+	for (var i = 0; i < _file.specData.ranges.length; i++) {
+		var range = _file.specData.ranges[i];
 		if (freq >= range[0] && freq <= range[1]) {
 			return range;
 		}
@@ -3508,10 +3715,10 @@ function setValuesOther() {
 //	  set zSlab 50;
 //	  set zShade false;
 	
-	cameraDepthSlider.setValue(jmolEvaluate("cameraDepth") * 25);
-	SpecularPercentSlider.setValue(jmolEvaluate("specularPercent"));
-	AmbientPercentSlider.setValue(jmolEvaluate("ambientPercent"));
-	DiffusePercentSlider.setValue(jmolEvaluate("diffusePercent"));
+	_slider.cameraDepth.setValue(jmolEvaluate("cameraDepth") * 25);
+	_slider.specularPercent.setValue(jmolEvaluate("specularPercent"));
+	_slider.ambientPercent.setValue(jmolEvaluate("ambientPercent"));
+	_slider.diffusePercent.setValue(jmolEvaluate("diffusePercent"));
 //	getbyID("SpecularPercentMsg").innerHTML = 40 + " %";
 //	getbyID("AmbientPercentMsg").innerHTML = 40 + " %";
 //	getbyID("DiffusePercentMsg").innerHTML = 40 + " %";
@@ -3520,22 +3727,22 @@ function setValuesOther() {
 
 function applyCameraDepth(depth) {
 	runJmolScriptWait("set cameraDepth " + depth + ";")
-	getbyID("cameraDepthMsg").innerHTML = depth
+	getbyID("slider.cameraDepthMsg").innerHTML = depth
 }
 
 function applySpecularPercent(x) {
 	runJmolScriptWait(" set specularPercent " + x + ";");
-	getbyID("SpecularPercentMsg").innerHTML = x + "%";
+	getbyID("slider.specularPercentMsg").innerHTML = x + "%";
 }
 
 function applyAmbientPercent(x) {
 	runJmolScriptWait(" set ambientPercent " + x + ";");
-	getbyID("AmbientPercentMsg").innerHTML = x + "%";
+	getbyID("slider.ambientPercentMsg").innerHTML = x + "%";
 }
 
 function applyDiffusePercent(x) {
 	runJmolScriptWait(" set diffusePercent " + x + ";");
-	getbyID("DiffusePercentMsg").innerHTML = x + "%";
+	getbyID("slider.diffusePercentMsg").innerHTML = x + "%";
 }
 
 function setTextSize(value) {
@@ -3592,11 +3799,11 @@ function createOtherGrp() {
 	strOther += "Light settings";
 	strOther += "</td></tr>";
 	strOther += "<tr><td>";
-	strOther += createSlider("SpecularPercent", "Reflection");
+	strOther += createSlider("specularPercent", "Reflection");
 	strOther += "</td></tr><tr><td>";
-	strOther += createSlider("AmbientPercent", "Ambient");
+	strOther += createSlider("ambientPercent", "Ambient");
 	strOther += "</td></tr><tr><td>";
-	strOther += createSlider("DiffusePercent", "Diffuse");
+	strOther += createSlider("diffusePercent", "Diffuse");
 	strOther += "</td></tr><tr><td colspan='2'>" + createLine('blue', '');
 	strOther += "</tr><tr><td colspan='2'>"
 		strOther += "3D stereo settings <br>"
@@ -3638,202 +3845,104 @@ function createOtherGrp() {
 
       		
 ///js// Js/_m_symmetry.js /////
-// not implemented
-
+//initialization upon entry into symmetry tab 
 function enterSymmetry() {
-	
-}
+	if (! _file.symmetry){
+		_file.symmetry = {
+			operationList     : createSymopSet(),
+			chosenSymElement  : "", 
+			chosenSymop       : "",
+			symOffset         : "{0/1,0/1,0/1}"
+		}; 
+	 	var symopSelection = createSelect('addSymSymop', 'doSymopSelection(value)', 0, 1, _file.symmetry.operationList);
+		getbyID("symmetryOperationSet").innerHTML = symopSelection;
+	}
+	var activateSymmetry = createButton("activateSymmetryButton", "Activate applied symmetry:", 'doActivateSymmetry()', 0);
+	getbyID("activateSymmetryDiv").innerHTML = activateSymmetry;
+	var activateAllSymmetry = createButton("activateAllSymmetryButton", "Activate all symmetry:", 'doActivateAllSymmetry()', 0); 
+	getbyID("activateAllSymmetryDiv").innerHTML = activateAllSymmetry;
+}	
 
 function exitSymmetry() {
 }
 
-
-function getSymInfo() { //parses data file and provides symmetry operations
-
-	// update all of the model-specific page items
-
-	SymInfo = {};
-	var s = "";
-	var info = jmolEvaluate('script("show spacegroup")');
-	if (info.indexOf("x,") < 0) {
-		s = "no space group";
-	} else {
-		var S = info.split("\n");
-		var hm = "?";
-		var itcnumber = "?";
-		var hallsym = "?";
-		var latticetype = "?";
-		var nop = 0;
-		var slist = "";
-		for (var i = 0; i < S.length; i++) {
-			var line = S[i].split(":");
-			if (line[0].indexOf("Hermann-Mauguin symbol") == 0)
-				s += "<br>"
-					+ S[i]
-			.replace(
-					/Hermann\-Mauguin/,
-			"<a href=http://en.wikipedia.org/wiki/Hermann%E2%80%93Mauguin_notation target=_blank>Hermann-Mauguin</a>");
-			else if (line[0].indexOf("international table number") == 0)
-				s += "<br>"
-					+ S[i]
-			.replace(
-					/international table number/,
-			"<a href=http://it.iucr.org/ target=_blank id='prova'>international table</a> number");
-			else if (line[0].indexOf("lattice type") == 0)
-				s += "<br>"
-					+ S[i]
-			.replace(
-					/lattice type/,
-			"<a href=http://cst-www.nrl.navy.mil/bind/static/lattypes.html target=_blank>lattice type</a>");
-			else if (line[0].indexOf(" symmetry operation") >= 0)
-				nop = parseInt(line[0]);
-			else if (nop > 0 && line[0].indexOf(",") >= 0)
-				slist += "\n" + S[i];
-
-		}
-
-		s += "<br> Symmetry operators: " + nop;
-
-		var S = slist.split("\n");
-		var n = 0;
-		var i = -1;
-		while (++i < S.length && S[i].indexOf(",") < 0) {
-		}
-		s += "<br><select id='symselect' onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\" class='select'><option value=0>select a symmetry operation</option>";
-		for (; i < S.length; i++)
-			if (S[i].indexOf("x") >= 0) {
-				var sopt = S[i].split("|")[0].split("\t");
-				SymInfo[sopt[1]] = S[i].replace(/\t/, ": ").replace(/\t/, "|");
-				sopt = sopt[0] + ": " + sopt[2] + " (" + sopt[1] + ")";
-				s += "<option value='" + parseInt(sopt) + "'>" + sopt
-				+ "</option>";
-			}
-		s += "</select>";
-
-		var info = jmolEvaluate('{*}.label("#%i %a {%[fxyz]/1}")').split("\n");
-		var nPoints = info.length;
-		var nBase = jmolEvaluate('{symop=1555}.length');
-		s += "<br><select id='atomselect' onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\"  class='select'><option value=0>base atoms</option>";
-		s += "<option value='{0 0 0}'>{0 0 0}</option>";
-		s += "<option value='{1/2 1/2 1/2}'>{1/2 1/2 1/2}</option>";
-		for (var i = 0; i < nPoints; i++)
-			s += "<option value=" + i + (i == 0 ? " selected" : "") + ">"
-			+ info[i] + "</option>";
-		s += "</select>";
-
-		s += "</br><input type=checkbox id=chkatoms onchange=getSelect() checked=true />superimpose atoms";
-		s += " opacity:<select id=selopacity onchange=getSelect() onkeypress=\"setTimeout('getSelect()',50)\"  class='select'>"
-			+ "<option value=0.2 selected>20%</option>"
-			+ "<option value=0.4>40%</option>"
-			+ "<option value=0.6>60%</option>"
-			+ "<option value=1.0>100%</option>" + "</select>";
-
-	}
-	getbyID("syminfo").innerHTML = s;
-}
-function getSelect(symop) {
-	var d = getbyID("atomselect");
-	var atomi = d.selectedIndex;
-	var pt00 = d[d.selectedIndex].value;
-	var showatoms = (getbyID("chkatoms").checked || atomi == 0);
-	runJmolScriptWait("display " + (showatoms ? "all" : "none"));
-	var d = getbyID("symselect");
-	var iop = parseInt(d[d.selectedIndex].value);
-	// if (!iop && !symop) symop = getbyID("txtop").value
-	if (!symop) {
-		if (!iop) {
-			runJmolScriptWait("select *;color opaque;draw sym_* delete");
-			return
-
-		}
-		symop = d[d.selectedIndex].text.split("(")[1].split(")")[0];
-		// getbyID("txtop").value
-		// = symop
-	}
-	if (pt00.indexOf("{") < 0)
-		pt00 = "{atomindex=" + pt00 + "}";
-	var d = getbyID("selopacity");
-	var opacity = parseFloat(d[d.selectedIndex].value);
-	if (opacity < 0)
-		opacity = 1;
-	var script = "select *;color atoms translucent " + (1 - opacity);
-	script += ";draw symop \"" + symop + "\" " + pt00 + ";";
-	if (atomi == 0) {
-		script += ";select symop=1555 or symop=" + iop + "555;color opaque;";
-	} else if (atomi >= 3) {
-		script += ";pt1 = "
-			+ pt00
-			+ ";pt2 = all.symop(\""
-			+ symop
-			+ "\",pt1).uxyz.xyz;select within(0.2,pt1) or within(0.2, pt2);color opaque;";
-	}
-	secho = SymInfo[symop];
-	if (!secho) {
-		secho = jmolEvaluate("all.symop('" + symop + "',{0 0 0},'draw')")
-		.split("\n")[0];
-		if (secho.indexOf("//") == 0) {
-			secho = secho.substring(2);
-		} else {
-			secho = symop;
-		}
-	}
-	script = "set echo top right;echo " + secho + ";" + script;
-	runJmolScriptWait(script);
+//this appends new atoms by chosen symop
+function doActivateSymmetry(){
+	appendSymmetricAtoms(_file.symmetry.chosenSymElement,getValue("initPoint"),_file.symmetry.chosenSymop,getValue("symIterations"));
 }
 
-function deleteSymmetry() {
-	getbyID("syminfo").removeChild;
+//this only shows every point for a given point for all symops 
+function doActivateAllSymmetry(){
+	drawAllSymmetricPoints(getValue("initPoint"));
 }
 
-cellOperation = function(){
-	deleteSymmetry();
-	getSymInfo();
-	setUnitCell();
+
+function doSymopSelection(symop){
+	setSymop(symop);
+	displaySymmetryDrawObjects(symop);
 }
-chosenSymElement = ""; 
+
+
 function setSymElement(elementName){
-	chosenSymElement = elementName;
+	_file.symmetry.chosenSymElement = elementName;
 }
-chosenSymop = "";
+
+
 function setSymop(symop){
-	chosenSymop = symop;
+	_file.symmetry.chosenSymop = symop;
 }
-symopSet = [];
+
+//figures out from file data all of the symmetry operations as Jones faithful representations 
 function createSymopSet(){
-	var allSymopsString = jmolEvaluate('script("print readSymmetryVectors()")'); 
-	var totalSymops = allSymopsString.match(/\n/g).length-1; //this should work in all cases
-	for (i = 1; i<= totalSymops;i++){
-		console.log(i);
-		symopSetIndex = i-1;
-		symopSet[symopSetIndex] = jmolEvaluate('script("var info = readSymmetryVectors();print info["+i+"];")');//THIS LINE IS NOT WORKING-ASK BH
-	}
+	var symopSet = [];
+	runJmolScriptWait("getProperty spacegroupInfo.symmetryInfo");
+	runJmolScriptWait("symVectors = readSymmetryVectors()");
+	symopSet = Jmol.evaluateVar(jmolApplet0,"symVectors"); 
+	return symopSet
 }
+
+
+function setOpacity(){
+	var opacityString = getbyID("selopacity2");
+	var opacity = parseFloat(opacityString[opacityString.selectedIndex].value);
+	if (opacity < 0){
+		opacity = 1;
+	}
+	opacityScript = "select *;color atoms translucent " + (1 - opacity)
+	runJmolScript(opacityScript);
+}
+
+function updateSymOffset(dimension,offset){
+	var symOffsetString = _file.symmetry.symOffset;
+	symOffsetString = symOffsetString.substring(1);
+	var symOffsetArray = symOffsetString.split(",");
+	var xValue = parseInt(symOffsetArray[0])+"/1";
+	var yValue = parseInt(symOffsetArray[1])+"/1";
+	var zValue = parseInt(symOffsetArray[2])+"/1";
+	if (dimension == "x"){
+		xValue = offset+"/1";
+	}
+	if (dimension == "y"){
+		yValue = offset+"/1";
+	}
+	if (dimension == "z"){
+		zValue = offset+"/1";
+	}
+	_file.symmetry.symOffset = "{"+xValue+","+yValue+","+zValue+"}"; 
+}
+
 //creates symmetry menu 
-// minor functionality A.S. 10.26.18 
+//HTML is here 
 function createSymmetryGrp() {
 	var strSymmetry = "<form autocomplete='nope'  id='symmetryGroup' name='symmetryGroup' style='display:none'>\n";
-	strSymmetry += "<table class='contents'>\n";
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += "Symmetry operators ";
-	strSymmetry += "<div id='syminfo'></div>";
-	strSymmetry += createLine('blue', '');
-	strSymmetry += "</td></tr>\n";
-	strSymmetry += "</td></tr></table> \n";
-	strSymmetry += "<tr><td>\n";
-	strSymmetry += createCheck("symLock", "Lock Added Atoms to Symmetry Operation?",
-			0, 0, 1, 0);
-	strSymmetry += "</td></tr>\n";	
-	strSymmetry += "<BR>\n"; 
-	strSymmetry += "<tr><td>\n";
-	strSymmetry += createCheck("copyOpaque", "Make atom copies opaque?",
-			0, 0, 1, 0);
-	strSymmetry += "</td></tr>\n";
-	strSymmetry += "<BR>\n"; 
+	strSymmetry += "Write points in the form '{x y z}'";
+	strSymmetry += "<BR>\n";
+
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += "Add element:"
 	strSymmetry += createSelect('addSymEle', 'setSymElement(value)', 0, 1,
 			eleSymb);
-	//strSymmetry +=  createSelect();
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
@@ -3843,43 +3952,138 @@ function createSymmetryGrp() {
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
 	strSymmetry += "Choose symmetry operation:";
-//	strSymmetry += createSelect('addSymSymop', 'setSymop(value)', 0, 1,
-//			jmolEvaluate('script("print readSymmetryVectors()")'));
+	strSymmetry += "<div id='symmetryOperationSet'></div>";
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-	//strSymmetry += createCheck("copyOpaque", "Activate applied symmetry:",
-//			appendSymmetricAtoms(chosenSymElement,getValue("initPoint"),chosenSymop), 0, 1, 0);
-//	strSymmetry += "</td></tr>\n";
+	strSymmetry += "&nbsp&nbsp&nbsp-1 &nbsp&nbsp&nbsp&nbsp&nbsp 0 &nbsp&nbsp&nbsp&nbsp +1&nbsp&nbsp&nbsp(Offset)";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "x";
+	strSymmetry += createRadio("xOffset"," ",'updateSymOffset("x",-1)',0,0,"x-1","x-1");
+	strSymmetry += createRadio("xOffset"," ",'updateSymOffset("x",0)',0,1,"x+0","x+0");
+	strSymmetry += createRadio("xOffset"," ",'updateSymOffset("x",1)',0,0,"x+1","x+1");
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "y";
+	strSymmetry += createRadio("yOffset"," ",'updateSymOffset("y",-1)',0,0,"y-1","z-1");
+	strSymmetry += createRadio("yOffset"," ",'updateSymOffset("y",0)',0,1,"y+0","z+0");
+	strSymmetry += createRadio("yOffset"," ",'updateSymOffset("y",1)',0,0,"y+1","z+1");
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "z";
+	strSymmetry += createRadio("zOffset"," ",'updateSymOffset("z",-1)',0,0,"z-1","z-1");
+	strSymmetry += createRadio("zOffset"," ",'updateSymOffset("z",0)',0,1,"z+0","z+0");
+	strSymmetry += createRadio("zOffset"," ",'updateSymOffset("z",1)',0,0,"z+1","z+1");
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "Symmetry Iterations:"; 
+	strSymmetry += "<input type='text'  name='symIterations' id='symIterations' size='2' class='text'>";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "<div id='activateSymmetryDiv'></div>";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += "<div id='activateAllSymmetryDiv'></div>";
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
+	strSymmetry += "set opacity:<select id=selopacity2 onchange=setOpacity() onkeypress=\"setTimeout('setOpacity()',50)\"  class='select'>"
+			+ "<option value=0.2 selected>20%</option>"
+			+ "<option value=0.4>40%</option>"
+			+ "<option value=0.6>60%</option>"
+			+ "<option value=1.0>100%</option>" + "</select>";
+			
 	strSymmetry += "</form>\n";
-	return strSymmetry;
-}
-// draws the axis lines for rotation axes and mirror planes for mirror symops 
-function displaySymmetryDrawObjects(symopNumber){
-	symopNameArray = readSymmetryVectors();
-	if (symopNameArray[i].includes("identity")){
-		runJmolScriptWait("draw symop @"+symNumber); 
-	}
-	else if (symopNameArray[i].includes("axis")){
-		//INSERT CODE HERE
-	}
-	else if (symopNameArray[i].includes("mirror")){
-		runJmolScriptWait("draw symop @"+symNumber) ;
-	}
-} 
-function appendSymmetricAtoms(elementName,point,symopSelected){
-	iterations = 1 ;
-	newAtomArray = runJmolScriptWait("getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
-	numberOfNewAtoms = newAtomArray.length; 
-	for (i = 1; i <= numberOfNewAtoms; i++){
-		runJmolScriptWait("appendNewAtom('"+elementName+"', "+newAtomArray[i]+")"); //this is a jmol script in functions.spt
-	}
+	return strSymmetry
 }
 
+// draws the axis lines for rotation axes and mirror planes for mirror symops 
+function displaySymmetryDrawObjects(symop){
+	runJmolScriptWait("draw symop '"+symop+"' "+_file.symmetry.symOffset); 
+} 
+
+// takes a given point and add the elements provided to it by a symmetry operation
+// symmetry operations with multiple outputs (e.g. C3) will produce multiple symmetry atoms 
+
+function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
+	if (elementName == ""){
+		console.log("ERROR: empty element name");
+	}
+	if (symopSelected == ""){
+		console.log("ERROR: empty symmetry operation");
+	}
+	else {
+		runJmolScriptWait("appendNewAtom('"+elementName+"', "+point+")");
+		var newAtomArray = Jmol.evaluateVar(jmolApplet0,"getSymmetricAtomArray('"+symopSelected+"', "+point+","+iterations+")") ;
+		var numberOfNewAtoms = newAtomArray.length; 
+		for (i = 1; i <= numberOfNewAtoms; i++){
+			runJmolScriptWait("appendNewAtom('"+elementName+"', "+newAtomArray[i-1]+")"); //this is a jmol script in functions.spt
+		}
+	}
+}
+function drawAllSymmetricPoints(point){
+	var pointValue = point;
+	runJmolScriptWait("allSymPoints = getSymmetryAtomArrayAllSymops("+pointValue+")");
+	runJmolScriptWait("allSymPoints = allSymPoints");
+	runJmolScriptWait("draw points @allSymPoints");
+}
+
+//Additional functions: yet unused 
+
+//checks to see if there is a symmetry axis currently drawn
+//function hasAxis(symop){
+//	runJmolScriptWait("firstPoint = $sym_rotvector1[0]");
+//	if (Jmol.evaluateVar(jmolApplet0,"firstPoint")){
+//		runJmolScriptwait("secondPoint = $sym_rotvector2[0]");
+//		if (Jmol.evaluateVar(jmolApplet0,"secondPoint")){
+//			return true 
+//		}
+//		else { 
+//			return false
+//		}
+//	}
+//	else {
+//		return false
+//	}
+//}
+
+//function displaySymmetryDrawObjects(symop){
+//	centerPoint = 	getValue("symCenterPoint") ;
+//	if (! centerPoint){
+//		centerPoint= "{0 0 0}"; 
+//	}
+//	runJmolScriptWait("draw symop '"+symop+"' "+centerPoint); 
+//	if(hasAxis(symop)){
+//		runJmolScriptWait("select *;color opaque;draw sym_* delete");
+//		runJmolScriptWait("drawCleanSymmetryAxisVectors('"+symop+"', 3)");
+//	}
+//} 
+//function createSymopSet(){
+//	var symopSet = [];
+//	var allSymopsString = jmolEvaluate('script("print readSymmetryVectors()")'); 
+//	var totalSymops = allSymopsString.match(/\n/g).length-1; //this should work in all cases
+//	for (var i = 1; i<= totalSymops;i++){
+//		var symopInt = parseInt(i)+"";
+//		var scriptToRun = 'script("var infor = readSymmetryVectors();print infor['+symopInt+']")';
+//		var symopString = jmolEvaluate(scriptToRun);
+//		symopString = symopString.trim();
+//		symopSet[i-1] = symopString;
+//	}
+//	return symopSet
+//}
 
       		
 ///js// Js/callback.js /////
 // BH 2018
+
+_callback = {
+	fPick : null
+}
 
 getCallbackSettings = function() {
 //	return  "set messageCallback 'myMessageCallback';" +
@@ -3908,20 +4112,19 @@ myErrorCallback = function(applet, b, msg, d) {
 
 
 setPickingCallbackFunction = function(f) {
-	fPick = f;
+	_callback.fPick = f;
 }
 
 myPickCallback = function(applet, b, c, d) {
-	fPick && fPick(b,c,d);
+	_callback.fPick && _callback.fPick(b,c,d);
 }
 
-fMinim = null;
 setMinimizationCallbackFunction = function(f) {
-	fMinim = f;
+	_file.fMinim = f;
 }
 
 myMinimizationCallback = function(applet,b,c,d) {
-	fMinim && fMinim(b, c, d);
+	_file.fMinim && _file.fMinim(b, c, d);
 }
 
       		
@@ -4411,7 +4614,6 @@ eleSymbMass[99] = 252.00;
 
 //////////////////////////////////////VALUE conversion AND ROUNDOFF
 
-
 function substringEnergyToFloat(value) {
 	if (value != null) {
 		var grab = parseFloat(
@@ -4505,17 +4707,25 @@ function substringIntFreqToFloat(value) {
 	return grab;
 }
 
-function cosRadiant(value) {
+function cosRounded(value) {
 	if (value != null) {
 		var angle = parseFloat(value).toPrecision(7);
-		angle = Math.cos(value * radiant);
+		angle = cos(value * Math.PI/180);
 		angle = Math.round(angle * 10000000) / 10000000;
 	}
 	return angle;
 }
 
-roundNumber = function(value) { //BH 2018 was 10000000
-	return Math.round(value * 10000) / 10000;
+function cosDeg(angle) {
+	return Math.cos(angle * Math.PI/180);
+}
+
+function sinDeg(angle) {
+	return Math.sin(angle * Math.PI/180);
+}
+
+roundNumber = function(v) { //BH 2018 was 10000000
+	return Math.round(v * 10000) / 10000;
 }
 
 function roundoff(value, precision) {
@@ -4538,205 +4748,6 @@ function roundoff(value, precision) {
 
 
 ////////////////////////////////ENERGY CONV
-
-function convertPlot(value) {
-	var unitEnergy = value;
-
-	// ////var vecUnitEnergyVal = new Array ("h", "e", "r", "kj", "kc");
-	setconversionParam();
-	switch (unitEnergy) {
-	case "h": // Hartree
-		finalGeomUnit = " Hartree";
-		switch (_fileData.energyUnits) {
-		case ENERGY_RYDBERG:
-			convertGeomData(fromRydbergtohartree);
-			break;
-		case ENERGY_EV:
-			convertGeomData(fromevToHartree);
-			break;
-		case ENERGY_HARTREE:
-			convertGeomData(fromHartreetoHartree);
-			break;
-		}
-		break;
-	case "e": // eV
-		finalGeomUnit = " eV";
-		switch (_fileData.energyUnits) {
-		case ENERGY_RYDBERG:
-			convertGeomData(fromRydbergtoEV);
-			break;
-		case ENERGY_EV:
-			convertGeomData(fromevToev);
-			break;
-		case ENERGY_HARTREE:
-			convertGeomData(fromHartreetoEv);
-			break;
-		}
-		break;
-
-	case "r": // Rydberg
-		finalGeomUnit = " Ry";
-		switch (_fileData.energyUnits) {
-		case ENERGY_RYDBERG:
-			convertGeomData(fromRydbergtorydberg);
-			break;
-		case ENERGY_EV:
-			convertGeomData(fromevTorydberg);
-			break;
-		case ENERGY_HARTREE:
-			convertGeomData(fromHartreetoRydberg);
-			break;
-		}
-		break;
-
-	case "kj": // Kj/mol
-		finalGeomUnit = " kJ/mol"
-			switch (_fileData.energyUnits) {
-			case ENERGY_RYDBERG:
-				convertGeomData(fromRydbergtoKj);
-				break;
-			case ENERGY_EV:
-				convertGeomData(fromevTokJ);
-				break;
-			case ENERGY_HARTREE:
-				convertGeomData(fromHartreetoKj);
-				break;
-			}
-		break;
-
-	case "kc": // Kcal*mol
-		finalGeomUnit = " kcal/mol"			
-		switch (_fileData.energyUnits) {
-		case ENERGY_RYDBERG:
-			convertGeomData(fromRydbergtokcalmol);
-			break;
-		case ENERGY_EV:
-			convertGeomData(fromevTokcalmol);
-			break;
-		case ENERGY_HARTREE:
-			convertGeomData(fromHartreetokcalmol);
-			break;
-		}
-		break;
-	}
-}
-
-function setconversionParam() {
-	unitGeomEnergy = _fileData.unitGeomEnergy;
-	switch (_fileData.energyUnits) {
-	case ENERGY_RYDBERG:
-		unitGeomEnergy = "R";
-		break;
-	case ENERGY_EV:
-		unitGeomEnergy = "e";
-		break;
-	case ENERGY_HARTREE:
-		unitGeomEnergy = "H";
-		break;
-// TODO: why 'k'
-//	case ENERGY_KJ_PER_MOLE:
-//		unitGeomEnergy = "k";
-	}
-}
-
-
-//function convertPlot(value) {
-//	var unitEnergy = value;
-//
-//	// ////var vecUnitEnergyVal = new Array ("h", "e", "r", "kj", "kc");
-//	setconversionParam();
-//	switch (unitEnergy) {
-//
-//	case "h": // Hartree
-//		finalGeomUnit = " Hartree";
-//		if (flagQuantumEspresso) {
-//			convertGeomData(fromRydbergtohartree);
-//		} else if (!flagCrystal || flagOutcar || flagGulp) {
-//			convertGeomData(fromevToHartree);
-//		} else if (flagCrystal || flagDmol) {
-//			convertGeomData(fromHartreetoHartree);
-//		}
-//		break;
-//	case "e": // eV
-//		finalGeomUnit = " eV";
-//		if (flagCrystal || flagDmol) {
-//			convertGeomData(fromHartreetoEv);
-//		} else if (flagQuantumEspresso) {
-//			convertGeomData(fromRydbergtoEv);
-//		} else if (!flagCrystal || flagOutcar || flagGulp) {
-//			convertGeomData(fromevtoev);
-//		}
-//
-//		break;
-//
-//	case "r": // Rydberg
-//		finalGeomUnit = " Ry";
-//		if (flagCrystal || flagDmol) {
-//			convertGeomData(fromHartreetoRydberg);
-//		} else if (!flagCrystal || flagOutcar || flagGulp) {
-//			convertGeomData(fromevTorydberg);
-//		} else if (flagQuantumEspresso) {
-//			convertGeomData(fromRydbergTorydberg);
-//		}
-//		break;
-//
-//	case "kj": // Kj/mol
-//		finalGeomUnit = " kJ/mol"
-//
-//			if (flagCrystal || flagDmol) {
-//				convertGeomData(fromHartreetokJ);
-//			} else if (!flagCrystal || flagOutcar || flagGulp) {
-//				convertGeomData(fromevTokJ);
-//			} else if (flagQuantumEspresso) {
-//				convertGeomData(fromRydbergToKj);
-//			}
-//		break;
-//
-//	case "kc": // Kcal*mol
-//		finalGeomUnit = " kcal/mol"
-//			
-//			if (flagCrystal || flagDmol) {
-//				convertGeomData(fromHartreetokcalmol);
-//			} else if (!flagCrystal || flagOutcar || flagGulp) {
-//				convertGeomData(fromevtokcalmol);
-//			} else if (flagQuantumEspresso) {
-//				convertGeomData(fromRytokcalmol);
-//			}
-//		break;
-//	}
-//}
-//
-//function setconversionParam() {
-//	if (flagCrystal || flagDmol) {
-//		unitGeomEnergy = "H"; // Hartree
-//	} else if ((!flagCrystal && !flagQuantumEspresso) || (flagOutcar && !flagQuantumEspresso)) {
-//		unitGeomEnergy = "e"; // VASP
-//	} else if (flagGulp) {
-//		unitGeomEnergy = "k";
-//	} else if (flagQuantumEspresso || !flagOutcar) {
-//		unitGeomEnergy = "R";
-//	}
-//}
-
-
-
-function convertGeomData(f) {
-	// The required value is the end of the string Energy = -123.456 Hartree.
-	var geom = getbyID('geom');
-	if (geom != null)
-		cleanList('geom');
-
-	var val = 0;
-
-	var n = (_fileData.hasInputModel ? 1 : 0);
-	for (var i = n; i < geomData.length; i++) {
-		var data = _fileInfo.geomData[i];
-		val = f(data.substring(data.indexOf('=') + 1, 
-				data.indexOf(unitGeomEnergy) - 1));
-		addOption(geom, i + " E = " + val + finalGeomUnit, i + 1);
-	}
-
-}
 
 ///Hartree
 function fromHartreetoEv(value) { // 1 Hartree = 27.211396132eV
@@ -4928,57 +4939,61 @@ debugShowHistory = function() {
       		
 ///js// Js/export.js /////
 
-function setVacuum() {
-	switch (typeSystem) {
-	case "slab":
-		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
-		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
-				: (messageMsg("Vacuum set to: " + vaccum + " \305."));
+function scaleModelCoordinates(xyz, op1, f1, op2, f2, etc) {
+	// e.g. {1.1}.xyz.all.mul(2);
+	var atomArray = _file.frameSelection + '.' + xyz;
+	var s = "";
+	for (var i = 1; i < arguments.length;) {
+		s += atomArray + " = " + atomArray + ".all." + arguments[i++] + "(" + arguments[i++] + ");";
+	}
+	runJmolScriptWait(s);
+	
+}
 
-		var zMaxCoord = parseFloat(jmolEvaluate(frameSelection + '.fz.max'));
-		vaccum = parseFloat(vaccum);
-		new_cell.c = (zMaxCoord * 2) + vaccum;
-		var factor = roundNumber(zMaxCoord + vaccum);
-		if (fractionalCoord == true) {
-			runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; ( i.z +'
-					+ factor + ') /' + newcell + ')');
+function setVacuum() {
+	var newCell_c;
+	var vacuum;
+	switch (_file.cell.typeSystem) {
+	case "slab":
+		vacuum = prompt("Please enter the vacuum thickness (\305).", "");
+		(vacuum == "") ? (errorMsg("Vacuum not entered!"))
+				: (messageMsg("Vacuum set to: " + vacuum + " \305."));
+
+		var zMaxCoord = parseFloat(jmolEvaluate(_file.frameSelection + '.fz.max'));
+		vacuum = parseFloat(vacuum);
+		newCell_c = (zMaxCoord * 2) + vacuum;
+		var factor = roundNumber(zMaxCoord + vacuum);
+		if (_file._exportFractionalCoord) { // from VASP only?
+			scaleModelCoordinates("z", "add", factor, "div", newcell_c);
 		} else {
-			runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z +'
-					+ factor + ')');
+			scaleModelCoordinates("z", "add", factor);
 		}
-		fromfractionaltoCartesian(null, null, new_cell.c, null, 90, 90);
+		fromfractionaltoCartesian(null, null, newCell_c, null, 90, 90);
 		break;
 	case "polymer":
-		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
-		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
-				: (messageMsg("Vacuum set to: " + vaccum + "  \305."));
+		vacuum = prompt("Please enter the vacuum thickness (\305).", "");
+		(vacuum == "") ? (errorMsg("Vacuum not entered!"))
+				: (messageMsg("Vacuum set to: " + vacuum + "  \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(frameSelection + '.fz.max'));
-		vaccum = parseFloat(vaccum);
-		new_cell.c = (zMaxCoord * 2) + vaccum;
-		var factor = roundNumber(zMaxCoord + vaccum);
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z +' + factor
-				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y +' + factor
-				+ ')');
-		fromfractionaltoCartesian(null, new_cell.c, new_cell.c, 90, 90, 90);
+		var zMaxCoord = parseFloat(jmolEvaluate(_file.frameSelection + '.fz.max'));
+		vacuum = parseFloat(vacuum);
+		newCell_c = (zMaxCoord * 2) + vacuum;
+		var factor = roundNumber(zMaxCoord + vacuum);
+		scaleModelCoordinates("z", "add", factor);
+		scaleModelCoordinates("y", "add", factor);
+		fromfractionaltoCartesian(null, newCell_c, newCell_c, 90, 90, 90);
 		break;
 	case "molecule":
-		vaccum = prompt("Please enter the vacuum thickness (\305).", "");
-		(vaccum == "") ? (errorMsg("Vacuum not entered!"))
-				: (messageMsg("Vacuum set to: " + vaccum + " \305."));
+		vacuum = prompt("Please enter the vacuum thickness (\305).", "");
+		(vacuum == "") ? (errorMsg("Vacuum not entered!"))
+				: (messageMsg("Vacuum set to: " + vacuum + " \305."));
 
-		var zMaxCoord = parseFloat(jmolEvaluate(frameSelection + '.fz.max'));
-		vaccum = parseFloat(vaccum);
-		new_cell.c = (zMaxCoord * 2) + vaccum;
-		var factor = roundNumber(zMaxCoord + vaccum);
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z +' + factor
-				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y +' + factor
-				+ ')');
-		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x +' + factor
-				+ ')');
-		fromfractionaltoCartesian(new_cell.c, new_cell.c, new_cell.c, 90, 90, 90);
+		var zMaxCoord = parseFloat(jmolEvaluate(_file.frameSelection + '.fz.max'));
+		vacuum = parseFloat(vacuum);
+		newCell_c = (zMaxCoord * 2) + vacuum;
+		var factor = roundNumber(zMaxCoord + vacuum);
+		scaleModelCoordinates("xyz", "add", factor);
+		fromfractionaltoCartesian(newCell_c, newCell_c, newCell_c, 90, 90, 90);
 		break;
 
 	}
@@ -4991,40 +5006,205 @@ function fromfractionaltoCartesian(aparam, bparam, cparam, alphaparam,
 	    yx, yy, yz, 
 	    zx, zy, zz;
 	if (aparam != null)
-		_cell.a = aparam;
+		_file.cell.a = aparam;
 	if (bparam != null)
-		_cell.b = bparam;
+		_file.cell.b = bparam;
 	if (cparam != null)
-		_cell.c = cparam;
+		_file.cell.c = cparam;
 	if (alphaparam != null)
-		alpha = alphaparam;
+		_file.cell.alpha = alphaparam;
 	if (betaparam != null)
-		beta = betaparam;
+		_file.cell.beta = betaparam;
 	if (gammaparam != null)
-		gamma = gammaparam;
+		_file.cell.gamma = gammaparam;
 	// formula repeated from
 	// http://en.wikipedia.org/wiki/Fractional_coordinates
 	var v = Math.sqrt(1
-			- (Math.cos(alpha * radiant) * Math.cos(alpha * radiant))
-			- (Math.cos(beta * radiant) * Math.cos(beta * radiant))
-			- (Math.cos(gamma * radiant) * Math.cos(gamma * radiant))
-			+ 2
-			* (Math.cos(alpha * radiant) * Math.cos(beta * radiant) * Math
-					.cos(gamma * radiant)));
-	xx = _cell.a * Math.sin(beta * radiant);
+			- (cosDeg(_file.cell.alpha) * cosDeg(_file.cell.alpha))
+			- (cosDeg(_file.cell.beta) * cosDeg(_file.cell.beta))
+			- (cosDeg(_file.cell.gamma) * cosDeg(_file.cell.gamma))
+			+ 2	* (cosDeg(_file.cell.alpha) * cosDeg(_file.cell.beta) * cosDeg(_file.cell.gamma)));
+	xx = _file.cell.a * sinDeg(_file.cell.beta);
 	xy = parseFloat(0.000);
-	xz = _cell.a * Math.cos(beta * radiant);
-	yx = _cell.b
-	* (((Math.cos(gamma * radiant)) - ((Math.cos(beta * radiant)) * (Math
-			.cos(alpha * radiant)))) / Math.sin(beta * radiant));
-	yy = _cell.b * (v / Math.sin(beta * radiant));
-	yz = _cell.b * Math.cos(alpha * radiant);
+	xz = _file.cell.a * cosDeg(_file.cell.beta);
+	yx = _file.cell.b
+	* (((cosDeg(_file.cell.gamma)) - ((cosDeg(_file.cell.beta)) * (cosDeg(_file.cell.alpha)))) / sinDeg(_file.cell.beta));
+	yy = _file.cell.b * (v / sinDeg(_file.cell.beta));
+	yz = _file.cell.b * cosDeg(_file.cell.alpha);
 	zx = parseFloat(0.000);
 	zy = parseFloat(0.000);
-	zz = _cell.c;
+	zz = _file.cell.c;
 	return [[xx, xy, xz], [yx, yy, yz], [zx, zy, zz]];
 
 }
+
+
+//prevframeSelection needs because of the conventional
+//var prevframeSelection = null;
+//var prevFrame = null;
+	
+
+function figureOutSpaceGroup(doReload, isConv, quantumEspresso) {
+	var stringCellParam;
+	var cellDimString = null;
+	var ibravQ = "";
+	saveStateAndOrientation_a();
+	//prevframeSelection = _file.frameSelection;
+	if (_file.frameValue == null || _file.frameValue == "" || _file.exportModelOne)
+		_file.frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
+	var prevFrame = _file.frameValue;
+	var magnetic = confirm('It\'s the primitive cell ?')
+	// crystalPrev = confirm('Does the structure come from a previous CRYSTAL
+	// calculation?')
+	reload(null, 
+			isConv ? "conv" : null, 
+			magnetic ? "delete not cell=555;" : null
+	);
+	var s = ""
+	var info = jmolEvaluate('show("spacegroup")')
+	if (info.indexOf("x,") < 0) {
+		s = "no space group"
+	} else {
+		var S = info.split("\n")
+		for (var i = 0; i < S.length; i++) {
+			var line = S[i].split(":")
+			if (line[0].indexOf("international table number") == 0)
+				s = parseInt(S[i]
+						.replace(/international table number:/, ""));
+		}
+	}
+	var interNumber = parseInt(s);
+	getUnitcell(prevFrame);
+	// /from crystal manual http://www.crystal.unito.it/Manuals/crystal09.pdf
+	switch (true) {
+	case ((interNumber <= 2)): // Triclinic lattices
+		stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.b) + ", "
+				+ roundNumber(_file.cell.c) + ", " + roundNumber(_file.cell.alpha) + ", "
+				+ roundNumber(_file.cell.beta) + ", " + roundNumber(_file.cell.gamma);
+		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_file.cell.a)
+				+ " \n celdm(2) =  " + roundNumber(_file.cell.b / _file.cell.a)
+				+ " \n celdm(3) =  " + roundNumber(_file.cell.c / _file.cell.a)
+				+ " \n celdm(4) =  " + cosRounded(_file.cell.alpha) + " \n celdm(5) =  "
+				+ (cosRounded(_file.cell.beta)) + " \n celdm(6) =  "
+				+ (cosRounded(_file.cell.gamma)) + " \n\n";
+		ibravQ = "14";
+		break;
+
+	case ((interNumber > 2) && (interNumber <= 15)): // Monoclinic lattices
+		stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.b) + ", "
+				+ roundNumber(_file.cell.c) + ", " + roundNumber(_file.cell.alpha);
+		if (quantumEspresso) {
+			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_file.cell.a)
+					+ " \n celdm(2) =  " + roundNumber(_file.cell.b / _file.cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_file.cell.c / _file.cell.a)
+					+ " \n celdm(4) =  " + (cosRounded(_file.cell.alpha))
+					+ " \n\n";
+			ibravQ = "12"; // Monoclinic base centered
+
+			var question = confirm("Is this a Monoclinic base centered lattice?")
+			if (question)
+				ibravQ = "13";
+		}
+		break;
+
+	case ((interNumber > 15) && (interNumber <= 74)): // Orthorhombic lattices
+		stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.b) + ", "
+				+ roundNumber(_file.cell.c);
+		if (quantumEspresso) {
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_file.cell.a)
+					+ " \n celdm(2) =  " + roundNumber(_file.cell.b / _file.cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_file.cell.c / _file.cell.a) + " \n\n";
+			ibravQ = "8";
+
+			var question = confirm("Is this a Orthorhombic base-centered lattice?")
+			if (question) {
+				ibravQ = "9";
+			} else {
+				var questionfcc = confirm("Is this a Orthorhombic face-centered (fcc) lattice?");
+				if (questionfcc) {
+					ibravQ = "10";
+				} else {
+					ibravQ = "11";// Orthorhombic body-centered
+				}
+			}
+
+		}
+		break;
+
+	case ((interNumber > 74) && (interNumber <= 142)): // Tetragonal lattices
+
+		stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.c);
+		if (quantumEspresso) {
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_file.cell.a)
+					+ " \n celdm(3) =  " + roundNumber(_file.cell.c / _file.cell.a) + " \n\n";
+			ibravQ = "6";
+			var question = confirm("Is this a Tetragonal I body centered (bct) lattice?");
+			if (question)
+				ibravQ = "7";
+		}
+		break;
+
+	case ((interNumber > 142) && (interNumber <= 167)): // Trigonal lattices
+		stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.alpha) + ", "
+				+ roundNumber(_file.cell.beta) + ", " + roundNumber(_file.cell.gamma);
+		cellDimString = " celdm(1) = " + fromAngstromtoBohr(_file.cell.a)
+				+ " \n celdm(4) =  " + (cosRounded(_file.cell.alpha))
+				+ " \n celdm(5) = " + (cosRounded(_file.cell.beta))
+				+ " \n celdm(6) =  " + (cosRounded(_file.cell.gamma));
+		ibravQ = "5";
+		var question = confirm("Is a romboheadral lattice?")
+		if (question) {
+			stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.c);
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_file.cell.a)
+					+ " \n celdm(4) =  " + (cosRounded(_file.cell.alpha))
+					+ " \n celdm(5) = " + (cosRounded(_file.cell.beta))
+					+ " \n celdm(6) =  " + (cosRounded(_file.cell.gamma))
+					+ " \n\n";
+			ibravQ = "4";
+		}
+		break;
+	case ((interNumber > 167) && (interNumber <= 194)): // Hexagonal lattices
+		stringCellParam = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.c);
+		if (quantumEspresso) {
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_file.cell.a)
+					+ " \n celdm(3) = " + roundNumber(_file.cell.c / _file.cell.a) + " \n\n";
+			ibravQ = "4";
+		}
+		break;
+	case ((interNumber > 194) && (interNumber <= 230)): // Cubic lattices
+		stringCellParam = roundNumber(_file.cell.a);
+		if (quantumEspresso) {
+			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_file.cell.a);
+			// alert("I am here");
+			ibravQ = "1";
+			var question = confirm("Is a face centered cubic lattice?")
+			if (question) {
+				var questionBase = confirm("Is a body centered cubic lattice?")
+				if (questionBase) {
+					ibravQ = "3";
+				} else {
+					ibravQ = "2";
+				}
+			}
+	
+		}
+		break;
+	default:
+		errorMsg("SpaceGroup not found in range.");
+		return false;
+		break;
+	}// end switch
+	
+//	stringCellparamgulp = roundNumber(_file.cell.a) + ' ' + roundNumber(_file.cell.b) + ' '
+//			+ roundNumber(_file.cell.c) + ' ' + roundNumber(_file.cell.alpha) + ' '
+//			+ roundNumber(_file.cell.beta) + ' ' + roundNumber(_file.cell.gamma);
+	//	alert(stringCellparamgulp)
+	if (doReload) {
+		reload("primitive");
+		restoreStateAndOrientation_a();
+	}
+}
+
 
       		
 ///js// Js/form.js /////
@@ -5121,17 +5301,32 @@ function formResetAll() {
 }
 
 function createSlider(name, label) {
-	var s = '<div tabIndex="1" class="slider" id="_Slider-div" style="float:left;width:150px;" >'
-		+ '<input class="slider-input" id="_Slider-input" name="_Slider-input" />'
+	var s = '<div tabIndex="1" class="slider" id="_-div" style="float:left;width:150px;" >'
+		+ '<input class="slider-input" id="_-input" name="_-input" />'
 	    + '</div>'
 	    + (label || "") 
 	    + ' <span id="_Msg" class="msgSlider"></span>';
-	return s.replace(/_/g, name);
+	return s.replace(/_/g, "slider." + name);
 	
 }
 
 function createButton(name, text, onclick, disab, style) {
 	return createButton1(name, text, onclick, disab, "button", style);
+}
+
+function createButtonB(name, text, onclick, disab, style) {
+	var s = "<BUTTON type='button' ";
+	s += "NAME='" + name + "' ";
+	s += "ID='" + name + "' ";
+	if (style)
+		s += "style='" + style + "'";
+	if (disab) {
+		s += "DISABLED ";
+	}
+	s += "OnClick='" + onclick + "'>";
+	s += text;
+	s += "</BUTTON>";
+	return s;
 }
 
 //This includes the class
@@ -5372,6 +5567,10 @@ function getValueSel(id) {
 	return getbyID(id)[getbyID(id).selectedIndex].value;
 }
 
+function getTextSel(id) {
+	return getbyID(id)[getbyID(id).selectedIndex].text;
+}
+
 function isChecked(id) {
 	return getbyID(id).checked;
 }
@@ -5533,18 +5732,15 @@ function selectListItem(list, itemToSelect) {
 
       		
 ///js// Js/frame.js /////
-
 function setFrameValues(i) {
-	frameSelection = null;
-	frameNum = null;
-	frameValue = null;
-	frameSelection = "{1." + i + "}";
-	frameNum = "1." + i;
-	frameValue = i;
 	if (i == null || i == "") {
-		frameSelection = "{1.1}";
-		frameNum = "1.1";
-		frameValue = 1;
+		_file.frameSelection = "{1.1}";
+		_file.frameNum = "1.1";
+		_file.frameValue = 1;
+	} else {
+		_file.frameSelection = "{1." + i + "}";
+		_file.frameNum = "1." + i;
+		_file.frameValue = i;
 	}
 }
 
@@ -5556,7 +5752,6 @@ function showFrame(model) {
 }
       		
 ///js// Js/info.js /////
-var Info;
 
 function extractInfoJmol(whatToExtract) {
 	return jmolGetPropertyAsArray(whatToExtract);
@@ -5564,10 +5759,6 @@ function extractInfoJmol(whatToExtract) {
 
 function extractInfoJmolString(whatToExtract) {
 	return jmolGetPropertyAsString(whatToExtract);
-}
-
-function extractAuxiliaryJmol() {
-	Info = extractInfoJmol("auxiliaryInfo.models");
 }
 
 function getElementList(arr) {
@@ -5610,7 +5801,7 @@ function getElementList(arr) {
 
 addCommandBox = function() {
 	// see debug.js
-	return "<div id='debugpanel'>"
+	return "<div id='debugpanel'><hr>"
 		+ createCheck("debugMode", "Show Commands", "debugShowCommands(this.checked)", 0,
 			0, "")
 		+ "&nbsp;" + createButton("removeText", "Clear", 'debugShowCommands(true);debugSay(null)', 0)
@@ -5635,14 +5826,24 @@ function cleanLists() {
 
       		
 ///js// Js/pick.js /////
+_pick = {
+	pickingEnabled 	: false,
+	counterHide 	: 0,
+	selectedAtoms	: [],
+	sortquestion 	: null,
+	selectCheckbox 	: null,
+	menuCallback 	: null,
+	colorWhat		: "color atom" 
+}
+
 function setPicking(form) {
 	if (form.checked) {
 		runJmolScriptWait('showSelections TRUE; select none;halos on; ');
-		colorWhat = "color atom";
+		_pick.colorWhat = "color atom";
 	} else {
 		runJmolScriptWait('select none;');
 	}
-	return colorWhat;
+	return _pick.colorWhat;
 }
 
 function setPickingDelete(form) {
@@ -5701,8 +5902,8 @@ function setPickingHide(form) {
 
 
 function onClickPickPlane(checkbox, callback) {
-	menuCallback = callback;
-	selectCheckbox = checkbox;
+	_pick.menuCallback = callback;
+	_pick.selectCheckbox = checkbox;
 	if (!checkbox || checkbox.checked) {
 		selectPlane();
 	} else {
@@ -5718,7 +5919,7 @@ function selectPlane() {
 		return;
 	if (miller) {
 		runJmolScriptWait('draw delete; draw plane1 HKL {' + miller + '};draw off;');
-		menuCallback && menuCallback();
+		_pick.menuCallback && _pick.menuCallback();
 		return true;			
 	} else {
 		runJmolScriptWait("draw off; showSelections TRUE; select none; halos on;");
@@ -5728,26 +5929,26 @@ function selectPlane() {
 }
 
 function startPicking() {
-	selectedAtoms = [];
-	counterHide = 0;
-	pickingEnabled = true;
+	_pick.selectedAtoms = [];
+	_pick.counterHide = 0;
+	_pick.pickingEnabled = true;
 	runJmolScriptWait("pickedlist = []");
 	setPickingCallbackFunction(pickPlaneCallback);
 }
 
 function cancelPicking() {
 	setPickingCallbackFunction(null);
-	pickingEnabled = false;
+	_pick.pickingEnabled = false;
 	runJmolScriptWait("select none; halos off; draw off; showSelections TRUE; select none;");
-	if (selectCheckbox)
-		uncheckBox(selectCheckbox);
+	if (_pick.selectCheckbox)
+		uncheckBox(_pick.selectCheckbox);
 }
 
 function setDistanceHide(checkbox) {
-	selectCheckbox = checkbox;
+	_pick.selectCheckbox = checkbox;
 	if (checkbox.checked) {
 		setStatus('Select the central atom around which you want to select atoms.');
-		pickingEnabled = true;
+		_pick.pickingEnabled = true;
 		setPickingCallbackFunction(pickDistanceCallback);
 		runJmolScriptWait("showSelections TRUE; select none; halos on;");
 	} else {
@@ -5756,7 +5957,7 @@ function setDistanceHide(checkbox) {
 }
 
 function pickPlaneCallback() {
-	if (pickingEnabled) {
+	if (_pick.pickingEnabled) {
 		runJmolScriptWait("select pickedList");
 		var picklist = Jmol.evaluateVar(jmolApplet0, "pickedlist");
 		if (picklist.length < 3) {
@@ -5765,20 +5966,20 @@ function pickPlaneCallback() {
 		}
 		cancelPicking();
 		runJmolScriptWait('draw delete; draw plane1 PLANE @pickedlist;draw off');
-		menuCallback && menuCallback();
+		_pick.menuCallback && _pick.menuCallback();
 		return true;			
 	}
 }
 
 function pickDistanceCallback() {
-	if (pickingEnabled == true) {
+	if (_pick.pickingEnabled == true) {
 		runJmolScriptWait("select picked");
 		var distance = prompt('Enter the distance (in \305) within you want to select atoms.', '2.0');
 		if (distance != null && distance != "") {
 			runJmolScriptWait('select within(' + distance + ',picked); draw sphere1 width ' + distance + '  {picked} translucent;');
 			_edit.hideMode = " hide selected";
 			_edit.deleteMode = " delete selected";
-			colorWhat = "color atoms";
+			_pick.colorWhat = "color atoms";
 			cancelPicking();
 			return true;
 		}
@@ -5812,6 +6013,31 @@ function pickDistanceCallback() {
  *  02111-1307  USA.
  */
 
+// var itemEnergy
+// var previousPoint = null
+// var itemForce
+// var previousPointForce = null
+
+// var theplot; // global, mostly for testing.
+
+// var haveGraphOptimize;
+
+
+//	var label = "";
+//	var previous = 0;
+	
+//	var data = [];
+//  var A = [];
+//    var nplots = 1;
+//	var modelCount = _file.info.length;
+//var stringa = _file.info[3].name;
+    
+//	var nullValues;
+    
+//    var minY = 999999;
+
+//	var dataSpectrum = [];
+//	var spectrum = [];
 
 
 //var appletPrintable = (navigator.appName != "Netscape"); // Sorry, I don't
@@ -5824,78 +6050,115 @@ function pickDistanceCallback() {
 //	if (!appletPrintable)$("#appletdiv").addClass("noprint"); 
 //}
 
-
-
-function resetGraphs() {
-	haveGraphSpectra = false;
-	haveGraphOptimize = false;
+function arrayMax(a) {
+		if (a.length == 0)
+			return 0;
+		var max = -1e9;
+		var len = a.length;
+		for (var i = a.length; --i >= 0;)
+			if (a[i] > max)
+				max = a[i];
+		return max;
 }
+
+function arrayMin(a) {
+	if (a.length == 0)
+		return 0;
+	var min = 1e9;
+	var len = a.length;
+	for (var i = a.length; --i >= 0;)
+		if (a[i] < min)
+			min = a[i];
+	return min;
+}
+
+
 function plotEnergies(){
-	var modelCount = Info.length;
-	if (haveGraphOptimize || modelCount < 3)
+	var modelCount = _file.info.length;
+	if (_file.haveGraphOptimize || modelCount < 3)
 		return false;
-	haveGraphOptimize = true;
+	_file.haveGraphOptimize = true;
+	_plot = {
+		theplot : null,
+		itemEnergy : 0,
+		itemForce : 0,
+		previousPoint : null,
+		previousPointForce : null
+	};
+	var last = modelCount - 1;
+	var previous = null;
+	var energy = 0;
+	var label = "";
 	var data = [];
 	var A = [];
 	var nplots = 1;
-	var stringa = Info[3].name;
+	var stringa = _file.info[3].name;
 	var f = null;
 	var pattern = null;
-	if(flagCrystal){
+
+	switch (_file.plotEnergyType) {
+	case "crystal":
 		if(stringa.search(/Energy/i) < 0)
 			return false;
 		f = substringEnergyToFloat;
-	} else if (flagDmol){
+		break;
+	case "dmol":
 		if(stringa.search(/E/i) < 0) 
 			return false;
 		f = substringEnergyToFloat;
-	} else if (flagOutcar){
+		break;
+	case "outcar":
 		pattern = new RegExp("G =", "i");
 		f = substringEnergyVaspToFloat;
-	}else if (flagQuantumEspresso) { 
+		break;
+	case "qespresso":
 		pattern = new RegExp("E =", "i");
 		f = substringEnergyQuantumToFloat;
-	} else if (flagGulp) { 
+		break;
+	case "gulp":
 		pattern = new RegExp("E =", "i");
 		f = substringEnergyGulpToFloat;
-	} else if (flagGaussian){
+		break;
+	case "gaussian":
 		// special case
-	} else {
+		break;
+	default:
 		f = substringEnergyVaspToFloat;
+		break;
 	}
 	
 	if (f) {
 		// not Gaussian
 		for (var i = 0; i < last; i++) {
-			var name = Info[i].name;
+			var name = _file.info[i].name;
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = 0+ Info[i].modelNumber;
+			var modelnumber = 0+ _file.info[i].modelNumber;
 			if(i > 0)
 				previous = i - 1;
 			var e = f(name);
-//			if(i == 0 || Info[i - 1].name == null) {
-				energy = Math.abs(e - f(Info[last].name));
-//			} else if (previous > 0 && e != f(Info[i - 1].name)) {
-//				energy = Math.abs(e - f(Info[i - 1].name));
+//			if(i == 0 || _file.info[i - 1].name == null) {
+				energy = Math.abs(e - f(_file.info[last].name));
+//			} else if (previous > 0 && e != f(_file.info[i - 1].name)) {
+//				energy = Math.abs(e - f(_file.info[i - 1].name));
 //			}
 			label = 'Model = ' + modelnumber + ', &#916 E = ' + energy + ' kJmol^-1';
 			A.push([i+1,energy,modelnumber,label]);
 		}
 	} else {
 		// Gaussian
-		last = _fileData.energy.length;
+		last = _file.energy.length;
 		for (var i = 1; i < last; i++) {
-			var name = _fileData.energy[i];
+			var name = _file.energy[i];
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = _fileData.energy.length - 1;		
-			if(i > 0 && i < Info.length)
+			var modelnumber = _file.energy.length - 1;		
+			if(i > 0 && i < _file.info.length)
 				var previous = i - 1;
 			var e = fromHartreetokJ(name);
 			var e1;
 //			if(i == 0 || (e1 = energyGauss[i - 1]) == null) {
-				energy = Math.abs(e - fromHartreetokJ(_fileData.energy[last]));
+				energy = Math.abs(e - fromHartreetokJ(_file.energy[last]));
 //			} else if (previous > 0) {
 //				if (e != e1)
 //					energy = Math.abs(e - e1);
@@ -5913,27 +6176,29 @@ function plotEnergies(){
 		selection: { mode: (nplots == 1 ? "x" : "xy"), hoverMode: (nplots == 1 ? "x" : "xy") },
 		grid: { hoverable: true, clickable: true, hoverDelay: 10, hoverDelayDefault: 10 }
 	}
-	theplot = $.plot($('#plotarea'), data, options);
-	previousPoint = null
+	_plot.energyPlot = $.plot($('#plotarea'), data, options);
+	_plot.previousPoint = null;
 	$("#plotarea").unbind("plothover plotclick", null);
-	$("#plotarea").bind("plothover", plotHoverCallback);
 	$("#plotarea").bind("plotclick", plotClickCallback);
-	itemEnergy = {datapoint:A[0]}
-	setTimeout('plotClickCallback(null,null,itemEnergy)',100);
+	_plot.itemEnergy = {datapoint:A[0]}
+	setTimeout(function(){plotClickCallback(null,null,_plot.itemEnergy)},100);
 
 	//function plotGradient(){
 
 
-	if(!flagCrystal)
+	if(!_file.plotEnergyForces)
 		return;
+	var data = [];
+	var A = [];
+		
 	var maxGra;
 	if(stringa.search(/Energy/i) != -1){
 		last = modelCount - 1;
 		for (var i = 0; i < last; i++) {
-			var name = Info[i].name;
+			var name = _file.info[i].name;
 			if (name == null)
 				continue;
-			var modelnumber = 0 + Info[i].modelNumber;
+			var modelnumber = 0 + _file.info[i].modelNumber;
 			// first gradient will be for model 1
 			// This is if is to check if we are dealing with an optimization
 			// or
@@ -5941,14 +6206,14 @@ function plotEnergies(){
 			// frequency calculation
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-				maxGra = parseFloat(Info[i].modelProperties.maxGradient);
+				maxGra = parseFloat(_file.info[i].modelProperties.maxGradient);
 //			else if(name && previous > 0) {
-//				if (substringEnergyToFloat(Info[i].name) != substringEnergyToFloat(Info[i - 1].name))
-//					maxGra = parseFloat(Info[i].modelProperties.maxGradient);
+//				if (substringEnergyToFloat(_file.info[i].name) != substringEnergyToFloat(_file.info[i - 1].name))
+//					maxGra = parseFloat(_file.info[i].modelProperties.maxGradient);
 //			}
 			if (isNaN(maxGra))
 				continue;
-			var label = 'Model = ' + modelnumber + ', ForceMAX = ' + maxGra;
+			label = 'Model = ' + modelnumber + ', ForceMAX = ' + maxGra;
 			A.push([i+1,maxGra,modelnumber,label]);
 		}
 	}	
@@ -5963,139 +6228,14 @@ function plotEnergies(){
 		// hoverMode, hoverDelay, and hoverDelayDefault are not in the original
 		// Flot package
 	}
-	theplot = $.plot($("#plotarea1"), data, options);
-	previousPointForce = null
+	_plot.forcePlot = $.plot($("#plotarea1"), data, options);
+	_plot.previousPointForce = null
 	$("#plotarea1").unbind("plothover plotclick", null);
 	$("#plotarea1").bind("plothover", plotHoverCallbackforce);
 	$("#plotarea1").bind("plotclick", plotClickCallbackForce);
-	itemForce = { datapoint:A[0] };
-	setTimeout('plotClickCallbackForce(null,null,itemForce)',100);
+	_plot.itemForce = { datapoint:A[0] };
+	setTimeout(function(){plotClickCallbackForce(null,null,_plot.itemForce)},100);
 }
-
-
-//function plotFrequencies(forceNew){
-//	if (haveGraphSpectra && !forceNew)
-//		return;
-//	if (!flagCrystal && !flagOutcar && !flagGaussian)
-//		return;
-//	haveGraphSpectra = true;
-//	var data = [];
-//	var data2 =[];
-//	var A = [];
-//	var B = [];
-//	var nplots = 1;
-//	var modelCount = Info.length;
-//	var irFreq, irInt, freqValue, ramanFreq, ramanInt, isRaman;
-//	var labelIR, labelRaman, modelNumber;
-//	
-//	var stringa = Info[4].name;
-//	
-//	if(flagCrystal){
-//		if(counterFreq != 0){
-//			stringa = Info[counterFreq + 1].name;
-//			if (stringa == null)
-//				stringa = Info[counterFreq + 2].name;
-//		}
-//		if(stringa.search(/Energy/i) < 0){
-//			nullValues = countNullModel(Info);
-//			for (var i = (counterFreq == 0 ? 0 : counterFreq + 1); i < modelCount; i++) {
-//				modelnumber = Info[i].modelNumber - nullValues -1;
-//				if (Info[i].name == null)
-//					continue;
-//				freqValue = substringFreqToFloat(Info[i].modelProperties.Frequency);
-//				intValue = substringIntFreqToFloat(Info[i].modelProperties.IRintensity);
-//				isRaman = (intValue == 0);
-// 				if(!isRaman){
-//					irFreq = freqValue;
-//					irInt = intValue;
-//					isRaman = (Info[i].modelProperties.Ramanactivity == "A");
-//					labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-//					A.push([irFreq,irInt,modelnumber,labelIR]);
-// 				}
-// 				if (isRaman) {
-//					ramanFreq =  freqValue;
-//					ramanInt = [100];
-//					labelRaman = 'Model = Frequency ' +   ramanFreq  + ', Intensity = ' + ramanInt + ' kmMol^-1';
-//					B.push([ramanFreq,ramanInt,modelnumber,labelRaman]);
-//				}
-//			}			
-//		}
-//	} else if (flagOutcar) {
-//		stringa = Info[4].name
-//		if(counterFreq != 0){
-//			stringa = Info[counterFreq + 1].name;
-//			if (stringa == null)
-//				stringa = Info[counterFreq + 2].name;
-//		}
-//		if(stringa.search(/G =/i) == -1){
-//			nullValues = countNullModel(Info);
-//		}
-//		for (var i = 0; i < freqData.length; i++) {
-//			if(Info[i].name != null){
-//				irFreq = substringFreqToFloat(freqData[i]);
-//				irInt = [0.00];
-//				modelnumber = Info[i].modelNumber + counterFreq  - nullValues -1 
-//				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-//				A.push([irFreq,irInt,modelnumber,labelIR]);
-//			}
-//		}
-//	} else if (flagGaussian){
-//		for (var i = 0; i < freqGauss.length; i++) {
-//			if(Info[i].name != null){
-//				irFreq = substringFreqToFloat(freqGauss[i]);
-//				irInt = substringIntGaussToFloat(freqIntensGauss[i]);
-//				modelnumber = counterGauss + i; 
-//				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-//				A.push([irFreq,irInt,modelnumber,labelIR]);
-//			}
-//		}
-//	}
-//
-//	// data.push(A)
-//	// data.push(B)
-//	
-//	for (var i = 0; i < A.length; i++) {
-//		if (A[i][1] > maxY)
-//			maxY = A[i][1];
-//		if (A[i][1] < minY)
-//			minY = A[i][1];
-//	}
-//	for (var i = 0; i < B.length; i++) {
-//		if (B[i][1] > maxY)
-//			maxY = B[i][1];	
-//		if (B[i][1] < minY)
-//			minY = B[i][1];
-//	}
-//	if (minY == maxY)
-//		maxY = (maxY == 0 ? 100 : maxY * 2);
-//	var options = {
-//			lines: { show: false },
-//			points: {show: true, fill: true},
-//			xaxis: { ticks: 8, tickDecimals: 0 },
-//			yaxis: { ticks: 6,tickDecimals: 0, max:maxY },
-//			selection: { mode: (nplots == 1 ? "x" : "xy"), hoverMode: (nplots == 1 ? "x" : "xy") },
-//			grid: { 
-//				hoverable: true, 
-//				clickable: true, 
-//				hoverDelay: 10, 
-//				hoverDelayDefault: 10
-//			}
-//	}
-//
-//	if (flagCrystal) {
-//		theplot = $.plot($("#plotareafreq"), [{label:"IR", data: A}, {label:"Raman", data: B}] , options)
-//	} else {
-//		theplot = $.plot($("#plotareafreq"), [{label:"IR-Raman", data: A}], options)
-//	}
-//
-//	previousPointFreq = null;
-//
-//	$("#plotareafreq").unbind("plothover plotclick", null)
-//	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
-//	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
-//	itemFreq = {datapoint: A[0] || B[0]}
-//	setTimeout('plotClickCallbackFreq(null,null,itemFreq)',100);
-//}
 
 function plotClickCallback(event, pos, itemEnergy) {
 
@@ -6124,8 +6264,8 @@ function plotClickCallbackForce(event, pos, itemForce) {
 function plotHoverCallback(event, pos, itemEnergy) {
 	hideTooltip();
 	if(!itemEnergy)return
-	if (previousPoint != itemEnergy.datapoint) {
-		previousPoint = itemEnergy.datapoint ;
+	if (_plot.previousPoint != itemEnergy.datapoint) {
+		_plot.previousPoint = itemEnergy.datapoint ;
 		var y = roundoff(itemEnergy.datapoint[1],4);
 		var model = itemEnergy.datapoint[2];
 		var label = "&nbsp;&nbsp;Model "+ model + ", &#916 E = " + y +" kJmol^-1";
@@ -6138,8 +6278,8 @@ function plotHoverCallback(event, pos, itemEnergy) {
 function plotHoverCallbackforce(event, pos, itemForce) {
 	hideTooltip();
 	if(!itemForce)return
-	if (previousPointForce != itemForce.datapoint) {
-		previousPointForce = itemForce.datapoint;
+	if (_plot.previousPointForce != itemForce.datapoint) {
+		_plot.previousPointForce = itemForce.datapoint;
 		var y = roundoff(itemForce.datapoint[1],6);
 		var model = itemForce.datapoint[2];
 		var label = "&nbsp;&nbsp;Model "+ model + ", MAX Force = " + y;
@@ -6233,103 +6373,24 @@ function showTooltipFreq(x, y, contents, pos) {
 //	window.print()
 //}
 
-function countNullModel(arrayX) {
-	var valueNullelement = 0;
-	for (var i = 0; i < arrayX.length; i++) {
-		if (arrayX[i].name == null || arrayX[i].name == "")
-			valueNullelement = valueNullelement + 1;
-	}
-	return valueNullelement;
-}
+//function countNullModel(arrayX) {
+//	var valueNullelement = 0;
+//	for (var i = 0; i < arrayX.length; i++) {
+//		if (arrayX[i].name == null || arrayX[i].name == "")
+//			valueNullelement = valueNullelement + 1;
+//	}
+//	return valueNullelement;
+//}
 
 //for spectrum.html or new dynamic cool spectrum simulation
 
-var plotOptionsHTML = {
-		   series: { lines: { show: true, fill: false } },
-		   xaxis: { ticks: 10, tickDecimals: 0 },
-		   yaxis: { ticks: 0, tickDecimals: 0 },
-		   grid: { hoverable: true, autoHighlight: false},
-		   //crosshair: { mode: "x" }
-		};
-
-function plotSpectrum(div, openerOrSelf) {
-	var isNewWindow = !!openerOrSelf;
-	var intArray = openerOrSelf.getPlotIntArray();
-	openerOrSelf || (openerOrSelf = self);
-	var options = (isNewWindow ? openerOrSelf.plotOptionsHTML : opener.plotOptions);
-	var min = parseInt(openerOrSelf.getValue("nMin")); 
-	var max = parseInt(openerOrSelf.getValue("nMax"));
-	if (isNewWindow) {
-		setValue("minValue", min);
-		setValue("maxValue", max); 
-	}
-	
-//	var options ={
-//	   series:{
-//		      lines: { show: true, fill: false }
-//	   },
-//	   xaxis: { ticks: 10, tickDecimals: 0 },
-//	   yaxis: { ticks: 0,tickDecimals: 0 },
-//	   grid: { hoverable: true, autoHighlight: false},
-//	   //crosshair: { mode: "x" }
-//	};
-
-	var legends = $("#" + div + " .legendLabel");
-	 legends.each(function () {
-	    // fix the widths so they don't jump around
-	     $(this).css('width', $(this).width());});
-	
-	for(var i = min; i < max; i++){
-	 spectrum.push([i,intArray[i]]);
-	}
-	//dataSpectrum.push(spectrum);
-	var plot = $.plot($('#' + div), [{label:(isNewPage ? "Spectrum" : null), data:  spectrum }], options);
-
-	if (isNewPage) {
-		var updateLegendTimeout = null;
-		var latestPosition = null; 
-		 $("#plotSpectrum").bind("plothover",  function (event, pos, item) {
-		     latestPosition = pos;
-		     if (!updateLegendTimeout)
-		         updateLegendTimeout = setTimeout(function() { legends.text(latestPosition.x.toFixed(2)); }, 50);
-		 });
-	}
-}    
-
-function replotSpectrumHTML(){
-	var Min = parseInt(getValue("minValue"))
-	var Max = parseInt(getValue("maxValue"))
-	
-	var options ={
-	   series:{
-	   lines: { show: true, fill: false }
-	   },
-	   xaxis: { min: Min, max : Max, ticks: 10, tickDecimals: 0 },
-	   yaxis: { ticks: 0,tickDecimals: 0 },
-	   grid: { hoverable: true, autoHighlight: false},
-	   //crosshair: { mode: "x" }
-	};
-	var dataSpectrum = [];
-	var spectrum = [];
-	var intArray= opener._specData.intTot;
-	for(var i = Min; i < Max ; i++){
-	  spectrum.push([i,intArray[i]]);
-	}
-	plot = $.plot($('#plotSpectrum'),[{label:"Spectrum", data: spectrum }],  options);
-}
-
-function writeSpectumHTML(){
-  Min = parseInt(getValue("minValue"));
-	 Max = parseInt(getValue("maxValue"));
-	 var intArray = opener.intTot;
-	 var script = 'var testo = "#########################################################\n\
-	#J-ICE  spectrum #\n\
-	#########################################################\n'
-				   for (var i = Min; i < Max ; i++)
-	               script += i + " " + intArray[i] + "\n"
-	               script += '"; write VAR testo "?.dat"'
-	runJmolScriptWait(script);
-}
+// var plotOptionsHTML = {
+//		   series: { lines: { show: true, fill: false } },
+//		   xaxis: { ticks: 10, tickDecimals: 0 },
+//		   yaxis: { ticks: 0, tickDecimals: 0 },
+//		   grid: { hoverable: true, autoHighlight: false},
+//		   //crosshair: { mode: "x" }
+//		};
 
       		
 ///js// Js/sliders.js /////
@@ -6356,310 +6417,147 @@ function writeSpectumHTML(){
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *  02111-1307  USA.
  */
-
+_slider = {
+	defaultFront	: 20,
+	defaultBack 	: 100,
+	bond 			: null,
+	radii 			: null,
+	radiiConnect	: null,
+	trans			: null,
+	pack			: null,
+	cameraDepth		: null,
+	specularPercent : null,
+	ambientPercent	: null,
+	diffusePercent	: null,
+	slab 			: null,
+	depth			: null
+}	
 function applyBond(angstroms) {
-	if (firstTimeBond) {
+	if (_show.firstTimeBond) {
 		runJmolScriptWait("wireframe .2;");
 	} else {
 		runJmolScriptWait("wireframe " + angstroms + ";");
-		getbyID('bondMsg').innerHTML = angstroms.toPrecision(1) + " &#197";
+		getbyID('slider.bondMsg').innerHTML = angstroms.toPrecision(1) + " &#197";
 		runJmolScriptWait("save BONDS bondEdit");
 	}
 }
 
-var defaultFront = 20, defaultBack = 100;
 
 loadSliders = function() {
-	bondSlider = new Slider(getbyID("bondSlider-div"), getbyID("bondSlider-input"), "horizontal");
-	bondSlider.setMaximum(100);
-	bondSlider.setMinimum(0);
-	bondSlider.setUnitIncrement(5);
+	_slider.bond = new Slider(getbyID("slider.bond-div"), getbyID("slider.bond-input"), "horizontal");
+	_slider.bond.setMaximum(100);
+	_slider.bond.setMinimum(0);
+	_slider.bond.setUnitIncrement(5);
 	//amount to increment the value when using the arrow keys
-	bondSlider.setValue(15);
-	bondSlider.onchange = function() {
-		applyBond(bondSlider.getValue() / 100)
+	_slider.bond.setValue(15);
+	_slider.bond.onchange = function() {
+		applyBond(_slider.bond.getValue() / 100)
 	}
 	
-	radiiSlider = new Slider(getbyID("radiiSlider-div"), getbyID("radiiSlider-input"), "horizontal");
-	radiiSlider.setMaximum(100);
-	radiiSlider.setMinimum(0);
-	radiiSlider.setUnitIncrement(5);
+	_slider.radii = new Slider(getbyID("slider.radii-div"), getbyID("slider.radii-input"), "horizontal");
+	_slider.radii.setMaximum(100);
+	_slider.radii.setMinimum(0);
+	_slider.radii.setUnitIncrement(5);
 	//amount to increment the value when using the arrow keys
-	radiiSlider.setValue(26);
-	radiiSlider.onchange = function() {
-		applyRadii(radiiSlider.getValue())
+	_slider.radii.setValue(26);
+	_slider.radii.onchange = function() {
+		applyRadii(_slider.radii.getValue())
 	}
 	
-	radiiConnectSlider = new Slider(getbyID("radiiConnectSlider-div"), getbyID("radiiConnectSlider-input"), "horizontal");
-	radiiConnectSlider.setMaximum(100);
+	_slider.radiiConnect = new Slider(getbyID("slider.radiiConnect-div"), getbyID("slider.radiiConnect-input"), "horizontal");
+	_slider.radiiConnect.setMaximum(100);
 	//does not work with values < 1
-	radiiConnectSlider.setMinimum(0);
-	radiiConnectSlider.setUnitIncrement(1);
+	_slider.radiiConnect.setMinimum(0);
+	_slider.radiiConnect.setUnitIncrement(1);
 	//amount to increment the value when using the arrow keys
-	radiiConnectSlider.setValue(80);
-	radiiConnectSlider.onchange = function() {
-		applyConnect(radiiConnectSlider.getValue() / 20)
+	_slider.radiiConnect.setValue(80);
+	_slider.radiiConnect.onchange = function() {
+		applyConnect(_slider.radiiConnect.getValue() / 20)
 	}
 	
-	transSlider = new Slider(getbyID("transSlider-div"), getbyID("transSlider-input"), "horizontal");
-	transSlider.setMaximum(100);
-	transSlider.setMinimum(0);
-	transSlider.setUnitIncrement(4);
+	_slider.trans = new Slider(getbyID("slider.trans-div"), getbyID("slider.trans-input"), "horizontal");
+	_slider.trans.setMaximum(100);
+	_slider.trans.setMinimum(0);
+	_slider.trans.setUnitIncrement(4);
 	//amount to increment the value when using the arrow keys
-	transSlider.setValue(100);
-	transSlider.onchange = function() {
-		applyTrans(transSlider.getValue())
+	_slider.trans.setValue(100);
+	_slider.trans.onchange = function() {
+		applyTrans(_slider.trans.getValue())
 	}
 	
-	packSlider = new Slider(getbyID("packSlider-div"), getbyID("packSlider-input"), "horizontal");
-	packSlider.setMaximum(100);
-	packSlider.setMinimum(0);
-	packSlider.setUnitIncrement(0.5);
+	_slider.pack = new Slider(getbyID("slider.pack-div"), getbyID("slider.pack-input"), "horizontal");
+	_slider.pack.setMaximum(100);
+	_slider.pack.setMinimum(0);
+	_slider.pack.setUnitIncrement(0.5);
 	//amount to increment the value when using the arrow keys
-	packSlider.setValue(1);
-	packSlider.onchange = function() {
-		applyPack(packSlider.getValue() / 20)
+	_slider.pack.setValue(1);
+	_slider.pack.onchange = function() {
+		applyPack(_slider.pack.getValue() / 20)
 	}
 	
 	
-	cameraDepthSlider = new Slider(getbyID("cameraDepthSlider-div"), getbyID("cameraDepthSlider-input"), "horizontal");
-	cameraDepthSlider.setMaximum(100);
-	cameraDepthSlider.setMinimum(1);
-	cameraDepthSlider.setUnitIncrement(2);
+	_slider.cameraDepth = new Slider(getbyID("slider.cameraDepth-div"), getbyID("slider.cameraDepth-input"), "horizontal");
+	_slider.cameraDepth.setMaximum(100);
+	_slider.cameraDepth.setMinimum(1);
+	_slider.cameraDepth.setUnitIncrement(2);
 	//amount to increment the value when using the arrow keys
-	cameraDepthSlider.setValue(5);
-	cameraDepthSlider.onchange = function() {
-		applyCameraDepth(cameraDepthSlider.getValue()/25)
+	_slider.cameraDepth.setValue(5);
+	_slider.cameraDepth.onchange = function() {
+		applyCameraDepth(_slider.cameraDepth.getValue()/25)
 	}
 	
-	SpecularPercentSlider = new Slider(getbyID("SpecularPercentSlider-div"), getbyID("SpecularPercentSlider-input"), "horizontal");
-	SpecularPercentSlider.setMaximum(100);
-	SpecularPercentSlider.setMinimum(0);
-	SpecularPercentSlider.setUnitIncrement(2);
+	_slider.specularPercent = new Slider(getbyID("slider.specularPercent-div"), getbyID("slider.specularPercent-input"), "horizontal");
+	_slider.specularPercent.setMaximum(100);
+	_slider.specularPercent.setMinimum(0);
+	_slider.specularPercent.setUnitIncrement(2);
 	//amount to increment the value when using the arrow keys
-	SpecularPercentSlider.setValue(5);
-	SpecularPercentSlider.onchange = function() {
-		applySpecularPercent(SpecularPercentSlider.getValue())
+	_slider.specularPercent.setValue(5);
+	_slider.specularPercent.onchange = function() {
+		applySpecularPercent(_slider.specularPercent.getValue())
 	}
 	
-	AmbientPercentSlider = new Slider(getbyID("AmbientPercentSlider-div"), getbyID("AmbientPercentSlider-input"), "horizontal");
-	AmbientPercentSlider.setMaximum(100);
-	AmbientPercentSlider.setMinimum(0);
-	AmbientPercentSlider.setUnitIncrement(2);
+	_slider.ambientPercent = new Slider(getbyID("slider.ambientPercent-div"), getbyID("slider.ambientPercent-input"), "horizontal");
+	_slider.ambientPercent.setMaximum(100);
+	_slider.ambientPercent.setMinimum(0);
+	_slider.ambientPercent.setUnitIncrement(2);
 	//amount to increment the value when using the arrow keys
-	AmbientPercentSlider.setValue(5);
-	AmbientPercentSlider.onchange = function() {
-		applyAmbientPercent(AmbientPercentSlider.getValue())
+	_slider.ambientPercent.setValue(5);
+	_slider.ambientPercent.onchange = function() {
+		applyAmbientPercent(_slider.ambientPercent.getValue())
 	}
 	
-	DiffusePercentSlider = new Slider(getbyID("DiffusePercentSlider-div"), getbyID("DiffusePercentSlider-input"), "horizontal");
-	DiffusePercentSlider.setMaximum(100);
-	DiffusePercentSlider.setMinimum(0);
-	DiffusePercentSlider.setUnitIncrement(2);
+	_slider.diffusePercent = new Slider(getbyID("slider.diffusePercent-div"), getbyID("slider.diffusePercent-input"), "horizontal");
+	_slider.diffusePercent.setMaximum(100);
+	_slider.diffusePercent.setMinimum(0);
+	_slider.diffusePercent.setUnitIncrement(2);
 	//amount to increment the value when using the arrow keys
-	DiffusePercentSlider.setValue(5);
-	DiffusePercentSlider.onchange = function() {
-		applyDiffusePercent(DiffusePercentSlider.getValue())
+	_slider.diffusePercent.setValue(5);
+	_slider.diffusePercent.onchange = function() {
+		applyDiffusePercent(_slider.diffusePercent.getValue())
 	}
 	
-	slabSlider = new Slider(getbyID("slabSlider-div"), getbyID("slabSlider-input"), "horizontal");
-	slabSlider.setMaximum(100)
-	slabSlider.setMinimum(0)
-	slabSlider.setUnitIncrement(2) 
+	_slider.slab = new Slider(getbyID("slider.slab-div"), getbyID("slider.slab-input"), "horizontal");
+	_slider.slab.setMaximum(100)
+	_slider.slab.setMinimum(0)
+	_slider.slab.setUnitIncrement(2) 
 	// amount to increment the value when using the
 	// arrow keys
-	slabSlider.setValue(defaultFront)
-	slabSlider.onchange = function() {
-		applySlab(slabSlider.getValue())
+	_slider.slab.setValue(_slider.defaultFront)
+	_slider.slab.onchange = function() {
+		applySlab(_slider.slab.getValue())
 	}
 	
-	depthSlider = new Slider(getbyID("depthSlider-div"), getbyID("depthSlider-input"), "horizontal");
-	depthSlider.setMaximum(100);
-	depthSlider.setMinimum(0);
-	depthSlider.setUnitIncrement(2); // amount to increment the value when using
+	_slider.depth = new Slider(getbyID("slider.depth-div"), getbyID("slider.depth-input"), "horizontal");
+	_slider.depth.setMaximum(100);
+	_slider.depth.setMinimum(0);
+	_slider.depth.setUnitIncrement(2); // amount to increment the value when using
 	// the arrow keys
-	depthSlider.setValue(defaultBack);
-	depthSlider.onchange = function() { // onchange MUST BE all lowercase
-		applyDepth(depthSlider.getValue())
+	_slider.depth.setValue(_slider.defaultBack);
+	_slider.depth.onchange = function() { // onchange MUST BE all lowercase
+		applyDepth(_slider.depth.getValue())
 	}
 }
 
-      		
-///js// Js/symmetry.js /////
-//prevframeSelection needs because of the conventional
-
-function figureOutSpaceGroup() {
-	saveStateAndOrientation_a();
-	prevframeSelection = frameSelection;
-	if (frameValue == null || frameValue == "" || flagCif)
-		frameValue = 1; // BH 2018 fix: was "framValue" in J-ICE/Java crystalFunction.js
-	prevFrame = frameValue;
-	var magnetic = confirm('It\'s the primitive cell ?')
-	// crystalPrev = confirm('Does the structure come from a previous CRYSTAL
-	// calculation?')
-	reload(null, 
-			flagCrystal ? "conv" : null, 
-			magnetic ? "delete not cell=555;" : null
-	);
-	getSpaceGroup();
-}
-
-var interNumber = "";
-getSpaceGroup = function() {
-	var s = ""
-	var info = jmolEvaluate('show("spacegroup")')
-	if (info.indexOf("x,") < 0) {
-		s = "no space group"
-	} else {
-		var S = info.split("\n")
-		for (var i = 0; i < S.length; i++) {
-			var line = S[i].split(":")
-			if (line[0].indexOf("international table number") == 0)
-				s = parseInt(S[i]
-						.replace(/international table number:/, ""));
-		}
-	}
-	interNumber = parseInt(s);
-	getUnitcell(prevFrame);
-	findCellParameters()
-}
-
-
-var stringCellParam;
-var cellDimString = null;
-var ibravQ = "";
-function findCellParameters() {
-	// /from crystal manual http://www.crystal.unito.it/Manuals/crystal09.pdf
-	switch (true) {
-	case ((interNumber <= 2)): // Triclinic lattices
-		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.b) + ", "
-				+ roundNumber(_cell.c) + ", " + roundNumber(alpha) + ", "
-				+ roundNumber(beta) + ", " + roundNumber(gamma);
-		cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_cell.a)
-				+ " \n celdm(2) =  " + roundNumber(_cell.b / _cell.a)
-				+ " \n celdm(3) =  " + roundNumber(_cell.c / _cell.a)
-				+ " \n celdm(4) =  " + cosRadiant(alpha) + " \n celdm(5) =  "
-				+ (cosRadiant(beta)) + " \n celdm(6) =  "
-				+ (cosRadiant(gamma)) + " \n\n";
-		ibravQ = "14";
-		break;
-
-	case ((interNumber > 2) && (interNumber <= 15)): // Monoclinic lattices
-		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.b) + ", "
-				+ roundNumber(_cell.c) + ", " + roundNumber(alpha);
-		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) =  " + fromAngstromtoBohr(_cell.a)
-					+ " \n celdm(2) =  " + roundNumber(_cell.b / _cell.a)
-					+ " \n celdm(3) =  " + roundNumber(_cell.c / _cell.a)
-					+ " \n celdm(4) =  " + (cosRadiant(alpha))
-					+ " \n\n";
-			ibravQ = "12"; // Monoclinic base centered
-
-			var question = confirm("Is this a Monoclinic base centered lattice?")
-			if (question)
-				ibravQ = "13";
-		}
-		break;
-
-	case ((interNumber > 15) && (interNumber <= 74)): // Orthorhombic lattices
-		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.b) + ", "
-				+ roundNumber(_cell.c);
-		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
-					+ " \n celdm(2) =  " + roundNumber(_cell.b / _cell.a)
-					+ " \n celdm(3) =  " + roundNumber(_cell.c / _cell.a) + " \n\n";
-			ibravQ = "8";
-
-			var question = confirm("Is this a Orthorhombic base-centered lattice?")
-			if (question) {
-				ibravQ = "9";
-			} else {
-				var questionfcc = confirm("Is this a Orthorhombic face-centered (fcc) lattice?");
-				if (questionfcc) {
-					ibravQ = "10";
-				} else {
-					ibravQ = "11";// Orthorhombic body-centered
-				}
-			}
-
-		}
-		break;
-
-	case ((interNumber > 74) && (interNumber <= 142)): // Tetragonal lattices
-
-		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.c);
-		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
-					+ " \n celdm(3) =  " + roundNumber(_cell.c / _cell.a) + " \n\n";
-			ibravQ = "6";
-			var question = confirm("Is this a Tetragonal I body centered (bct) lattice?");
-			if (question)
-				ibravQ = "7";
-		}
-		break;
-
-	case ((interNumber > 142) && (interNumber <= 167)): // Trigonal lattices
-		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(alpha) + ", "
-				+ roundNumber(beta) + ", " + roundNumber(gamma);
-		cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
-				+ " \n celdm(4) =  " + (cosRadiant(alpha))
-				+ " \n celdm(5) = " + (cosRadiant(beta))
-				+ " \n celdm(6) =  " + (cosRadiant(gamma));
-		ibravQ = "5";
-		var question = confirm("Is a romboheadral lattice?")
-		if (question) {
-			stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.c);
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
-					+ " \n celdm(4) =  " + (cosRadiant(alpha))
-					+ " \n celdm(5) = " + (cosRadiant(beta))
-					+ " \n celdm(6) =  " + (cosRadiant(gamma))
-					+ " \n\n";
-			ibravQ = "4";
-		}
-		break;
-	case ((interNumber > 167) && (interNumber <= 194)): // Hexagonal lattices
-		stringCellParam = roundNumber(_cell.a) + ", " + roundNumber(_cell.c);
-		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a)
-					+ " \n celdm(3) = " + roundNumber(_cell.c / _cell.a) + " \n\n";
-			ibravQ = "4";
-		}
-		break;
-	case ((interNumber > 194) && (interNumber <= 230)): // Cubic lattices
-		stringCellParam = roundNumber(_cell.a);
-		if (!flagCrystal && quantumEspresso) {
-			cellDimString = " celdm(1) = " + fromAngstromtoBohr(_cell.a);
-			// alert("I am here");
-			ibravQ = "1";
-			var question = confirm("Is a face centered cubic lattice?")
-			if (question) {
-				var questionBase = confirm("Is a body centered cubic lattice?")
-				if (questionBase) {
-					ibravQ = "3";
-				} else {
-					ibravQ = "2";
-				}
-			}
-	
-		}
-		break;
-	default:
-		errorMsg("SpaceGroup not found in range.");
-		return false;
-		break;
-	}// end switch
-	
-//	stringCellparamgulp = roundNumber(_cell.a) + ' ' + roundNumber(_cell.b) + ' '
-//			+ roundNumber(_cell.c) + ' ' + roundNumber(alpha) + ' '
-//			+ roundNumber(beta) + ' ' + roundNumber(gamma);
-	//	alert(stringCellparamgulp)
-	if (flagCrystal)
-		savCRYSTALSpace();
-	if (!flagGulp) {
-		reload("primitive");
-		restoreStateAndOrientation_a();
-	}
-}
       		
 ///js// Js/uff.js /////
 /*  J-ICE library 
@@ -6687,6 +6585,10 @@ function findCellParameters() {
  */
 
 //////////Following functions control the structural optimization of a structure using the embedded uff of Jmol
+_uff = {
+	counterUff : 0
+}
+
 function minimizeStructure() {
 	var optCriterion = parseFloat(getValue("optciteria"));
 	var optSteps = parseInt(getValue("maxsteps"));
@@ -6700,12 +6602,12 @@ function minimizeStructure() {
 		warningMsg("Please set the Max No. of steps.");
 		return false;
 	} else if (!form.checked) {
-		counterUff = 0;
+		_uff.counterUff = 0;
 		setMinimizationCallbackFunction(scriptUffCallback);
 		runJmolScript("set debugscript on ;set logLevel 5;set minimizationCriterion " + optCriterion + "; minimize STEPS "
 				+ optSteps + "; set minimizationRefresh TRUE;  minimize;");
 	} else if (form.checked) {
-		counterUff = 0;
+		_uff.counterUff = 0;
 		setMinimizationCallbackFunction(scriptUffCallback);
 		runJmolScript("set debugscript on ;set logLevel 5;set minimizationCriterion " + optCriterion + "; minimize STEPS "
 				+ optSteps
@@ -6734,21 +6636,23 @@ function resetOptimize() {
 }
 
 function scriptUffCallback(b, step, d, e, f, g) {
-	var text = ("s = " + counterUff + " E = " + parseFloat(d).toPrecision(10)
+	var text = ("s = " + _uff.counterUff + " E = " + parseFloat(d).toPrecision(10)
 			+ " kJ/mol, dE = " + parseFloat(e).toPrecision(6) + " kJ/mol")
 	getbyID("textUff").value = text
-	counterUff++;
+	_uff.counterUff++;
 }
       		
 ///js// Js/windows.js /////
 function newAppletWindow() {
+	var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50"
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);
-	var newwin = open("OutputResized.html", "jmol_" + sm, windowoptions);
+	var newwin = open("OutputResized.html", "jmol_" + sm, _window.windowoptions);
 }
 
-var windowfreq = "menubar=no,resizable=no,scrollbars=yes,resizable=yes;alwaysRaised,width=1024,height=768";
+
 function newAppletWindowFreq() {
+	var windowfreq = "menubar=no,resizable=no,scrollbars=yes,resizable=yes;alwaysRaised,width=1024,height=768";
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);
 	var newwin = open("exportfreq.html", sm, windowfreq);
@@ -6761,8 +6665,9 @@ function onClickAcknow() {
 	var newwin = open("acn.html", sm, woption);
 }
 
-var windowfeed = "menubar=no,resizable=no,scrollbars=yes,resizable=yes;alwaysRaised,width=1024,height=768";
+
 function newAppletWindowFeed() {
+	var windowfeed = "menubar=no,resizable=no,scrollbars=yes,resizable=yes;alwaysRaised,width=1024,height=768";
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);
 	var newwin = open("http://j-ice.sourceforge.net/?page_id=9", sm, windowfeed);
@@ -6772,125 +6677,36 @@ function newAppletWindowFeed() {
 // global variables used in JS-ICE
 // Geoff van Dover 2018.10.26
 
+version = "3.0.0"; // BH 2018
 
-// from _m_spectra.js
 
-var _specData;
+// _m_file.js
 
-// from _m_file.js
+_file = {};
 
-var _fileData = {};
-var _fileIsReload = false;
+_fileIsReload = false;
 
-// from symmetry.js
+// pick.js
 
-var prevframeSelection = null;
-var prevFrame = null;
+_pick = {};
 
-// from _m_build.js
-var _build.counterClicZ = 0;
+// plotgraph.js
 
-var distanceZ, angleZ, torsionalZ
-var arrayAtomZ = new Array(3);
+_plot = {};
 
-var makeCrystalSpaceGroup = null;
+// for citations:
 
-// from _m_cell.js
-
-var _cell.a, _cell.b, _cell.c, alpha, beta, gamma, typeSystem; 
-
-// from _m_edit.js
-
-var _edit.deleteMode = "";
-var _edit.hideMode = "";
-var _edit.displayMode = "";
-var _edit.firstTimeEdit = true;
-
-var _edit.radBondRange;
-
-// from _m_measure.js
-
-var kindCoord;
-var measureCoord = false;
-var unitMeasure = "";
-var mesCount = 0;
-
-// from _m_orient.js
-
-var motion = "";
-
-// from _m_show.js
-
-var firstTimeBond = true;
-var colorWhat = "";
-
-// from > callback.js
-
-var fPick = null;
-
-// from constant.js
-
-var version = "3.0.0"; // BH 2018
-
-// from conversion.js
-
-var finalGeomUnit = ""
-var unitGeomEnergy = "";
-
-var radiant = Math.PI / 180;
-
-// from frame.js
-
-var frameSelection = null;
-var frameNum = null;
-var frameValue = null;
-
-//from pick.js
-
-var pickingEnabled = false;
-var counterHide = 0;
-var selectedAtoms = [];
-var sortquestion = null;
-var selectCheckbox = null;
-var menuCallback = null;
-
-// from plotgraph.js
-
-var itemEnergy
-var previousPoint = null
-var itemForce
-var previousPointForce = null
-var itemFreq
-
-var theplot; // global, mostly for testing.
-
-var haveGraphSpectra, haveGraphOptimize;
-
-var energy = 0;
-	var label = "";
-	var previous = 0;
-	var last = modelCount - 1;
-	
-	var data = [];
-    var A = [];
-    var nplots = 1;
-    var modelCount = Info.length;
-    var stringa = Info[3].name;
-    
-    var nullValues;
-    
-    var minY = 999999;
-
-    var dataSpectrum = [];
-	var spectrum = [];
-	
-// from uff.js
-
-var counterUff = 0
-
-// from windows.js
-
-var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50";
+_global = {
+	citations : [
+	   { title:				
+		'J-ICE: a new Jmol interface for handling and visualizing crystallographic and electronic properties' 
+		, authors: ['P. Canepa', 'R.M. Hanson', 'P. Ugliengo', '& M. Alfredsson']
+		, journal: 'J.Appl. Cryst. 44, 225 (2011)' 
+		, link: 'http://dx.doi.org/10.1107/S0021889810049411'
+	   }
+	   
+	 ]  
+};
       		
 ///js// Js/adapters/castep.js /////
 /*  J-ICE library 
@@ -6938,84 +6754,25 @@ var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,h
  %ENDBLOCK SPECIES_POT
  */
 
-var positionCastep = null;
-
-function exportCASTEP() {
-	warningMsg("Make sure you have selected the model you would like to export.");
-	setUnitCell();
-	saveStateAndOrientation_a();
-	var lattice = fromfractionaltoCartesian();
-	setVacuum();
-	switch (typeSystem) {
-	case "slab":
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
-				+ roundNumber(_cell.c) + ')');
-		break;
-	case "polymer":
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
-				+ roundNumber(_cell.c) + ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/'
-				+ roundNumber(_cell.b) + ')');
-		break;
-	case "molecule":
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/'
-				+ roundNumber(_cell.c) + ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/'
-				+ roundNumber(_cell.b) + ')');
-		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/'
-				+ roundNumber(_cell.a) + ')');
-		break;
-	}
-
-	prepareLatticeblockcastep(lattice);
-	prepareCoordinateblockCastep();
-	restoreStateAndOrientation_a();
-
-	var finalInputCastep = 'var final = [latticeCastep, positionCastep].replace("\n\n","\n");'
-			+ 'WRITE VAR final "?.cell"';
-	runJmolScript(finalInputCastep);
-}
-
-function prepareLatticeblockcastep(lattice) {
-	var cellCastep = "var latticeHeader = '\%block LATTICE_CART';"
-			+ "var latticeOne = [" + lattice[0] +"].join(' ');"
-			+ "var latticeTwo = [" + lattice[1] + "].join(' ');"
-			+ "var latticeThree = [" + lattice[2] + "].join(' ');"
-			+ "var latticeClose = '\%endblock LATTICE_CART';"
-			+ "latticeCastep = [latticeHeader, latticeOne, latticeTwo,latticeThree, latticeClose];"
-	runJmolScriptWait(cellCastep);
-}
-
-// /Frac coordinates
-function prepareCoordinateblockCastep() {
-	positionCastep = "var positionHeader = '\%block POSITIONS_FRAC';"
-			+ 'var xyzCoord = ' + frameSelection + '.label("%e %16.9[fxyz]");'
-			+ 'xyzCoord = xyzCoord.replace("\n\n","\n");'
-			+ "var positionClose = '\%endblock POSITIONS_FRAC';"
-			+ "positionCastep = [positionHeader, xyzCoord, positionClose];"
-			+ 'positionCastep = positionCastep.replace("\n\n","\n");'
-	runJmolScriptWait(positionCastep);
-}
-
 // /// FUNCTION LOAD
 
 loadDone_castep = function() {
-	_fileData.energyUnits = ENERGY_EV;
-	_fileData.counterFreq = 0;
-	_fileData.counterMD = 0;
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
+	_file.energyUnits = ENERGY_EV;
+	_file.counterFreq = 0;
+	_file.counterMD = 0;
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var line = _file.info[i].name;
 			if (line.search(/Energy =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
+				_file.geomData[i] = line;
+				_file.counterFreq++;
 			} else if (line.search(/cm-1/i) != -1) {
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(line);
-				_fileData.vibLine.push(i + " A " + data + " cm^-1");
-				_fileData.counterMD++;
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(line);
+				_file.vibLine.push(i + " A " + data + " cm^-1");
+				_file.counterMD++;
 			}
 		}
 	}
@@ -7024,6 +6781,50 @@ loadDone_castep = function() {
 	disableFreqOpts();
 	getSymInfo();
 	loadDone();
+}
+
+function exportCASTEP() {
+	warningMsg("Make sure you have selected the model you would like to export.");
+	setUnitCell();
+	saveStateAndOrientation_a();
+	var lattice = fromfractionaltoCartesian();
+	setVacuum();
+	switch (_file.cell.typeSystem) {
+	case "slab":
+		scaleModelCoordinates("z", "div", roundNumber(_file.cell.c));
+		break;
+	case "polymer":
+		scaleModelCoordinates("z", "div", roundNumber(_file.cell.c));
+		scaleModelCoordinates("y", "div", roundNumber(_file.cell.b));
+		break;
+	case "molecule":
+		scaleModelCoordinates("z", "div", roundNumber(_file.cell.c));
+		scaleModelCoordinates("y", "div", roundNumber(_file.cell.b));
+		scaleModelCoordinates("x", "div", roundNumber(_file.cell.a));
+		break;
+	}
+
+	var cellCastep = "var latticeHeader = '\%block LATTICE_CART';"
+		+ "var latticeOne = [" + lattice[0] +"].join(' ');"
+		+ "var latticeTwo = [" + lattice[1] + "].join(' ');"
+		+ "var latticeThree = [" + lattice[2] + "].join(' ');"
+		+ "var latticeClose = '\%endblock LATTICE_CART';"
+		+ "latticeCastep = [latticeHeader, latticeOne, latticeTwo,latticeThree, latticeClose];";
+	runJmolScriptWait(cellCastep);
+	
+	var positionCastep = "var positionHeader = '\%block POSITIONS_FRAC';"
+		+ 'var xyzCoord = ' + _file.frameSelection + '.label("%e %16.9[fxyz]");'
+		+ 'xyzCoord = xyzCoord.replace("\n\n","\n");'
+		+ "var positionClose = '\%endblock POSITIONS_FRAC';"
+		+ "positionCastep = [positionHeader, xyzCoord, positionClose];"
+		+ 'positionCastep = positionCastep.replace("\n\n","\n");';
+	runJmolScriptWait(positionCastep);
+	
+	restoreStateAndOrientation_a();
+
+	var finalInputCastep = 'var final = [latticeCastep, positionCastep].replace("\n\n","\n");'
+			+ 'WRITE VAR final "?.cell"';
+	runJmolScript(finalInputCastep);
 }
 
       		
@@ -7057,59 +6858,79 @@ loadDone_castep = function() {
 ////////////////SAVE INPUT
 /////////
 
-var titleCRYS = null;
+///////////////////////// LOAD & ON LOAD functions
 
-function titleCRYSTAL() {
-	titleCRYS = prompt("Type here the job title:", "");
-	(titleCRYS == "" || titleCRYS == null) ? (titleCRYS = ' .d12 prepared with J-ICE ')
-			: (titleCRYS = titleCRYS + ' .d12 prepared with J-ICE')
+loadDone_crystal = function() {
+	_file.energyUnits = ENERGY_HARTREE;
+	_file.StrUnitEnergy = "H";
+	var vib = getbyID('vib');
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
+		if (line != null) {
+			if (line.search(/Energy/i) != -1) { // Energy
+//				if (i > 0 && i < _file.info.length)
+//					var previous = substringEnergyToFloat(_file.info[i - 1].name);
+//				if (_file.info[i].name != null) {
+				addOption(getbyID('geom'), i + " " + line, i + 1);
+				_file.geomData[i] = line;
+				_file.counterFreq++;
+//				}
+			} else if (line.search(/cm/i) != -1) {
+				if (line.search(/LO/) == -1) {
+					_file.freqInfo.push(_file.info[i]);
+					_file.vibLine.push((i - _file.counterFreq) + " " + line); 
+					_file.freqData.push(line);
+				}
+			}
+	
+		}
+	} 
+	getUnitcell("1");
+	runJmolScriptWait("echo");
+	setTitleEcho();
+	loadDone();
 }
 
-var numAtomCRYSTAL = null;
-var fractionalCRYSTAL = null;
-function atomCRYSTAL() {
-	if (typeSystem == "molecule")
-		fractionalCRYSTAL = frameSelection + '.label("%l %16.9[xyz]")';
-	runJmolScriptWait("print " + fractionalCRYSTAL)
-	// alert(typeSystem);
-
-	numAtomCRYSTAL = frameSelection + ".length";
-	fractionalCRYSTAL = frameSelection + '.label("%l %16.9[fxyz]")';
-	// alert(typeSystem);
-}
-
-var systemCRYSTAL = null;
-var keywordCRYSTAL = null;
-var symmetryCRYSTAL = null;
 function exportCRYSTAL() {
+	var systemCRYSTAL = null;
+	var keywordCRYSTAL = null;
+	var symmetryCRYSTAL = null;
+
 	var endCRYSTAL = "TEST', 'END";
 	var script = "";
+	var flagsymmetry;
 	warningMsg("Make sure you have selected the model you would like to export.")
-	titleCRYSTAL();
-	setUnitCell();
-	atomCRYSTAL();
 
-	switch (typeSystem) {
+	var titleCRYS = prompt("Type here the job title:", "");
+	(titleCRYS == "" || titleCRYS == null) ? (titleCRYS = ' .d12 prepared with J-ICE ')
+			: (titleCRYS = titleCRYS + ' .d12 prepared with J-ICE');
+
+	setUnitCell();
+
+	var  numAtomCRYSTAL = _file.frameSelection + ".length";
+	var fractionalCRYSTAL = _file.frameSelection + '.label("%l %16.9[fxyz]")';
+
+	switch (_file.cell.typeSystem) {
 	case "crystal":
 		systemCRYSTAL = "'CRYSTAL'";
 		keywordCRYSTAL = "'0 0 0'";
 		symmetryCRYSTAL = "'1'";
 
-		if (!flagSiesta && !flagOutcar && !flagCryVasp)
-			var flagsymmetry = confirm("Do you want to introduce symmetry ?")
+		if (!_file.exportNoSymmetry)
+			flagsymmetry = confirm("Do you want to introduce symmetry ?")
 		if (!flagsymmetry) {
 			script = "var cellp = ["
-					+ roundNumber(_cell.a)
+					+ roundNumber(_file.cell.a)
 					+ ", "
-					+ roundNumber(_cell.b)
+					+ roundNumber(_file.cell.b)
 					+ ", "
-					+ roundNumber(_cell.c)
+					+ roundNumber(_file.cell.c)
 					+ ", "
-					+ roundNumber(alpha)
+					+ roundNumber(_file.cell.alpha)
 					+ ", "
-					+ roundNumber(beta)
+					+ roundNumber(_file.cell.beta)
 					+ ", "
-					+ roundNumber(gamma)
+					+ roundNumber(_file.cell.gamma)
 					+ "];"
 					+ 'var cellparam = cellp.join(" ");'
 					+ 'cellparam = cellparam.replace("\n\n","\n");'
@@ -7134,7 +6955,21 @@ function exportCRYSTAL() {
 					+ 'WRITE VAR finalArr "?.d12"';
 		} else {
 			warningMsg("This procedure is not fully tested.");
-			figureOutSpaceGroup();
+			
+			// BH: THIS METHOD WILL RELOAD THE FILE!
+			figureOutSpaceGroup(true, true);
+			var endCRYSTAL = "TEST', 'END";
+			var script = "var cellp = [" + stringCellParam + "];"
+					+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
+					+ titleCRYS + "', " + systemCRYSTAL + ", " + keywordCRYSTAL + ", "
+					+ interNumber + "];" + 'crystalArr = crystalArr.replace("\n\n"," ");'
+					+ "var crystalRestArr = [" + numAtomCRYSTAL + ", " + fractionalCRYSTAL
+					+ ", '" + endCRYSTAL + "'];"
+					+ 'crystalRestArr = crystalRestArr.replace("\n\n"," ");'
+					+ 'var finalArr = [crystalArr, cellparam , crystalRestArr];'
+					+ 'finalArr = finalArr.replace("\n\n","\n");'
+					+ 'WRITE VAR finalArr "?.d12"';
+			runJmolScript(script);
 		}
 		break;
 	case "slab":
@@ -7144,8 +6979,8 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = [" + roundNumber(_cell.a) + ", "
-				+ roundNumber(_cell.b) + ", " + roundNumber(gamma) + "];"
+		script = "var cellp = [" + roundNumber(_file.cell.a) + ", "
+				+ roundNumber(_file.cell.b) + ", " + roundNumber(_file.cell.gamma) + "];"
 				+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
 				+ titleCRYS + "', " + systemCRYSTAL + ", " + symmetryCRYSTAL
 				+ "];" + 'crystalArr = crystalArr.replace("\n\n","\n");'
@@ -7163,7 +6998,7 @@ function exportCRYSTAL() {
 
 		warningMsg("Symmetry not exploited!");
 
-		script = "var cellp = " + roundNumber(_cell.a) + ";"
+		script = "var cellp = " + roundNumber(_file.cell.a) + ";"
 				+ "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
 				+ ", " + symmetryCRYSTAL + "];"
 				+ 'crystalArr = crystalArr.replace("\n\n","\n");'
@@ -7178,9 +7013,6 @@ function exportCRYSTAL() {
 		// alert("prov")
 		systemCRYSTAL = "'MOLECULE'";
 		symmetryCRYSTAL = "'1'"; // see how jmol exploits the punctual TODO:
-		// show POINTGROUP
-		// symmetry
-		fractionalCRYSTAL
 		warningMsg("Symmetry not exploited!");
 		script = "var crystalArr = ['" + titleCRYS + "', " + systemCRYSTAL
 				+ ", " + symmetryCRYSTAL + "];"
@@ -7192,76 +7024,14 @@ function exportCRYSTAL() {
 				+ 'finalArr = finalArr.replace("\n\n","\n");'
 				+ 'WRITE VAR finalArr "?.d12"';
 		break;
-	}// end switch
+	}
 	script = script.replace("\n\n", "\n");
 	runJmolScriptWait(script);
 }
 
-function savCRYSTALSpace() {
-	var endCRYSTAL = "TEST', 'END";
-	var script = "var cellp = [" + stringCellParam + "];"
-			+ 'var cellparam = cellp.join(" ");' + "var crystalArr = ['"
-			+ titleCRYS + "', " + systemCRYSTAL + ", " + keywordCRYSTAL + ", "
-			+ interNumber + "];" + 'crystalArr = crystalArr.replace("\n\n"," ");'
-			+ "var crystalRestArr = [" + numAtomCRYSTAL + ", " + fractionalCRYSTAL
-			+ ", '" + endCRYSTAL + "'];"
-			+ 'crystalRestArr = crystalRestArr.replace("\n\n"," ");'
-			+ 'var finalArr = [crystalArr, cellparam , crystalRestArr];'
-			+ 'finalArr = finalArr.replace("\n\n","\n");'
-			+ 'WRITE VAR finalArr "?.d12"';
-	runJmolScript(script);
-}
 
 ////////////////////////END SAVE INPUT
 
-/////////////////////////
-///////////////////////// LOAD & ON LOAD functions
-
-loadDone_crystal = function() {
-	_fileData.energyUnits = ENERGY_HARTREE;
-	_fileData.StrUnitEnergy = "H";
-	var vib = getbyID('vib');
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
-		if (line != null) {
-			if (line.search(/Energy/i) != -1) { // Energy
-//				if (i > 0 && i < Info.length)
-//					var previous = substringEnergyToFloat(Info[i - 1].name);
-//				if (Info[i].name != null) {
-				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
-//				}
-			} else if (line.search(/cm/i) != -1) {
-				if (line.search(/LO/) == -1) {
-					_fileData.freqInfo.push(Info[i]);
-					_fileData.vibLine.push((i - _fileData.counterFreq) + " " + line); 
-					_fileData.freqData.push(line);
-				}
-			}
-	
-		}
-	} 
-	getUnitcell("1");
-	runJmolScriptWait("echo");
-	setTitleEcho();
-	loadDone();
-}
-
-//// this method was called when the Geometry Optimize and Spectra tabs
-//// were clicked via a complex sequence of callbacks
-//// but that is not done now, because all this should be done from a loadStructCallback.
-//function reloadFastModels() {
-//	setDefaultJmolSettings();
-//	if (flagCryVasp) {
-//		getUnitcell("1");
-//		runJmolScriptWait("echo");
-//		setTitleEcho();
-//		setGeomAndFreqData();
-//		enableFreqOpts();
-//		//getSymInfo();
-//	}
-//}
 
       		
 ///js// Js/adapters/dmol.js /////
@@ -7292,21 +7062,21 @@ loadDone_crystal = function() {
 //3rd-Sept-2010 CANEPA
 
 loadDone_dmol = function() {
-	_fileData.energyUnits = ENERGY_HARTREE;
-	_fileData.StrUnitEnergy = "H";
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+	_file.energyUnits = ENERGY_HARTREE;
+	_file.StrUnitEnergy = "H";
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 		if (line != null) {
 			if (line.search(/E =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
+				_file.geomData[i] = line;
+				_file.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(line);
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(line);
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
-				_fileData.vibLine.push(i + " A " + data + " cm^-1");
-				_fileData.counterMD++;
+				_file.vibLine.push(i + " A " + data + " cm^-1");
+				_file.counterMD++;
 			}
 		}
 	}
@@ -7347,8 +7117,8 @@ loadDone_gaussian = function() {
 
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
 
-	_fileData.energyUnits = ENERGY_HARTREE;
-	_fileData.StrUnitEnergy = "H";
+	_file.energyUnits = ENERGY_HARTREE;
+	_file.StrUnitEnergy = "H";
 
 	setTitleEcho();
 	setFrameValues("1");
@@ -7356,23 +7126,23 @@ loadDone_gaussian = function() {
 
 	var geom = getbyID('geom');
 	var vib = getbyID('vib');
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var line = _file.info[i].name;
 			// alert(line)
 			if (line.search(/E/i) != -1) {
-				_fileData.geom[i] = Info[i].name;
-				addOption(geom, i + " " + _fileData.geom[i], i + 1);
-				if (Info[i].modelProperties.Energy != null
-						|| Info[i].modelProperties.Energy != "")
-					_fileData.energy[i] = Info[i].modelProperties.Energy;
-				_fileData.counterGauss++;
+				_file.geom[i] = _file.info[i].name;
+				addOption(geom, i + " " + _file.geom[i], i + 1);
+				if (_file.info[i].modelProperties.Energy != null
+						|| _file.info[i].modelProperties.Energy != "")
+					_file.energy[i] = _file.info[i].modelProperties.Energy;
+				_file.counterGauss++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.vibLine.push(i + " " + Info[i].name + " (" + Info[i].modelProperties.IRIntensity + ")");
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(Info[i].modelProperties.Frequency);
-				_fileData.freqSymm.push(Info[i].modelProperties.FrequencyLabel);
-				_fileData.freqIntens.push(Info[i].modelProperties.IRIntensity);
+				_file.vibLine.push(i + " " + _file.info[i].name + " (" + _file.info[i].modelProperties.IRIntensity + ")");
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(_file.info[i].modelProperties.Frequency);
+				_file.freqSymm.push(_file.info[i].modelProperties.FrequencyLabel);
+				_file.freqIntens.push(_file.info[i].modelProperties.IRIntensity);
 			}
 		}
 	}
@@ -7405,50 +7175,43 @@ loadDone_gaussian = function() {
  *  02111-1307  USA.
  */
 
-var coordinateGromacs = null;
 
 function exportGromacs() {
 	warningMsg("Make sure you have selected the model you would like to export.");
-	setTitleGromacs();
-	setUnitCell();
-	runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/10);'
-		+ frameSelection + '.y = for(i;' + frameSelection + '; i.y/10);'
-		+ frameSelection + '.x = for(i;' + frameSelection + '; i.x/10);');
-	setCoordinatesGromacs();
-	runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z*10);'
-			+ frameSelection + '.y = for(i;' + frameSelection + '; i.y*10);'
-			+ frameSelection + '.x = for(i;' + frameSelection + '; i.x*10);');
-	var finalInputGromacs = "var final = [titleg,coordinate];"
-			+ 'final = final.replace("\n\n","");' + 'WRITE VAR final "?.gro" ';
-	runJmolScriptWait(finalInputGromacs);
-}
 
-function setTitleGromacs() {
 	var titleGromacs = prompt("Type here the job title:", "");
 	(titleGromacs == "") ? (titleGromacs = 'Input prepared with J-ICE ')
 			: (titleGromacs = 'Input prepared with J-ICE ' + titleGromacs);
 	titleGromacs = 'titleg = \"' + titleGromacs + '\"; ';
 	runJmolScriptWait(titleGromacs);
-}
 
-function setCoordinatesGromacs() {
-	var numatomsGrom = " " + frameSelection + ".length";
-	var coordinateGrom = frameSelection
+	setUnitCell();
+	
+	scaleModelCoordinates("xyz", "div", 10);
+	
+	var numatomsGrom = " " + _file.frameSelection + ".length";
+	var coordinateGrom = _file.frameSelection
 			+ '.label("  %i%e %i %e %8.3[xyz] %8.4fy %8.4fz")';
-	var cellbox = +roundNumber(_cell.a) * (cosRadiant(alpha)) + ' '
-			+ roundNumber(_cell.b) * (cosRadiant(beta)) + ' '
-			+ roundNumber(_cell.c) * (cosRadiant(gamma));
-	coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
+	var cellbox = +roundNumber(_file.cell.a) * (cosRounded(_file.cell.alpha)) + ' '
+			+ roundNumber(_file.cell.b) * (cosRounded(_file.cell.beta)) + ' '
+			+ roundNumber(_file.cell.c) * (cosRounded(_file.cell.gamma));
+	var coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
 			+ 'var coordGrom = ' + coordinateGrom + ';'
 			+ 'var cellGrom = \" \n\t' + cellbox + '\"; '
 			+ 'coordinate = [numatomGrom,coordGrom,cellGrom];';
 	runJmolScriptWait(coordinateGromacs);
+	
+	scaleModelCoordinates("xyz", "mul", 10);
+	
+	var finalInputGromacs = "var final = [titleg,coordinate];"
+			+ 'final = final.replace("\n\n","");' + 'WRITE VAR final "?.gro" ';
+	runJmolScriptWait(finalInputGromacs);
 }
+
       		
 ///js// Js/adapters/gulp.js /////
-/*  J-ICE library 
 
-    based on:
+ /*   based on:
  *
  *  Copyright (C) 2010-2014 Pieremanuele Canepa http://j-ice.sourceforge.net/
  *
@@ -7470,115 +7233,112 @@ function setCoordinatesGromacs() {
  *  02111-1307  USA.
  */
 
-///THIS ROUTINE IS TO EXPORT INPUT FOR GULP
-var titleGulp = null;
-var cellGulp = null;
-var coordinateGulp = null;
-var spacegroupGulp = null;
-var restGulp = null;
-var flagShelgulp = null;
-var stringCellparamgulp;
+// ////////////GULP READER
 
-function exportGULP() {
-	warningMsg("Make sure you have selected the model you would like to export.");
-	saveStateAndOrientation_a();
-	if (typeSystem != "crystal")
-		setUnitCell();
-	setTitlegulp();
-	setSystem();
-	setCellgulp();
-	setCoordinategulp();
-	if (typeSystem == "crystal")
-		setSpacegroupgulp();
-	setPotentialgulp();
-	if (typeSystem == "crystal") {
-		var finalInputGulp = "var final = [titlegulp,cellgulp,coordgulp,spacegulp,restgulp];"
-				+ 'final = final.replace("\n\n","\n");'
-				+ 'WRITE VAR final "?.gin" ';
-	} else {
-		var finalInputGulp = "var final = [titlegulp,cellgulp,coordgulp,restgulp];"
-				+ 'final = final.replace("\n\n","\n");'
-				+ 'WRITE VAR final "?.gin" ';
+loadDone_gulp = function() {
+	_file.energyUnits = ENERGY_EV;
+	_file.StrUnitEnergy = "e";
+	_file.counterFreq = 0;
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
+		if (i == 0) {
+			line = "Intial";
+		}
+		addOption(getbyID('geom'), i + " " + line, i + 1);
+		_file.geomData[i] = line;
+		_file.counterFreq++;
 	}
-	run(finalInputGulp);
-	restoreStateAndOrientation_a();
 
+	runJmolScriptWait("script scripts/gulp_name.spt"); 
+	getUnitcell("1");
+	setFrameValues("1");
+	getSymInfo();
+	loadDone();
 }
 
-function setTitlegulp() {
-	titleGulpinput = prompt("Type here the job title:", "");
+///THIS ROUTINE IS TO EXPORT INPUT FOR GULP
+
+function exportGULP() {
+	
+	var stringCellparamgulp;
+	var coordinateAddgulp = "";
+	var cellHeadergulp = "cell";
+	var flagsymmetryGulp = false;
+
+	warningMsg("Make sure you have selected the model you would like to export.");
+	saveStateAndOrientation_a();
+	if (_file.cell.typeSystem != "crystal")
+		setUnitCell();
+	
+	var titleGulpinput = prompt("Type here the job title:", "");
 	(titleGulpinput == "") ? (titleGulpinput = 'Input prepared with J-ICE ')
 			: (titleGulpinput = '#Input prepared with J-ICE \n'
 					+ titleGulpinput);
-	titleGulp = 'var optiongulp = \"opti conp propr #GULP options\";'
+	var titleGulp = 'var optiongulp = \"opti conp propr #GULP options\";'
 			+ 'var titleheader = \"title \"; ' + 'var title = \"'
 			+ titleGulpinput + '\"; ' + 'var titleend = \"end \";'
 			+ 'titlegulp = [optiongulp, titleheader, title, titleend];';
 	runJmolScriptWait(titleGulp);
 
-}
-
-var flagsymmetryGulp = false;
-function setSystem() {
-	switch (typeSystem) {
+	switch (_file.cell.typeSystem) {
 	case "crystal":
 		setUnitCell();
-		coordinateAddgulp = ""
-		cellHeadergulp = "cell"
-		var flagsymmetryGulp = confirm("Do you want to introduce symmetry ?");
+		flagsymmetryGulp = confirm("Do you want to introduce symmetry ?");
 
 		if (flagsymmetryGulp) {
 			warningMsg("This procedure is not fully tested.");
-			figureOutSpaceGroup();
+			figureOutSpaceGroup(false, false);
 		} else {
-			stringCellparamgulp = roundNumber(_cell.a) + ' ' + roundNumber(_cell.b)
-					+ ' ' + roundNumber(_cell.c) + ' ' + roundNumber(alpha) + ' '
-					+ roundNumber(beta) + ' ' + roundNumber(gamma);
+			stringCellparamgulp = roundNumber(_file.cell.a) + ' ' + roundNumber(_file.cell.b)
+					+ ' ' + roundNumber(_file.cell.c) + ' ' + roundNumber(_file.cell.alpha) + ' '
+					+ roundNumber(_file.cell.beta) + ' ' + roundNumber(_file.cell.gamma);
 		}
 		break;
 
 	case "surface":
-		cellHeadergulp = "scell"
-		coordinateAddgulp = "s"
-		stringCellparamgulp = roundNumber(_cell.a) + ", " + roundNumber(_cell.b)
-				+ ", " + roundNumber(gamma);
+		cellHeadergulp = "scell";
+		coordinateAddgulp = "s";
+		stringCellparamgulp = roundNumber(_file.cell.a) + ", " + roundNumber(_file.cell.b)
+				+ ", " + roundNumber(_file.cell.gamma);
 		break;
 
 	case "polymer":
-		cellHeadergulp = "pcell"
-		coordinateAddgulp = ""
-		stringCellparamgulp = roundNumber(_cell.a);
+		cellHeadergulp = "pcell";
+		coordinateAddgulp = "";
+		stringCellparamgulp = roundNumber(_file.cell.a);
 		break;
 
 	case "molecule":
-		// To be terminated
+		// TODO
 
 		break;
 	}
 
-}
-var cellHeadergulp
-function setCellgulp() {
 
-	cellGulp = 'var cellheader = \"' + cellHeadergulp + '\";'
-			+ 'var cellparameter = \"' + stringCellparamgulp + '\";'
-			+ 'cellgulp = [cellheader, cellparameter];';
+	var cellGulp = 'var cellheader = \"' + cellHeadergulp + '\";'
+		+ 'var cellparameter = \"' + stringCellparamgulp + '\";'
+		+ 'cellgulp = [cellheader, cellparameter];';
 	runJmolScriptWait(cellGulp);
-}
-
-function setCoordinategulp() {
 
 	var coordinateString;
-	var coordinateShel
-	setCoorgulp();
-	flagShelgulp = confirm("Is the inter-atomic potential a core/shel one? \n Cancel stands for NO core/shel potential.");
-	if (sortofCoordinateGulp && typeSystem == 'crystal') {
-		coordinateString = frameSelection + '.label("%e core %16.9[fxyz]")';
-		coordinateShel = frameSelection + '.label("%e shel %16.9[fxyz]")';
+	var coordinateShel;
+	var sortofCoordinateGulp;
+	if (_file.cell.typeSystem == 'crystal') {
+		var sortofCoordinate = confirm("Do you want the coordinates in Cartesian or fractional? \n OK for Cartesian, Cancel for fractional.")
+		sortofCoordinateGulp = (sortofCoordinate == true) ? (coordinateAddgulp + "cartesian")
+				: (coordinateAddgulp + "fractional");
 	} else {
-		coordinateString = frameSelection + '.label("%e core %16.9[xyz]")';
-		coordinateShel = frameSelection + '.label("%e shel %16.9[xyz]")';
+		messageMsg("Coordinate will be exported in Cartesian");
 	}
+	var flagShelgulp = confirm("Is the inter-atomic potential a core/shel one? \n Cancel stands for NO core/shel potential.");
+	if (sortofCoordinateGulp && _file.cell.typeSystem == 'crystal') {
+		coordinateString = _file.frameSelection + '.label("%e core %16.9[fxyz]")';
+		coordinateShel = _file.frameSelection + '.label("%e shel %16.9[fxyz]")';
+	} else {
+		coordinateString = _file.frameSelection + '.label("%e core %16.9[xyz]")';
+		coordinateShel = _file.frameSelection + '.label("%e shel %16.9[xyz]")';
+	}
+	var coordinateGulp;
 	if (flagShelgulp) {
 		coordinateGulp = 'var coordtype = \"' + sortofCoordinateGulp + '\";'
 				+ 'var coordcore = ' + coordinateString + ';'
@@ -7590,31 +7350,18 @@ function setCoordinategulp() {
 				+ 'coordgulp = [coordtype, coordcore];';
 	}
 	runJmolScriptWait(coordinateGulp);
-}
 
-var sortofCoordinateGulp = null;
-var coordinateAddgulp = null;
-function setCoorgulp() {
-	if (typeSystem == 'crystal') {
-		var sortofCoordinate = confirm("Do you want the coordinates in Cartesian or fractional? \n OK for Cartesian, Cancel for fractional.")
-		sortofCoordinateGulp = (sortofCoordinate == true) ? (coordinateAddgulp + "cartesian")
-				: (coordinateAddgulp + "fractional");
-	} else {
-		messageMsg("Coordinate will be exported in Cartesian");
+	if (_file.cell.typeSystem == "crystal") {
+		// interNumber from crystalfunction .. BH??? interNumber is only defined locally in figureOutSpaceGroup
+		if (!flagsymmetryGulp)
+			interNumber = "P 1"
+		var spacegroupGulp = 'var spaceheader = \"spacegroup\";'
+				+ 'var spacegroup = \"' + interNumber + '\";'// TBC
+				+ 'spacegulp = [spaceheader, spacegroup];';
+		runJmolScriptWait(spacegroupGulp);
 	}
-}
 
-// interNumber from crystalfunction
-function setSpacegroupgulp() {
-	if (!flagsymmetryGulp)
-		interNumber = "P 1"
-	spacegroupGulp = 'var spaceheader = \"spacegroup\";'
-			+ 'var spacegroup = \"' + interNumber + '\";'// TBC
-			+ 'spacegulp = [spaceheader, spacegroup];';
-	runJmolScriptWait(spacegroupGulp);
-}
-
-function setPotentialgulp() {
+	var restGulp;
 	if (flagShelgulp) {
 		restGulp = 'var species= \"species \" \n\n;'
 				+ 'var restpot = \"#here the user should enter the inter-atomic potential setting\";'
@@ -7627,29 +7374,19 @@ function setPotentialgulp() {
 	}
 	runJmolScriptWait(restGulp);
 
-}
-
-// ////////////GULP READER
-
-loadDone_gulp = function() {
-	_fileData.energyUnits = ENERGY_EV;
-	_fileData.StrUnitEnergy = "e";
-	_fileData.counterFreq = 0;
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
-		if (i == 0) {
-			line = "Intial";
-		}
-		addOption(getbyID('geom'), i + " " + line, i + 1);
-		_fileData.geomData[i] = line;
-		_fileData.counterFreq++;
+	var finalInputGulp;
+	if (_file.cell.typeSystem == "crystal") {
+		finalInputGulp = "var final = [titlegulp,cellgulp,coordgulp,spacegulp,restgulp];"
+				+ 'final = final.replace("\n\n","\n");'
+				+ 'WRITE VAR final "?.gin" ';
+	} else {
+		finalInputGulp = "var final = [titlegulp,cellgulp,coordgulp,restgulp];"
+				+ 'final = final.replace("\n\n","\n");'
+				+ 'WRITE VAR final "?.gin" ';
 	}
+	run(finalInputGulp);
+	restoreStateAndOrientation_a();
 
-	runJmolScriptWait("script scripts/gulp_name.spt"); 
-	getUnitcell("1");
-	setFrameValues("1");
-	getSymInfo();
-	loadDone();
 }
 
       		
@@ -7678,22 +7415,22 @@ loadDone_gulp = function() {
  *  02111-1307  USA.
  */
 
-var counterFreq = 0;
+//var counterFreq = 0;
 
 loadDone_molden = function(msg) {
 
-	_fileData.energyUnits = ENERGY_EV;
-	_fileData.StrUnitEnergy = "e";
+	_file.energyUnits = ENERGY_EV;
+	_file.StrUnitEnergy = "e";
 	
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var line = _file.info[i].name;
 			if (line.search(/cm/i) != -1) {
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(line);
-				_fileData.vibLine.push(i + " A " + data + " cm^-1");
-				_fileData.counterMD++;
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(line);
+				_file.vibLine.push(i + " A " + data + " cm^-1");
+				_file.counterMD++;
 			}
 		}
 	}
@@ -7727,6 +7464,48 @@ loadDone_molden = function(msg) {
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *  02111-1307  USA.
  */
+
+///// QUANTUM ESPRESSO READER
+
+loadDone_espresso = function() {
+	
+	_file.energyUnits = ENERGY_RYDBERG;
+	_file.StrUnitEnergy = "R";
+	_file.hasInputModel = true;
+
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
+
+		if (i == 0) {
+			_file.geomData[0] = line;
+			addOption(getbyID('geom'), "0 initial", 1);
+		}
+		if (line != null) {
+			if (line.search(/E =/i) != -1) {
+				addOption(getbyID('geom'), i + 1 + " " + line, i + 1);
+				_file.geomData[i + 1] = line;
+				_file.counterFreq++;
+			} /*
+			 * else if (line.search(/cm/i) != -1) { // alert("vibration")
+			 * freqData[i - counterFreq] = _file.info[i].name; counterMD++; } else
+			 * if (line.search(/Temp/i) != -1) { addOption(getbyID('geom'),
+			 * (i - counterMD) + " " + _file.info[i].name, i + 1); }
+			 */
+		}
+	}
+	/*
+	 * if (freqData != null) { for (var i = 1; i < freqData.length; i++) { if
+	 * (freqData[i] != null) var data =
+	 * parseFloat(freqData[i].substring(0,freqData[i].indexOf("c") - 1));
+	 * addOption(getbyID('vib'), i + " A " + data + " cm^-1", i + counterFreq +
+	 * 1 ); } }
+	 */
+	getUnitcell("1");
+	setFrameValues("1");
+	getSymInfo();
+	loadDone();
+}
+
 
 /*&CONTROL
  title = 'alpha_PbO_PBE' ,
@@ -7770,16 +7549,6 @@ loadDone_molden = function(msg) {
  4 4 4   0 0 0
  */
 
-//Following functions are to export file for QuantumEspresso
-var controlQ = null;
-var systemQ = null;
-var electronQ = null;
-var ionsQ = null;
-var cellQ = null;
-var atomspQ = null;
-var atompositionQ = null;
-var kpointQ = null;
-
 //Main block
 function exportQuantum() {
 	warningMsg("Make sure you have selected the model you would like to export.");
@@ -7804,7 +7573,7 @@ function prepareControlblock() {
 			: (stringTitleNew = 'Input prepared with J-ICE ' + stringTitle);
 
 	// stringa = 'title= \'prova\','
-	controlQ = "var controlHeader = '\&CONTROL';"
+	var controlQ = "var controlHeader = '\&CONTROL';"
 		+ 'var controlTitle = "           title = \''
 		+ stringTitleNew
 		+ '\'";'
@@ -7826,12 +7595,9 @@ function prepareSystemblock() {
 	// /here goes the symmetry part
 
 	setUnitCell();
-	// celldim(1) = \' \'\,
 
-	// this returns the number of atom
+	var numberAtom = jmolEvaluate(_file.frameSelection + ".length");
 
-	atomCRYSTAL();
-	var numberAtom = jmolEvaluate(numAtomCRYSTAL);
 	var stringCutoff = null;
 	var stringCutoffrho = null;
 	var stringElec = null;
@@ -7848,10 +7614,80 @@ function prepareSystemblock() {
 	 * if(stringElec != ""){ stringElec = parseInt(stringElec); stringBand =
 	 * parseInt((stringElec / 2) + (stringElec / 2 * 0.20)); }
 	 */
-	symmetryQuantum();
+
+	setUnitCell();
+	
+	var cellDimString, ibravQ;	
+	switch (_file.cell.typeSystem) {
+	case "crystal":
+		var flagsymmetry = confirm("Do you want to introduce symmetry ?")
+		if (!flagsymmetry) {
+			cellDimString = "           celldm(1) = "
+				+ roundNumber(fromAngstromtoBohr(_file.cell.a))
+				+ "  \n           celldm(2) =  "
+				+ roundNumber(_file.cell.b / _file.cell.a)
+				+ "  \n           celldm(3) =  "
+				+ roundNumber(_file.cell.c / _file.cell.a)
+				+ "  \n           celldm(4) =  "
+				+ (cosRounded(_file.cell.alpha))
+				+ "  \n           celldm(5) =  "
+				+ (cosRounded(_file.cell.beta))
+				+ "  \n           celldm(6) =  "
+				+ (cosRounded(_file.cell.gamma));
+			ibravQ = "14";
+		} else {
+			warningMsg("This procedure is not fully tested.");
+			// magnetic = confirm("Does this structure have magnetic properties?
+			// \n Cancel for NO.")
+			figureOutSpaceGroup(true, false, true);
+		}
+		break;
+	case "slab":
+		setVacuum();
+		scaleModelCoordinates("z", "div", _file.cell.c);
+		cellDimString = "            celldm(1) = "
+			+ roundNumber(fromAngstromtoBohr(_file.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(_file.cell.b / _file.cell.a)
+			+ "  \n            celldm(3) =  " + roundNumber(_file.cell.c / _file.cell.a)
+			+ "  \n            celldm(4) =  "
+			+ (cosRounded(_file.cell.alpha))
+			+ "  \n            celldm(5) =  " + (cosRounded(90))
+			+ "  \n            celldm(6) =  " + (cosRounded(90));
+		ibravQ = "14";
+		break;
+	case "polymer":
+		setVacuum();
+		scaleModelCoordinates("z", "div", _file.cell.c);
+		scaleModelCoordinates("y", "div", _file.cell.b);
+		cellDimString = "            celldm(1) = "
+			+ roundNumber(fromAngstromtoBohr(_file.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(_file.cell.b / _file.cell.a)
+			+ "  \n            celldm(3) =  " + roundNumber(_file.cell.b / _file.cell.a)
+			+ "  \n            celldm(4) =  " + (cosRounded(90))
+			+ "  \n            celldm(5) =  " + (cosRounded(90))
+			+ "  \n            celldm(6) =  " + (cosRounded(90));
+		ibravQ = "14";
+		break;
+	case "molecule":
+		setVacuum();
+		scaleModelCoordinates("x", "div", _file.cell.a);
+		scaleModelCoordinates("y", "div", _file.cell.b);
+		scaleModelCoordinates("z", "div", _file.cell.c);
+		cellDimString = "            celldm(1) = "
+			+ roundNumber(fromAngstromtoBohr(_file.cell.a))
+			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
+			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
+			+ "  \n            celldm(4) =  "
+			+ (cosRounded(_file.cell.alpha))
+			+ "  \n            celldm(5) =  " + (cosRounded(90))
+			+ "  \n            celldm(6) =  " + (cosRounded(90));
+		ibravQ = "14";
+		break;
+	}
+
 	var elements = getElementList();
 
-	systemQ = "var systemHeader = '\&SYSTEM';"
+	var systemQ = "var systemHeader = '\&SYSTEM';"
 		+ 'var systemIbrav = "           ibrav = '
 		+ ibravQ
 		+ '";' // This variable is defined in the crystal function
@@ -7882,7 +7718,7 @@ function prepareSystemblock() {
 
 //to be completed
 function prepareElectronblock() {
-	electronQ = "var electronHeader = '\&ELECTRONS';"
+	var electronQ = "var electronHeader = '\&ELECTRONS';"
 		+ 'var electronBeta = "           mixing_beta = \'  \'";'
 		+ "var electronClose= '\/';"
 		+ ' electron = [electronHeader, electronBeta, electronClose];';
@@ -7892,7 +7728,7 @@ function prepareElectronblock() {
 //ask what algorithm to use window?
 //set Tolerance as well!
 function prepareIonsblock() {
-	ionsQ = "var ionHeader = '\&IONS';"
+	var ionsQ = "var ionHeader = '\&IONS';"
 		+ 'var ionDyn = "           ion_dynamics= \'  \'";'
 		+ "var ionClose= '\/';" + 'ions = [ionHeader, ionDyn, ionClose];';
 	runJmolScriptWait(ionsQ);
@@ -7900,7 +7736,7 @@ function prepareIonsblock() {
 }
 
 function prepareCellblock() {
-	cellQ = "var cellHeader = '\&CELL';"
+	var cellQ = "var cellHeader = '\&CELL';"
 		+ 'var cellDyn = "           cell_dynamics= \'  \'";'
 		+ "var cellClose= '\/';"
 		+ 'cell = [cellHeader, cellDyn, cellClose];'
@@ -7920,7 +7756,7 @@ function prepareSpecieblock() {
 
 	for (var i = 0; i < sortedElement.length; i++) {
 		var elemento = sortedElement[i];
-		var numeroAtom = jmolEvaluate('{' + frameNum + ' and _' + elemento
+		var numeroAtom = jmolEvaluate('{' + _file.frameNum + ' and _' + elemento
 				+ '}[0].label("%l")'); //tobe changed in atomic mass
 		scriptEl = "'" + elemento + " " + eleSymbMass[parseInt(numeroAtom)]
 		+ " #Here goes the psudopotential filename e.g.: " + elemento
@@ -7936,7 +7772,7 @@ function prepareSpecieblock() {
 
 	}
 
-	atomspQ = "var atomsHeader = 'ATOMIC_SPECIES';" + 'var atomsList = ['
+	var atomspQ = "var atomsHeader = 'ATOMIC_SPECIES';" + 'var atomsList = ['
 	+ stringList + '];' + 'atomsList = atomsList.replace("\n", " ");'
 	// + 'atomList = atomList.join(" ");'
 	+ 'atomsp =  [atomsHeader,atomsList];';
@@ -7944,141 +7780,20 @@ function prepareSpecieblock() {
 }
 
 function preparePostionblock() {
-
 	setUnitCell();
-	atompositionQ = "var posHeader = 'ATOMIC_POSITIONS crystal';"
-		+ 'var posCoord = ' + frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
+	var atompositionQ = "var posHeader = 'ATOMIC_POSITIONS crystal';"
+		+ 'var posCoord = ' + _file.frameSelection + '.label(\"%e %14.9[fxyz]\");' // '.label(\"%e
 		// %16.9[fxyz]\");'
 		+ 'posQ = [posHeader,posCoord];';
 	runJmolScriptWait(atompositionQ);
-
 }
 
 function prepareKpoint() {
-	kpointQ = "var kpointWh = '\n\n'  ;"
+	var kpointQ = "var kpointWh = '\n\n'  ;"
 		+ "var kpointHeader = 'K_POINTS automatic';"
 		+ "var kpointgr = ' X X X 0 0 0';"
 		+ 'kpo = [kpointWh, kpointHeader, kpointgr];';
 	runJmolScriptWait(kpointQ);
-}
-
-function symmetryQuantum() {
-	setUnitCell();
-	switch (typeSystem) {
-	case "crystal":
-		var flagsymmetry = confirm("Do you want to introduce symmetry ?")
-		if (!flagsymmetry) {
-			cellDimString = "           celldm(1) = "
-				+ roundNumber(fromAngstromtoBohr(_cell.a))
-				+ "  \n           celldm(2) =  "
-				+ roundNumber(_cell.b / _cell.a)
-				+ "  \n           celldm(3) =  "
-				+ roundNumber(_cell.c / _cell.a)
-				+ "  \n           celldm(4) =  "
-				+ (cosRadiant(alpha))
-				+ "  \n           celldm(5) =  "
-				+ (cosRadiant(beta))
-				+ "  \n           celldm(6) =  "
-				+ (cosRadiant(gamma));
-			ibravQ = "14";
-		} else {
-			warningMsg("This procedure is not fully tested.");
-			// magnetic = confirm("Does this structure have magnetic properties?
-			// \n Cancel for NO.")
-			flagCrystal = false;
-			quantumEspresso = true;
-			figureOutSpaceGroup();
-		}
-		break;
-	case "slab":
-		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _cell.c
-				+ ')');
-		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(_cell.b / _cell.a)
-			+ "  \n            celldm(3) =  " + roundNumber(_cell.c / _cell.a)
-			+ "  \n            celldm(4) =  "
-			+ (cosRadiant(alpha))
-			+ "  \n            celldm(5) =  " + (cosRadiant(90))
-			+ "  \n            celldm(6) =  " + (cosRadiant(90));
-		ibravQ = "14";
-		break;
-	case "polymer":
-		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _cell.c
-				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + _cell.b
-				+ ')');
-		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(_cell.b / _cell.a)
-			+ "  \n            celldm(3) =  " + roundNumber(_cell.b / _cell.a)
-			+ "  \n            celldm(4) =  " + (cosRadiant(90))
-			+ "  \n            celldm(5) =  " + (cosRadiant(90))
-			+ "  \n            celldm(6) =  " + (cosRadiant(90));
-		ibravQ = "14";
-		break;
-	case "molecule":
-		setVacuum();
-		runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/' + _cell.c
-				+ ')');
-		runJmolScriptWait(frameSelection + '.y = for(i;' + frameSelection + '; i.y/' + _cell.b
-				+ ')');
-		runJmolScriptWait(frameSelection + '.x = for(i;' + frameSelection + '; i.x/' + _cell.a
-				+ ')');
-		cellDimString = "            celldm(1) = "
-			+ roundNumber(fromAngstromtoBohr(_cell.a))
-			+ "  \n            celldm(2) =  " + roundNumber(1.00000)
-			+ "  \n            celldm(3) =  " + roundNumber(1.00000)
-			+ "  \n            celldm(4) =  "
-			+ (cosRadiant(alpha))
-			+ "  \n            celldm(5) =  " + (cosRadiant(90))
-			+ "  \n            celldm(6) =  " + (cosRadiant(90));
-		ibravQ = "14";
-		break;
-	}
-}
-
-///// QUANTUM ESPRESSO READER
-
-loadDone_espresso = function() {
-	
-	_fileData.energyUnits = ENERGY_RYDBERG;
-	_fileData.StrUnitEnergy = "R";
-	_fileData.hasInputModel = true;
-
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
-
-		if (i == 0) {
-			_fileData.geomData[0] = line;
-			addOption(getbyID('geom'), "0 initial", 1);
-		}
-		if (line != null) {
-			if (line.search(/E =/i) != -1) {
-				addOption(getbyID('geom'), i + 1 + " " + line, i + 1);
-				_fileData.geomData[i + 1] = line;
-				_fileData.counterFreq++;
-			} /*
-			 * else if (line.search(/cm/i) != -1) { // alert("vibration")
-			 * freqData[i - counterFreq] = Info[i].name; counterMD++; } else
-			 * if (line.search(/Temp/i) != -1) { addOption(getbyID('geom'),
-			 * (i - counterMD) + " " + Info[i].name, i + 1); }
-			 */
-		}
-	}
-	/*
-	 * if (freqData != null) { for (var i = 1; i < freqData.length; i++) { if
-	 * (freqData[i] != null) var data =
-	 * parseFloat(freqData[i].substring(0,freqData[i].indexOf("c") - 1));
-	 * addOption(getbyID('vib'), i + " A " + data + " cm^-1", i + counterFreq +
-	 * 1 ); } }
-	 */
-	getUnitcell("1");
-	setFrameValues("1");
-	getSymInfo();
-	loadDone();
 }
 
       		
@@ -8115,25 +7830,25 @@ loadDone_siesta = function(msg) {
 	// Reset program and set filename if available
 	// This also extract the auxiliary info
 
-	_fileData.energyUnits = ENERGY_RYDBERG;
-	_fileData.StrUnitEnergy = "R";
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+	_file.energyUnits = ENERGY_RYDBERG;
+	_file.StrUnitEnergy = "R";
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 		if (line != null) {
 			if (line.search(/E/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomSiesta[i] = line;
-				if (Info[i].modelProperties.Energy != null
-						|| Info[i].modelProperties.Energy != "")
-					_fileData.energy[i] = Info[i].modelProperties.Energy;
-				_fileData.counterFreq++;
+				_file.geomSiesta[i] = line;
+				if (_file.info[i].modelProperties.Energy != null
+						|| _file.info[i].modelProperties.Energy != "")
+					_file.energy[i] = _file.info[i].modelProperties.Energy;
+				_file.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.vibLine.push(i + " " + line + " ("
-						+ Info[i].modelProperties.IRIntensity + ")");
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(Info[i].modelProperties.Frequency);
-				_fileData.freqSymm.push(Info[i].modelProperties.FrequencyLabel);
-				_fileData.freqIntens.push(Info[i].modelProperties.IRIntensity);
+				_file.vibLine.push(i + " " + line + " ("
+						+ _file.info[i].modelProperties.IRIntensity + ")");
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(_file.info[i].modelProperties.Frequency);
+				_file.freqSymm.push(_file.info[i].modelProperties.FrequencyLabel);
+				_file.freqIntens.push(_file.info[i].modelProperties.IRIntensity);
 			}
 		}
 	}
@@ -8169,16 +7884,47 @@ loadDone_siesta = function(msg) {
  *  02111-1307  USA.
  */
 
+
+loadDone_vaspoutcar = function() {
+	_file.energyUnits = ENERGY_EV;
+	_file.StrUnitEnergy = "e";
+	_file.counterFreq = 1; 
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var line = _file.info[i].name;
+			if (line.search(/G =/i) != -1) {
+				addOption(getbyID('geom'), i + " " + line, i + 1);
+				_file.geomData[i] = line;
+				_file.counterFreq++;
+			} else if (line.search(/cm/i) != -1) {
+				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));	
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(line);
+				_file.vibLine.push(i + " A " + data + " cm^-1");
+				_file.counterMD++;
+			} else if (line.search(/Temp/i) != -1) {
+				addOption(getbyID('geom'), (i - _file.counterMD) + " " + line, i + 1);
+			}
+		}
+	}
+
+	getUnitcell("1");
+	setFrameValues("1");
+	disableFreqOpts();
+	getSymInfo();
+	loadDone();
+}
+
 loadDone_xmlvasp = function() {
 
 	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
 
-	// _fileData.... ? 
+	// _file.... ? 
 	
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var valueEnth = Info[i].name.substring(11, 24);
-			var gibbs = Info[i].name.substring(41, 54);
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var valueEnth = _file.info[i].name.substring(11, 24);
+			var gibbs = _file.info[i].name.substring(41, 54);
 			var stringa = "Enth. = " + valueEnth + " eV, Gibbs E.= " + gibbs
 			+ " eV";
 			
@@ -8191,7 +7937,6 @@ loadDone_xmlvasp = function() {
 }
 
 ////EXPORT FUNCTIONS
-var fractionalCoord = false;
 function exportVASP() {
 	var newElement = [];
 	var scriptEl = "";
@@ -8199,12 +7944,12 @@ function exportVASP() {
 	var stringList = "";
 	var stringElement = "";
 	numAtomelement = null;
-	getUnitcell(frameValue);
+	getUnitcell(_file.frameValue);
 	setUnitCell();
 	var sortedElement = getElementList();
 	for (var i = 0; i < sortedElement.length; i++) {
 		// scriptEl = "";
-		scriptEl = "{" + frameNum + " and _" + sortedElement[i] + "}.length";
+		scriptEl = "{" + _file.frameNum + " and _" + sortedElement[i] + "}.length";
 
 		if (i != (sortedElement.length - 1)) {
 			stringList = stringList + " " + scriptEl + ", ";
@@ -8227,18 +7972,18 @@ function exportVASP() {
 	saveStateAndOrientation_a();
 	// This if the file come from crystal output
 
-	var kindCoord = null;
+	_measure.kindCoord = null;
 	var fractString = null;
 	var exportType = confirm("Would you like to export the structure in fractional coordinates? \n If you press Cancel those will be exported as normal Cartesian.");
 
 	if (exportType) {
-		kindCoord = "Direct"
+		_measure.kindCoord = "Direct"
 			fractString = "[fxyz]";
-		fractionalCoord = true;
+		_file._exportFractionalCoord = true;
 	} else {
-		kindCoord = "Cartesian"
+		_measure.kindCoord = "Cartesian"
 			fractString = "[xyz]";
-		fractionalCoord = false;
+		_file._exportFractionalCoord = false;
 	}
 
 	setVacuum();
@@ -8266,10 +8011,10 @@ function exportVASP() {
 		+ "];"// imp
 		+ 'var listAtom  = listInpcar.join("  ");'
 		+ 'var cartString = "'
-		+ kindCoord
+		+ _measure.kindCoord
 		+ '";' // imp
 		+ 'var xyzCoord = '
-		+ frameSelection
+		+ _file.frameSelection
 		+ '.label(" %16.9'
 		+ fractString
 		+ '");' // imp
@@ -8282,38 +8027,4 @@ function exportVASP() {
 }
 
 /////// END EXPORT VASP
-
-/////////// IMPORT OUTCAR
-
-
-
-loadDone_vaspoutcar = function() {
-	_fileData.energyUnits = ENERGY_EV;
-	_fileData.StrUnitEnergy = "e";
-	_fileData.counterFreq = 1; 
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
-			if (line.search(/G =/i) != -1) {
-				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
-			} else if (line.search(/cm/i) != -1) {
-				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));	
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(line);
-				_fileData.vibLine.push(i + " A " + data + " cm^-1");
-				_fileData.counterMD++;
-			} else if (line.search(/Temp/i) != -1) {
-				addOption(getbyID('geom'), (i - _fileData.counterMD) + " " + line, i + 1);
-			}
-		}
-	}
-
-	getUnitcell("1");
-	setFrameValues("1");
-	disableFreqOpts();
-	getSymInfo();
-	loadDone();
-}
 

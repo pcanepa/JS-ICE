@@ -1,13 +1,20 @@
+_edit = {
+	deleteMode : "",
+	hideMode : "",
+	displayMode : "",
+	firstTimeEdit : true,
+	radBondRange : ""
+}
 
 function enterEdit() {
 
-	radiiConnectSlider.recalculate();
+	_slider.radiiConnect.recalculate();
 
-	setRadiiConnectMessage(radiiConnectSlider.getValue());
+	setRadiiConnectMessage(_slider.radiiConnect.getValue());
 	
 	// BH 2018: Disabled -- unexpected behavior should not be on tab entry
 //	if (_edit.firstTimeEdit) {
-//		radiiConnectSlider.setValue(50);
+//		_slider.radiiConnect.setValue(50);
 //		runJmolScriptWait("set forceAutoBond ON; set bondMode AND");
 //	}
 //	getbyID("radiiConnectMsg").innerHTML = " " + 2.5 + " &#197";
@@ -25,13 +32,13 @@ function showPickPlaneCallback() {
 		runJmolScriptWait('select within(' + distance + ',plane,$plane1)');
 //		_edit.hideMode = " hide selected";
 //		_edit.deleteMode = " delete selected";
-//		colorWhat = "color atoms";
+//		_pick.colorWhat = "color atoms";
 	}
 }
 
 
 function setRadiiConnectMessage(r) {
-	getbyID('radiiConnectMsg').innerHTML = " " + r.toPrecision(2) + " &#197";
+	getbyID('slider.radiiConnectMsg').innerHTML = " " + r.toPrecision(2) + " &#197";
 }
 
 function applyConnect(r) {
@@ -40,15 +47,15 @@ function applyConnect(r) {
 	} else {
 		var flagBond = checkBoxX("allBondconnect");
 		// alert(flagBond);
-		// alert(frameNum);
-		if (frameNum == null || frameNum == '') {
+		// alert(_file.frameNum);
+		if (_file.frameNum == null || _file.frameNum == '') {
 			getUnitcell("1");
-			frameNum = 1.1;
+			_file.frameNum = 1.1;
 		} else {
 
 		}
 		if (flagBond == 'off') {
-			runJmolScriptWait("select " + frameNum
+			runJmolScriptWait("select " + _file.frameNum
 					+ "; connect  (selected) (selected)  DELETE");
 			runJmolScriptWait("connect " + r
 					+ " (selected) (selected) single ModifyOrCreate;");

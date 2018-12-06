@@ -22,7 +22,7 @@ return;
 }if ("highlight" === propertyName) {
 this.bsHighlight = value;
 return;
-}if (propertyName === "_edit.deleteModelAtoms") {
+}if (propertyName === "deleteModelAtoms") {
 JU.BSUtil.deleteBits (this.bsHighlight, bs);
 }this.setPropAS (propertyName, value, bs);
 }, "~S,~O,JU.BS");

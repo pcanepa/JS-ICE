@@ -22,6 +22,31 @@
  *  02111-1307  USA.
  */
 
+// var itemEnergy
+// var previousPoint = null
+// var itemForce
+// var previousPointForce = null
+
+// var theplot; // global, mostly for testing.
+
+// var haveGraphOptimize;
+
+
+//	var label = "";
+//	var previous = 0;
+	
+//	var data = [];
+//  var A = [];
+//    var nplots = 1;
+//	var modelCount = _file.info.length;
+//var stringa = _file.info[3].name;
+    
+//	var nullValues;
+    
+//    var minY = 999999;
+
+//	var dataSpectrum = [];
+//	var spectrum = [];
 
 
 //var appletPrintable = (navigator.appName != "Netscape"); // Sorry, I don't
@@ -34,78 +59,115 @@
 //	if (!appletPrintable)$("#appletdiv").addClass("noprint"); 
 //}
 
-
-
-function resetGraphs() {
-	haveGraphSpectra = false;
-	haveGraphOptimize = false;
+function arrayMax(a) {
+		if (a.length == 0)
+			return 0;
+		var max = -1e9;
+		var len = a.length;
+		for (var i = a.length; --i >= 0;)
+			if (a[i] > max)
+				max = a[i];
+		return max;
 }
+
+function arrayMin(a) {
+	if (a.length == 0)
+		return 0;
+	var min = 1e9;
+	var len = a.length;
+	for (var i = a.length; --i >= 0;)
+		if (a[i] < min)
+			min = a[i];
+	return min;
+}
+
+
 function plotEnergies(){
-	var modelCount = Info.length;
-	if (haveGraphOptimize || modelCount < 3)
+	var modelCount = _file.info.length;
+	if (_file.haveGraphOptimize || modelCount < 3)
 		return false;
-	haveGraphOptimize = true;
+	_file.haveGraphOptimize = true;
+	_plot = {
+		theplot : null,
+		itemEnergy : 0,
+		itemForce : 0,
+		previousPoint : null,
+		previousPointForce : null
+	};
+	var last = modelCount - 1;
+	var previous = null;
+	var energy = 0;
+	var label = "";
 	var data = [];
 	var A = [];
 	var nplots = 1;
-	var stringa = Info[3].name;
+	var stringa = _file.info[3].name;
 	var f = null;
 	var pattern = null;
-	if(flagCrystal){
+
+	switch (_file.plotEnergyType) {
+	case "crystal":
 		if(stringa.search(/Energy/i) < 0)
 			return false;
 		f = substringEnergyToFloat;
-	} else if (flagDmol){
+		break;
+	case "dmol":
 		if(stringa.search(/E/i) < 0) 
 			return false;
 		f = substringEnergyToFloat;
-	} else if (flagOutcar){
+		break;
+	case "outcar":
 		pattern = new RegExp("G =", "i");
 		f = substringEnergyVaspToFloat;
-	}else if (flagQuantumEspresso) { 
+		break;
+	case "qespresso":
 		pattern = new RegExp("E =", "i");
 		f = substringEnergyQuantumToFloat;
-	} else if (flagGulp) { 
+		break;
+	case "gulp":
 		pattern = new RegExp("E =", "i");
 		f = substringEnergyGulpToFloat;
-	} else if (flagGaussian){
+		break;
+	case "gaussian":
 		// special case
-	} else {
+		break;
+	default:
 		f = substringEnergyVaspToFloat;
+		break;
 	}
 	
 	if (f) {
 		// not Gaussian
 		for (var i = 0; i < last; i++) {
-			var name = Info[i].name;
+			var name = _file.info[i].name;
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = 0+ Info[i].modelNumber;
+			var modelnumber = 0+ _file.info[i].modelNumber;
 			if(i > 0)
 				previous = i - 1;
 			var e = f(name);
-//			if(i == 0 || Info[i - 1].name == null) {
-				energy = Math.abs(e - f(Info[last].name));
-//			} else if (previous > 0 && e != f(Info[i - 1].name)) {
-//				energy = Math.abs(e - f(Info[i - 1].name));
+//			if(i == 0 || _file.info[i - 1].name == null) {
+				energy = Math.abs(e - f(_file.info[last].name));
+//			} else if (previous > 0 && e != f(_file.info[i - 1].name)) {
+//				energy = Math.abs(e - f(_file.info[i - 1].name));
 //			}
 			label = 'Model = ' + modelnumber + ', &#916 E = ' + energy + ' kJmol^-1';
 			A.push([i+1,energy,modelnumber,label]);
 		}
 	} else {
 		// Gaussian
-		last = _fileData.energy.length;
+		last = _file.energy.length;
 		for (var i = 1; i < last; i++) {
-			var name = _fileData.energy[i];
+			var name = _file.energy[i];
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = _fileData.energy.length - 1;		
-			if(i > 0 && i < Info.length)
+			var modelnumber = _file.energy.length - 1;		
+			if(i > 0 && i < _file.info.length)
 				var previous = i - 1;
 			var e = fromHartreetokJ(name);
 			var e1;
 //			if(i == 0 || (e1 = energyGauss[i - 1]) == null) {
-				energy = Math.abs(e - fromHartreetokJ(_fileData.energy[last]));
+				energy = Math.abs(e - fromHartreetokJ(_file.energy[last]));
 //			} else if (previous > 0) {
 //				if (e != e1)
 //					energy = Math.abs(e - e1);
@@ -123,27 +185,29 @@ function plotEnergies(){
 		selection: { mode: (nplots == 1 ? "x" : "xy"), hoverMode: (nplots == 1 ? "x" : "xy") },
 		grid: { hoverable: true, clickable: true, hoverDelay: 10, hoverDelayDefault: 10 }
 	}
-	theplot = $.plot($('#plotarea'), data, options);
-	previousPoint = null
+	_plot.energyPlot = $.plot($('#plotarea'), data, options);
+	_plot.previousPoint = null;
 	$("#plotarea").unbind("plothover plotclick", null);
-	$("#plotarea").bind("plothover", plotHoverCallback);
 	$("#plotarea").bind("plotclick", plotClickCallback);
-	itemEnergy = {datapoint:A[0]}
-	setTimeout('plotClickCallback(null,null,itemEnergy)',100);
+	_plot.itemEnergy = {datapoint:A[0]}
+	setTimeout(function(){plotClickCallback(null,null,_plot.itemEnergy)},100);
 
 	//function plotGradient(){
 
 
-	if(!flagCrystal)
+	if(!_file.plotEnergyForces)
 		return;
+	var data = [];
+	var A = [];
+		
 	var maxGra;
 	if(stringa.search(/Energy/i) != -1){
 		last = modelCount - 1;
 		for (var i = 0; i < last; i++) {
-			var name = Info[i].name;
+			var name = _file.info[i].name;
 			if (name == null)
 				continue;
-			var modelnumber = 0 + Info[i].modelNumber;
+			var modelnumber = 0 + _file.info[i].modelNumber;
 			// first gradient will be for model 1
 			// This is if is to check if we are dealing with an optimization
 			// or
@@ -151,14 +215,14 @@ function plotEnergies(){
 			// frequency calculation
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-				maxGra = parseFloat(Info[i].modelProperties.maxGradient);
+				maxGra = parseFloat(_file.info[i].modelProperties.maxGradient);
 //			else if(name && previous > 0) {
-//				if (substringEnergyToFloat(Info[i].name) != substringEnergyToFloat(Info[i - 1].name))
-//					maxGra = parseFloat(Info[i].modelProperties.maxGradient);
+//				if (substringEnergyToFloat(_file.info[i].name) != substringEnergyToFloat(_file.info[i - 1].name))
+//					maxGra = parseFloat(_file.info[i].modelProperties.maxGradient);
 //			}
 			if (isNaN(maxGra))
 				continue;
-			var label = 'Model = ' + modelnumber + ', ForceMAX = ' + maxGra;
+			label = 'Model = ' + modelnumber + ', ForceMAX = ' + maxGra;
 			A.push([i+1,maxGra,modelnumber,label]);
 		}
 	}	
@@ -173,139 +237,14 @@ function plotEnergies(){
 		// hoverMode, hoverDelay, and hoverDelayDefault are not in the original
 		// Flot package
 	}
-	theplot = $.plot($("#plotarea1"), data, options);
-	previousPointForce = null
+	_plot.forcePlot = $.plot($("#plotarea1"), data, options);
+	_plot.previousPointForce = null
 	$("#plotarea1").unbind("plothover plotclick", null);
 	$("#plotarea1").bind("plothover", plotHoverCallbackforce);
 	$("#plotarea1").bind("plotclick", plotClickCallbackForce);
-	itemForce = { datapoint:A[0] };
-	setTimeout('plotClickCallbackForce(null,null,itemForce)',100);
+	_plot.itemForce = { datapoint:A[0] };
+	setTimeout(function(){plotClickCallbackForce(null,null,_plot.itemForce)},100);
 }
-
-
-//function plotFrequencies(forceNew){
-//	if (haveGraphSpectra && !forceNew)
-//		return;
-//	if (!flagCrystal && !flagOutcar && !flagGaussian)
-//		return;
-//	haveGraphSpectra = true;
-//	var data = [];
-//	var data2 =[];
-//	var A = [];
-//	var B = [];
-//	var nplots = 1;
-//	var modelCount = Info.length;
-//	var irFreq, irInt, freqValue, ramanFreq, ramanInt, isRaman;
-//	var labelIR, labelRaman, modelNumber;
-//	
-//	var stringa = Info[4].name;
-//	
-//	if(flagCrystal){
-//		if(counterFreq != 0){
-//			stringa = Info[counterFreq + 1].name;
-//			if (stringa == null)
-//				stringa = Info[counterFreq + 2].name;
-//		}
-//		if(stringa.search(/Energy/i) < 0){
-//			nullValues = countNullModel(Info);
-//			for (var i = (counterFreq == 0 ? 0 : counterFreq + 1); i < modelCount; i++) {
-//				modelnumber = Info[i].modelNumber - nullValues -1;
-//				if (Info[i].name == null)
-//					continue;
-//				freqValue = substringFreqToFloat(Info[i].modelProperties.Frequency);
-//				intValue = substringIntFreqToFloat(Info[i].modelProperties.IRintensity);
-//				isRaman = (intValue == 0);
-// 				if(!isRaman){
-//					irFreq = freqValue;
-//					irInt = intValue;
-//					isRaman = (Info[i].modelProperties.Ramanactivity == "A");
-//					labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-//					A.push([irFreq,irInt,modelnumber,labelIR]);
-// 				}
-// 				if (isRaman) {
-//					ramanFreq =  freqValue;
-//					ramanInt = [100];
-//					labelRaman = 'Model = Frequency ' +   ramanFreq  + ', Intensity = ' + ramanInt + ' kmMol^-1';
-//					B.push([ramanFreq,ramanInt,modelnumber,labelRaman]);
-//				}
-//			}			
-//		}
-//	} else if (flagOutcar) {
-//		stringa = Info[4].name
-//		if(counterFreq != 0){
-//			stringa = Info[counterFreq + 1].name;
-//			if (stringa == null)
-//				stringa = Info[counterFreq + 2].name;
-//		}
-//		if(stringa.search(/G =/i) == -1){
-//			nullValues = countNullModel(Info);
-//		}
-//		for (var i = 0; i < freqData.length; i++) {
-//			if(Info[i].name != null){
-//				irFreq = substringFreqToFloat(freqData[i]);
-//				irInt = [0.00];
-//				modelnumber = Info[i].modelNumber + counterFreq  - nullValues -1 
-//				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-//				A.push([irFreq,irInt,modelnumber,labelIR]);
-//			}
-//		}
-//	} else if (flagGaussian){
-//		for (var i = 0; i < freqGauss.length; i++) {
-//			if(Info[i].name != null){
-//				irFreq = substringFreqToFloat(freqGauss[i]);
-//				irInt = substringIntGaussToFloat(freqIntensGauss[i]);
-//				modelnumber = counterGauss + i; 
-//				labelIR = 'Model = Frequency ' +   irFreq  + ', Intensity = ' + irInt + ' kmMol^-1';
-//				A.push([irFreq,irInt,modelnumber,labelIR]);
-//			}
-//		}
-//	}
-//
-//	// data.push(A)
-//	// data.push(B)
-//	
-//	for (var i = 0; i < A.length; i++) {
-//		if (A[i][1] > maxY)
-//			maxY = A[i][1];
-//		if (A[i][1] < minY)
-//			minY = A[i][1];
-//	}
-//	for (var i = 0; i < B.length; i++) {
-//		if (B[i][1] > maxY)
-//			maxY = B[i][1];	
-//		if (B[i][1] < minY)
-//			minY = B[i][1];
-//	}
-//	if (minY == maxY)
-//		maxY = (maxY == 0 ? 100 : maxY * 2);
-//	var options = {
-//			lines: { show: false },
-//			points: {show: true, fill: true},
-//			xaxis: { ticks: 8, tickDecimals: 0 },
-//			yaxis: { ticks: 6,tickDecimals: 0, max:maxY },
-//			selection: { mode: (nplots == 1 ? "x" : "xy"), hoverMode: (nplots == 1 ? "x" : "xy") },
-//			grid: { 
-//				hoverable: true, 
-//				clickable: true, 
-//				hoverDelay: 10, 
-//				hoverDelayDefault: 10
-//			}
-//	}
-//
-//	if (flagCrystal) {
-//		theplot = $.plot($("#plotareafreq"), [{label:"IR", data: A}, {label:"Raman", data: B}] , options)
-//	} else {
-//		theplot = $.plot($("#plotareafreq"), [{label:"IR-Raman", data: A}], options)
-//	}
-//
-//	previousPointFreq = null;
-//
-//	$("#plotareafreq").unbind("plothover plotclick", null)
-//	$("#plotareafreq").bind("plothover", plotHoverCallbackFreq);
-//	$("#plotareafreq").bind("plotclick", plotClickCallbackFreq);
-//	itemFreq = {datapoint: A[0] || B[0]}
-//	setTimeout('plotClickCallbackFreq(null,null,itemFreq)',100);
-//}
 
 function plotClickCallback(event, pos, itemEnergy) {
 
@@ -334,8 +273,8 @@ function plotClickCallbackForce(event, pos, itemForce) {
 function plotHoverCallback(event, pos, itemEnergy) {
 	hideTooltip();
 	if(!itemEnergy)return
-	if (previousPoint != itemEnergy.datapoint) {
-		previousPoint = itemEnergy.datapoint ;
+	if (_plot.previousPoint != itemEnergy.datapoint) {
+		_plot.previousPoint = itemEnergy.datapoint ;
 		var y = roundoff(itemEnergy.datapoint[1],4);
 		var model = itemEnergy.datapoint[2];
 		var label = "&nbsp;&nbsp;Model "+ model + ", &#916 E = " + y +" kJmol^-1";
@@ -348,8 +287,8 @@ function plotHoverCallback(event, pos, itemEnergy) {
 function plotHoverCallbackforce(event, pos, itemForce) {
 	hideTooltip();
 	if(!itemForce)return
-	if (previousPointForce != itemForce.datapoint) {
-		previousPointForce = itemForce.datapoint;
+	if (_plot.previousPointForce != itemForce.datapoint) {
+		_plot.previousPointForce = itemForce.datapoint;
 		var y = roundoff(itemForce.datapoint[1],6);
 		var model = itemForce.datapoint[2];
 		var label = "&nbsp;&nbsp;Model "+ model + ", MAX Force = " + y;
@@ -443,101 +382,22 @@ function showTooltipFreq(x, y, contents, pos) {
 //	window.print()
 //}
 
-function countNullModel(arrayX) {
-	var valueNullelement = 0;
-	for (var i = 0; i < arrayX.length; i++) {
-		if (arrayX[i].name == null || arrayX[i].name == "")
-			valueNullelement = valueNullelement + 1;
-	}
-	return valueNullelement;
-}
+//function countNullModel(arrayX) {
+//	var valueNullelement = 0;
+//	for (var i = 0; i < arrayX.length; i++) {
+//		if (arrayX[i].name == null || arrayX[i].name == "")
+//			valueNullelement = valueNullelement + 1;
+//	}
+//	return valueNullelement;
+//}
 
 //for spectrum.html or new dynamic cool spectrum simulation
 
-var plotOptionsHTML = {
-		   series: { lines: { show: true, fill: false } },
-		   xaxis: { ticks: 10, tickDecimals: 0 },
-		   yaxis: { ticks: 0, tickDecimals: 0 },
-		   grid: { hoverable: true, autoHighlight: false},
-		   //crosshair: { mode: "x" }
-		};
-
-function plotSpectrum(div, openerOrSelf) {
-	var isNewWindow = !!openerOrSelf;
-	var intArray = openerOrSelf.getPlotIntArray();
-	openerOrSelf || (openerOrSelf = self);
-	var options = (isNewWindow ? openerOrSelf.plotOptionsHTML : opener.plotOptions);
-	var min = parseInt(openerOrSelf.getValue("nMin")); 
-	var max = parseInt(openerOrSelf.getValue("nMax"));
-	if (isNewWindow) {
-		setValue("minValue", min);
-		setValue("maxValue", max); 
-	}
-	
-//	var options ={
-//	   series:{
-//		      lines: { show: true, fill: false }
-//	   },
-//	   xaxis: { ticks: 10, tickDecimals: 0 },
-//	   yaxis: { ticks: 0,tickDecimals: 0 },
-//	   grid: { hoverable: true, autoHighlight: false},
-//	   //crosshair: { mode: "x" }
-//	};
-
-	var legends = $("#" + div + " .legendLabel");
-	 legends.each(function () {
-	    // fix the widths so they don't jump around
-	     $(this).css('width', $(this).width());});
-	
-	for(var i = min; i < max; i++){
-	 spectrum.push([i,intArray[i]]);
-	}
-	//dataSpectrum.push(spectrum);
-	var plot = $.plot($('#' + div), [{label:(isNewPage ? "Spectrum" : null), data:  spectrum }], options);
-
-	if (isNewPage) {
-		var updateLegendTimeout = null;
-		var latestPosition = null; 
-		 $("#plotSpectrum").bind("plothover",  function (event, pos, item) {
-		     latestPosition = pos;
-		     if (!updateLegendTimeout)
-		         updateLegendTimeout = setTimeout(function() { legends.text(latestPosition.x.toFixed(2)); }, 50);
-		 });
-	}
-}    
-
-function replotSpectrumHTML(){
-	var Min = parseInt(getValue("minValue"))
-	var Max = parseInt(getValue("maxValue"))
-	
-	var options ={
-	   series:{
-	   lines: { show: true, fill: false }
-	   },
-	   xaxis: { min: Min, max : Max, ticks: 10, tickDecimals: 0 },
-	   yaxis: { ticks: 0,tickDecimals: 0 },
-	   grid: { hoverable: true, autoHighlight: false},
-	   //crosshair: { mode: "x" }
-	};
-	var dataSpectrum = [];
-	var spectrum = [];
-	var intArray= opener._specData.intTot;
-	for(var i = Min; i < Max ; i++){
-	  spectrum.push([i,intArray[i]]);
-	}
-	plot = $.plot($('#plotSpectrum'),[{label:"Spectrum", data: spectrum }],  options);
-}
-
-function writeSpectumHTML(){
-  Min = parseInt(getValue("minValue"));
-	 Max = parseInt(getValue("maxValue"));
-	 var intArray = opener.intTot;
-	 var script = 'var testo = "#########################################################\n\
-	#J-ICE  spectrum #\n\
-	#########################################################\n'
-				   for (var i = Min; i < Max ; i++)
-	               script += i + " " + intArray[i] + "\n"
-	               script += '"; write VAR testo "?.dat"'
-	runJmolScriptWait(script);
-}
+// var plotOptionsHTML = {
+//		   series: { lines: { show: true, fill: false } },
+//		   xaxis: { ticks: 10, tickDecimals: 0 },
+//		   yaxis: { ticks: 0, tickDecimals: 0 },
+//		   grid: { hoverable: true, autoHighlight: false},
+//		   //crosshair: { mode: "x" }
+//		};
 

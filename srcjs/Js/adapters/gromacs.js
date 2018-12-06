@@ -22,42 +22,36 @@
  *  02111-1307  USA.
  */
 
-var coordinateGromacs = null;
 
 function exportGromacs() {
 	warningMsg("Make sure you have selected the model you would like to export.");
-	setTitleGromacs();
-	setUnitCell();
-	runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z/10);'
-		+ frameSelection + '.y = for(i;' + frameSelection + '; i.y/10);'
-		+ frameSelection + '.x = for(i;' + frameSelection + '; i.x/10);');
-	setCoordinatesGromacs();
-	runJmolScriptWait(frameSelection + '.z = for(i;' + frameSelection + '; i.z*10);'
-			+ frameSelection + '.y = for(i;' + frameSelection + '; i.y*10);'
-			+ frameSelection + '.x = for(i;' + frameSelection + '; i.x*10);');
-	var finalInputGromacs = "var final = [titleg,coordinate];"
-			+ 'final = final.replace("\n\n","");' + 'WRITE VAR final "?.gro" ';
-	runJmolScriptWait(finalInputGromacs);
-}
 
-function setTitleGromacs() {
 	var titleGromacs = prompt("Type here the job title:", "");
 	(titleGromacs == "") ? (titleGromacs = 'Input prepared with J-ICE ')
 			: (titleGromacs = 'Input prepared with J-ICE ' + titleGromacs);
 	titleGromacs = 'titleg = \"' + titleGromacs + '\"; ';
 	runJmolScriptWait(titleGromacs);
-}
 
-function setCoordinatesGromacs() {
-	var numatomsGrom = " " + frameSelection + ".length";
-	var coordinateGrom = frameSelection
+	setUnitCell();
+	
+	scaleModelCoordinates("xyz", "div", 10);
+	
+	var numatomsGrom = " " + _file.frameSelection + ".length";
+	var coordinateGrom = _file.frameSelection
 			+ '.label("  %i%e %i %e %8.3[xyz] %8.4fy %8.4fz")';
-	var cellbox = +roundNumber(_fileData.cell.a) * (cosRadiant(alpha)) + ' '
-			+ roundNumber(_fileData.cell.b) * (cosRadiant(beta)) + ' '
-			+ roundNumber(_fileData.cell.c) * (cosRadiant(gamma));
-	coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
+	var cellbox = +roundNumber(_file.cell.a) * (cosRounded(_file.cell.alpha)) + ' '
+			+ roundNumber(_file.cell.b) * (cosRounded(_file.cell.beta)) + ' '
+			+ roundNumber(_file.cell.c) * (cosRounded(_file.cell.gamma));
+	var coordinateGromacs = 'var numatomGrom = ' + ' ' + numatomsGrom + ';'
 			+ 'var coordGrom = ' + coordinateGrom + ';'
 			+ 'var cellGrom = \" \n\t' + cellbox + '\"; '
 			+ 'coordinate = [numatomGrom,coordGrom,cellGrom];';
 	runJmolScriptWait(coordinateGromacs);
+	
+	scaleModelCoordinates("xyz", "mul", 10);
+	
+	var finalInputGromacs = "var final = [titleg,coordinate];"
+			+ 'final = final.replace("\n\n","");' + 'WRITE VAR final "?.gro" ';
+	runJmolScriptWait(finalInputGromacs);
 }
+

@@ -20,8 +20,8 @@ function buildPickPlaneCallback() {
 
 function atomSelectedColor(atom) {
 	runJmolScriptWait("select {atomno=" + atom + "};");
-	colorWhat = "color atom ";
-	return colorWhat;
+	_pick.colorWhat = "color atom ";
+	return _pick.colorWhat;
 }
 
 function atomSelectedDelete(atom) {
@@ -84,9 +84,9 @@ function addNewatom() {
 					+ ' end "model"');
 		} else {
 			var fractional = confirm("Are these coordinates fractionals (OK) or Cartesians (Cancel)?");
-			getUnitcell(_frame.frameValue);
+			getUnitcell(_file.frameValue);
 			setUnitCell();
-			runJmolScriptWait('var noatoms =' + _frame.frameSelection + '.length  + 1;');
+			runJmolScriptWait('var noatoms =' + _file.frameSelection + '.length  + 1;');
 			if (!fractional) {
 				var atomString = "\n 1\n\n" + type + " " + parseFloat(x) + " "
 				+ parseFloat(y) + " " + parseFloat(z);

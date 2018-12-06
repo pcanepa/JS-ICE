@@ -335,7 +335,7 @@ lplv[a1] = nlp;
 for (var i = atomCount; --i >= 0; ) {
 lplv[i] = matrix[i][i];
 }
-}}this.vwr.ms._edit.deleteModelBonds (modelIndex);
+}}this.vwr.ms.deleteModelBonds (modelIndex);
 var mad = this.vwr.ms.getDefaultMadFromOrder (1);
 if (bonds != null) {
 for (var i = bonds.size (); --i >= 0; ) {

@@ -5482,9 +5482,9 @@ var n = this.slm.deleteAtoms (bsAtoms);
 this.setTainted (true);
 this.sm.modifySend (atomIndex, this.ms.at[atomIndex].mi, -4, "OK");
 return n;
-}return this._edit.deleteModels (this.ms.at[atomIndex].mi, bsAtoms);
+}return this.deleteModels (this.ms.at[atomIndex].mi, bsAtoms);
 }, "JU.BS,~B");
-Clazz.defineMethod (c$, "_edit.deleteModels", 
+Clazz.defineMethod (c$, "deleteModels", 
 function (modelIndex, bsAtoms) {
 this.clearModelDependentObjects ();
 this.sm.modifySend (-1, modelIndex, 5, "deleting model " + this.getModelNumberDotted (modelIndex));
@@ -5492,7 +5492,7 @@ this.setCurrentModelIndexClear (0, false);
 this.am.setAnimationOn (false);
 var bsD0 = JU.BSUtil.copy (this.slm.bsDeleted);
 var bsModels = (bsAtoms == null ? JU.BSUtil.newAndSetBit (modelIndex) : this.ms.getModelBS (bsAtoms, false));
-var bsDeleted = this.ms._edit.deleteModels (bsModels);
+var bsDeleted = this.ms.deleteModels (bsModels);
 this.slm.processDeletedModelAtoms (bsDeleted);
 if (this.eval != null) this.eval.deleteAtomsInVariables (bsDeleted);
 this.setAnimationRange (0, 0);
@@ -5514,11 +5514,11 @@ this.sm.modifySend (-1, modelIndex, 2, "delete bonds " + JU.Escape.eBond (bsDele
 this.ms.deleteBonds (bsDeleted, false);
 this.sm.modifySend (-1, modelIndex, -2, "OK");
 }, "JU.BS");
-Clazz.defineMethod (c$, "_edit.deleteModelAtoms", 
+Clazz.defineMethod (c$, "deleteModelAtoms", 
 function (modelIndex, firstAtomIndex, nAtoms, bsModelAtoms) {
 this.sm.modifySend (-1, modelIndex, 1, "delete atoms " + JU.Escape.eBS (bsModelAtoms));
 JU.BSUtil.deleteBits (this.tm.bsFrameOffsets, bsModelAtoms);
-this.getDataManager ()._edit.deleteModelAtoms (firstAtomIndex, nAtoms, bsModelAtoms);
+this.getDataManager ().deleteModelAtoms (firstAtomIndex, nAtoms, bsModelAtoms);
 this.sm.modifySend (-1, modelIndex, -1, "OK");
 }, "~N,~N,~N,JU.BS");
 Clazz.defineMethod (c$, "getQuaternionFrame", 

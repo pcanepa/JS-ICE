@@ -1,6 +1,10 @@
+_orient = {
+	motion : ""
+}
+
 function enterOrient() {
-	slabSlider.setValue(100 - jmolEvaluate("slab"));
-	depthSlider.setValue(jmolEvaluate("depth"));
+	_slider.slab.setValue(100 - jmolEvaluate("slab"));
+	_slider.depth.setValue(jmolEvaluate("depth"));
 	if (jmolEvaluate("slabEnabled") == "true")
 		checkBox("slabToggle");
 	else
@@ -11,12 +15,12 @@ function exitOrient() {
 }
 
 function applySlab(x) {
-	getbyID('slabMsg').innerHTML = x + "%" // display
+	getbyID('slider.slabMsg').innerHTML = x + "%" // display
 	runJmolScriptWait("slab " + (100 - x) + ";")
 }
 
 function applyDepth(x) { // alternative displays:
-	getbyID('depthMsg').innerHTML = (100 - x) + "%" // 100%
+	getbyID('slider.depthMsg').innerHTML = (100 - x) + "%" // 100%
 	runJmolScriptWait("depth " + (100 - x) + ";")
 }
 
@@ -24,36 +28,36 @@ function toggleSlab() {
 	var ctl = getbyID("slabToggle")
 	if (ctl.checked) {
 		runJmolScriptWait("slab on;");
-//		applySlab(slabSlider.getValue());
-//		applyDepth(depthSlider.getValue());
-//		slabSlider.setValue(20);
+//		applySlab(_slider.slab.getValue());
+//		applyDepth(_slider.depth.getValue());
+//		_slider.slab.setValue(20);
 //		applySlab(defaultFront);
-//		depthSlider.setValue(defaultBack);
+//		_slider.depth.setValue(defaultBack);
 //		applyDepth(defaultBack);
 	} else {
 		runJmolScriptWait("slab off; ")
-//		slabSlider.setValue(0);
-//		depthSlider.setValue(0);
+//		_slider.slab.setValue(0);
+//		_slider.depth.setValue(0);
 	}
 }
 
 //This controls the refined motion of the structure
 function setKindMotion(valueList) {
-	motion = valueList;
-	if (motion == "select")
+	_orient.motion = valueList;
+	if (_orient.motion == "select")
 		errorMsg("Please select the motion");
-	return motion;
+	return _orient.motion;
 }
 
 function setMotion(axis) {
 	var magnitudeMotion = getbyID("fineOrientMagn").value;
 
-	if (motion == "select" || motion == "") {
+	if (_orient.motion == "select" || _orient.motion == "") {
 		errorMsg("Please select the motion");
 		return false;
 	}
 
-	// /(motion == "translate" )? (makeDisable("-z") + makeDisable("z")) :
+	// /(_orient.motion == "translate" )? (makeDisable("-z") + makeDisable("z")) :
 	// (makeEnable("-z") + makeEnable("z"))
 
 	if (magnitudeMotion == "") {
@@ -62,12 +66,12 @@ function setMotion(axis) {
 	}
 
 	var stringa = "Selected" + " " + axis + " " + magnitudeMotion;
-	if (motion == "translate" && (axis == "-x" || axis == "-y" || axis == "-z")) {
+	if (_orient.motion == "translate" && (axis == "-x" || axis == "-y" || axis == "-z")) {
 		axis = axis.replace("-", "");
 		stringa = "Selected" + " " + axis + " -" + magnitudeMotion;
 	}
 
-	stringa = motion + (getbyID("moveByselection").checked ? "Selected " : " ") + stringa;
+	stringa = _orient.motion + (getbyID("moveByselection").checked ? "Selected " : " ") + stringa;
 	 
 	runJmolScriptWait(stringa);
 

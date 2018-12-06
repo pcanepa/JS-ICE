@@ -91,17 +91,32 @@ function formResetAll() {
 }
 
 function createSlider(name, label) {
-	var s = '<div tabIndex="1" class="slider" id="_Slider-div" style="float:left;width:150px;" >'
-		+ '<input class="slider-input" id="_Slider-input" name="_Slider-input" />'
+	var s = '<div tabIndex="1" class="slider" id="_-div" style="float:left;width:150px;" >'
+		+ '<input class="slider-input" id="_-input" name="_-input" />'
 	    + '</div>'
 	    + (label || "") 
 	    + ' <span id="_Msg" class="msgSlider"></span>';
-	return s.replace(/_/g, name);
+	return s.replace(/_/g, "slider." + name);
 	
 }
 
 function createButton(name, text, onclick, disab, style) {
 	return createButton1(name, text, onclick, disab, "button", style);
+}
+
+function createButtonB(name, text, onclick, disab, style) {
+	var s = "<BUTTON type='button' ";
+	s += "NAME='" + name + "' ";
+	s += "ID='" + name + "' ";
+	if (style)
+		s += "style='" + style + "'";
+	if (disab) {
+		s += "DISABLED ";
+	}
+	s += "OnClick='" + onclick + "'>";
+	s += text;
+	s += "</BUTTON>";
+	return s;
 }
 
 //This includes the class
@@ -340,6 +355,10 @@ function setValue(id, val) {
 
 function getValueSel(id) {
 	return getbyID(id)[getbyID(id).selectedIndex].value;
+}
+
+function getTextSel(id) {
+	return getbyID(id)[getbyID(id).selectedIndex].text;
 }
 
 function isChecked(id) {

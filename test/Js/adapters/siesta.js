@@ -30,25 +30,25 @@ loadDone_siesta = function(msg) {
 	// Reset program and set filename if available
 	// This also extract the auxiliary info
 
-	_fileData.energyUnits = ENERGY_RYDBERG;
-	_fileData.StrUnitEnergy = "R";
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+	_file.energyUnits = ENERGY_RYDBERG;
+	_file.StrUnitEnergy = "R";
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 		if (line != null) {
 			if (line.search(/E/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomSiesta[i] = line;
-				if (Info[i].modelProperties.Energy != null
-						|| Info[i].modelProperties.Energy != "")
-					_fileData.energy[i] = Info[i].modelProperties.Energy;
-				_fileData.counterFreq++;
+				_file.geomSiesta[i] = line;
+				if (_file.info[i].modelProperties.Energy != null
+						|| _file.info[i].modelProperties.Energy != "")
+					_file.energy[i] = _file.info[i].modelProperties.Energy;
+				_file.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.vibLine.push(i + " " + line + " ("
-						+ Info[i].modelProperties.IRIntensity + ")");
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(Info[i].modelProperties.Frequency);
-				_fileData.freqSymm.push(Info[i].modelProperties.FrequencyLabel);
-				_fileData.freqIntens.push(Info[i].modelProperties.IRIntensity);
+				_file.vibLine.push(i + " " + line + " ("
+						+ _file.info[i].modelProperties.IRIntensity + ")");
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(_file.info[i].modelProperties.Frequency);
+				_file.freqSymm.push(_file.info[i].modelProperties.FrequencyLabel);
+				_file.freqIntens.push(_file.info[i].modelProperties.IRIntensity);
 			}
 		}
 	}

@@ -1,3 +1,11 @@
+
+_measure = {
+	kindCoord: "",
+	measureCoord : false,
+	unitMeasure : "",
+	mesCount : 0
+}
+
 function enterMeasure() {
 
 }
@@ -7,7 +15,7 @@ function exitMeasure() {
 }
 
 function viewCoord(value) {
-	kindCoord = value;
+	_measure.kindCoord = value;
 	measureCoord = true;
 	messageMsg("Pick the atom you are interested in, please.");
 	setPickingCallbackFunction(showCoord);
@@ -18,7 +26,7 @@ function viewCoord(value) {
 
 function showCoord() {
 	if (measureCoord) {
-		if (kindCoord == "fractional") {
+		if (_measure.kindCoord == "fractional") {
 			runJmolScriptWait('Label "%a: %.2[fX] %.2[fY] %.2[fZ]"');
 		} else {
 			runJmolScriptWait('Label "%a: %1.2[atomX] %1.2[atomY] %1.2[atomZ]"');
@@ -108,7 +116,7 @@ function createMeasureGrp() {
 	
 	var strMeas = "<form autocomplete='nope'  id='measureGroup' name='measureGroup' style='display:none'>";
 	strMeas += "<table class='contents'><tr><td > \n";
-	strMeas += "<h2>Measure and Info</h2>\n";
+	strMeas += "<h2>Measure and _file.info</h2>\n";
 	strMeas += "</td></tr>\n";
 	strMeas += "<tr><td colspan='2'>\n";
 	strMeas += "Measure<br>\n";

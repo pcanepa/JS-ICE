@@ -25,21 +25,21 @@
 //3rd-Sept-2010 CANEPA
 
 loadDone_dmol = function() {
-	_fileData.energyUnits = ENERGY_HARTREE;
-	_fileData.StrUnitEnergy = "H";
-	for (var i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+	_file.energyUnits = ENERGY_HARTREE;
+	_file.StrUnitEnergy = "H";
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 		if (line != null) {
 			if (line.search(/E =/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				_fileData.geomData[i] = line;
-				_fileData.counterFreq++;
+				_file.geomData[i] = line;
+				_file.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(line);
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(line);
 				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
-				_fileData.vibLine.push(i + " A " + data + " cm^-1");
-				_fileData.counterMD++;
+				_file.vibLine.push(i + " A " + data + " cm^-1");
+				_file.counterMD++;
 			}
 		}
 	}

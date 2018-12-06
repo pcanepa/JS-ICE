@@ -145,7 +145,7 @@ return false;
 }, "~N,~N,JU.BS,~B");
 Clazz.defineMethod (c$, "deleteShapeAtoms", 
 function (value, bs) {
-if (this.shapes != null) for (var j = 0; j < 37; j++) if (this.shapes[j] != null) this.setShapePropertyBs (j, "_edit.deleteModelAtoms", value, bs);
+if (this.shapes != null) for (var j = 0; j < 37; j++) if (this.shapes[j] != null) this.setShapePropertyBs (j, "deleteModelAtoms", value, bs);
 
 }, "~A,JU.BS");
 Clazz.defineMethod (c$, "deleteVdwDependentShapes", 

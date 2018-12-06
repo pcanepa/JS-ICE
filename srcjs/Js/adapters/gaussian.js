@@ -26,8 +26,8 @@ loadDone_gaussian = function() {
 
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
 
-	_fileData.energyUnits = ENERGY_HARTREE;
-	_fileData.StrUnitEnergy = "H";
+	_file.energyUnits = ENERGY_HARTREE;
+	_file.StrUnitEnergy = "H";
 
 	setTitleEcho();
 	setFrameValues("1");
@@ -35,23 +35,23 @@ loadDone_gaussian = function() {
 
 	var geom = getbyID('geom');
 	var vib = getbyID('vib');
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var line = _file.info[i].name;
 			// alert(line)
 			if (line.search(/E/i) != -1) {
-				_fileData.geom[i] = Info[i].name;
-				addOption(geom, i + " " + _fileData.geom[i], i + 1);
-				if (Info[i].modelProperties.Energy != null
-						|| Info[i].modelProperties.Energy != "")
-					_fileData.energy[i] = Info[i].modelProperties.Energy;
-				_fileData.counterGauss++;
+				_file.geom[i] = _file.info[i].name;
+				addOption(geom, i + " " + _file.geom[i], i + 1);
+				if (_file.info[i].modelProperties.Energy != null
+						|| _file.info[i].modelProperties.Energy != "")
+					_file.energy[i] = _file.info[i].modelProperties.Energy;
+				_file.counterGauss++;
 			} else if (line.search(/cm/i) != -1) {
-				_fileData.vibLine.push(i + " " + Info[i].name + " (" + Info[i].modelProperties.IRIntensity + ")");
-				_fileData.freqInfo.push(Info[i]);
-				_fileData.freqData.push(Info[i].modelProperties.Frequency);
-				_fileData.freqSymm.push(Info[i].modelProperties.FrequencyLabel);
-				_fileData.freqIntens.push(Info[i].modelProperties.IRIntensity);
+				_file.vibLine.push(i + " " + _file.info[i].name + " (" + _file.info[i].modelProperties.IRIntensity + ")");
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(_file.info[i].modelProperties.Frequency);
+				_file.freqSymm.push(_file.info[i].modelProperties.FrequencyLabel);
+				_file.freqIntens.push(_file.info[i].modelProperties.IRIntensity);
 			}
 		}
 	}

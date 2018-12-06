@@ -38,8 +38,8 @@
 //	var data = [];
 //  var A = [];
 //    var nplots = 1;
-//	var modelCount = Info.length;
-//var stringa = Info[3].name;
+//	var modelCount = _file.info.length;
+//var stringa = _file.info[3].name;
     
 //	var nullValues;
     
@@ -83,10 +83,10 @@ function arrayMin(a) {
 
 
 function plotEnergies(){
-	var modelCount = Info.length;
-	if (_fileData.haveGraphOptimize || modelCount < 3)
+	var modelCount = _file.info.length;
+	if (_file.haveGraphOptimize || modelCount < 3)
 		return false;
-	_fileData.haveGraphOptimize = true;
+	_file.haveGraphOptimize = true;
 	_plot = {
 		theplot : null,
 		itemEnergy : 0,
@@ -101,64 +101,73 @@ function plotEnergies(){
 	var data = [];
 	var A = [];
 	var nplots = 1;
-	var stringa = Info[3].name;
+	var stringa = _file.info[3].name;
 	var f = null;
 	var pattern = null;
-	if(flagCrystal){
+
+	switch (_file.plotEnergyType) {
+	case "crystal":
 		if(stringa.search(/Energy/i) < 0)
 			return false;
 		f = substringEnergyToFloat;
-	} else if (flagDmol){
+		break;
+	case "dmol":
 		if(stringa.search(/E/i) < 0) 
 			return false;
 		f = substringEnergyToFloat;
-	} else if (flagOutcar){
+		break;
+	case "outcar":
 		pattern = new RegExp("G =", "i");
 		f = substringEnergyVaspToFloat;
-	}else if (flagQuantumEspresso) { 
+		break;
+	case "qespresso":
 		pattern = new RegExp("E =", "i");
 		f = substringEnergyQuantumToFloat;
-	} else if (flagGulp) { 
+		break;
+	case "gulp":
 		pattern = new RegExp("E =", "i");
 		f = substringEnergyGulpToFloat;
-	} else if (flagGaussian){
+		break;
+	case "gaussian":
 		// special case
-	} else {
+		break;
+	default:
 		f = substringEnergyVaspToFloat;
+		break;
 	}
 	
 	if (f) {
 		// not Gaussian
 		for (var i = 0; i < last; i++) {
-			var name = Info[i].name;
+			var name = _file.info[i].name;
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = 0+ Info[i].modelNumber;
+			var modelnumber = 0+ _file.info[i].modelNumber;
 			if(i > 0)
 				previous = i - 1;
 			var e = f(name);
-//			if(i == 0 || Info[i - 1].name == null) {
-				energy = Math.abs(e - f(Info[last].name));
-//			} else if (previous > 0 && e != f(Info[i - 1].name)) {
-//				energy = Math.abs(e - f(Info[i - 1].name));
+//			if(i == 0 || _file.info[i - 1].name == null) {
+				energy = Math.abs(e - f(_file.info[last].name));
+//			} else if (previous > 0 && e != f(_file.info[i - 1].name)) {
+//				energy = Math.abs(e - f(_file.info[i - 1].name));
 //			}
 			label = 'Model = ' + modelnumber + ', &#916 E = ' + energy + ' kJmol^-1';
 			A.push([i+1,energy,modelnumber,label]);
 		}
 	} else {
 		// Gaussian
-		last = _fileData.energy.length;
+		last = _file.energy.length;
 		for (var i = 1; i < last; i++) {
-			var name = _fileData.energy[i];
+			var name = _file.energy[i];
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-			var modelnumber = _fileData.energy.length - 1;		
-			if(i > 0 && i < Info.length)
+			var modelnumber = _file.energy.length - 1;		
+			if(i > 0 && i < _file.info.length)
 				var previous = i - 1;
 			var e = fromHartreetokJ(name);
 			var e1;
 //			if(i == 0 || (e1 = energyGauss[i - 1]) == null) {
-				energy = Math.abs(e - fromHartreetokJ(_fileData.energy[last]));
+				energy = Math.abs(e - fromHartreetokJ(_file.energy[last]));
 //			} else if (previous > 0) {
 //				if (e != e1)
 //					energy = Math.abs(e - e1);
@@ -186,7 +195,7 @@ function plotEnergies(){
 	//function plotGradient(){
 
 
-	if(!flagCrystal)
+	if(!_file.plotEnergyForces)
 		return;
 	var data = [];
 	var A = [];
@@ -195,10 +204,10 @@ function plotEnergies(){
 	if(stringa.search(/Energy/i) != -1){
 		last = modelCount - 1;
 		for (var i = 0; i < last; i++) {
-			var name = Info[i].name;
+			var name = _file.info[i].name;
 			if (name == null)
 				continue;
-			var modelnumber = 0 + Info[i].modelNumber;
+			var modelnumber = 0 + _file.info[i].modelNumber;
 			// first gradient will be for model 1
 			// This is if is to check if we are dealing with an optimization
 			// or
@@ -206,10 +215,10 @@ function plotEnergies(){
 			// frequency calculation
 			if (!name || pattern && !pattern.exec(name) || name.search(/cm/i) >= 0)
 				continue;
-				maxGra = parseFloat(Info[i].modelProperties.maxGradient);
+				maxGra = parseFloat(_file.info[i].modelProperties.maxGradient);
 //			else if(name && previous > 0) {
-//				if (substringEnergyToFloat(Info[i].name) != substringEnergyToFloat(Info[i - 1].name))
-//					maxGra = parseFloat(Info[i].modelProperties.maxGradient);
+//				if (substringEnergyToFloat(_file.info[i].name) != substringEnergyToFloat(_file.info[i - 1].name))
+//					maxGra = parseFloat(_file.info[i].modelProperties.maxGradient);
 //			}
 			if (isNaN(maxGra))
 				continue;
@@ -373,14 +382,14 @@ function showTooltipFreq(x, y, contents, pos) {
 //	window.print()
 //}
 
-function countNullModel(arrayX) {
-	var valueNullelement = 0;
-	for (var i = 0; i < arrayX.length; i++) {
-		if (arrayX[i].name == null || arrayX[i].name == "")
-			valueNullelement = valueNullelement + 1;
-	}
-	return valueNullelement;
-}
+//function countNullModel(arrayX) {
+//	var valueNullelement = 0;
+//	for (var i = 0; i < arrayX.length; i++) {
+//		if (arrayX[i].name == null || arrayX[i].name == "")
+//			valueNullelement = valueNullelement + 1;
+//	}
+//	return valueNullelement;
+//}
 
 //for spectrum.html or new dynamic cool spectrum simulation
 
