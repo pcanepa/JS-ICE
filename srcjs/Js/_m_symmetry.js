@@ -145,6 +145,10 @@ function createSymmetryGrp() {
 	strSymmetry += "<div id='activateAllSymmetryDiv'></div>";
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += createCheck();
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
 	strSymmetry += "set opacity:<select id=selopacity2 onchange=setOpacity() onkeypress=\"setTimeout('setOpacity()',50)\"  class='select'>"
 			+ "<option value=0.2 selected>20%</option>"
 			+ "<option value=0.4>40%</option>"
@@ -157,7 +161,10 @@ function createSymmetryGrp() {
 
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
-	runJmolScriptWait("draw symop '"+symop+"' "+_file.symmetry.symOffset); 
+	runJmolScriptWait("draw symop '"+symop+"' "+_file.symmetry.symOffset);
+	axisFactor = 3;
+	runJmolScriptWait("drawCleanSymmetryAxisVectors("+axisFactor+")");
+
 } 
 
 // takes a given point and add the elements provided to it by a symmetry operation
