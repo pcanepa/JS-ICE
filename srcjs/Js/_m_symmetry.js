@@ -1,4 +1,6 @@
 //initialization upon entry into symmetry tab 
+//A. Salij 12.7.18 (salij1@stolaf.edu)
+
 function enterSymmetry() {
 	if (! _file.symmetry){
 		_file.symmetry = {
@@ -82,6 +84,7 @@ function updateSymOffset(dimension,offset){
 		zValue = offset+"/1";
 	}
 	_file.symmetry.symOffset = "{"+xValue+","+yValue+","+zValue+"}"; 
+	displaySymmetryDrawObjects(_file.symmetry.chosenSymop);
 }
 
 //creates symmetry menu 

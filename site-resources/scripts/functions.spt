@@ -1,5 +1,5 @@
-
 // functions for JS-ICE
+//A. Salij 12.7.18 (salij1@stolaf.edu) 
 
 //converts the point data type in jmol into arrays of the 3 coordinates, indexed x,y,z 
 function pointToArray(pointt){
@@ -141,7 +141,8 @@ function bindToVectorConstraint(vectorDrawObjectID,selectedPoint,errorDistance){
 	}
 }
 
-//provides the closest point on a plane designated by some draw object to some selected point if said point is within some distance 
+//provides the closest point on a plane designated by some draw object to some selected point if
+//said point is within some distance 
 function bindToPlaneConstraint(planeDrawObjectID, selectedPoint, errorDistance){
 	var planePointer = ""+planeDrawObjectID+""
 	var constrainedPoint = intersection(selectedPoint,planeDrawObjectID)
@@ -159,8 +160,6 @@ function drawVector(vectorID,vectorStart,vectorEnd){
 	vectorIDString = "vectorID"
 	draw @vectorIDString @vectorstart @vectorEnd
 }
-
-
 
 
 //Unused
