@@ -154,6 +154,13 @@ function bindToPlaneConstraint(planeDrawObjectID, selectedPoint, errorDistance){
 	}
 }
 
+//needs testing 
+function drawVector(vectorID,vectorStart,vectorEnd){
+	vectorIDString = "vectorID"
+	draw @vectorIDString @vectorstart @vectorEnd
+}
+
+
 
 
 //Unused
