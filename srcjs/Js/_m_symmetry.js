@@ -181,6 +181,7 @@ function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 }
 function drawAllSymmetricPoints(point){
 	var pointValue = point;
+	runJmolScriptWait("draw pointValue"); //check
 	runJmolScriptWait("allSymPoints = getSymmetryAtomArrayAllSymops("+pointValue+")");
 	runJmolScriptWait("allSymPoints = allSymPoints");
 	runJmolScriptWait("draw points @allSymPoints");
