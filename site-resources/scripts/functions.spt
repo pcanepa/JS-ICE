@@ -133,11 +133,13 @@ function bindToVectorConstraint(vectorDrawObjectID,selectedPoint,errorDistance){
 	var startPoint = $ @vectorPointer[0]
 	var endPoint = $ @vectorPointer[1]
 	var constrainedPoint = intersection(startPoint,endPoint-startPoint,selectedPoint) //second input into intersection is a vector from first point
+	var selectedPointPointer = ""+selectedPoint+""
+	var selectedPointToNewPointDistance = @selectedPointPointer.distance(constrainedPoint)
 	if (selectedPointToNewPointDistance > errorDistance){
-		print selectedPoint 
+		return selectedPoint 
 	}
 	else{
-		print constrainedPoint 
+		return constrainedPoint 
 	}
 }
 
@@ -145,8 +147,23 @@ function bindToVectorConstraint(vectorDrawObjectID,selectedPoint,errorDistance){
 //said point is within some distance 
 function bindToPlaneConstraint(planeDrawObjectID, selectedPoint, errorDistance){
 	var planePointer = ""+planeDrawObjectID+""
-	var constrainedPoint = intersection(selectedPoint,planeDrawObjectID)
-	var selectedPointToNewPointDistance = @selectedPoint.distance(planePointer)
+	var constrainedPoint = intersection(selectedPoint,planePointer)
+	var selectedPointPointer = ""+selectedPoint+""
+	var selectedPointToNewPointDistance = @selectedPointPointer.distance(constrainedPoint)
+	if (selectedPointToNewPointDistance > errorDistance){
+		return selectedPoint 
+	}
+	else{
+		return constrainedPoint 
+	}
+}
+
+function bindToSphereConstraint(sphereCenterPoint,sphereRadius,selectedPoint,errorDistance){
+	//details need filling--talk to Dr. Hanson about documentation on circle intersection
+	//var constrainedPoint = intersection() NEEDS FILLING 
+	var contrainedPoint = {0 0 0} //PLACEHOLDER
+	var selectedPointPointer = ""+selectedPoint+""
+	var selectedPointToNewPointDistance = @selectedPointPointer.distance(constrainedPoint)
 	if (selectedPointToNewPointDistance > errorDistance){
 		return selectedPoint 
 	}
@@ -157,8 +174,10 @@ function bindToPlaneConstraint(planeDrawObjectID, selectedPoint, errorDistance){
 
 //needs testing 
 function drawVector(vectorID,vectorStart,vectorEnd){
-	vectorIDString = "vectorID"
-	draw @vectorIDString @vectorstart @vectorEnd
+	vectorIDString = ""+vectorID+""
+	vectorStartString = ""+vectorStart+""
+	vectorEndString = ""+vectorEnd+""
+	draw @vectorIDString @vectorstartString @vectorEndString
 }
 
 
