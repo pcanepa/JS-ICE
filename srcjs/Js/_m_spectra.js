@@ -294,9 +294,11 @@ function getVibLinesFromIrrep(specData) {
 }
 
 function extractIRData(specData) {
+//Returns the file type that the IR data must be extracted from..
  return file_method("extractIRData", function() {}, [specData]);
 }
 
+//The next functions extract IR data for a variety of file types.
 function extractIRData_crystal(specData) {
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
@@ -338,6 +340,7 @@ function rtrim(s, i0, char, i1) {
 }
 
 function extractRamanData(specData) {
+//Extracts the Raman data and adds it to specData.
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
 		if (specData.freqInfo[i].modelProperties.Ramanactivity == "A") {
@@ -353,6 +356,7 @@ function extractRamanData(specData) {
 }
 
 function createStickSpectrum(specData, type) {
+//Scales the data for a stick spectrum.
 	var rescale = specData.rescale;
 	var spec = (type == "ir" ? specData.specIR : specData.specRaman);
 	var maxInt = maxValue(spec);
@@ -377,6 +381,7 @@ function createStickSpectrum(specData, type) {
 }
 
 function createCoolSpectrum(specData, type) {
+//scales data for Gaussian or Lorentzian convolutions. 
 		var maxInt;
 		if (specData.sortInt) {
 		 	maxInt = maxValue(specData.sortInt);
@@ -397,7 +402,7 @@ function getPlotIntArray() {
 }
 
 function createConvolvedSpectrum(specData, type) {
-
+// Based on the typeconvolve given in specData, function creates the Gaussian and Lorentzian convolutions.
 	var isGaussian = (specData.typeConvolve == "gaus");
 	var spec = (type == "ir" ? specData.specIR : specData.specRaman);
 	var freqCount = specData.freqCount;
@@ -440,6 +445,8 @@ function createConvolvedSpectrum(specData, type) {
 }
 
 function showFreqGraph(plotDiv, specData, plot) {
+//This large function creates the spectrum itself. This makes the axes, the clickable and hoverable options, and 
+// creates the ability to zoom and open the spectrum in a new window. 
 	var isHTMLPage = (!specData);
 	if (isHTMLPage) {
 		specData = _file.specData = opener._file.specData;
@@ -519,6 +526,7 @@ function showFreqGraph(plotDiv, specData, plot) {
 }
 
 function plotSelectCallbackFreq(event, ranges) {
+//Used to change the min and max x when a large enough range is selected. 
 	var x1 = ranges.xaxis.from | 0;
 	var x2 = ranges.xaxis.to | 0;
 	if (Math.abs(x2-x1) > 100) {
@@ -529,6 +537,8 @@ function plotSelectCallbackFreq(event, ranges) {
 }
 
 function getRanges(specData) {
+// Function creates the ranges array in specData. This is used to provide the user a small clickable
+//range which facilitates clicking peaks. 
 	var freqs = specData.freqs
 	var sigma = specData.sigma;
 	n = specData.freqs.length;
@@ -553,6 +563,7 @@ function getRanges(specData) {
 }	
 
 function plotClickCallbackFreq(event, pos, itemFreq) {
+//Vibration is selected based on a range clicked. 
 	var range = (itemFreq ? getFreqForClick(itemFreq.datapoint) : null);
 	// itemFreq is [x,y] so [freq,int]
 	// range is [min,max,freq,i]
@@ -566,6 +577,8 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 }
 
 function plotHoverCallbackFreq(event, pos, itemFreq) {
+//Shows the vibrational frequency if user hovers over range. Does not change the frequency 
+//unless user hovers along the top red lines. 
 	hideTooltip();
 	if(!itemFreq)return
 	if (_file.specData.previousPointFreq != itemFreq.datapoint) {
