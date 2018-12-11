@@ -132,6 +132,8 @@ function bindToVectorConstraint(vectorDrawObjectID,selectedPoint,errorDistance){
 	var errorDistance = 1
 	var startPoint = $ @vectorPointer[0]
 	var endPoint = $ @vectorPointer[1]
+	startPoint = $sym_rotvector1[0]
+	endPoint = $sym_rotvector1[1]
 	var constrainedPoint = intersection(startPoint,endPoint-startPoint,selectedPoint) //second input into intersection is a vector from first point
 	var selectedPointPointer = ""+selectedPoint+""
 	var selectedPointToNewPointDistance = @selectedPointPointer.distance(constrainedPoint)
