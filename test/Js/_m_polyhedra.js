@@ -108,7 +108,7 @@ function createPolyGrp() {
 	strPoly += createText2("polyDistance", "2.0", "3", "") + " &#197;";
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
-	strPoly += "&nbsp;d) number of vertex "
+	strPoly += "&nbsp;d) number of vertices "
 		+ createSelect('polyEdge', '', 0, 0, polyEdgeName) + "\n";
 	strPoly += createLine('blue', '');
 	strPoly += "</td></tr>\n";
