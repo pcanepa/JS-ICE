@@ -2261,7 +2261,7 @@ function createPolyGrp() {
 	strPoly += createText2("polyDistance", "2.0", "3", "") + " &#197;";
 	strPoly += "</td></tr>\n";
 	strPoly += "<tr><td colspan='2'>\n";
-	strPoly += "&nbsp;d) number of vertex "
+	strPoly += "&nbsp;d) number of vertices "
 		+ createSelect('polyEdge', '', 0, 0, polyEdgeName) + "\n";
 	strPoly += createLine('blue', '');
 	strPoly += "</td></tr>\n";
@@ -3543,9 +3543,9 @@ function createFreqGrp() {
 		+ "Min freq. " + createText2("nMin", "0", "4", "")
 		+ " Max " + createText2("nMax", "4000", "4", "") + "(cm<sup>-1</sup>)"
 		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "") + "<br>"
-		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 1, "", "stick")
-		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 0, "", "gaus")
+		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 1, "", "gaus")
 		+ createRadio("convol", "Lorentzian", 'onClickModSpec(false, true)', 0, 0, "", "lor") 
+		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 0, "", "stick")
 		+ "&nbsp;" + "&nbsp;" + "&nbsp;"
 		+ createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
 
@@ -3846,6 +3846,8 @@ function createOtherGrp() {
       		
 ///js// Js/_m_symmetry.js /////
 //initialization upon entry into symmetry tab 
+//A. Salij 12.7.18 (salij1@stolaf.edu)
+
 function enterSymmetry() {
 	if (! _file.symmetry){
 		_file.symmetry = {
@@ -3929,6 +3931,7 @@ function updateSymOffset(dimension,offset){
 		zValue = offset+"/1";
 	}
 	_file.symmetry.symOffset = "{"+xValue+","+yValue+","+zValue+"}"; 
+	displaySymmetryDrawObjects(_file.symmetry.chosenSymop);
 }
 
 //creates symmetry menu 
@@ -3992,6 +3995,10 @@ function createSymmetryGrp() {
 	strSymmetry += "<div id='activateAllSymmetryDiv'></div>";
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
+	strSymmetry += "<tr><td>\n";
+	strSymmetry += createCheck();
+	strSymmetry += "</td></tr>\n";
+	strSymmetry += "<BR>\n";
 	strSymmetry += "set opacity:<select id=selopacity2 onchange=setOpacity() onkeypress=\"setTimeout('setOpacity()',50)\"  class='select'>"
 			+ "<option value=0.2 selected>20%</option>"
 			+ "<option value=0.4>40%</option>"
@@ -4004,7 +4011,10 @@ function createSymmetryGrp() {
 
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
-	runJmolScriptWait("draw symop '"+symop+"' "+_file.symmetry.symOffset); 
+	runJmolScriptWait("draw symop '"+symop+"' "+_file.symmetry.symOffset);
+	axisFactor = 3;
+	runJmolScriptWait("drawCleanSymmetryAxisVectors("+axisFactor+")");
+
 } 
 
 // takes a given point and add the elements provided to it by a symmetry operation
@@ -4028,6 +4038,7 @@ function appendSymmetricAtoms(elementName,point,symopSelected,iterations){
 }
 function drawAllSymmetricPoints(point){
 	var pointValue = point;
+	runJmolScriptWait("draw pointValue"); //check
 	runJmolScriptWait("allSymPoints = getSymmetryAtomArrayAllSymops("+pointValue+")");
 	runJmolScriptWait("allSymPoints = allSymPoints");
 	runJmolScriptWait("draw points @allSymPoints");
@@ -7974,9 +7985,7 @@ function exportVASP() {
 
 	_measure.kindCoord = null;
 	var fractString = null;
-	var exportType = confirm("Would you like to export the structure in fractional coordinates? \n If you press Cancel those will be exported as normal Cartesian.");
-
-	if (exportType) {
+	if (prompt("Would you like to export the structure in fractional coordinates?", "yes") == "yes") {
 		_measure.kindCoord = "Direct"
 			fractString = "[fxyz]";
 		_file._exportFractionalCoord = true;

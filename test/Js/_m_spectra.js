@@ -743,9 +743,9 @@ function createFreqGrp() {
 		+ "Min freq. " + createText2("nMin", "0", "4", "")
 		+ " Max " + createText2("nMax", "4000", "4", "") + "(cm<sup>-1</sup>)"
 		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "") + "<br>"
-		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 1, "", "stick")
-		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 0, "", "gaus")
+		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 1, "", "gaus")
 		+ createRadio("convol", "Lorentzian", 'onClickModSpec(false, true)', 0, 0, "", "lor") 
+		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 0, "", "stick")
 		+ "&nbsp;" + "&nbsp;" + "&nbsp;"
 		+ createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
 
