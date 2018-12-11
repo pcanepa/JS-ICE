@@ -164,10 +164,22 @@ function createSymmetryGrp() {
 
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
-	runJmolScriptWait("draw symop '"+symop+"' "+_file.symmetry.symOffset);
+	var symOffsetString = _file.symmetry.symOffset;
+	symOffsetString = symOffsetString.substring(1);
+	var symOffsetArray = symOffsetString.split(",");
+	var xOffsetValue = parseInt(symOffsetArray[0])+"/1";
+	var yOffsetValue = parseInt(symOffsetArray[1])+"/1";
+	var zOffsetValue = parseInt(symOffsetArray[2])+"/1";
+	var symopString = ""+symop+"";
+	var symopArray = symopString.split(",");
+	console.log(symopArray)
+	var xSymopValue = symopArray[0];
+	var ySymopValue = symopArray[1];
+	var zSymopValue = symopArray[2];
+	symopWithOffset = xSymopValue+"+"+xOffsetValue+","+ySymopValue+"+"+yOffsetValue+","+zSymopValue+"+"+zOffsetValue
+	runJmolScriptWait("draw symop '"+symopWithOffset+"'");
 	axisFactor = 3;
 	runJmolScriptWait("drawCleanSymmetryAxisVectors("+axisFactor+")");
-
 } 
 
 // takes a given point and add the elements provided to it by a symmetry operation
