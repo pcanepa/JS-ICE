@@ -123,6 +123,10 @@ function setYMax() {
 	 _file.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
 }
 
+function onClickSymmetry() {
+	onClickMinMax();
+}
+
 function onClickMinMax() {
 	var model = _file.specData.currentModel;
 	onClickModSpec();
@@ -773,7 +777,7 @@ function createFreqGrp() {
 			strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "", "ir");
 			strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "", "raman");
 			strFreq += "<BR>\n";
-			strFreq += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeyup='onClickModSpec()' CLASS='select' >";
+			strFreq += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Symmetry <select id='sym' name='vibSym' onchange='onClickSymmetry()' onkeyup='onClickSymmetry()' CLASS='select' >";
 			strFreq += "</select> ";
 			strFreq += "<BR>\n";
 			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib()' onkeyup='onClickSelectVib()' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
