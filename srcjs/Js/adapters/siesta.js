@@ -54,7 +54,6 @@ loadDone_siesta = function(msg) {
 	}
 	setFrameValues("1");
 	setTitleEcho();
-	disableFreqOpts();
 	loadDone();
 }
 

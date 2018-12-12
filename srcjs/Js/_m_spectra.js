@@ -43,15 +43,15 @@ function enterSpectra() {
 		setValue("nMin", _file.specData.minX);
 	}
 	$("#nMin").keypress(function(event) {
-	if (event.which == 13) {
-		event.preventDefault();
-		onClickModSpec();
+		if (event.which == 13) {
+			event.preventDefault();
+			onClickMinMax();
 		}
 	});
 	$("#nMax").keypress(function(event) {
-	if (event.which == 13) {
-		event.preventDefault();
-		onClickModSpec();
+		if (event.which == 13) {
+			event.preventDefault();
+			onClickMinMax();
 		}
 	});
 	$("#sigma").keypress(function(event) {
@@ -64,27 +64,16 @@ function enterSpectra() {
 
 function exitSpectra() {
 //Leaving the spectra page turns off the vibration and vectors.
-	runJmolScriptWait('vibration off; vectors off');
+	stopVibration();
+}
+
+function stopVibration() {
+	runJmolScriptWait("vibration off; vectors off");	
 }
 
 function doSpectraNewWindow() {
 //This opens the spectra graph in the new window. 
 	var newwin = open("spectrum.html");
-}
-
-//LOAD FUNCTIONS: called by file types, but currently do nothing. 
-function disableFreqOpts() {
-	/*for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = true;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = true;*/
-}
-
-function enableFreqOpts() {
-	/*for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = false;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = false;*/
 }
 
 function onClickSelectVib() {
@@ -94,7 +83,7 @@ function onClickSelectVib() {
 	showFrame(model);	
 	updateJmolForFreqParams(true);
 	// trigger to make sure selectedIndex has been set.
-	setTimeout(function() {selectVib(vib.selectedIndex)}, 50);
+	setTimeout(function() {selectVib()}, 50);
 }
 
 function selectVib(index) {
@@ -102,9 +91,27 @@ function selectVib(index) {
 //updated to show a larger red line at the selected frequency. The correct frame is also shown for the 
 //specific vibration.
 	var vib = getbyID('vib');
+	index || (index = vib.selectedIndex);
+	_file.specData.currentModel = (index < 0 ? 0 : parseInt(vib.options[index].value));
 	_file.plotFreq.selectedFreq = (index < 0 ? -1 
 			: _file.specData.freqs[_file.specData.vibList[index][3]]);
 	showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);
+}
+
+function selectVibByModel(model) {
+	if (model > 0) {
+		var vib = getbyID('vib');
+		var options = vib.options;
+		for (var i = 0; i < options.length; i++) {
+			if (options[i].value == model) {
+				vib.selectedIndex = i;
+				selectVib(i);
+				return;
+			}
+		}
+	}
+	_file.plotFreq.selectedFreq = -1;
+	stopVibration();
 }
 
 function setYMax() {
@@ -114,6 +121,12 @@ function setYMax() {
 	getFrequencyList(specData);
 	createSpectrum(specData);
 	 _file.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
+}
+
+function onClickMinMax() {
+	var model = _file.specData.currentModel;
+	onClickModSpec();
+	selectVibByModel(model);
 }
 
 function onClickModSpec(isPageOpen, doSetYMax) {
@@ -138,7 +151,7 @@ function onClickModSpec(isPageOpen, doSetYMax) {
 	if (isPageOpen){
 		setMaxMinPlot(_file.specData);
 	}
-	return showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);	
+	return showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);
 }
 
 function setUpSpecData(typeIRorRaman,irrep) {
@@ -157,6 +170,7 @@ function setUpSpecData(typeIRorRaman,irrep) {
 			maxY      : _file.spectraYMax,
 			maxR      : 3700,
 			previousPointFreq : -1,
+			currentModel : 1,
 			vibList   : [],
 			freqInfo  : [],
 			irInt     : [],
@@ -532,7 +546,7 @@ function plotSelectCallbackFreq(event, ranges) {
 	if (Math.abs(x2-x1) > 100) {
 		setValue("nMin", Math.min(x1, x2));
 		setValue("nMax", Math.max(x1, x2));
-		setTimeout(onClickModSpec,50);
+		setTimeout(onClickMinMax,50);
 	}
 }
 
@@ -572,13 +586,15 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 		setTimeout(function() { selectVib(-1) }, 50);
 		return;		
 	}
+	
+	// saves model index as _file.specData.currentModel
 	getbyID('vib').options[listIndex].selected = true;
-	setTimeout(function(){onClickSelectVib();},50);
+	setTimeout(function(){onClickSelectVib(0);},50);
 }
 
 function plotHoverCallbackFreq(event, pos, itemFreq) {
 //Shows the vibrational frequency if user hovers over range. Does not change the frequency 
-//unless user hovers along the top red lines. 
+//unless user hovers along the top red lines.
 	hideTooltip();
 	if(!itemFreq)return
 	if (_file.specData.previousPointFreq != itemFreq.datapoint) {
@@ -593,10 +609,8 @@ function plotHoverCallbackFreq(event, pos, itemFreq) {
 		var model = _file.specData.model[freq];
 		var x = roundoff(itemFreq.datapoint[0],2);
 		var y = roundoff(itemFreq.datapoint[1],1);
-		var model = itemFreq.datapoint[2];
-		
+		var model = itemFreq.datapoint[2];		
 		label = getbyID('vib').options[listIndex].text;
-
 		showTooltipFreq(itemFreq.pageX, itemFreq.pageY + 10, label, pos);
 	}
 	if (pos.canvasY < 30)setTimeout(function(){plotClickCallbackFreq(event, pos, itemFreq)},50);
@@ -699,24 +713,22 @@ function updateJmolForFreqParams(isVibClick) {
 	}
 }
 
-function onScale(mode) {
+function onClickScaleFreq(mode) {
 //Makes the up button increase the y scale by 1.414, the down button decrease the y scale by 1.414, 
 //and the middle button reset the original yscale, xmax and xmin. 
 	switch (mode) {
 	case 1:
-		_file.plotFreq.yscale *= 1.414;
-		break;
+	case -1:
+		_file.plotFreq.yscale *= (mode == 1 ? 1.414 : 1/1.414);
+		onClickModSpec();
+		return;
 	case 0:
 		_file.plotFreq.yscale = 1;
 		setValue("nMin", _file.plotFreq.minX0);
 		setValue("nMax", _file.plotFreq.maxX0);
-		break;
-	case -1:
-		_file.plotFreq.yscale /= 1.414;
-		break;
+		onClickMinMax();
+		return;
 	}
-	onClickModSpec();
-	return true;
 }
 
 function createFreqGrp() { 
@@ -732,9 +744,9 @@ function createFreqGrp() {
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
 	var smallGraph =  createDiv("plotareafreq", "background:blue;width:300px;height:180px;background-color:#EFEFEF","");  
-	var graphButtons = createButtonB("scaleup", "&#x25b2;","onScale(1)' title='increase Y scale",0,"width:40px") + "<br>"
-		+ createButtonB("scaleup", "&#x25cf;","onScale(0)' title='reset X and Y",0,"width:40px") + "<br>"
-		+ createButtonB("scaleup", "&#x25bc;","onScale(-1)' title='decrease Y scale",0,"width:40px");
+	var graphButtons = createButtonB("scaleup", "&#x25b2;","onClickScaleFreq(1)' title='increase Y scale",0,"width:40px") + "<br>"
+		+ createButtonB("scaleup", "&#x25cf;","onClickScaleFreq(0)' title='reset X and Y",0,"width:40px") + "<br>"
+		+ createButtonB("scaleup", "&#x25bc;","onClickScaleFreq(-1)' title='decrease Y scale",0,"width:40px");
 	var smallGraphAndButtons = "<table cellpadding=0 cellspacing=0><tr><td valign=top>" 
 			+ smallGraph + "</td><td valign=center>" 
 			+ graphButtons + "</td></tr></table>";
@@ -743,16 +755,16 @@ function createFreqGrp() {
 		+ "<br>\n"
 		+ createLine('blue', '')
 		+ "<br>"
-		+ "Band width " + createText2("sigma", "30", "3", "") + " (cm<sup>-1</sup>)" 
-		+ "&nbsp;"
 		+ "Min freq. " + createText2("nMin", "0", "4", "")
-		+ " Max " + createText2("nMax", "4000", "4", "") + "(cm<sup>-1</sup>)"
-		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "") + "<br>"
+		+ " Max " + createText2("nMax", "4000", "4", "") + "cm<sup>-1</sup>"
+		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "")
+		+ "<br>" + "Band width " + createText2("sigma", "30", "2", "") + "cm<sup>-1</sup>" 
+		+ "&nbsp;"
 		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 1, "", "gaus")
 		+ createRadio("convol", "Lorentzian", 'onClickModSpec(false, true)', 0, 0, "", "lor") 
 		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 0, "", "stick")
 		+ "&nbsp;" + "&nbsp;" + "&nbsp;"
-		+ createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
+		+ "<br>" + createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
 
 	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib' style='display:none'>";
 		strFreq += "<table border=0 class='contents'><tr><td valign='bottom'>";

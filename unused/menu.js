@@ -1,6 +1,6 @@
 /*  J-ICE library 
-
-    based on:
+ *
+ *  based on:
  *
  *  Copyright (C) 2010-2014 Pieremanuele Canepa http://j-ice.sourceforge.net/
  *
@@ -22,26 +22,5 @@
  *  02111-1307  USA.
  */
 
-//var counterFreq = 0;
 
-loadDone_molden = function(msg) {
 
-	_file.energyUnits = ENERGY_EV;
-	_file.StrUnitEnergy = "e";
-	
-	for (var i = 0; i < _file.info.length; i++) {
-		if (_file.info[i].name != null) {
-			var line = _file.info[i].name;
-			if (line.search(/cm/i) != -1) {
-				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));
-				_file.freqInfo.push(_file.info[i]);
-				_file.freqData.push(line);
-				_file.vibLine.push(i + " A " + data + " cm^-1");
-				_file.counterMD++;
-			}
-		}
-	}
-
-	getSymInfo();
-	loadDone();
-}
