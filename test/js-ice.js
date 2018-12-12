@@ -1,5 +1,43 @@
 
       		
+///js// Js/global.js /////
+// global variables used in JS-ICE
+// Geoff van Dover 2018.10.26
+
+version = "3.0.0"; // BH 2018
+
+
+// _m_file.js
+
+_file = {
+		specData: null,
+		plotFreq: null
+};
+
+_fileIsReload = false;
+
+// pick.js
+
+_pick = {};
+
+// plotgraph.js
+
+_plot = {};
+
+// for citations:
+
+_global = {
+	citations : [
+	   { title:				
+		'J-ICE: a new Jmol interface for handling and visualizing crystallographic and electronic properties' 
+		, authors: ['P. Canepa', 'R.M. Hanson', 'P. Ugliengo', '& M. Alfredsson']
+		, journal: 'J.Appl. Cryst. 44, 225 (2011)' 
+		, link: 'http://dx.doi.org/10.1107/S0021889810049411'
+	   }
+	   
+	 ]  
+};
+      		
 ///js// Js/init.js /////
 // note that JmolColorPicker is customized -- BH 2018
 
@@ -76,8 +114,8 @@ function docWriteBottomFrame() {
 			"specialbutton"));
 	document.write(createButton1("reset", "Reset",
 			'runJmolScriptWait("script ./scripts/reset.spt")', 0, "specialbutton"));
-	document.write(createButton1("Console", "Console", 'runJmolScriptWait("console")', 0,
-			"specialbutton"));
+//	document.write(createButton1("Console", "Console", 'runJmolScriptWait("console")', 0,
+//			"specialbutton"));
 	document.write(createButton("NewWindow", "New window", "newAppletWindow()", 0));
 	document.write(createButton("viewfile", "File content", "printFileContent()", 0));
 	document.write(createButton1("saveState", 'Save state', 'doClickSaveCurrentState()',
@@ -506,8 +544,11 @@ function cleanAndReloadForm() {
 	// this method was called for castep, dmol, molden, quantumespresso, vasp loading	
 	setDefaultJmolSettings();
 	document.fileGroup.reset();
-//	formResetAll();
-	cleanLists();
+	cleanList('geom');
+	cleanList('colourbyElementList');
+	// cleanList('colourbyAtomList');
+	cleanList('polybyElementList');
+	cleanList("poly2byElementList");
 	updateElementLists();
 	getUnitcell("1");
 	setFrameValues("1");
@@ -2843,15 +2884,15 @@ function enterSpectra() {
 		setValue("nMin", _file.specData.minX);
 	}
 	$("#nMin").keypress(function(event) {
-	if (event.which == 13) {
-		event.preventDefault();
-		onClickModSpec();
+		if (event.which == 13) {
+			event.preventDefault();
+			onClickMinMax();
 		}
 	});
 	$("#nMax").keypress(function(event) {
-	if (event.which == 13) {
-		event.preventDefault();
-		onClickModSpec();
+		if (event.which == 13) {
+			event.preventDefault();
+			onClickMinMax();
 		}
 	});
 	$("#sigma").keypress(function(event) {
@@ -2864,27 +2905,16 @@ function enterSpectra() {
 
 function exitSpectra() {
 //Leaving the spectra page turns off the vibration and vectors.
-	runJmolScriptWait('vibration off; vectors off');
+	stopVibration();
+}
+
+function stopVibration() {
+	runJmolScriptWait("vibration off; vectors off");	
 }
 
 function doSpectraNewWindow() {
 //This opens the spectra graph in the new window. 
 	var newwin = open("spectrum.html");
-}
-
-//LOAD FUNCTIONS: called by file types, but currently do nothing. 
-function disableFreqOpts() {
-	/*for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = true;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = true;*/
-}
-
-function enableFreqOpts() {
-	/*for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = false;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = false;*/
 }
 
 function onClickSelectVib() {
@@ -2894,7 +2924,7 @@ function onClickSelectVib() {
 	showFrame(model);	
 	updateJmolForFreqParams(true);
 	// trigger to make sure selectedIndex has been set.
-	setTimeout(function() {selectVib(vib.selectedIndex)}, 50);
+	setTimeout(function() {selectVib()}, 50);
 }
 
 function selectVib(index) {
@@ -2902,9 +2932,27 @@ function selectVib(index) {
 //updated to show a larger red line at the selected frequency. The correct frame is also shown for the 
 //specific vibration.
 	var vib = getbyID('vib');
+	index || (index = vib.selectedIndex);
+	_file.specData.currentModel = (index < 0 ? 0 : parseInt(vib.options[index].value));
 	_file.plotFreq.selectedFreq = (index < 0 ? -1 
 			: _file.specData.freqs[_file.specData.vibList[index][3]]);
 	showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);
+}
+
+function selectVibByModel(model) {
+	if (model > 0) {
+		var vib = getbyID('vib');
+		var options = vib.options;
+		for (var i = 0; i < options.length; i++) {
+			if (options[i].value == model) {
+				vib.selectedIndex = i;
+				selectVib(i);
+				return;
+			}
+		}
+	}
+	_file.plotFreq.selectedFreq = -1;
+	stopVibration();
 }
 
 function setYMax() {
@@ -2914,6 +2962,16 @@ function setYMax() {
 	getFrequencyList(specData);
 	createSpectrum(specData);
 	 _file.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
+}
+
+function onClickSymmetry() {
+	onClickMinMax();
+}
+
+function onClickMinMax() {
+	var model = _file.specData.currentModel;
+	onClickModSpec();
+	selectVibByModel(model);
 }
 
 function onClickModSpec(isPageOpen, doSetYMax) {
@@ -2938,7 +2996,7 @@ function onClickModSpec(isPageOpen, doSetYMax) {
 	if (isPageOpen){
 		setMaxMinPlot(_file.specData);
 	}
-	return showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);	
+	return showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);
 }
 
 function setUpSpecData(typeIRorRaman,irrep) {
@@ -2957,6 +3015,7 @@ function setUpSpecData(typeIRorRaman,irrep) {
 			maxY      : _file.spectraYMax,
 			maxR      : 3700,
 			previousPointFreq : -1,
+			currentModel : 1,
 			vibList   : [],
 			freqInfo  : [],
 			irInt     : [],
@@ -3332,7 +3391,7 @@ function plotSelectCallbackFreq(event, ranges) {
 	if (Math.abs(x2-x1) > 100) {
 		setValue("nMin", Math.min(x1, x2));
 		setValue("nMax", Math.max(x1, x2));
-		setTimeout(onClickModSpec,50);
+		setTimeout(onClickMinMax,50);
 	}
 }
 
@@ -3372,13 +3431,15 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 		setTimeout(function() { selectVib(-1) }, 50);
 		return;		
 	}
+	
+	// saves model index as _file.specData.currentModel
 	getbyID('vib').options[listIndex].selected = true;
-	setTimeout(function(){onClickSelectVib();},50);
+	setTimeout(function(){onClickSelectVib(0);},50);
 }
 
 function plotHoverCallbackFreq(event, pos, itemFreq) {
 //Shows the vibrational frequency if user hovers over range. Does not change the frequency 
-//unless user hovers along the top red lines. 
+//unless user hovers along the top red lines.
 	hideTooltip();
 	if(!itemFreq)return
 	if (_file.specData.previousPointFreq != itemFreq.datapoint) {
@@ -3393,10 +3454,8 @@ function plotHoverCallbackFreq(event, pos, itemFreq) {
 		var model = _file.specData.model[freq];
 		var x = roundoff(itemFreq.datapoint[0],2);
 		var y = roundoff(itemFreq.datapoint[1],1);
-		var model = itemFreq.datapoint[2];
-		
+		var model = itemFreq.datapoint[2];		
 		label = getbyID('vib').options[listIndex].text;
-
 		showTooltipFreq(itemFreq.pageX, itemFreq.pageY + 10, label, pos);
 	}
 	if (pos.canvasY < 30)setTimeout(function(){plotClickCallbackFreq(event, pos, itemFreq)},50);
@@ -3499,24 +3558,22 @@ function updateJmolForFreqParams(isVibClick) {
 	}
 }
 
-function onScale(mode) {
+function onClickScaleFreq(mode) {
 //Makes the up button increase the y scale by 1.414, the down button decrease the y scale by 1.414, 
 //and the middle button reset the original yscale, xmax and xmin. 
 	switch (mode) {
 	case 1:
-		_file.plotFreq.yscale *= 1.414;
-		break;
+	case -1:
+		_file.plotFreq.yscale *= (mode == 1 ? 1.414 : 1/1.414);
+		onClickModSpec();
+		return;
 	case 0:
 		_file.plotFreq.yscale = 1;
 		setValue("nMin", _file.plotFreq.minX0);
 		setValue("nMax", _file.plotFreq.maxX0);
-		break;
-	case -1:
-		_file.plotFreq.yscale /= 1.414;
-		break;
+		onClickMinMax();
+		return;
 	}
-	onClickModSpec();
-	return true;
 }
 
 function createFreqGrp() { 
@@ -3532,9 +3589,9 @@ function createFreqGrp() {
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
 	var smallGraph =  createDiv("plotareafreq", "background:blue;width:300px;height:180px;background-color:#EFEFEF","");  
-	var graphButtons = createButtonB("scaleup", "&#x25b2;","onScale(1)' title='increase Y scale",0,"width:40px") + "<br>"
-		+ createButtonB("scaleup", "&#x25cf;","onScale(0)' title='reset X and Y",0,"width:40px") + "<br>"
-		+ createButtonB("scaleup", "&#x25bc;","onScale(-1)' title='decrease Y scale",0,"width:40px");
+	var graphButtons = createButtonB("scaleup", "&#x25b2;","onClickScaleFreq(1)' title='increase Y scale",0,"width:40px") + "<br>"
+		+ createButtonB("scaleup", "&#x25cf;","onClickScaleFreq(0)' title='reset X and Y",0,"width:40px") + "<br>"
+		+ createButtonB("scaleup", "&#x25bc;","onClickScaleFreq(-1)' title='decrease Y scale",0,"width:40px");
 	var smallGraphAndButtons = "<table cellpadding=0 cellspacing=0><tr><td valign=top>" 
 			+ smallGraph + "</td><td valign=center>" 
 			+ graphButtons + "</td></tr></table>";
@@ -3543,16 +3600,16 @@ function createFreqGrp() {
 		+ "<br>\n"
 		+ createLine('blue', '')
 		+ "<br>"
-		+ "Band width " + createText2("sigma", "30", "3", "") + " (cm<sup>-1</sup>)" 
-		+ "&nbsp;"
 		+ "Min freq. " + createText2("nMin", "0", "4", "")
-		+ " Max " + createText2("nMax", "4000", "4", "") + "(cm<sup>-1</sup>)"
-		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "") + "<br>"
+		+ " Max " + createText2("nMax", "4000", "4", "") + "cm<sup>-1</sup>"
+		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "")
+		+ "<br>" + "Band width " + createText2("sigma", "30", "2", "") + "cm<sup>-1</sup>" 
+		+ "&nbsp;"
 		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 1, "", "gaus")
 		+ createRadio("convol", "Lorentzian", 'onClickModSpec(false, true)', 0, 0, "", "lor") 
 		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 0, "", "stick")
 		+ "&nbsp;" + "&nbsp;" + "&nbsp;"
-		+ createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
+		+ "<br>" + createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
 
 	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib' style='display:none'>";
 		strFreq += "<table border=0 class='contents'><tr><td valign='bottom'>";
@@ -3561,7 +3618,7 @@ function createFreqGrp() {
 			strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "", "ir");
 			strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "", "raman");
 			strFreq += "<BR>\n";
-			strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeyup='onClickModSpec()' CLASS='select' >";
+			strFreq += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Symmetry <select id='sym' name='vibSym' onchange='onClickSymmetry()' onkeyup='onClickSymmetry()' CLASS='select' >";
 			strFreq += "</select> ";
 			strFreq += "<BR>\n";
 			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib()' onkeyup='onClickSelectVib()' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
@@ -3969,21 +4026,21 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += "x";
+	strSymmetry += "a";
 	strSymmetry += createRadio("xOffset"," ",'updateSymOffset("x",-1)',0,0,"x-1","x-1");
 	strSymmetry += createRadio("xOffset"," ",'updateSymOffset("x",0)',0,1,"x+0","x+0");
 	strSymmetry += createRadio("xOffset"," ",'updateSymOffset("x",1)',0,0,"x+1","x+1");
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += "y";
+	strSymmetry += "b";
 	strSymmetry += createRadio("yOffset"," ",'updateSymOffset("y",-1)',0,0,"y-1","z-1");
 	strSymmetry += createRadio("yOffset"," ",'updateSymOffset("y",0)',0,1,"y+0","z+0");
 	strSymmetry += createRadio("yOffset"," ",'updateSymOffset("y",1)',0,0,"y+1","z+1");
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += "z";
+	strSymmetry += "c";
 	strSymmetry += createRadio("zOffset"," ",'updateSymOffset("z",-1)',0,0,"z-1","z-1");
 	strSymmetry += createRadio("zOffset"," ",'updateSymOffset("z",0)',0,1,"z+0","z+0");
 	strSymmetry += createRadio("zOffset"," ",'updateSymOffset("z",1)',0,0,"z+1","z+1");
@@ -4017,10 +4074,22 @@ function createSymmetryGrp() {
 
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
-	runJmolScriptWait("draw symop '"+symop+"' "+_file.symmetry.symOffset);
+	var symOffsetString = _file.symmetry.symOffset;
+	symOffsetString = symOffsetString.substring(1);
+	var symOffsetArray = symOffsetString.split(",");
+	var xOffsetValue = parseInt(symOffsetArray[0])+"/1";
+	var yOffsetValue = parseInt(symOffsetArray[1])+"/1";
+	var zOffsetValue = parseInt(symOffsetArray[2])+"/1";
+	var symopString = ""+symop+"";
+	var symopArray = symopString.split(",");
+	console.log(symopArray)
+	var xSymopValue = symopArray[0];
+	var ySymopValue = symopArray[1];
+	var zSymopValue = symopArray[2];
+	symopWithOffset = xSymopValue+"+"+xOffsetValue+","+ySymopValue+"+"+yOffsetValue+","+zSymopValue+"+"+zOffsetValue
+	runJmolScriptWait("draw symop '"+symopWithOffset+"'");
 	axisFactor = 3;
 	runJmolScriptWait("drawCleanSymmetryAxisVectors("+axisFactor+")");
-
 } 
 
 // takes a given point and add the elements provided to it by a symmetry operation
@@ -4925,7 +4994,7 @@ function fromAngstromtoBohr(value) {
       		
 ///js// Js/debug.js /////
 debugSay = function(script) {
-	// BH 2018
+	// the debug area at the bottom of each tab
 	var div = getbyID("debugdiv");
 	var area = getbyID("debugarea");
 	if (script === null) {
@@ -4950,6 +5019,22 @@ debugShowCommands = function(isOn) {
 
 debugShowHistory = function() {
  	debugSay(jmolEvaluate("show('history')"));
+}
+
+addCommandBox = function() {
+	// see debug.js
+	return "<div id='debugpanel'><hr>"
+		+ createCheck("debugMode", "Show Commands", "debugShowCommands(this.checked)", 0,
+			0, "")
+		+ "&nbsp;" + createButton("removeText", "Clear", 'debugShowCommands(true);debugSay(null)', 0)
+		+ "&nbsp;" + createButton("getHelp", "History", 'debugShowCommands(true);debugShowHistory()', 0)
+		+ "&nbsp;" + createButton("getHelp", "Help", 'runJmolScriptWait("help")', 0)
+		+ "&nbsp;" + createButton("openConsole", "Console", 'runJmolScriptWait("console")', 0)
+		+ "<br>\n"
+		+ "<div id='debugdiv' style='display:none'>"
+		+ "<input type='text' style='font-size:12pt;width:350px' value='' placeHolder='type a command here' onKeydown='event.keyCode === 13&&$(this).select()&&runJmolScriptWait(value)'/>" 
+		+ "<br><textarea id='debugarea' style='font-size:12pt;width:350px;height:150px;font-family:monospace;overflow-y:auto'></textarea>" 
+		+ "</div></div>"
 }
 
 
@@ -5789,59 +5874,6 @@ function getElementList(arr) {
 
 
       		
-///js// Js/menu.js /////
-/*  J-ICE library 
- *
- *  based on:
- *
- *  Copyright (C) 2010-2014 Pieremanuele Canepa http://j-ice.sourceforge.net/
- *
- *  Contact: pierocanepa@sourceforge.net
- *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
- *  02111-1307  USA.
- */
-
-
-
-addCommandBox = function() {
-	// see debug.js
-	return "<div id='debugpanel'><hr>"
-		+ createCheck("debugMode", "Show Commands", "debugShowCommands(this.checked)", 0,
-			0, "")
-		+ "&nbsp;" + createButton("removeText", "Clear", 'debugShowCommands(true);debugSay(null)', 0)
-		+ "&nbsp;" + createButton("getHelp", "History", 'debugShowCommands(true);debugShowHistory()', 0)
-		+ "&nbsp;" + createButton("getHelp", "Scripting Help", 'runJmolScriptWait("help")', 0)
-		+ "<br>\n"
-		+ "<div id='debugdiv' style='display:none'>"
-		+ "<input type='text' style='font-size:12pt;width:350px' value='' placeHolder='type a command here' onKeydown='event.keyCode === 13&&$(this).select()&&runJmolScriptWait(value)'/>" 
-		+ "<br><textarea id='debugarea' style='font-size:12pt;width:350px;height:150px;font-family:monospace;overflow-y:auto'></textarea>" 
-		+ "</div></div>"
-}
-
-function cleanLists() {
-	// was "removeAll()"
-	cleanList('geom');
-	cleanList('colourbyElementList');
-	// cleanList('colourbyAtomList');
-	cleanList('polybyElementList');
-	cleanList("poly2byElementList");
-	// BH 2018 -- does not belong here: setValue("fineOrientMagn", "5");
-}
-
-      		
 ///js// Js/pick.js /////
 _pick = {
 	pickingEnabled 	: false,
@@ -6664,7 +6696,7 @@ function newAppletWindow() {
 	var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50"
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);
-	var newwin = open("OutputResized.html", "jmol_" + sm, _window.windowoptions);
+	var newwin = open("OutputResized.html", "jmol_" + sm, windowoptions);
 }
 
 
@@ -6689,41 +6721,6 @@ function newAppletWindowFeed() {
 	sm = sm.substring(2, 10);
 	var newwin = open("http://j-ice.sourceforge.net/?page_id=9", sm, windowfeed);
 }
-      		
-///js// JS/global.js /////
-// global variables used in JS-ICE
-// Geoff van Dover 2018.10.26
-
-version = "3.0.0"; // BH 2018
-
-
-// _m_file.js
-
-_file = {};
-
-_fileIsReload = false;
-
-// pick.js
-
-_pick = {};
-
-// plotgraph.js
-
-_plot = {};
-
-// for citations:
-
-_global = {
-	citations : [
-	   { title:				
-		'J-ICE: a new Jmol interface for handling and visualizing crystallographic and electronic properties' 
-		, authors: ['P. Canepa', 'R.M. Hanson', 'P. Ugliengo', '& M. Alfredsson']
-		, journal: 'J.Appl. Cryst. 44, 225 (2011)' 
-		, link: 'http://dx.doi.org/10.1107/S0021889810049411'
-	   }
-	   
-	 ]  
-};
       		
 ///js// Js/adapters/castep.js /////
 /*  J-ICE library 
@@ -7100,7 +7097,6 @@ loadDone_dmol = function() {
 
 	getUnitcell("1");
 	setFrameValues("1");
-	disableFreqOpts();
 	getSymInfo();
 	loadDone();
 }
@@ -7139,7 +7135,6 @@ loadDone_gaussian = function() {
 
 	setTitleEcho();
 	setFrameValues("1");
-	disableFreqOpts();
 
 	var geom = getbyID('geom');
 	var vib = getbyID('vib');
@@ -7452,7 +7447,6 @@ loadDone_molden = function(msg) {
 		}
 	}
 
-	disableFreqOpts();
 	getSymInfo();
 	loadDone();
 }
@@ -7871,7 +7865,6 @@ loadDone_siesta = function(msg) {
 	}
 	setFrameValues("1");
 	setTitleEcho();
-	disableFreqOpts();
 	loadDone();
 }
 
@@ -7927,7 +7920,6 @@ loadDone_vaspoutcar = function() {
 
 	getUnitcell("1");
 	setFrameValues("1");
-	disableFreqOpts();
 	getSymInfo();
 	loadDone();
 }

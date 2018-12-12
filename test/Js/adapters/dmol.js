@@ -46,7 +46,6 @@ loadDone_dmol = function() {
 
 	getUnitcell("1");
 	setFrameValues("1");
-	disableFreqOpts();
 	getSymInfo();
 	loadDone();
 }

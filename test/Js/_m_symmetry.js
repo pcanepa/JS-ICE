@@ -116,21 +116,21 @@ function createSymmetryGrp() {
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += "x";
+	strSymmetry += "a";
 	strSymmetry += createRadio("xOffset"," ",'updateSymOffset("x",-1)',0,0,"x-1","x-1");
 	strSymmetry += createRadio("xOffset"," ",'updateSymOffset("x",0)',0,1,"x+0","x+0");
 	strSymmetry += createRadio("xOffset"," ",'updateSymOffset("x",1)',0,0,"x+1","x+1");
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += "y";
+	strSymmetry += "b";
 	strSymmetry += createRadio("yOffset"," ",'updateSymOffset("y",-1)',0,0,"y-1","z-1");
 	strSymmetry += createRadio("yOffset"," ",'updateSymOffset("y",0)',0,1,"y+0","z+0");
 	strSymmetry += createRadio("yOffset"," ",'updateSymOffset("y",1)',0,0,"y+1","z+1");
 	strSymmetry += "</td></tr>\n";
 	strSymmetry += "<BR>\n";
 	strSymmetry += "<tr><td>\n";
-	strSymmetry += "z";
+	strSymmetry += "c";
 	strSymmetry += createRadio("zOffset"," ",'updateSymOffset("z",-1)',0,0,"z-1","z-1");
 	strSymmetry += createRadio("zOffset"," ",'updateSymOffset("z",0)',0,1,"z+0","z+0");
 	strSymmetry += createRadio("zOffset"," ",'updateSymOffset("z",1)',0,0,"z+1","z+1");
@@ -164,10 +164,22 @@ function createSymmetryGrp() {
 
 // draws the axis lines for rotation axes and mirror planes for mirror symops 
 function displaySymmetryDrawObjects(symop){
-	runJmolScriptWait("draw symop '"+symop+"' "+_file.symmetry.symOffset);
+	var symOffsetString = _file.symmetry.symOffset;
+	symOffsetString = symOffsetString.substring(1);
+	var symOffsetArray = symOffsetString.split(",");
+	var xOffsetValue = parseInt(symOffsetArray[0])+"/1";
+	var yOffsetValue = parseInt(symOffsetArray[1])+"/1";
+	var zOffsetValue = parseInt(symOffsetArray[2])+"/1";
+	var symopString = ""+symop+"";
+	var symopArray = symopString.split(",");
+	console.log(symopArray)
+	var xSymopValue = symopArray[0];
+	var ySymopValue = symopArray[1];
+	var zSymopValue = symopArray[2];
+	symopWithOffset = xSymopValue+"+"+xOffsetValue+","+ySymopValue+"+"+yOffsetValue+","+zSymopValue+"+"+zOffsetValue
+	runJmolScriptWait("draw symop '"+symopWithOffset+"'");
 	axisFactor = 3;
 	runJmolScriptWait("drawCleanSymmetryAxisVectors("+axisFactor+")");
-
 } 
 
 // takes a given point and add the elements provided to it by a symmetry operation

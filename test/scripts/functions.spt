@@ -95,11 +95,11 @@ function drawCleanSymmetryAxisVectors(axisFactor){
 	point2 = $sym_rotvector1[1]
 	point3 = $sym_rotvector2[0]
 	point4 = $sym_rotvector2[1]
-	point1 = point1*axisFactor
-	point3 = point3*axisFactor
+	point2 = (point2-point1)*axisFactor
+	point4 = (point4-point3)*axisFactor
 	draw sym_rotvector* off 
-	draw ID "sym_axis1" vector @point2 @point1 
-	draw ID "sym_axis2" vector @point4 @point3
+	draw ID "sym_axis1" vector @point1 @point2
+	draw ID "sym_axis2" vector @point3 @point4 
 } 
 
 //adds new atom to model
@@ -132,9 +132,10 @@ function bindToVectorConstraint(vectorDrawObjectID,selectedPoint,errorDistance){
 	var errorDistance = 1
 	var startPoint = $ @vectorPointer[0]
 	var endPoint = $ @vectorPointer[1]
+	startPoint = $sym_rotvector1[0]// for demonstration bc pointers aren't working
+	endPoint = $sym_rotvector1[1]//
 	var constrainedPoint = intersection(startPoint,endPoint-startPoint,selectedPoint) //second input into intersection is a vector from first point
-	var selectedPointPointer = ""+selectedPoint+""
-	var selectedPointToNewPointDistance = @selectedPointPointer.distance(constrainedPoint)
+	var selectedPointToNewPointDistance = selectedPoint.distance(constrainedPoint)
 	if (selectedPointToNewPointDistance > errorDistance){
 		return selectedPoint 
 	}
@@ -148,8 +149,7 @@ function bindToVectorConstraint(vectorDrawObjectID,selectedPoint,errorDistance){
 function bindToPlaneConstraint(planeDrawObjectID, selectedPoint, errorDistance){
 	var planePointer = ""+planeDrawObjectID+""
 	var constrainedPoint = intersection(selectedPoint,planePointer)
-	var selectedPointPointer = ""+selectedPoint+""
-	var selectedPointToNewPointDistance = @selectedPointPointer.distance(constrainedPoint)
+	var selectedPointToNewPointDistance = @selectedPoint.distance(constrainedPoint)
 	if (selectedPointToNewPointDistance > errorDistance){
 		return selectedPoint 
 	}
@@ -162,8 +162,7 @@ function bindToSphereConstraint(sphereCenterPoint,sphereRadius,selectedPoint,err
 	//details need filling--talk to Dr. Hanson about documentation on circle intersection
 	//var constrainedPoint = intersection() NEEDS FILLING 
 	var contrainedPoint = {0 0 0} //PLACEHOLDER
-	var selectedPointPointer = ""+selectedPoint+""
-	var selectedPointToNewPointDistance = @selectedPointPointer.distance(constrainedPoint)
+	var selectedPointToNewPointDistance = @selectedPoint.distance(constrainedPoint)
 	if (selectedPointToNewPointDistance > errorDistance){
 		return selectedPoint 
 	}

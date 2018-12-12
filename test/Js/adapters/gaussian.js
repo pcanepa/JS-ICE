@@ -31,7 +31,6 @@ loadDone_gaussian = function() {
 
 	setTitleEcho();
 	setFrameValues("1");
-	disableFreqOpts();
 
 	var geom = getbyID('geom');
 	var vib = getbyID('vib');

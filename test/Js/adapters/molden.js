@@ -42,7 +42,6 @@ loadDone_molden = function(msg) {
 		}
 	}
 
-	disableFreqOpts();
 	getSymInfo();
 	loadDone();
 }

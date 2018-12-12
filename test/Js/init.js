@@ -73,8 +73,8 @@ function docWriteBottomFrame() {
 			"specialbutton"));
 	document.write(createButton1("reset", "Reset",
 			'runJmolScriptWait("script ./scripts/reset.spt")', 0, "specialbutton"));
-	document.write(createButton1("Console", "Console", 'runJmolScriptWait("console")', 0,
-			"specialbutton"));
+//	document.write(createButton1("Console", "Console", 'runJmolScriptWait("console")', 0,
+//			"specialbutton"));
 	document.write(createButton("NewWindow", "New window", "newAppletWindow()", 0));
 	document.write(createButton("viewfile", "File content", "printFileContent()", 0));
 	document.write(createButton1("saveState", 'Save state', 'doClickSaveCurrentState()',
