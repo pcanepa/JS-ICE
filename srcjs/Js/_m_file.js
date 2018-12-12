@@ -216,8 +216,11 @@ function cleanAndReloadForm() {
 	// this method was called for castep, dmol, molden, quantumespresso, vasp loading	
 	setDefaultJmolSettings();
 	document.fileGroup.reset();
-//	formResetAll();
-	cleanLists();
+	cleanList('geom');
+	cleanList('colourbyElementList');
+	// cleanList('colourbyAtomList');
+	cleanList('polybyElementList');
+	cleanList("poly2byElementList");
 	updateElementLists();
 	getUnitcell("1");
 	setFrameValues("1");

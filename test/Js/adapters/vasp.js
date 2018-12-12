@@ -48,7 +48,6 @@ loadDone_vaspoutcar = function() {
 
 	getUnitcell("1");
 	setFrameValues("1");
-	disableFreqOpts();
 	getSymInfo();
 	loadDone();
 }
@@ -112,9 +111,7 @@ function exportVASP() {
 
 	_measure.kindCoord = null;
 	var fractString = null;
-	var exportType = confirm("Would you like to export the structure in fractional coordinates? \n If you press Cancel those will be exported as normal Cartesian.");
-
-	if (exportType) {
+	if (prompt("Would you like to export the structure in fractional coordinates?", "yes") == "yes") {
 		_measure.kindCoord = "Direct"
 			fractString = "[fxyz]";
 		_file._exportFractionalCoord = true;

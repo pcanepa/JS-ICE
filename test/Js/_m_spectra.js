@@ -25,7 +25,8 @@
 
 
 function enterSpectra() {
-
+//enterSpectra gets information from fileData in order to set up the plot frequency. This includes nmin, nmax and selected 
+//frequency values. nMin, nMax and sigma values are also changeable by hitting the enter key.
 	if (!_file.plotFreq) {
 		_file.plotFreq = {
 				yscale: 1,
@@ -42,15 +43,15 @@ function enterSpectra() {
 		setValue("nMin", _file.specData.minX);
 	}
 	$("#nMin").keypress(function(event) {
-	if (event.which == 13) {
-		event.preventDefault();
-		onClickModSpec();
+		if (event.which == 13) {
+			event.preventDefault();
+			onClickMinMax();
 		}
 	});
 	$("#nMax").keypress(function(event) {
-	if (event.which == 13) {
-		event.preventDefault();
-		onClickModSpec();
+		if (event.which == 13) {
+			event.preventDefault();
+			onClickMinMax();
 		}
 	});
 	$("#sigma").keypress(function(event) {
@@ -60,72 +61,81 @@ function enterSpectra() {
 		}
 	});
 }
-/*enterSpectra gets information from fileData in order to set up the plot frequency. This includes nmin, nmax and selected 
-frequency values. nMin, nMax and sigma values are also changeable by hitting the enter key. */ 
-
 
 function exitSpectra() {
-	runJmolScriptWait('vibration off; vectors off');
+//Leaving the spectra page turns off the vibration and vectors.
+	stopVibration();
 }
-/*Leaving the spectra page turns off the vibration and vectors. */ 
 
+function stopVibration() {
+	runJmolScriptWait("vibration off; vectors off");	
+}
 
 function doSpectraNewWindow() {
+//This opens the spectra graph in the new window. 
 	var newwin = open("spectrum.html");
 }
-/* This opens the spectra graph in the new window. */ 
-
-
-/////////LOAD FUNCTIONS
-
-function disableFreqOpts() {
-	/*for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = true;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = true;*/
-}
-
-function enableFreqOpts() {
-	/*for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = false;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = false;*/
-
-}
-/* called by fily types, but currently do nothing. */
-
 
 function onClickSelectVib() {
+//Vibration chosen and shown in animation
 	var vib = getbyID('vib');
 	var model = parseInt(vib.value);
 	showFrame(model);	
 	updateJmolForFreqParams(true);
 	// trigger to make sure selectedIndex has been set.
-	setTimeout(function() {selectVib(vib.selectedIndex)}, 50);
+	setTimeout(function() {selectVib()}, 50);
 }
 
 function selectVib(index) {
+//When triggered (by a click), the vibration is retrieved from the file data. The graph is then
+//updated to show a larger red line at the selected frequency. The correct frame is also shown for the 
+//specific vibration.
 	var vib = getbyID('vib');
+	index || (index = vib.selectedIndex);
+	_file.specData.currentModel = (index < 0 ? 0 : parseInt(vib.options[index].value));
 	_file.plotFreq.selectedFreq = (index < 0 ? -1 
 			: _file.specData.freqs[_file.specData.vibList[index][3]]);
 	showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);
 }
-/* When triggered (by a click), the vibration is retrieved from the file data. The graph is then
-updated to show a larger red line at the selected frequency. The correct frame is also shown for the 
-specific vibration. */ 
 
+function selectVibByModel(model) {
+	if (model > 0) {
+		var vib = getbyID('vib');
+		var options = vib.options;
+		for (var i = 0; i < options.length; i++) {
+			if (options[i].value == model) {
+				vib.selectedIndex = i;
+				selectVib(i);
+				return;
+			}
+		}
+	}
+	_file.plotFreq.selectedFreq = -1;
+	stopVibration();
+}
 
 function setYMax() {
+// The maxY value is found from the information taken from the file and put into specData. 
+//The max y value of both Raman and IR arrays becomes the ymax value in fileData.
 	var specData = setUpSpecData("all", "any"); 
 	getFrequencyList(specData);
 	createSpectrum(specData);
 	 _file.spectraYMax = Math.max(arrayMax(specData.specIR), arrayMax(specData.specRaman));
 }
-/* The maxY value is found from the information taken from the file and put into specData. 
-The max y value of both Raman and IR arrays becomes the ymax value in fileData. */
 
+function onClickSymmetry() {
+	onClickMinMax();
+}
+
+function onClickMinMax() {
+	var model = _file.specData.currentModel;
+	onClickModSpec();
+	selectVibByModel(model);
+}
 
 function onClickModSpec(isPageOpen, doSetYMax) {
+// Gets information on the symmetry, IR or Raman, etc. in specData that is chosen by the user 
+//and/or file data. It then remakes the spectra plot with the updated information.
 	if (_file.freqData.length == 0) {
 		return;
 	}
@@ -145,13 +155,12 @@ function onClickModSpec(isPageOpen, doSetYMax) {
 	if (isPageOpen){
 		setMaxMinPlot(_file.specData);
 	}
-	return showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);	
+	return showFreqGraph("plotareafreq", _file.specData, _file.plotFreq);
 }
-/* Gets information on the symmetry, IR or Raman, etc. in specData that is chosen by the user 
-and/or file data. It then remakes the spectra plot with the updated information.*/ 
-
 
 function setUpSpecData(typeIRorRaman,irrep) {
+// This sets up specData, which is used throughout the code as an easy way to store all 
+//necessary information in terms of plotting the spectra.
 	return {
 			typeIRorRaman : typeIRorRaman, 
 			typeConvolve  : getRadioSetValue(document.modelsVib.convol), 
@@ -165,6 +174,7 @@ function setUpSpecData(typeIRorRaman,irrep) {
 			maxY      : _file.spectraYMax,
 			maxR      : 3700,
 			previousPointFreq : -1,
+			currentModel : 1,
 			vibList   : [],
 			freqInfo  : [],
 			irInt     : [],
@@ -180,10 +190,10 @@ function setUpSpecData(typeIRorRaman,irrep) {
 	};
 	
 }
-/* This sets up specData, which is used throughout the code as an easy way to store all 
-necessary information in terms of plotting the spectra.*/ 
 
 function createSpectrum(specData) {
+//This function creates the spectrum (either stick or cool) based on whether the spectrum includes
+//Raman data, IR data, or both (decided on by user and found in specData).
 	switch (specData.typeIRorRaman) {
 	case "ir":
 		extractIRData(specData);
@@ -212,11 +222,10 @@ function createSpectrum(specData) {
 		break;
 	}
 }
-/* This function creates the spectrum (either stick or cool) based on whether the spectrum includes
-Raman data, IR data, or both (decided on by user and found in specData).*/ 
-
 
 function setMaxMinPlot(specData) {
+//This function gets the max and min data for the plot. The max x is defined as being 4000, or 300 
+//greater than the last peak if the final peak is at a much lower value.
 	var n = specData.freqCount;
 	var sum = 0;
 	try { 
@@ -236,11 +245,10 @@ function setMaxMinPlot(specData) {
 	_file.plotFreq.maxX0 = specData.maxX = specData.maxR + 300;
 
 }
-/* This function gets the max and min data for the plot. The max x is defined as being 4000, or 300 
-greater than the last peak if the final peak is at a much lower value.*/ 
-
 
 function getFrequencyList(specData) {
+// This function finds the frequency list and vibration list from modelProperties in fileData, and
+//is based on IR or Raman type. These lists are then pushed into specData as the freqInfo and VibList.
 	// fill specData.freqInfo[] and specData.vibList[]
 	var vibLinesFromIrrep = getVibLinesFromIrrep(specData);
 	var prop = (specData.typeIRorRaman == "ir" ? "IRactivity" 
@@ -257,11 +265,9 @@ function getFrequencyList(specData) {
 		}
 	}
 }
-/* This function finds the frequency list and vibration list from modelProperties in fileData, and
-is based on IR or Raman type. These lists are then pushed into specData as the freqInfo and VibList.*/
-
 
 function setVibList(specData) {
+// This function makes vibList include only frequencies in the xmax and xmin range.
 	var vib = getbyID('vib');	
 	cleanList('vib');
 	console.log("clear vib");
@@ -279,8 +285,6 @@ function setVibList(specData) {
 	runJmolScriptWait(script)
 
 }
-/* This function makes vibList include only frequencies in the xmax and xmin range. */
-
 
 function getVibLinesFromIrrep(specData) {
 	var vibLinesFromIrrep = [];
@@ -308,9 +312,11 @@ function getVibLinesFromIrrep(specData) {
 }
 
 function extractIRData(specData) {
+//Returns the file type that the IR data must be extracted from..
  return file_method("extractIRData", function() {}, [specData]);
 }
 
+//The next functions extract IR data for a variety of file types.
 function extractIRData_crystal(specData) {
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
@@ -352,6 +358,7 @@ function rtrim(s, i0, char, i1) {
 }
 
 function extractRamanData(specData) {
+//Extracts the Raman data and adds it to specData.
 	var n = specData.freqInfo.length;
 	for (var i = 0; i < n; i++) {
 		if (specData.freqInfo[i].modelProperties.Ramanactivity == "A") {
@@ -367,6 +374,7 @@ function extractRamanData(specData) {
 }
 
 function createStickSpectrum(specData, type) {
+//Scales the data for a stick spectrum.
 	var rescale = specData.rescale;
 	var spec = (type == "ir" ? specData.specIR : specData.specRaman);
 	var maxInt = maxValue(spec);
@@ -391,6 +399,7 @@ function createStickSpectrum(specData, type) {
 }
 
 function createCoolSpectrum(specData, type) {
+//scales data for Gaussian or Lorentzian convolutions. 
 		var maxInt;
 		if (specData.sortInt) {
 		 	maxInt = maxValue(specData.sortInt);
@@ -411,7 +420,7 @@ function getPlotIntArray() {
 }
 
 function createConvolvedSpectrum(specData, type) {
-
+// Based on the typeconvolve given in specData, function creates the Gaussian and Lorentzian convolutions.
 	var isGaussian = (specData.typeConvolve == "gaus");
 	var spec = (type == "ir" ? specData.specIR : specData.specRaman);
 	var freqCount = specData.freqCount;
@@ -454,6 +463,8 @@ function createConvolvedSpectrum(specData, type) {
 }
 
 function showFreqGraph(plotDiv, specData, plot) {
+//This large function creates the spectrum itself. This makes the axes, the clickable and hoverable options, and 
+// creates the ability to zoom and open the spectrum in a new window. 
 	var isHTMLPage = (!specData);
 	if (isHTMLPage) {
 		specData = _file.specData = opener._file.specData;
@@ -533,16 +544,19 @@ function showFreqGraph(plotDiv, specData, plot) {
 }
 
 function plotSelectCallbackFreq(event, ranges) {
+//Used to change the min and max x when a large enough range is selected. 
 	var x1 = ranges.xaxis.from | 0;
 	var x2 = ranges.xaxis.to | 0;
 	if (Math.abs(x2-x1) > 100) {
 		setValue("nMin", Math.min(x1, x2));
 		setValue("nMax", Math.max(x1, x2));
-		setTimeout(onClickModSpec,50);
+		setTimeout(onClickMinMax,50);
 	}
 }
 
 function getRanges(specData) {
+// Function creates the ranges array in specData. This is used to provide the user a small clickable
+//range which facilitates clicking peaks. 
 	var freqs = specData.freqs
 	var sigma = specData.sigma;
 	n = specData.freqs.length;
@@ -567,6 +581,7 @@ function getRanges(specData) {
 }	
 
 function plotClickCallbackFreq(event, pos, itemFreq) {
+//Vibration is selected based on a range clicked. 
 	var range = (itemFreq ? getFreqForClick(itemFreq.datapoint) : null);
 	// itemFreq is [x,y] so [freq,int]
 	// range is [min,max,freq,i]
@@ -575,11 +590,15 @@ function plotClickCallbackFreq(event, pos, itemFreq) {
 		setTimeout(function() { selectVib(-1) }, 50);
 		return;		
 	}
+	
+	// saves model index as _file.specData.currentModel
 	getbyID('vib').options[listIndex].selected = true;
-	setTimeout(function(){onClickSelectVib();},50);
+	setTimeout(function(){onClickSelectVib(0);},50);
 }
 
 function plotHoverCallbackFreq(event, pos, itemFreq) {
+//Shows the vibrational frequency if user hovers over range. Does not change the frequency 
+//unless user hovers along the top red lines.
 	hideTooltip();
 	if(!itemFreq)return
 	if (_file.specData.previousPointFreq != itemFreq.datapoint) {
@@ -594,10 +613,8 @@ function plotHoverCallbackFreq(event, pos, itemFreq) {
 		var model = _file.specData.model[freq];
 		var x = roundoff(itemFreq.datapoint[0],2);
 		var y = roundoff(itemFreq.datapoint[1],1);
-		var model = itemFreq.datapoint[2];
-		
+		var model = itemFreq.datapoint[2];		
 		label = getbyID('vib').options[listIndex].text;
-
 		showTooltipFreq(itemFreq.pageX, itemFreq.pageY + 10, label, pos);
 	}
 	if (pos.canvasY < 30)setTimeout(function(){plotClickCallbackFreq(event, pos, itemFreq)},50);
@@ -618,10 +635,12 @@ function plotHoverCallbackFreq(event, pos, itemFreq) {
  */
 
 function sortNumber(a, b) {
+//Returns value a-b (self-explanatory).
 	return a - b;
 }
 
 function maxValue(a) {
+//This simply finds the maximum value in an array. 
 	var max = 0;
 	for (var i = a.length; --i >= 0;) {
 		if (a[i] > max)
@@ -634,9 +653,9 @@ function minValue(irInt) {
 	return parseInt(irInt.sort(sortNumber)[0]);
 }
 
-function symmetryModeAdd() { // extracts vibrational symmetry modes from _file.info
-								// array and lets one get symmetry operations by
-								// ID
+function symmetryModeAdd() { 
+// extracts vibrational symmetry modes from _file.info
+// array and lets one get symmetry operations by ID.
 	cleanList('sym');
 	var sym = getbyID('sym');
 	if (_file.info[3] && _file.info[3].modelProperties) {
@@ -658,7 +677,7 @@ function symmetryModeAdd() { // extracts vibrational symmetry modes from _file.i
 }
 
 function unique(a) {
-	// this function removes duplicates
+// This function removes duplicates.
 	var r = [];
 	var list = "";
 	for (var i = 0, n = a.length; i < n; i++) {
@@ -677,6 +696,8 @@ function onClickFreqParams() {
 }
 
 function updateJmolForFreqParams(isVibClick) {
+//This function is used often to update the parameters that are changeable by the user (vibration,
+// vectors and their size/width/color).
 	var c = jmolColorPickerBoxes["vectorColorPicker"].getJmolColor();
 	var vectorsON = isChecked("vectorsON");
 	var vibON = isChecked("radVibrationOn");
@@ -696,26 +717,26 @@ function updateJmolForFreqParams(isVibClick) {
 	}
 }
 
-function onScale(mode) {
+function onClickScaleFreq(mode) {
+//Makes the up button increase the y scale by 1.414, the down button decrease the y scale by 1.414, 
+//and the middle button reset the original yscale, xmax and xmin. 
 	switch (mode) {
 	case 1:
-		_file.plotFreq.yscale *= 1.414;
-		break;
+	case -1:
+		_file.plotFreq.yscale *= (mode == 1 ? 1.414 : 1/1.414);
+		onClickModSpec();
+		return;
 	case 0:
 		_file.plotFreq.yscale = 1;
 		setValue("nMin", _file.plotFreq.minX0);
 		setValue("nMax", _file.plotFreq.maxX0);
-		break;
-	case -1:
-		_file.plotFreq.yscale /= 1.414;
-		break;
+		onClickMinMax();
+		return;
 	}
-	onClickModSpec();
-	return true;
 }
 
-// Creates the frequency menu on the web applet
 function createFreqGrp() { 
+// Creates the frequency menu on the web applet.
 	var vibAmplitudeValue = new Array("", "vibration Scale 1",
 			"vibration Scale 2", "vibration Scale 5", "vibration Scale 7", "vibration Scale 10"); 
 	var vecscaleValue = new Array("", "vectors SCALE 1", "vectors SCALE 3",
@@ -727,9 +748,9 @@ function createFreqGrp() {
 	var vibAmplitudeText = new Array("select", "1", "2", "5", "7", "10");
 
 	var smallGraph =  createDiv("plotareafreq", "background:blue;width:300px;height:180px;background-color:#EFEFEF","");  
-	var graphButtons = createButtonB("scaleup", "&#x25b2;","onScale(1)' title='increase Y scale",0,"width:40px") + "<br>"
-		+ createButtonB("scaleup", "&#x25cf;","onScale(0)' title='reset X and Y",0,"width:40px") + "<br>"
-		+ createButtonB("scaleup", "&#x25bc;","onScale(-1)' title='decrease Y scale",0,"width:40px");
+	var graphButtons = createButtonB("scaleup", "&#x25b2;","onClickScaleFreq(1)' title='increase Y scale",0,"width:40px") + "<br>"
+		+ createButtonB("scaleup", "&#x25cf;","onClickScaleFreq(0)' title='reset X and Y",0,"width:40px") + "<br>"
+		+ createButtonB("scaleup", "&#x25bc;","onClickScaleFreq(-1)' title='decrease Y scale",0,"width:40px");
 	var smallGraphAndButtons = "<table cellpadding=0 cellspacing=0><tr><td valign=top>" 
 			+ smallGraph + "</td><td valign=center>" 
 			+ graphButtons + "</td></tr></table>";
@@ -738,16 +759,16 @@ function createFreqGrp() {
 		+ "<br>\n"
 		+ createLine('blue', '')
 		+ "<br>"
-		+ "Band width " + createText2("sigma", "30", "3", "") + " (cm<sup>-1</sup>)" 
-		+ "&nbsp;"
 		+ "Min freq. " + createText2("nMin", "0", "4", "")
-		+ " Max " + createText2("nMax", "4000", "4", "") + "(cm<sup>-1</sup>)"
-		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "") + "<br>"
-		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 1, "", "stick")
-		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 0, "", "gaus")
+		+ " Max " + createText2("nMax", "4000", "4", "") + "cm<sup>-1</sup>"
+		+ createCheck("invertX", "Invert x", "onClickModSpec()", 0, 1, "")
+		+ "<br>" + "Band width " + createText2("sigma", "30", "2", "") + "cm<sup>-1</sup>" 
+		+ "&nbsp;"
+		+ createRadio("convol", "Gaussian", 'onClickModSpec(false, true)', 0, 1, "", "gaus")
 		+ createRadio("convol", "Lorentzian", 'onClickModSpec(false, true)', 0, 0, "", "lor") 
+		+ createRadio("convol", "Stick", 'onClickModSpec(false, true)', 0, 0, "", "stick")
 		+ "&nbsp;" + "&nbsp;" + "&nbsp;"
-		+ createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
+		+ "<br>" + createButton("simSpectra", "New Window", "doSpectraNewWindow()", 0));
 
 	var strFreq = "<form autocomplete='nope'  id='freqGroup' name='modelsVib' style='display:none'>";
 		strFreq += "<table border=0 class='contents'><tr><td valign='bottom'>";
@@ -756,7 +777,7 @@ function createFreqGrp() {
 			strFreq += createRadio("modSpec", "IR", "onClickModSpec()", 0, 0, "", "ir");
 			strFreq += createRadio("modSpec", "Raman", "onClickModSpec()", 0, 0, "", "raman");
 			strFreq += "<BR>\n";
-			strFreq += "Symmetry <select id='sym' name='vibSym' onchange='onClickModSpec()' onkeyup='onClickModSpec()' CLASS='select' >";
+			strFreq += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Symmetry <select id='sym' name='vibSym' onchange='onClickSymmetry()' onkeyup='onClickSymmetry()' CLASS='select' >";
 			strFreq += "</select> ";
 			strFreq += "<BR>\n";
 			strFreq += "<select id='vib' name='models' OnClick='onClickSelectVib()' onkeyup='onClickSelectVib()' class='selectmodels' size=9 style='width:200px; overflow: auto;'></select>";	
@@ -800,6 +821,7 @@ function createFreqGrp() {
 }
 
 function getFreqForClick(p) {
+//This retrieves only the frequencies within range. 
 	var freq = p[0];
 	var int = p[1];
 	var listIndex = -1;

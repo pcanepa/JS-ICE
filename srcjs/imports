@@ -1,3 +1,4 @@
+Js/global.js
 Js/init.js
 Js/_m__tabs.js
 Js/_m_file.js
@@ -21,13 +22,11 @@ Js/export.js
 Js/form.js
 Js/frame.js
 Js/info.js
-Js/menu.js
 Js/pick.js
 Js/plotgraph.js
 Js/sliders.js
 Js/uff.js
 Js/windows.js
-JS/global.js
 Js/adapters/castep.js
 Js/adapters/crystal.js
 Js/adapters/dmol.js
