@@ -24,83 +24,36 @@
 
 //24th May 2011 P. Canepa
 
-siestaDone = function(msg) {
-	loadDone(loadModelsSiesta);
-}
 
-var geomSiesta = new Array;
-var freqSymmSiesta = new Array;
-var freqIntensSiesta = new Array;
-var freqSiesta = new Array;
-var energySiesta = new Array;
-var counterSiesta = 0;
-function loadModelsSiesta() {
+loadDone_siesta = function(msg) {
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
 	// Reset program and set filename if available
 	// This also extract the auxiliary info
-	initializeJiceSiesta();
-	var vib = getbyID('vib');
-	for (i = 0; i < Info.length; i++) {
-		var line = Info[i].name;
+
+	_file.energyUnits = ENERGY_RYDBERG;
+	_file.StrUnitEnergy = "R";
+	for (var i = 0; i < _file.info.length; i++) {
+		var line = _file.info[i].name;
 		if (line != null) {
 			if (line.search(/E/i) != -1) {
 				addOption(getbyID('geom'), i + " " + line, i + 1);
-				geomSiesta[i] = line;
-				if (Info[i].modelProperties.Energy != null
-						|| Info[i].modelProperties.Energy != "")
-					energySiesta[i] = Info[i].modelProperties.Energy;
-				counterSiesta++;
+				_file.geomSiesta[i] = line;
+				if (_file.info[i].modelProperties.Energy != null
+						|| _file.info[i].modelProperties.Energy != "")
+					_file.energy[i] = _file.info[i].modelProperties.Energy;
+				_file.counterFreq++;
 			} else if (line.search(/cm/i) != -1) {
-				addOption(vib, i + " " + line + " ("
-						+ Info[i].modelProperties.IRIntensity + ")", i);
-				freqSiesta[i - counterSiesta] = Info[i].modelProperties.Frequency;
-				freqSymmSiesta[i - counterSiesta] = Info[i].modelProperties.FrequencyLabel;
-				freqIntensSiesta[i - counterSiesta] = Info[i].modelProperties.IRIntensity;
+				_file.vibLine.push(i + " " + line + " ("
+						+ _file.info[i].modelProperties.IRIntensity + ")");
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(_file.info[i].modelProperties.Frequency);
+				_file.freqSymm.push(_file.info[i].modelProperties.FrequencyLabel);
+				_file.freqIntens.push(_file.info[i].modelProperties.IRIntensity);
 			}
 		}
 	}
-}
-
-function initializeJiceSiesta() {
 	setFrameValues("1");
 	setTitleEcho();
-	cleanArraySiesta();
-	disableFreqOpts();
+	loadDone();
 }
 
-function cleanArraySiesta() {
-	geomSiesta = [];
-	freqSymmSiesta = [];
-	freqIntensSiesta = [];
-	counterSiesta = 0;
-}
-
-function symmetryModeAdd_siesta() {
-	// this method is called using self["symmetryModeAdd_" + type]
-	var sortedSymm = unique(freqSymmSiesta);
-	for (var i = 0; i < freqSymmSiesta.length; i++) {
-		if (sortedSymm[i] != null)
-			addOption(getbyID('sym'), freqSymmSiesta[i], freqSymmSiesta[i])
-	}
-}
-
-function changeIrepSiesta(irep) {
-	var vib = getbyID('vib');
-	for (var i = 0; i < freqSiesta.length; i++) {
-		var value = freqSymmSiesta[i];
-		if (irep == value)
-			addOption(vib, i + " " + freqSymmSiesta[i] + " "
-					+ freqSiesta[i] + " (" + freqIntensSiesta[i] + ")", i
-					+ counterSiesta + 1);
-	}
-}
-
-//function reLoadSiestaFreq() {
-//	var vib = getbyID('vib');
-//	if (getbyID('vib') != null)
-//		cleanList('vib');
-//	for (var i = 0; i < freqSiesta.length; i++)
-//		addOption(getbyID('vib'), i + " " + freqSymmSiesta[i] + " "
-//				+ freqSiesta[i] + " (" + freqIntensSiesta[i] + ")", i
-//				+ counterSiesta + 1);
-//}

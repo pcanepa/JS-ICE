@@ -1,3 +1,11 @@
+
+_measure = {
+	kindCoord: "",
+	measureCoord : false,
+	unitMeasure : "",
+	mesCount : 0
+}
+
 function enterMeasure() {
 
 }
@@ -6,28 +14,26 @@ function exitMeasure() {
 	measureCoord = false;
 }
 
-var kindCoord;
-var measureCoord = false;
 function viewCoord(value) {
-	kindCoord = value;
+	_measure.kindCoord = value;
 	measureCoord = true;
 	messageMsg("Pick the atom you are interested in, please.");
 	setPickingCallbackFunction(showCoord);
-	runJmolScriptWait("select *; label off"
-			+ 'set defaultDistanceLabel "%2.7VALUE %UNITS"'
+	runJmolScriptWait("select *; label off;"
+			+ 'set defaultDistanceLabel "%2.7VALUE %UNITS";'
 			+ 'showSelections TRUE; select none; set picking ON;set picking LABEL; set picking SELECT atom; halos on; set LABEL on;');
 }
 
 function showCoord() {
 	if (measureCoord) {
-		if (kindCoord == "fractional") {
+		if (_measure.kindCoord == "fractional") {
 			runJmolScriptWait('Label "%a: %.2[fX] %.2[fY] %.2[fZ]"');
 		} else {
 			runJmolScriptWait('Label "%a: %1.2[atomX] %1.2[atomY] %1.2[atomZ]"');
 		}
 	}
 }
-var unitMeasure = "";
+
 function setMeasureUnit(value) {
 	unitMeasure = value;
 	runJmolScriptWait("set measurements " + value);
@@ -37,7 +43,6 @@ function setMeasurement() {
 	runJmolScriptWait("set measurements ON");
 }
 
-var mesCount = 0;
 function checkMeasure(value) {
 	var radiobutton = value;
 	var unit = getbyID('measureDist').value;
@@ -100,3 +105,58 @@ function mesReset() {
 function measuramentCallback(a, b, c, d, e) {
 	setMeasureText(b);
 }
+
+function createMeasureGrp() {
+	var measureName = new Array("select", "Angstroms", "Bohr", "nanometers",
+	"picometers");
+	var measureValue = new Array("select", "angstroms", "BOHR", "nm", "pm");
+	var textValue = new Array("0", "6", "8", "10", "12", "16", "20", "24", "30");
+	var textText = new Array("select", "6 pt", "8 pt", "10 pt", "12 pt",
+			"16 pt", "20 pt", "24 pt", "30 pt");
+	
+	var strMeas = "<form autocomplete='nope'  id='measureGroup' name='measureGroup' style='display:none'>";
+	strMeas += "<table class='contents'><tr><td > \n";
+	strMeas += "<h2>Measure and _file.info</h2>\n";
+	strMeas += "</td></tr>\n";
+	strMeas += "<tr><td colspan='2'>\n";
+	strMeas += "Measure<br>\n";
+	strMeas += createRadio("distance", "distance", 'checkMeasure(value)', '',
+			0, "", "distance");
+	strMeas += createSelectFunc('measureDist', 'setMeasureUnit(value)',
+			'setTimeout("setMeasureUnit(value) ",50)', 0, 1, measureValue,
+			measureName)
+			+ " ";
+	strMeas += createRadio("distance", "angle", 'checkMeasure(value)', '', 0,
+			"", "angle");
+	strMeas += createRadio("distance", "torsional", 'checkMeasure(value)', '',
+			0, "", "torsional");
+	strMeas += "<br><br> Measure value: <br>"
+		+ createTextArea("textMeasure", "", 10, 60, "");
+	strMeas += "<br>"
+		+ createButton('resetMeasure', 'Delete Measure/s', 'mesReset()', '')
+		+ "<br>";
+	strMeas += "</td></tr>\n";
+	strMeas += "<tr><td>Measure colour: "
+		+ createButton("colorMeasure", "Default colour",
+				'runJmolScriptWait("color measures none")', 0) + "</td><td >\n";
+	strMeas += "<script align='left'>jmolColorPickerBox([setColorWhat, 'measures'],[255,255,255],'measureColorPicker')</script>";
+	strMeas += "</td></tr>";
+	strMeas += "<tr><td colspan='2'>";
+	strMeas += createLine('blue', '');
+	strMeas += "</td></tr>";
+	strMeas += "<tr><td colspan='2'>";
+	strMeas += "View coordinates: ";
+	strMeas += createRadio("coord", "fractional", 'viewCoord(value)', '', 0, "", "fractional");
+	strMeas += createRadio("coord", "cartesian", 'viewCoord(value)', '', 0, "", "cartesian");
+	strMeas += createLine('blue', '');
+	strMeas += "</td></tr>";
+	strMeas += "<tr><td colspan='2'>";
+	strMeas += "Font size ";
+	strMeas += createSelect("fSize", "setMeasureSize(value)", 0, 1,
+			textValue, textText);
+	strMeas += createLine('blue', '');
+	strMeas += "</td></tr>";
+	strMeas += "</table></FORM>  \n";
+	return strMeas;
+}
+

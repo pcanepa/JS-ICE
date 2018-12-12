@@ -1,3 +1,12 @@
+var _build = {
+	counterClicZ : 0,
+	distanceZ : 0,
+	angleZ : 0,
+	torsionalZ : 0,
+	arrayAtomZ : new Array(3),
+	makeCrystalSpaceGroup : null
+};
+
 function enterBuild() {
 	// not implemented
 }
@@ -11,28 +20,28 @@ function buildPickPlaneCallback() {
 
 function atomSelectedColor(atom) {
 	runJmolScriptWait("select {atomno=" + atom + "};");
-	colorWhat = "color atom ";
-	return colorWhat;
+	_pick.colorWhat = "color atom ";
+	return _pick.colorWhat;
 }
 
 function atomSelectedDelete(atom) {
 	runJmolScriptWait("select {atomno=" + atom + "};");
-	deleteMode = "delete {atomno=" + atom + "}";
-	return deleteMode;
+	_edit.deleteMode = "delete {atomno=" + atom + "}";
+	return _edit.deleteMode;
 }
 
 function atomSelectedHide(atom) {
 	runJmolScriptWait("select {atomno=" + atom + "};");
-	hideMode = "hide {atomno=" + atom + "}";
-	return hideMode;
+	_edit.hideMode = "hide {atomno=" + atom + "}";
+	return _edit.hideMode;
 }
 
 
 function atomSelectedDisplay(atom) {
 	runJmolScriptWait("select all; halo off; label off");
 	runJmolScriptWait("select {atomno=" + atom + "}; halo on; label on");
-	displayMode = "display {atomno=" + atom + "}";
-	return displayMode;
+	_edit.displayMode = "display {atomno=" + atom + "}";
+	return _edit.displayMode;
 }
 
 function addAtomfrac() {
@@ -75,9 +84,9 @@ function addNewatom() {
 					+ ' end "model"');
 		} else {
 			var fractional = confirm("Are these coordinates fractionals (OK) or Cartesians (Cancel)?");
-			getUnitcell(frameValue);
+			getUnitcell(_file.frameValue);
 			setUnitCell();
-			runJmolScriptWait('var noatoms =' + frameSelection + '.length  + 1;');
+			runJmolScriptWait('var noatoms =' + _file.frameSelection + '.length  + 1;');
 			if (!fractional) {
 				var atomString = "\n 1\n\n" + type + " " + parseFloat(x) + " "
 				+ parseFloat(y) + " " + parseFloat(z);
@@ -120,11 +129,10 @@ function loadScriptZMatrix() {
 			+ 'rotate Selected molecular @b @a @tor @newAtom \n' + '}');
 }
 
-var counterClicZ = 0;
 function selectElementZmatrix(form) {
 
 	if (form.checked) {
-		counterClicZ = 0;
+		_build.counterClicZ = 0;
 		for (var i = 0; i < 3; i++) {
 
 			if (i == 0) {
@@ -132,9 +140,9 @@ function selectElementZmatrix(form) {
 				messageMsg("Select the 1st atom where to attach the new atom.");
 			}
 
-			if (counterClicZ == 1) {
+			if (_build.counterClicZ == 1) {
 				messageMsg("Select the 2nd atom to form the angle.");
-			} else if (counterClicZ == 2) {
+			} else if (_build.counterClicZ == 2) {
 				messageMsg("Select the 3rd atom to form the torsional angle.");
 			}
 			setPickingCallbackFunction(pickZmatrixCallback)
@@ -143,50 +151,48 @@ function selectElementZmatrix(form) {
 	}
 }
 
-var distanceZ, angleZ, torsionalZ
-var arrayAtomZ = new Array(3);
 function pickZmatrixCallback(b, c, d, e) {
-	if (counterClicZ == 0) { // distance
+	if (_build.counterClicZ == 0) { // distance
 		var valuedist = prompt(
 				"Now enter the distance (in \305) from which you want to add the new atom. \n Seletion is done by symply clikking ont the desire atom",
 		"1.0");
-		distanceZ = parseFloat(valuedist);
-		arrayAtomZ[0] = parseInt(b.substring(b.indexOf('#') + 1,
+		_build.distanceZ = parseFloat(valuedist);
+		_build.arrayAtomZ[0] = parseInt(b.substring(b.indexOf('#') + 1,
 				b.indexOf('.') - 2));
 
 	}
-	if (counterClicZ == 1) { // angle
+	if (_build.counterClicZ == 1) { // angle
 
 		var valueangle = prompt(
 				"Now the enter the angle (in degrees) formed between the new atom, the 1st and the 2nd ones. \n Seletion is done by symply clikking ont the desire atoms",
 		"109.7");
-		angleZ = parseFloat(valueangle);
-		arrayAtomZ[1] = parseInt(b.substring(b.indexOf('#') + 1,
+		_build.angleZ = parseFloat(valueangle);
+		_build.arrayAtomZ[1] = parseInt(b.substring(b.indexOf('#') + 1,
 				b.indexOf('.') - 2));
 
 	}
-	if (counterClicZ == 2) {// torsional
+	if (_build.counterClicZ == 2) {// torsional
 
 		var valuetorsion = prompt(
 				"Enter the torsional angle(in degrees) formed between the new atom, the 1st, the 2nd and the 3rd ones. \n Seletion is done by symply clikking ont the desire atoms",
 		"180.0");
-		torsionalZ = parseFloat(valuetorsion);
-		arrayAtomZ[2] = parseInt(b.substring(b.indexOf('#') + 1,
+		_build.torsionalZ = parseFloat(valuetorsion);
+		_build.arrayAtomZ[2] = parseInt(b.substring(b.indexOf('#') + 1,
 				b.indexOf('.') - 2));
-		messageMsg("distance: " + distanceZ + " from atom " + arrayAtomZ[0]
-		+ " angle: " + angleZ + " formed by atoms: new, "
-		+ arrayAtomZ[0] + ", " + arrayAtomZ[1] + "\n and torsional: "
-		+ torsionalZ + " formed by atoms: new, " + arrayAtomZ[0] + ", "
-		+ arrayAtomZ[1] + ", " + arrayAtomZ[2])
+		messageMsg("distance: " + _build.distanceZ + " from atom " + _build.arrayAtomZ[0]
+		+ " angle: " + _build.angleZ + " formed by atoms: new, "
+		+ _build.arrayAtomZ[0] + ", " + _build.arrayAtomZ[1] + "\n and torsional: "
+		+ _build.torsionalZ + " formed by atoms: new, " + _build.arrayAtomZ[0] + ", "
+		+ _build.arrayAtomZ[1] + ", " + _build.arrayAtomZ[2])
 		messageMsg("Now, select the desire element.");
 	}
-	counterClicZ++;
+	_build.counterClicZ++;
 }
 
 function addZatoms() {
-	runJmolScriptWait('zAdd(\"' + getValue('addEleZ') + '\",' + distanceZ + ',{'
-			+ arrayAtomZ[0] + '}, ' + angleZ + ', {' + arrayAtomZ[1] + '},'
-			+ torsionalZ + ', {' + arrayAtomZ[2] + '})')
+	runJmolScriptWait('zAdd(\"' + getValue('addEleZ') + '\",' + _build.distanceZ + ',{'
+			+ _build.arrayAtomZ[0] + '}, ' + _build.angleZ + ', {' + _build.arrayAtomZ[1] + '},'
+			+ _build.torsionalZ + ', {' + _build.arrayAtomZ[2] + '})')
 }
 
 function createCrystalStr(form) {
@@ -197,7 +203,6 @@ function createCrystalStr(form) {
 	}
 }
 
-var makeCrystalSpaceGroup = null;
 function checkIfThreeD(value) {
 	makeEnablePeriodicityMol()
 	if (value == "crystal") {
@@ -208,7 +213,7 @@ function checkIfThreeD(value) {
 		setValue("c_frac", "");
 	} else if (value == "slab") {
 		makeDisable("periodMole");
-		makeCrystalSpaceGroup = "P-1"; // / set P-1 as symmetry for film and
+		_build.makeCrystalSpaceGroup = "P-1"; // / set P-1 as symmetry for film and
 		// polymer
 		setValue("a_frac", "");
 		setValue("b_frac", "");
@@ -220,7 +225,7 @@ function checkIfThreeD(value) {
 		makeDisable("gamma_frac");
 	} else if (value == "polymer") {
 		makeDisable("periodMole");
-		makeCrystalSpaceGroup = "P-1"; // / set P-1 as symmetry for film and
+		_build.makeCrystalSpaceGroup = "P-1"; // / set P-1 as symmetry for film and
 		// polymer
 		setValue("a_frac", "");
 		setValue("b_frac", "0");
@@ -392,7 +397,7 @@ function createMolecularCrystal() {
 	if (value == "") {
 		errorMsg("You must select which sort of structure you would like to build.")
 	} else if (value == "crystal") {
-		makeCrystalSpaceGroup = getValue('periodMole');
+		_build.makeCrystalSpaceGroup = getValue('periodMole');
 		getValueMakeCrystal();
 	} else {
 		getValueMakeCrystal();
@@ -401,7 +406,7 @@ function createMolecularCrystal() {
 
 ///TODO SAVE state before creating crystal
 function getValueMakeCrystal() {
-	reload('{1 1 1} spacegroup "' + makeCrystalSpaceGroup
+	reload('{1 1 1} spacegroup "' + _build.makeCrystalSpaceGroup
 			+ '" unitcell ' + getCurrentUnitCell() + ';');
 	getbyID("createmolecularCrystal").style.display = "none";
 }
@@ -436,3 +441,115 @@ function cleanCreateCrystal() {
 	makeDisable("gamma_frac");
 	document.builGroup.reset();
 }
+
+function createBuildGrp() {
+	var periodicityName = new Array("select", "crystal", "film", "polymer");
+	var periodicityValue = new Array("", "crystal", "slab", "polymer");
+
+	var strBuild = "<form autocomplete='nope'  id='builGroup' name='builGroup' style='display:none'>";
+	strBuild += "<table class='contents'><tr><td> \n";
+	strBuild += "<h2>Build and modify</h2>\n";
+	strBuild += "</td></tr>\n";
+	/*
+	 * strBuild += "<tr><td>\n"; strBuild += "Add new atom/s <i>via</i>
+	 * internal coordinates (distance, angle and torsional)<br>" strBuild +=
+	 * createCheck("addZnew", "Start procedure",
+	 * 'toggleDiv(this,"addAtomZmatrix") + addAtomZmatrix(this)', "", "", "");
+	 * strBuild += "<div id='addAtomZmatrix' style='display:none;
+	 * margin-top:20px'>"; strBuild += "<br> Element: " + createSelect('addEleZ',
+	 * '', 0, 1, 100, eleSymb, eleSymb); strBuild += "<br>"; strBuild +=
+	 * createButton("addAtom", "add Atom", "addZatoms()", ""); strBuild += "</div>"
+	 * strBuild += createLine('blue', ''); strBuild += "</td></tr>\n";
+	 */
+	strBuild += "<tr><td>\n";
+	strBuild += "Add new atom/s<br>";
+	strBuild += createCheck("addNewFrac", "Start procedure",
+			'addAtomfrac()  + toggleDiv(this,"addAtomCrystal")', "", "", "");
+	strBuild += "<div id='addAtomCrystal' style='display:none; margin-top:20px'>";
+	strBuild += "<br> \n ";
+	strBuild += "x <input type='text'  name='x_frac' id='x_frac' size='1' class='text'> ";
+	strBuild += "y <input type='text'  name='y_frac' id='y_frac' size='1' class='text'> ";
+	strBuild += "z <input type='text'  name='z_frac' id='z_frac' size='1' class='text'> ";
+	strBuild += ", Element: "
+		+ createSelect('addNewFracList', '', 0, 1, eleSymb);
+	strBuild += createButton("addNewFracListBut", "add Atom", "addNewatom()",
+	"");
+	strBuild += "<br><br> Read out coordinates of neighbor atom/s";
+	strBuild += createRadio("coord", "fractional", 'viewCoord(value)', '', 0,
+			"", "fractional");
+	strBuild += createRadio("coord", "cartesian", 'viewCoord(value)', '', 0,
+			"", "cartesian");
+	strBuild += "</div>";
+	strBuild += createLine('blue', '');
+	strBuild += "</td></tr>\n";
+	strBuild += "<tr><td>\n";
+	strBuild += "Create a molecular CRYSTAL, FILM, POLYMER<br>";
+
+	strBuild += createCheck(
+			"createCrystal",
+			"Start procedure",
+			'createCrystalStr(this) + toggleDiv(this,"createmolecularCrystal")  + cleanCreateCrystal()',
+			"", "", "");
+	strBuild += "<div id='createmolecularCrystal' style='display:none; margin-top:20px'>";
+	strBuild += "<br> Periodicity: "
+		+ createSelect('typeMole', 'checkIfThreeD(value)', 0, 1,
+				periodicityValue, periodicityName);
+	strBuild += "<br> Space group: "
+		+ createSelect('periodMole', 'setCellParamSpaceGroup(value)', 0, 1,
+				spaceGroupValue, spaceGroupName)
+				+ " <a href=http://en.wikipedia.org/wiki/Hermann%E2%80%93Mauguin_notation target=_blank>Hermann-Mauguin</a>"; // space
+	// group
+	// list
+	// spageGroupName
+	strBuild += "<br> Cell parameters: <br><br>";
+	strBuild += "<i>a</i> <input type='text'  name='a_frac' id='a_frac' size='7' class='text'> ";
+	strBuild += "<i>b</i> <input type='text'  name='b_frac' id='b_frac' size='7' class='text'> ";
+	strBuild += "<i>c</i> <input type='text'  name='c_frac' id='c_frac' size='7' class='text'> ";
+	strBuild += " &#197; <br>";
+	strBuild += "<i>&#945;</i> <input type='text'  name='alpha_frac' id='alpha_frac' size='7' class='text'> ";
+	strBuild += "<i>&#946;</i> <input type='text'  name='beta_frac' id='beta_frac' size='7' class='text'> ";
+	strBuild += "<i>&#947;</i> <input type='text'  name='gamma_frac' id='gamma_frac' size='7' class='text'> ";
+	strBuild += " degrees <br><br> "
+		+ createButton("createCrystal", "Create structure",
+				"createMolecularCrystal()", "") + "</div>";
+	strBuild += createLine('blue', '');
+	strBuild += "</td></tr>\n";
+	strBuild += "<tr><td>\n";
+	strBuild += "Optimize (OPT.) structure  UFF force filed<br>";
+	strBuild += "Rappe, A. K., <i>et. al.</i>; <i>J. Am. Chem. Soc.</i>, 1992, <b>114</b>, 10024-10035. <br><br>";
+	strBuild += createButton("minuff", "Optimize", "minimizeStructure()", "");
+	strBuild += createCheck("fixstructureUff", "fix fragment",
+			'fixFragmentUff(this) + toggleDiv(this,"fragmentSelected")', "",
+			"", "")
+			+ " ";
+	strBuild += createButton("stopuff", "Stop Opt.", "stopOptimize()", "");
+	strBuild += createButton("resetuff", "Reset Opt.", "resetOptimize()", "");
+	strBuild += "</td></tr><tr><td><div id='fragmentSelected' style='display:none; margin-top:20px'>Fragment selection options:<br>";
+	// strBuild += "by element "
+	// + createSelectKey('colourbyElementList', "elementSelected(value)",
+	// "elementSelected(value)", "", 1) + "\n";
+	// strBuild += "&nbsp;by atom &nbsp;"
+	// + createSelect2('colourbyAtomList', 'atomSelected(value)', '', 1)
+	// + "\n";
+	strBuild += createCheck("byselection", "by picking &nbsp;",
+			'setPicking(this)', 0, 0, "set picking");
+	strBuild += createCheck("bydistance", "within a sphere (&#197) &nbsp;",
+			'setDistanceHide(this)', 0, 0, "");
+	strBuild += createCheck("byplane", " within a plane &nbsp;",
+			'onClickPickPlane(this,buildPickPlaneCallback)', 0, 0, "");
+	strBuild += "</div>";
+	strBuild += "</td></tr><tr><td>\n";
+	strBuild += "<br> Structural optimization criterion: <br>";
+	strBuild += "Opt. threshold <input type='text'  name='optciteria' id='optciteria' size='7'  value='0.001' class='text'> kJ*mol<sup>-1</sup> (Def.: 0.001, Min.: 0.0001) <br>";
+	strBuild += "Max. No. Steps <input type='text'  name='maxsteps' id='maxsteps' size='7'  value='100' class='text'> (Def.: 100)";
+	strBuild += "<tr><td>";
+	strBuild += "<br> Optimization Output: <br>";
+	strBuild += createTextArea("textUff", "", 4, 50, "");
+	strBuild += createLine('blue', '');
+	strBuild += "</td></tr>\n";
+	strBuild += "</table>\n";
+	strBuild += "</form>\n";
+	return strBuild;
+}
+
+

@@ -1,4 +1,3 @@
-var Info, InfoFreq;
 
 function extractInfoJmol(whatToExtract) {
 	return jmolGetPropertyAsArray(whatToExtract);
@@ -6,10 +5,6 @@ function extractInfoJmol(whatToExtract) {
 
 function extractInfoJmolString(whatToExtract) {
 	return jmolGetPropertyAsString(whatToExtract);
-}
-
-function extractAuxiliaryJmol() {
-	Info = extractInfoJmol("auxiliaryInfo.models");
 }
 
 function getElementList(arr) {
@@ -21,11 +16,4 @@ function getElementList(arr) {
 	return arr;
 }
 
-function getInfoFreq() {
-	InfoFreq = [];
-	for (var i = 0; i < Info.length; i++)
-		if (Info[i] && Info[i].modelProperties 
-				&& Info[i].modelProperties.PATH == "Frequencies")
-			InfoFreq.push(Info[i]);	
-}
 

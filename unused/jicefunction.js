@@ -765,12 +765,12 @@ function onChangeSave(save) {
 ///////////////
 
 function deleteAtom() {
-	setV(deleteMode);
+	setV(_edit.deleteMode);
 	setV('draw off');
 }
 
 function hideAtom() {
-	setV(hideMode);
+	setV(_edit.hideMode);
 	setV('draw off');
 }
 
@@ -782,7 +782,7 @@ function connectAtom() {
 	}
 
 	if (radbondVal == "all") {
-		if (radBondRange == "just") {
+		if (_edit.radBondRange == "just") {
 			var bondRadFrom = getValue("radiuscoonectFrom");
 			if (bondRadFrom == "") {
 				errorMsg("Please, check values entered in the textboxes");
@@ -809,7 +809,7 @@ function connectAtom() {
 	} else if (radbondVal == "atom") {
 		var atomFrom = getValue("connectbyElementList");
 		var atomTo = getValue("connectbyElementListone");
-		if (radBondRange == "just") {
+		if (_edit.radBondRange == "just") {
 			var bondRadFrom = getValue("radiuscoonectFrom");
 			if (bondRadFrom == "") {
 				errorMsg("Please, check values entered in the textboxes");
@@ -844,7 +844,7 @@ function deleteBond() {
 	var styleBond = getValue("setBondFashion");
 
 	if (radbondVal == "all") {
-		if (radBondRange == "just") {
+		if (_edit.radBondRange == "just") {
 			var bondRadFrom = getValue("radiuscoonectFrom");
 			if (bondRadFrom == "") {
 				setV("connect (all) (all)  DELETE;");
@@ -865,7 +865,7 @@ function deleteBond() {
 	} else if (radbondVal == "atom") {
 		var atomFrom = getValue("connectbyElementList");
 		var atomTo = getValue("connectbyElementListone");
-		if (radBondRange == "just") {
+		if (_edit.radBondRange == "just") {
 			var bondRadFrom = getValue("radiuscoonectFrom");
 			if (bondRadFrom == "") {
 				setV("connect (" + atomFrom + ") (" + atomTo + ") DELETE;");
@@ -917,10 +917,10 @@ function checkBondStatus(radval) {
 
 }
 
-var radBondRange;
+var _edit.radBondRange;
 function checkWhithin(radVal) {
-	radBondRange = radVal;
-	if (radBondRange == "just") {
+	_edit.radBondRange = radVal;
+	if (_edit.radBondRange == "just") {
 		getbyID("radiuscoonectFrom").disabled = false;
 		getbyID("radiuscoonectTo").disabled = true;
 	} else {
@@ -1118,8 +1118,8 @@ function saveFractionalCoordinate() {
 	if (selectedFrame == null)
 		getUnitcell(1);
 
-	var x = "var cellp = [" + roundNumber(aCell) + ", " + roundNumber(bCell)
-	+ ", " + roundNumber(cCell) + ", " + roundNumber(alpha) + ", "
+	var x = "var cellp = [" + roundNumber(_cell.a) + ", " + roundNumber(_cell.b)
+	+ ", " + roundNumber(_cell.c) + ", " + roundNumber(alpha) + ", "
 	+ roundNumber(beta) + ", " + roundNumber(gamma) + "];"
 	+ 'var cellparam = cellp.join(" ");' + 'var xyzfrac = '
 	+ selectedFrame + '.label("%a %16.9[fxyz]");'
@@ -1129,7 +1129,7 @@ function saveFractionalCoordinate() {
 }
 
 //This reads out cell parameters given astructure.
-var aCell, bCell, cCell, alpha, beta, gamma, typeSystem;
+var _cell.a, _cell.b, _cell.c, alpha, beta, gamma, typeSystem;
 function getUnitcell(i) {
 	// document.cellGroup.reset();
 	typeSystem = "";
@@ -1140,18 +1140,18 @@ function getUnitcell(i) {
 
 	var cellparam = extractInfoJmol(StringUnitcell);
 
-	aCell = roundNumber(cellparam[0]);
-	bCell = roundNumber(cellparam[1]);
-	cCell = roundNumber(cellparam[2]);
+	_cell.a = roundNumber(cellparam[0]);
+	_cell.b = roundNumber(cellparam[1]);
+	_cell.c = roundNumber(cellparam[2]);
 	dimensionality = parseFloat(cellparam[15]);
 	volumeCell = roundNumber(cellparam[16]);
 
-	var bOvera = roundNumber(parseFloat(bCell / cCell));
-	var cOvera = roundNumber(parseFloat(cCell / aCell));
+	var bOvera = roundNumber(parseFloat(_cell.b / _cell.c));
+	var cOvera = roundNumber(parseFloat(_cell.c / _cell.a));
 
 	if (dimensionality == 1) {
-		bCell = 0.000;
-		cCell = 0.000;
+		_cell.b = 0.000;
+		_cell.c = 0.000;
 		makeEnable("par_a");
 		setVbyID("par_a", "");
 		makeDisable("par_b");
@@ -1162,7 +1162,7 @@ function getUnitcell(i) {
 		setVbyID("covera", "0");
 		typeSystem = "polymer";
 	} else if (dimensionality == 2) {
-		cCell = 0.000;
+		_cell.c = 0.000;
 		typeSystem = "slab";
 		makeEnable("par_a");
 		setVbyID("par_a", "");
@@ -1186,9 +1186,9 @@ function getUnitcell(i) {
 		setVbyID("bovera", bOvera);
 		setVbyID("covera", cOvera);
 	} else if (!cellparam[0] && !cellparam[1] && !cellparam[2] && !cellparam[4]) {
-		aCell = 0.00;
-		bCell = 0.00;
-		cCell = 0.00;
+		_cell.a = 0.00;
+		_cell.b = 0.00;
+		_cell.c = 0.00;
 		alpha = 0.00;
 		beta = 0.00;
 		gamma = 0.00;
@@ -1196,12 +1196,12 @@ function getUnitcell(i) {
 		setVbyID("bovera", "0");
 		setVbyID("covera", "0");
 	}
-	setVbyID("aCell", roundNumber(aCell));
-	setVbyID("bCell", roundNumber(bCell));
-	setVbyID("cCell", roundNumber(cCell));
-	setVbyID("alphaCell", roundNumber(alpha));
-	setVbyID("betaCell", roundNumber(beta));
-	setVbyID("gammaCell", roundNumber(gamma));
+	setVbyID("_cell.a", roundNumber(_cell.a));
+	setVbyID("_cell.b", roundNumber(_cell.b));
+	setVbyID("_cell.c", roundNumber(_cell.c));
+	setVbyID("alph_cell.a", roundNumber(alpha));
+	setVbyID("bet_cell.a", roundNumber(beta));
+	setVbyID("gamm_cell.a", roundNumber(gamma));
 	setVbyID("volumeCell", roundNumber(volumeCell));
 
 }
@@ -1229,20 +1229,20 @@ function setCellMeasure(value) {
 		StringUnitcell = " auxiliaryInfo.models[1].infoUnitCell ";
 
 	var cellparam = extractInfoJmol(StringUnitcell);
-	aCell = cellparam[0];
-	bCell = cellparam[1];
-	cCell = cellparam[2];
+	_cell.a = cellparam[0];
+	_cell.b = cellparam[1];
+	_cell.c = cellparam[2];
 	if (value == "a") {
-		setVbyID("aCell", roundNumber(aCell));
-		setVbyID("bCell", roundNumber(bCell));
-		setVbyID("cCell", roundNumber(cCell));
+		setVbyID("_cell.a", roundNumber(_cell.a));
+		setVbyID("_cell.b", roundNumber(_cell.b));
+		setVbyID("_cell.c", roundNumber(_cell.c));
 	} else {
-		aCell = aCell * 1.889725989;
-		bCell = bCell * 1.889725989;
-		cCell = cCell * 1.889725989;
-		setVbyID("aCell", roundNumber(aCell));
-		setVbyID("bCell", roundNumber(bCell));
-		setVbyID("cCell", roundNumber(cCell));
+		_cell.a = _cell.a * 1.889725989;
+		_cell.b = _cell.b * 1.889725989;
+		_cell.c = _cell.c * 1.889725989;
+		setVbyID("_cell.a", roundNumber(_cell.a));
+		setVbyID("_cell.b", roundNumber(_cell.b));
+		setVbyID("_cell.c", roundNumber(_cell.c));
 	}
 
 }
@@ -1674,11 +1674,11 @@ function loadScriptZMatrix() {
 			+ 'rotate Selected molecular @b @a @tor @newAtom \n' + '}');
 }
 
-var counterClicZ = 0;
+var _build.counterClicZ = 0;
 function selectElementZmatrix(form) {
 
 	if (form.checked) {
-		counterClicZ = 0;
+		_build.counterClicZ = 0;
 		for ( var i = 0; i < 3; i++) {
 
 			if (i == 0) {
@@ -1686,9 +1686,9 @@ function selectElementZmatrix(form) {
 				messageMsg("Select the 1st atom where to attach the new atom.");
 			}
 
-			if (counterClicZ == 1) {
+			if (_build.counterClicZ == 1) {
 				messageMsg("Select the 2nd atom to form the angle.");
-			} else if (counterClicZ == 2) {
+			} else if (_build.counterClicZ == 2) {
 				messageMsg("Select the 3rd atom to form the torsional angle.");
 			}
 			setV("draw off; showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on; set PickCallback 'pickZmatrixCallback'");
@@ -1699,7 +1699,7 @@ function selectElementZmatrix(form) {
 var distanceZ, angleZ, torsionalZ
 var arrayAtomZ = new Array(3);
 function pickZmatrixCallback(a, b, c, d, e) {
-	if (counterClicZ == 0) { // distance
+	if (_build.counterClicZ == 0) { // distance
 		var valuedist = prompt(
 				"Now enter the distance (in \305) from which you want to add the new atom. \n Seletion is done by symply clikking ont the desire atom",
 		"1.0");
@@ -1708,7 +1708,7 @@ function pickZmatrixCallback(a, b, c, d, e) {
 				b.indexOf('.') - 2));
 
 	}
-	if (counterClicZ == 1) { // angle
+	if (_build.counterClicZ == 1) { // angle
 
 		var valueangle = prompt(
 				"Now the enter the angle (in degrees) formed between the new atom, the 1st and the 2nd ones. \n Seletion is done by symply clikking ont the desire atoms",
@@ -1718,7 +1718,7 @@ function pickZmatrixCallback(a, b, c, d, e) {
 				b.indexOf('.') - 2));
 
 	}
-	if (counterClicZ == 2) {// torsional
+	if (_build.counterClicZ == 2) {// torsional
 
 		var valuetorsion = prompt(
 				"Enter the torsional angle(in degrees) formed between the new atom, the 1st, the 2nd and the 3rd ones. \n Seletion is done by symply clikking ont the desire atoms",
@@ -1728,7 +1728,7 @@ function pickZmatrixCallback(a, b, c, d, e) {
 		arrayAtomZ[2] = parseInt(b.substring(b.indexOf('#') + 1,
 				b.indexOf('.') - 2));
 	}
-	counterClicZ++;
+	_build.counterClicZ++;
 }
 
 function elementZcallback(a, m) {
@@ -2013,9 +2013,9 @@ function cleanCreateCrystal() {
 ////////////////////FUNCTIONS TO DEAL WITH SELECTION
 /////////
 var atomColor = "";
-var deleteMode = "";
-var hideMode = "";
-var displayMode = "";
+var _edit.deleteMode = "";
+var _edit.hideMode = "";
+var _edit.displayMode = "";
 function elementSelected(element) {
 	// updateListElement();
 	setV("select all; halo off; label off");
@@ -2027,23 +2027,23 @@ function elementSelected(element) {
 function elementSelectedDelete(element) {
 	setV("select all; halo off; label off");
 	setV("select " + element + "; halo on; label on");
-	deleteMode = "delete " + element;
-	return deleteMode;
+	_edit.deleteMode = "delete " + element;
+	return _edit.deleteMode;
 }
 
 function elementSelectedHide(element) {
 	setV("select all; halo off; label off");
 	setV("select " + element + "; halo on; label on");
-	hideMode = "hide " + element;
-	return hideMode;
+	_edit.hideMode = "hide " + element;
+	return _edit.hideMode;
 }
 
 function elementSelectedDisplay(element) {
 	// updateListAtomApp();
 	setV("select all; halo off; label off");
 	setV("select " + element + "; halo on; label on");
-	displayMode = "display " + element;
-	return displayMode;
+	_edit.displayMode = "display " + element;
+	return _edit.displayMode;
 }
 
 function atomSelected(atom) {
@@ -2057,22 +2057,22 @@ function atomSelected(atom) {
 function atomSelectedDelete(atom) {
 	setV("select all; halo off; label off");
 	setV("select {atomno=" + atom + "}; halo on; label on");
-	deleteMode = "delete {atomno=" + atom + "}";
-	return deleteMode;
+	_edit.deleteMode = "delete {atomno=" + atom + "}";
+	return _edit.deleteMode;
 }
 
 function atomSelectedHide(atom) {
 	setV("select all; halo off; label off");
 	setV("select {atomno=" + atom + "}; halo on; label on");
-	hideMode = "hide {atomno=" + atom + "}";
-	return hideMode;
+	_edit.hideMode = "hide {atomno=" + atom + "}";
+	return _edit.hideMode;
 }
 
 function atomSelectedDisplay(atom) {
 	setV("select all; halo off; label off");
 	setV("select {atomno=" + atom + "}; halo on; label on");
-	displayMode = "display {atomno=" + atom + "}";
-	return displayMode;
+	_edit.displayMode = "display {atomno=" + atom + "}";
+	return _edit.displayMode;
 }
 
 function setPicking(form) {
@@ -2096,12 +2096,12 @@ function setPickingDelete(form) {
 			setV('set picking on; set picking LABEL; set picking SELECT atom; halos on; ');
 		} else {
 			setV('showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on;');
-			deleteMode = "delete selected";
+			_edit.deleteMode = "delete selected";
 		}
 	}
 	if (!form.checked)
 		setV('select none; halos off; label off;');
-	return deleteMode;
+	return _edit.deleteMode;
 }
 
 function setPickingHide(form) {
@@ -2117,11 +2117,11 @@ function setPickingHide(form) {
 		} else {
 			setV('showSelections TRUE; select none; set picking on; set picking LABEL; set picking SELECT atom; halos on; ');
 		}
-		hideMode = " hide selected";
+		_edit.hideMode = " hide selected";
 	} else {
 		setV('select none; halos off; label off;');
 	}
-	return hideMode;
+	return _edit.hideMode;
 }
 
 /*
@@ -2228,8 +2228,8 @@ function pickPlanecallback(a, b, c, d, e) {
 				var distance = prompt('Now enter the distance (in \305) within you want to select atoms. \n Positive values mean from the upper face on, negative ones the opposite.');
 				if (distance != null && distance != "") {
 					setV('select within(' + distance + ',plane, $plane1)');
-					hideMode = " hide selected";
-					deleteMode = " delete selected";
+					_edit.hideMode = " hide selected";
+					_edit.deleteMode = " delete selected";
 					atomColor = "color atoms";
 					setV('set PickCallback OFF');
 					counterClick = false;
@@ -2273,8 +2273,8 @@ function pickDistancecallback(a, b, c, d, e) {
 			// messageMsg('If you don\'t want to remove/hide the atom used for
 			// the
 			// selection, unselect it by using the option: select by picking.')
-			hideMode = " hide selected";
-			deleteMode = " delete selected";
+			_edit.hideMode = " hide selected";
+			_edit.deleteMode = " delete selected";
 			atomColor = "color atoms";
 			setV("set PickCallback 'pickDistancecallback' OFF");
 			counterClick = false;
@@ -2293,14 +2293,14 @@ function selectAll() {
 
 function selectAllDelete() {
 	setV("select *; halos on; label on;");
-	deleteMode = "select *; delete; select none ; halos off; draw off;";
-	return deleteMode;
+	_edit.deleteMode = "select *; delete; select none ; halos off; draw off;";
+	return _edit.deleteMode;
 }
 
 function selectAllHide() {
 	setV("select *; halos on; label on;");
-	hideMode = "select *; hide selected; select none; halos off; draw off;";
-	return hideMode;
+	_edit.hideMode = "select *; hide selected; select none; halos off; draw off;";
+	return _edit.hideMode;
 }
 
 function setTextSize(value) {

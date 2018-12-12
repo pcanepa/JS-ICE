@@ -131,7 +131,7 @@ if (Clazz.exceptionOf (ex, Exception)) {
 this.e.vwr.setStringProperty ("_errormessage", "" + ex);
 if (se.thisContext == null) {
 JU.Logger.error ("Error evaluating context " + ex);
-if (!JV.Viewer.isJS) ex.printStackTrace ();
+ex.printStackTrace ();
 }return false;
 } else {
 throw ex;
@@ -3693,7 +3693,7 @@ ucname = (u == null ? "" : u.getSpaceGroupName () + " ") + ucname;
 oabc = (u == null ?  Clazz.newArray (-1, [JU.P3.new3 (0, 0, 0), JU.P3.new3 (1, 0, 0), JU.P3.new3 (0, 1, 0), JU.P3.new3 (0, 0, 1)]) : u.getUnitCellVectors ());
 if (stype == null) stype = this.vwr.getSymTemp ().getSymmetryInfoAtom (this.vwr.ms, this.vwr.getFrameAtoms ().nextSetBit (0), null, 0, null, null, null, 1073741994, 0, -1);
 if (u == null) u = this.vwr.getSymTemp ();
-u.toFromPrimitive (true, stype.length == 0 ? 'P' : stype.charAt (0), oabc);
+u.toFromPrimitive (true, stype.length == 0 ? 'P' : stype.charAt (0), oabc, this.vwr.getCurrentModelAuxInfo ().get ("primitiveToCrystal"));
 if (!isPrimitive) {
 JU.SimpleUnitCell.getReciprocal (oabc, oabc, scale);
 }break;
@@ -3790,10 +3790,15 @@ if (tickInfo != null) this.setShapeProperty (33, "tickInfo", tickInfo);
 Clazz.defineMethod (c$, "assign", 
  function () {
 var atomsOrBonds = this.tokAt (1);
-var index = this.atomExpressionAt (2).nextSetBit (0);
+var index = -1;
 var index2 = -1;
-var type = null;
-if (index < 0) return;
+if (atomsOrBonds == 1140850689 && this.tokAt (2) == 4) {
+this.e.iToken++;
+} else {
+index = this.atomExpressionAt (2).nextSetBit (0);
+if (index < 0) {
+return;
+}}var type = null;
 if (atomsOrBonds == 4106) {
 index2 = this.atomExpressionAt (++this.e.iToken).nextSetBit (0);
 } else {
@@ -3816,27 +3821,31 @@ this.assignConnect (index, index2);
 Clazz.defineMethod (c$, "assignAtom", 
  function (atomIndex, pt, type) {
 if (type.equals ("X")) this.vwr.setRotateBondIndex (-1);
-if (this.vwr.ms.at[atomIndex].mi != this.vwr.ms.mc - 1) return;
+if (atomIndex >= 0 && this.vwr.ms.at[atomIndex].mi != this.vwr.ms.mc - 1) return;
 this.vwr.clearModelDependentObjects ();
 var ac = this.vwr.ms.ac;
 if (pt == null) {
+if (atomIndex < 0) return;
 this.vwr.sm.modifySend (atomIndex, this.vwr.ms.at[atomIndex].mi, 1, this.e.fullCommand);
-this.vwr.ms.assignAtom (atomIndex, type, true);
+this.vwr.ms.assignAtom (atomIndex, type, true, true);
 if (!JU.PT.isOneOf (type, ";Mi;Pl;X;")) this.vwr.ms.setAtomNamesAndNumbers (atomIndex, -ac, null);
 this.vwr.sm.modifySend (atomIndex, this.vwr.ms.at[atomIndex].mi, -1, "OK");
 this.vwr.refresh (3, "assignAtom");
 return;
-}var atom = this.vwr.ms.at[atomIndex];
-var bs = JU.BSUtil.newAndSetBit (atomIndex);
+}var atom = (atomIndex < 0 ? null : this.vwr.ms.at[atomIndex]);
+var bs = (atomIndex < 0 ?  new JU.BS () : JU.BSUtil.newAndSetBit (atomIndex));
 var pts =  Clazz.newArray (-1, [pt]);
 var vConnections =  new JU.Lst ();
+var modelIndex = -1;
+if (atom != null) {
 vConnections.addLast (atom);
-var modelIndex = atom.mi;
+modelIndex = atom.mi;
 this.vwr.sm.modifySend (atomIndex, modelIndex, 3, this.e.fullCommand);
-try {
+}try {
 bs = this.vwr.addHydrogensInline (bs, vConnections, pts);
-atomIndex = bs.nextSetBit (0);
-this.vwr.ms.assignAtom (atomIndex, type, false);
+var atomIndex2 = bs.nextSetBit (0);
+this.vwr.ms.assignAtom (atomIndex2, type, false, (atomIndex >= 0));
+atomIndex = atomIndex2;
 } catch (ex) {
 if (Clazz.exceptionOf (ex, Exception)) {
 } else {
@@ -3873,8 +3882,8 @@ connections[0] =  Clazz.newFloatArray (-1, [index, index2]);
 var modelIndex = this.vwr.ms.at[index].mi;
 this.vwr.sm.modifySend (index, modelIndex, 2, this.e.fullCommand);
 this.vwr.ms.connect (connections);
-this.vwr.ms.assignAtom (index, ".", true);
-this.vwr.ms.assignAtom (index2, ".", true);
+this.vwr.ms.assignAtom (index, ".", true, true);
+this.vwr.ms.assignAtom (index2, ".", true, true);
 this.vwr.sm.modifySend (index, modelIndex, -2, "OK");
 this.vwr.refresh (3, "assignConnect");
 }, "~N,~N");

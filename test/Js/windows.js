@@ -1,12 +1,13 @@
-var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50";
 function newAppletWindow() {
+	var windowoptions = "menubar=yes,resizable=1,scrollbars,alwaysRaised,width=600,height=600,left=50"
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);
 	var newwin = open("OutputResized.html", "jmol_" + sm, windowoptions);
 }
 
-var windowfreq = "menubar=no,resizable=no,scrollbars=yes,resizable=yes;alwaysRaised,width=1024,height=768";
+
 function newAppletWindowFreq() {
+	var windowfreq = "menubar=no,resizable=no,scrollbars=yes,resizable=yes;alwaysRaised,width=1024,height=768";
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);
 	var newwin = open("exportfreq.html", sm, windowfreq);
@@ -19,8 +20,9 @@ function onClickAcknow() {
 	var newwin = open("acn.html", sm, woption);
 }
 
-var windowfeed = "menubar=no,resizable=no,scrollbars=yes,resizable=yes;alwaysRaised,width=1024,height=768";
+
 function newAppletWindowFeed() {
+	var windowfeed = "menubar=no,resizable=no,scrollbars=yes,resizable=yes;alwaysRaised,width=1024,height=768";
 	var sm = "" + Math.random();
 	sm = sm.substring(2, 10);
 	var newwin = open("http://j-ice.sourceforge.net/?page_id=9", sm, windowfeed);

@@ -383,7 +383,6 @@ return this.atomSetAtomCounts[this.iSet];
 });
 Clazz.defineMethod (c$, "getLastAtomSetAtomIndex", 
 function () {
-if (this.ac < this.atomSetAtomCounts[this.iSet]) System.out.println ("???");
 return this.ac - this.atomSetAtomCounts[this.iSet];
 });
 Clazz.defineMethod (c$, "addNewAtom", 
@@ -816,6 +815,11 @@ this.atomSetCount--;
 } else {
 this.bsAtoms.setBits (i0, i0 + nnow);
 }});
+Clazz.defineMethod (c$, "checkNoEmptyModel", 
+function () {
+while (this.atomSetCount > 0 && this.atomSetAtomCounts[this.atomSetCount - 1] == 0) this.atomSetCount--;
+
+});
 Clazz.defineStatics (c$,
 "globalBooleans",  Clazz.newArray (-1, ["someModelsHaveFractionalCoordinates", "someModelsHaveSymmetry", "someModelsHaveUnitcells", "someModelsHaveCONECT", "isPDB", "someModelsHaveDomains", "someModelsHaveValidations"]),
 "GLOBAL_FRACTCOORD", 0,

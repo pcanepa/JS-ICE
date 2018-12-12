@@ -21,143 +21,146 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *  02111-1307  USA.
  */
-
+ 
 //tabmenus.js includes older tabs.js and menu.js
 //last modified 16th Mar 2011 
 ///////////////////////////////// menu object definition
+
+// This list is used by callbacks
+
+var TAB_OVER  = 0;
+var TAB_CLICK = 1;
+var TAB_OUT   = 2;
+
+var TAB_DELAY_MS = 100;
+
+// This list controls the placement of the menu item on the menu.
+
+var MENU_FILE     = 0;
+var MENU_CELL     = 1;
+var MENU_SHOW     = 2;
+var MENU_EDIT     = 3;
+var MENU_SYM      = 4;
+//var MENU_BUILD  = x;
+var MENU_MEASURE  = 5;
+var MENU_ORIENT   = 6;
+var MENU_POLY     = 7;
+var MENU_SURFACE  = 8;
+var MENU_OPTIMIZE = 9;
+var MENU_SPECTRA  = 10;
+var MENU_EM       = 11;
+var MENU_OTHER    = 12;
+
+// local variables 
+
+var tabs_thisMenu = -1;
+var tabs_jsNames  = [];
+var tabs_menu     = [];
+var tabs_timeouts = [];
+
 function Menu(name, grp, link) {
 	this.name = name;
 	this.grp = grp;
 	this.link = link;
 }
 
-var tabMenu = [];
-
-function addTab(name, group, link) {
-	tabMenu.push(new Menu(name, group, link));
+function addTab(index, jsName, menuName, group, link) {
+	tabs_menu[index] = new Menu(menuName, group, link);
+	tabs_jsNames[index] = jsName;
+	
 }
-
-// Note: These numbers must reflect the order of addition in defineMenu()
-
-MENU_FILE     = 0;
-MENU_CELL     = 1;
-MENU_SHOW     = 2;
-MENU_EDIT     = 3;
-//MENU_BUILD    = x;
-MENU_MEASURE  = 4;
-MENU_ORIENT   = 5;
-MENU_POLY     = 6;
-MENU_SURFACE  = 7;
-MENU_OPTIMIZE = 8;
-MENU_SPECTRA  = 9;
-MENU_EM       =10;
-MENU_OTHER    =11;
-
-var menuNames = [
-	"File", "Cell", "Show" ,"Edit" /*, "Build"*/, 
-	"Measure", "Orient", "Polyhedra", "Surface", 
-	"Optimize", "Spectra", "Elec", "Other" 
-	];
 
 function defineMenu() {
-	/* 0 */ addTab("File", "fileGroup", "Import, Export files.");
-	/* 1 */ addTab("Cell", "cellGroup", "Modify cell features and symmetry.");
-	/* 2 */ addTab("Show", "showGroup", "Change atom, bond colours, and dimensions.");
-	/* 3 */ addTab("Edit", "editGroup", "Change connectivity and remove atoms.");
-	/* x */ //addTab("Build", "builGroup", "Modify and optimize structure.");
-	/* 4 */ addTab("Measure", "measureGroup", "Measure bond distances, angles, and torsionals.");
-	/* 5 */ addTab("Orient", "orientGroup", "Change orientation and views.");
-	/* 6 */ addTab("Poly", "polyGroup", "Create polyhedra.");
-	/* 7 */ addTab("Surface", "isoGroup", "Modify and create isosurface maps.");
-	/* 8 */ addTab("Optimize", "geometryGroup", "Geometry optimizations.");
-	/* 9 */ addTab("Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
-	/* 10 */ addTab("E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
-	/* 11 */ addTab("Other", "otherpropGroup", "Change background, light settings and other.");
+	addTab(MENU_FILE, "File", "File", "fileGroup", "Import, Export files.");
+	addTab(MENU_CELL, "Cell", "Cell", "cellGroup", "Modify cell features and symmetry.");
+	addTab(MENU_SHOW, "Show", "Show", "showGroup", "Change atom, bond colours, and dimensions.");
+	addTab(MENU_EDIT, "Edit", "Edit", "editGroup", "Change connectivity and remove atoms.");
+	//addTab(MENU_BUILD, "Build", "Build", "builGroup", "Modify and optimize structure.");
+	addTab(MENU_SYM, "Symmetry", "Sym Build", "symmetryGroup", "Add atoms to structure following rules of symmetry.");
+	addTab(MENU_MEASURE, "Measure", "Measure", "measureGroup", "Measure bond distances, angles, and torsionals.");
+	addTab(MENU_ORIENT, "Orient", "Orient", "orientGroup", "Change orientation and views.");
+	addTab(MENU_POLY, "Polyhedra", "Poly", "polyGroup", "Create polyhedra.");
+	addTab(MENU_SURFACE, "Surface", "Surface", "isoGroup", "Modify and create isosurface maps.");
+	addTab(MENU_OPTIMIZE, "Optimize", "Optimize", "geometryGroup", "Geometry optimizations.");
+	addTab(MENU_SPECTRA, "Spectra", "Spectra", "freqGroup", "IR/Raman frequencies and spectra.");
+	addTab(MENU_EM, "Elec", "E&M", "elecGroup", "Mulliken charges, spin, and magnetic moments.");
+	addTab(MENU_OTHER, "Other", "Other", "otherpropGroup", "Change background, light settings and other.");
 }
 
-var thisMenu = -1;
+function createAllMenus() {
+	var s = createFileGrp()
+		+ createShowGrp()
+		+ createEditGrp()
+		+ createSymmetryGrp() 
+		//+ createBuildGrp()
+		+ createMeasureGrp()
+		+ createOrientGrp()
+		+ createCellGrp()
+		+ createPolyGrp()
+		+ createIsoGrp()
+		+ createOptimizeGrp()
+		+ createFreqGrp()
+		+ createElecpropGrp()
+		+ createOtherGrp()
+		+ addCommandBox()
+		//+ createHistGrp()
+		;
+	return s
+}
 
 var showMenu = function(menu) {
-	if (thisMenu >= 0)
-		self["exit" + menuNames[menu]]();
-	thisMenu = menu;
+	if (tabs_thisMenu >= 0)
+		self["exit" + tabs_jsNames[menu]]();
+	tabs_thisMenu = menu;
 	exitTab();
-	hideArrays(menu);
-	self["enter" + menuNames[menu]]();
+	self["enter" + tabs_jsNames[menu]]();
 	$("#menu"+menu).addClass("picked");
 }
-
 
 var exitTab = function() {
 	cancelPicking();
 	runJmolScriptWait('select *;color atoms opaque; echo; draw off;set selectionHalos off;halos off;');
 }
 
-
-var tabTimeouts = [];
-var tabDelayMS = 1000;
-
-var TAB_OVER  = 0;
-var TAB_CLICK = 1;
-var TAB_OUT   = 2;
-
 function grpDisp(n) {
 	grpDispDelayed(n, TAB_CLICK);
 }
 
 var grpDispDelayed = function(n, mode) {
-	for (var i = tabTimeouts.length; --i >= 0;) {
-		if (tabTimeouts[i])
-			clearTimeout(tabTimeouts[i]);
-		tabTimeouts = [];
+	for (var i = tabs_timeouts.length; --i >= 0;) {
+		if (tabs_timeouts[i])
+			clearTimeout(tabs_timeouts[i]);
+		tabs_timeouts = [];
 	}	
+	for (var i = 0; i < tabs_menu.length; i++){
+		$("#menu"+i).removeClass("picked");
+	}
 	switch(mode) {
 	case TAB_OVER:
-		tabTimeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},tabDelayMS);
-		for (var i = 0; i < tabMenu.length; i++){
-			$("#menu"+i).removeClass("picked");
-		}
+		tabs_timeouts[n] = setTimeout(function(){grpDispDelayed(n,1)},TAB_DELAY_MS);
+		
 		break;
 	case TAB_CLICK:
-		for (var i = 0; i < tabMenu.length; i++) {
-			getbyID(tabMenu[i].grp).style.display = "none";
-			tabMenu[i].disp = 0;
+		for (var i = 0; i < tabs_menu.length; i++) {
+			getbyID(tabs_menu[i].grp).style.display = "none";
+			tabs_menu[i].disp = 0;
 		}
-		getbyID(tabMenu[n].grp).style.display = "inline";
-		tabMenu[n].disp = 1;
+		getbyID(tabs_menu[n].grp).style.display = "inline";
+		tabs_menu[n].disp = 1;
 		showMenu(n);
 		
 		break;
 	case TAB_OUT:
 		break;
 	}
-}
-
-var arrayGeomObjects = new Array(
-		"appletdiv", 
-		"graphdiv", 
-		"plottitle",
-		"plotarea", 
-		"appletdiv1", 
-		"graphdiv1", 
-		"plottitle1", 
-		"plotarea1");
-var arrayFreqObjects = new Array(
-		"freqdiv", 
-		"graphfreqdiv", 
-		"plottitlefreq",
-		"plotareafreq");
-
-var hideArrays = function(menu) {
-	for (var i = 0; i < arrayGeomObjects.length; i++)
-		getbyID(arrayGeomObjects[i]).style.display = (menu == MENU_OPTIMIZE ? "block" : "none");
-	for (var j = 0; j < arrayFreqObjects.length; j++)
-		getbyID(arrayFreqObjects[j]).style.display = (menu == MENU_SPECTRA ? "block" : "none");
+	if (tabs_thisMenu >= 0) {
+		$("#menu"+tabs_thisMenu).addClass("picked");
+	}
 }
 
 function createTabMenu() {
 	var strMenu = "<ul class='menu' id='menu'>";
-	for (var menuIndex = 0; menuIndex < tabMenu.length; menuIndex++) {
+	for (var menuIndex = 0; menuIndex < tabs_menu.length; menuIndex++) {
 		strMenu += createMenuCell(menuIndex);
 	}
 	strMenu += "</ul>";
@@ -165,14 +168,13 @@ function createTabMenu() {
 }
 
 function createMenuCell(i) {
-
 	var sTab = "<li id='menu"+ i +"' "; // Space is mandatory between i and "
 	sTab += "onClick='grpDispDelayed(" + i + ",TAB_CLICK)' onmouseover='grpDispDelayed("+i+",TAB_OVER)' onmouseout='grpDispDelayed("+i+",TAB_OUT)'"; // BH 2018
 	sTab += "class = 'menu' ";
 	sTab += ">";
 	sTab += "<a class = 'menu'>";
-	sTab += tabMenu[i].name;
-	sTab += "<span>" + tabMenu[i].link + "</span>"
+	sTab += tabs_menu[i].name;
+	sTab += "<span>" + tabs_menu[i].link + "</span>"
 	sTab += "</a></li>"
 		return sTab;
 }

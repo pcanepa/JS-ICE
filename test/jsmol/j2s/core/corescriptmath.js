@@ -154,7 +154,7 @@ case 136314895:
 return this.evaluateHelix (mp, args);
 case 134219265:
 case 134217750:
-case 134219266:
+case 134217763:
 return this.evaluatePlane (mp, args, tok);
 case 134218759:
 case 134238732:
@@ -336,7 +336,10 @@ if (toPrimitive || "conventional".equalsIgnoreCase (op)) {
 var stype = (++ptParam > lastParam ? "" : args[ptParam].asString ().toUpperCase ());
 if (stype.equals ("BCC")) stype = "I";
  else if (stype.length == 0) stype = this.vwr.getSymTemp ().getSymmetryInfoAtom (this.vwr.ms, iatom, null, 0, null, null, null, 1073741994, 0, -1);
-if (stype == null || stype.length == 0 || !(u == null ? this.vwr.getSymTemp () : u).toFromPrimitive (toPrimitive, stype.charAt (0), ucnew)) return false;
+if (stype == null || stype.length == 0) return false;
+if (u == null) u = this.vwr.getSymTemp ();
+var m3 = this.vwr.getModelForAtomIndex (iatom).auxiliaryInfo.get ("primitiveToCrystal");
+if (!u.toFromPrimitive (toPrimitive, stype.charAt (0), ucnew, m3)) return false;
 } else if ("reciprocal".equalsIgnoreCase (op)) {
 ucnew = JU.SimpleUnitCell.getReciprocal (ucnew, null, scale);
 scale = 1;
@@ -1597,7 +1600,7 @@ return mp.addXList (this.vwr.ms.getModulationList (bs, (type + "D").toUpperCase 
 }, "JS.ScriptMathProcessor,~A");
 Clazz_defineMethod (c$, "evaluatePlane", 
  function (mp, args, tok) {
-if (tok == 134219265 && args.length != 3 || tok == 134219266 && args.length != 2 && args.length != 3 || args.length == 0 || args.length > 4) return false;
+if (tok == 134219265 && args.length != 3 || tok == 134217763 && args.length != 2 && args.length != 3 && args.length != 4 || args.length == 0 || args.length > 4) return false;
 var pt1;
 var pt2;
 var pt3;
@@ -1615,7 +1618,7 @@ return mp.addXPt4 (JU.Measure.getPlaneThroughPoints (pts.get (0), pts.get (1), p
 if (Clazz_instanceOf (pt, JU.P4)) return mp.addXPt4 (pt);
 return mp.addXStr ("" + pt);
 case 2:
-if (tok == 134219266) {
+if (tok == 134217763) {
 if (args[1].tok != 9) return false;
 pt3 =  new JU.P3 ();
 norm =  new JU.V3 ();
@@ -1633,7 +1636,7 @@ case 4:
 switch (tok) {
 case 134219265:
 return mp.addXPt4 (this.e.getHklPlane (JU.P3.new3 (JS.SV.fValue (args[0]), JS.SV.fValue (args[1]), JS.SV.fValue (args[2]))));
-case 134219266:
+case 134217763:
 pt1 = mp.ptValue (args[0], null);
 pt2 = mp.ptValue (args[1], null);
 if (pt1 == null || pt2 == null) return mp.addXStr ("");
@@ -1649,8 +1652,24 @@ return mp.addXPt (pt1);
 }pt3 = mp.ptValue (args[2], null);
 if (pt3 == null) return mp.addXStr ("");
 var v =  new JU.V3 ();
+pt3 = JU.P3.newP (pt3);
+if (args.length == 3) {
 JU.Measure.projectOntoAxis (pt3, pt1, vLine, v);
 return mp.addXPt (pt3);
+}var r = JS.SV.fValue (args[3]);
+var ptCenter = JU.P3.newP (pt3);
+JU.Measure.projectOntoAxis (pt3, pt1, vLine, v);
+var d = ptCenter.distance (pt3);
+var l =  new JU.Lst ();
+if (d == r) {
+l.addLast (pt3);
+} else if (d < r) {
+d = Math.sqrt (r * r - d * d);
+v.scaleAdd2 (d, vLine, pt3);
+l.addLast (JU.P3.newP (v));
+v.scaleAdd2 (-d, vLine, pt3);
+l.addLast (JU.P3.newP (v));
+}return mp.addXList (l);
 }
 switch (args[0].tok) {
 case 2:

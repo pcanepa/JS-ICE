@@ -22,43 +22,58 @@
  *  02111-1307  USA.
  */
 
-xmlvaspDone = function() {
-	loadDone(loadModelsVASP);
+
+loadDone_vaspoutcar = function() {
+	_file.energyUnits = ENERGY_EV;
+	_file.StrUnitEnergy = "e";
+	_file.counterFreq = 1; 
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var line = _file.info[i].name;
+			if (line.search(/G =/i) != -1) {
+				addOption(getbyID('geom'), i + " " + line, i + 1);
+				_file.geomData[i] = line;
+				_file.counterFreq++;
+			} else if (line.search(/cm/i) != -1) {
+				var data = parseFloat(line.substring(0, line.indexOf("cm") - 1));	
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(line);
+				_file.vibLine.push(i + " A " + data + " cm^-1");
+				_file.counterMD++;
+			} else if (line.search(/Temp/i) != -1) {
+				addOption(getbyID('geom'), (i - _file.counterMD) + " " + line, i + 1);
+			}
+		}
+	}
+
+	getUnitcell("1");
+	setFrameValues("1");
+	getSymInfo();
+	loadDone();
 }
 
-function loadModelsVASP() {
-	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
-	getUnitcell("1");
-	//cleanAndReloadForm();
-	setTitleEcho();
+loadDone_xmlvasp = function() {
 
-	for (var i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var valueEnth = Info[i].name.substring(11, 24);
-			var gibbs = Info[i].name.substring(41, 54);
+	warningMsg("This reader is limited in its own functionalities\n  It does not recognize between \n geometry optimization and frequency calculations.")
+
+	// _file.... ? 
+	
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var valueEnth = _file.info[i].name.substring(11, 24);
+			var gibbs = _file.info[i].name.substring(41, 54);
 			var stringa = "Enth. = " + valueEnth + " eV, Gibbs E.= " + gibbs
 			+ " eV";
 			
 			addOption(getbyID('geom'), i + " " + stringa, i + 1);
 		}
 	}
-
-}
-
-function substringEnergyVaspToFloat(value) {
-	if (value != null) {
-		var grab = parseFloat(
-				value.substring(value.indexOf('=') + 1, value.indexOf('e') - 1))
-				.toPrecision(8); // Enthaply = -26.45132096 eV
-		grab = grab * 96.485; // constant from
-		// http://web.utk.edu/~rcompton/constants
-		grab = Math.round(grab * 100000000) / 100000000;
-	}
-	return grab;
+	getUnitcell("1");
+	setTitleEcho();
+	loadDone();
 }
 
 ////EXPORT FUNCTIONS
-var fractionalCoord = false;
 function exportVASP() {
 	var newElement = [];
 	var scriptEl = "";
@@ -66,12 +81,12 @@ function exportVASP() {
 	var stringList = "";
 	var stringElement = "";
 	numAtomelement = null;
-	getUnitcell(frameValue);
+	getUnitcell(_file.frameValue);
 	setUnitCell();
 	var sortedElement = getElementList();
 	for (var i = 0; i < sortedElement.length; i++) {
 		// scriptEl = "";
-		scriptEl = "{" + frameNum + " and _" + sortedElement[i] + "}.length";
+		scriptEl = "{" + _file.frameNum + " and _" + sortedElement[i] + "}.length";
 
 		if (i != (sortedElement.length - 1)) {
 			stringList = stringList + " " + scriptEl + ", ";
@@ -94,18 +109,16 @@ function exportVASP() {
 	saveStateAndOrientation_a();
 	// This if the file come from crystal output
 
-	var kindCoord = null;
+	_measure.kindCoord = null;
 	var fractString = null;
-	var exportType = confirm("Would you like to export the structure in fractional coordinates? \n If you press Cancel those will be exported as normal Cartesian.");
-
-	if (exportType) {
-		kindCoord = "Direct"
+	if (prompt("Would you like to export the structure in fractional coordinates?", "yes") == "yes") {
+		_measure.kindCoord = "Direct"
 			fractString = "[fxyz]";
-		fractionalCoord = true;
+		_file._exportFractionalCoord = true;
 	} else {
-		kindCoord = "Cartesian"
+		_measure.kindCoord = "Cartesian"
 			fractString = "[xyz]";
-		fractionalCoord = false;
+		_file._exportFractionalCoord = false;
 	}
 
 	setVacuum();
@@ -133,10 +146,10 @@ function exportVASP() {
 		+ "];"// imp
 		+ 'var listAtom  = listInpcar.join("  ");'
 		+ 'var cartString = "'
-		+ kindCoord
+		+ _measure.kindCoord
 		+ '";' // imp
 		+ 'var xyzCoord = '
-		+ frameSelection
+		+ _file.frameSelection
 		+ '.label(" %16.9'
 		+ fractString
 		+ '");' // imp
@@ -150,64 +163,3 @@ function exportVASP() {
 
 /////// END EXPORT VASP
 
-/////////// IMPORT OUTCAR
-
-vaspoutcarDone = function() {
-	loadDone(loadModelsOutcar);
-}
-
-var counterFreq = 0;
-function loadModelsOutcar() {
-	//cleanAndReloadForm();
-	getUnitcell("1");
-	setFrameValues("1");
-	var counterMD = 0;
-	counterFreq = 1;
-	for (i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
-			if (line.search(/G =/i) != -1) {
-				addOption(getbyID('geom'), i + " " + line, i + 1);
-				geomData[i] = line;
-				counterFreq++;
-			} else if (line.search(/cm/i) != -1) {
-				freqData[i - counterFreq] = line;
-				counterMD++;
-			} else if (line.search(/Temp/i) != -1) {
-				addOption(getbyID('geom'), (i - counterMD) + " " + line, i + 1);
-			}
-		}
-	}
-
-	if (freqData != null) {
-		var vib = getbyID('vib');
-		for (i = 1; i < freqData.length; i++) {
-			if (freqData[i] != null)
-				var data = parseFloat(freqData[i].substring(0, freqData[i]
-				.indexOf("c") - 1));
-			 addOption(vib, i + counterFreq  + " A " + data + " cm^-1", i +
-			 counterFreq + 1 );
-		}
-	}
-	disableFreqOpts();
-	getSymInfo();
-}
-
-/////////LOAD FUNCTIONS
-
-function disableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = true;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = true;
-}
-
-function enableFreqOpts() {
-	for (var i = 0; i < document.modelsVib.modAct.length; i++)
-		document.modelsVib.modAct[i].disabled = false;
-	for (var i = 0; i < document.modelsVib.kindspectra.length; i++)
-		document.modelsVib.kindspectra[i].disabled = false;
-
-}
-
-/////END FUNCTIONS

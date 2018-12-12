@@ -1514,7 +1514,6 @@ this.setShapeProperty (iShape, "text", msg);
 }, "~S");
 Clazz.defineMethod (c$, "initializeModel", 
  function (isAppend) {
-try {
 this.clearThreads ();
 if (isAppend) {
 this.am.initializePointers (1);
@@ -1537,13 +1536,6 @@ this.setFrankOn (this.getShowFrank ());
 this.startHoverWatcher (true);
 this.setTainted (true);
 this.finalizeTransformParameters ();
-} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
-System.err.println ("????" + e);
-} else {
-throw e;
-}
-}
 }, "~B");
 Clazz.defineMethod (c$, "startHoverWatcher", 
 function (tf) {
@@ -6455,6 +6447,10 @@ throw e;
 }
 }
 }, "~S");
+Clazz.defineMethod (c$, "getModelForAtomIndex", 
+function (iatom) {
+return this.ms.am[this.ms.at[iatom].mi];
+}, "~N");
 Clazz.defineMethod (c$, "assignAtom", 
 function (atomIndex, element) {
 if (atomIndex < 0) atomIndex = this.atomHighlighted;
@@ -6473,6 +6469,7 @@ self.Jmol && Jmol.extend && Jmol.extend("vwr",
 JV.Viewer.prototype);
 }}Clazz.defineStatics (c$,
 "isJS", false,
+"isSwingJS", false,
 "isWebGL", false,
 "appletDocumentBase", "",
 "appletCodeBase", "",

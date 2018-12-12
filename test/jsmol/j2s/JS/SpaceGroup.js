@@ -160,7 +160,17 @@ sb.append (sg.dumpInfo ());
 sg = JS.SpaceGroup.determineSpaceGroupNS (spaceGroup, sg);
 }
 return sb.toString ();
-}}return (asMap ? (sg == null ? null : sg.getInfo (cellInfo)) : sg == null ? "?" : sg.dumpInfo ());
+}}var o;
+try {
+o = (asMap ? (sg == null ? null : sg.getInfo (cellInfo)) : sg == null ? "?" : sg.dumpInfo ());
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+o = null;
+} else {
+throw e;
+}
+}
+return o;
 }, "JS.SpaceGroup,~S,J.api.SymmetryInterface,~B");
 Clazz.defineMethod (c$, "getInfo", 
  function (cellInfo) {

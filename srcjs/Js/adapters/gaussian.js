@@ -22,81 +22,38 @@
  *  02111-1307  USA.
  */
 
-gaussianDone = function() {
-	loadDone(loadModelsGaussian);
-}
+loadDone_gaussian = function() {
 
-var geomGauss = new Array;
-var freqSymmGauss = new Array;
-var freqIntensGauss = new Array;
-var freqGauss = new Array;
-var energyGauss = new Array;
-var counterGauss = 0;
-
-function loadModelsGaussian() {
 	warningMsg("This is a molecular reader. Therefore not all properties will be available.")
-	// Reset program and set filename if available
-	// This also extract the auxiliary info
-	initializeJiceGauss();
+
+	_file.energyUnits = ENERGY_HARTREE;
+	_file.StrUnitEnergy = "H";
+
+	setTitleEcho();
+	setFrameValues("1");
+
 	var geom = getbyID('geom');
 	var vib = getbyID('vib');
-	for (i = 0; i < Info.length; i++) {
-		if (Info[i].name != null) {
-			var line = Info[i].name;
+	for (var i = 0; i < _file.info.length; i++) {
+		if (_file.info[i].name != null) {
+			var line = _file.info[i].name;
 			// alert(line)
 			if (line.search(/E/i) != -1) {
-				// alert("geometry")
-				addOption(geom, i + " " + Info[i].name, i + 1);
-				geomGauss[i] = Info[i].name;
-				if (Info[i].modelProperties.Energy != null
-						|| Info[i].modelProperties.Energy != "")
-					energyGauss[i] = Info[i].modelProperties.Energy;
-				//alert(energyGauss[i])
-				counterGauss++;
+				_file.geom[i] = _file.info[i].name;
+				addOption(geom, i + " " + _file.geom[i], i + 1);
+				if (_file.info[i].modelProperties.Energy != null
+						|| _file.info[i].modelProperties.Energy != "")
+					_file.energy[i] = _file.info[i].modelProperties.Energy;
+				_file.counterGauss++;
 			} else if (line.search(/cm/i) != -1) {
-				// alert("vibration")
-				addOption(vib, i + " " + Info[i].name + " ("
-						+ Info[i].modelProperties.IRIntensity + ")", i);
-				freqGauss[i - counterGauss] = Info[i].modelProperties.Frequency;
-				freqSymmGauss[i - counterGauss] = Info[i].modelProperties.FrequencyLabel;
-				freqIntensGauss[i - counterGauss] = Info[i].modelProperties.IRIntensity;
+				_file.vibLine.push(i + " " + _file.info[i].name + " (" + _file.info[i].modelProperties.IRIntensity + ")");
+				_file.freqInfo.push(_file.info[i]);
+				_file.freqData.push(_file.info[i].modelProperties.Frequency);
+				_file.freqSymm.push(_file.info[i].modelProperties.FrequencyLabel);
+				_file.freqIntens.push(_file.info[i].modelProperties.IRIntensity);
 			}
 		}
 	}
-}
-
-function initializeJiceGauss() {
-	setTitleEcho();
-	setFrameValues("1");
-	cleanArrayGauss();
-	disableFreqOpts();
-}
-
-function cleanArrayGauss() {
-	geomGauss = [];
-	freqSymmGauss = [];
-	freqIntensGauss = [];
-	counterGauss = 0;
-}
-
-function symmetryModeAdd_gaussian() {
-	// this method is called using self["symmetryModeAdd_" + type]
-	var sym = getbyID('sym');
-	var sortedSymm = unique(freqSymmGauss);
-	for (var i = 0; i < freqSymmGauss.length; i++) {
-		if (sortedSymm[i] != null)
-			addOption(sym, freqSymmGauss[i], freqSymmGauss[i])
-	}
-}
-
-function changeIrepGauss(irep) {
-	var vib = getbyID('vib');
-	for (var i = 0; i < freqGauss.length; i++) {
-		var value = freqSymmGauss[i];
-		if (irep == value)
-			addOption(vib, i + " " + freqSymmGauss[i] + " "
-					+ freqGauss[i] + " (" + freqIntensGauss[i] + ")", i
-					+ counterGauss + 1);
-	}
+	loadDone();
 }
 

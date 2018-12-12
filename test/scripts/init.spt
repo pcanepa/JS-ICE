@@ -1,8 +1,13 @@
+// initialization script for JS-ICE -- once per page
+
 set antialiasDisplay
 set hiddenLinesDashed
 history on; 
-set history 2; 
+//set history 2; 
 stereo OFF; 
 spin off; 
 set perspectiveDepth OFF;
-javascript(makeDisable("filename"));
+script "scripts/functions.spt"
+
+// don't know what this was -- BH
+//javascript(makeDisable("filename"));

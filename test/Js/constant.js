@@ -23,7 +23,12 @@
  */
 
 
-var version = "3.0.0"; // BH 2018
+
+
+ENERGY_EV      = 0;
+ENERGY_HARTREE = 1;
+ENERGY_RYDBERG = 2;
+
 
 var eleSymb = [];
 eleSymb[0] = "select";

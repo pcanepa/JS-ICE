@@ -5756,7 +5756,7 @@ return;
 o = "" + o;
 loadScript =  new JU.SB ().append ("{\n    var ").append (filename.substring (1)).append (" = ").append (JU.PT.esc (o)).append (";\n    ").appendSB (loadScript);
 htParams.put ("fileData", o);
-} else {
+} else if (!isData) {
 filename = this.checkFileExists ("LOAD" + (isAppend ? "_APPEND_" : "_"), isAsync, filename, filePt, !isAppend && this.pc != this.pcResume);
 if (filename.startsWith ("cache://")) localName = null;
 }}var out = null;
@@ -7046,14 +7046,15 @@ doStep = (tok == 266298);
 if (filename.equalsIgnoreCase ("inline")) {
 theScript = this.parameterExpressionString (++i, (doStep ? this.slen - 1 : 0));
 i = this.iToken;
-}while (filename.equalsIgnoreCase ("localPath") || filename.equalsIgnoreCase ("remotePath") || filename.equalsIgnoreCase ("scriptPath")) {
+} else {
+while (filename.equalsIgnoreCase ("localPath") || filename.equalsIgnoreCase ("remotePath") || filename.equalsIgnoreCase ("scriptPath")) {
 if (filename.equalsIgnoreCase ("localPath")) localPath = this.paramAsStr (++i);
  else if (filename.equalsIgnoreCase ("scriptPath")) scriptPath = this.paramAsStr (++i);
  else remotePath = this.paramAsStr (++i);
 filename = this.paramAsStr (++i);
 }
 filename = this.checkFileExists ("SCRIPT_", isAsync, filename, i, true);
-if ((tok = this.tokAt (++i)) == 1073741878) {
+}if ((tok = this.tokAt (++i)) == 1073741878) {
 isCheck = true;
 tok = this.tokAt (++i);
 }if (tok == 1073742050) {
@@ -7076,7 +7077,7 @@ if (this.getToken (i).tok == 268435616) pcEnd = (this.checkToken (++i) ? this.in
 if (pcEnd <= 0) this.invArg ();
 }}i = -i;
 }} else if (filename != null && isAsync) {
-filename = this.checkFileExists ("SCRIPT_", true, filename, i, true);
+filename = this.checkFileExists ("SCRIPT_", isAsync, filename, i, true);
 }if (i < 0) {
 if (this.tokAt (i = -i) == 268435472) {
 params = this.parameterExpressionList (i, -1, false);
@@ -11627,7 +11628,8 @@ vwr.stateScriptVersionInt = 2147483647;
 }, "JV.Viewer,~S");
 Clazz_overrideMethod (c$, "addHydrogensInline", 
 function (bsAtoms, vConnections, pts) {
-var modelIndex = this.vwr.ms.at[bsAtoms.nextSetBit (0)].mi;
+var iatom = bsAtoms.nextSetBit (0);
+var modelIndex = (iatom < 0 ? this.vwr.ms.mc - 1 : this.vwr.ms.at[iatom].mi);
 if (modelIndex != this.vwr.ms.mc - 1) return  new JU.BS ();
 var bsA = this.vwr.getModelUndeletedAtomsBitSet (modelIndex);
 this.vwr.g.appendNew = false;
@@ -13211,6 +13213,23 @@ if (isNegated) {
 plane.scale4 (-1);
 }return plane;
 }, "~N");
+Clazz_defineMethod (c$, "getPointOrCenterVector", 
+function (t) {
+var data =  new JU.Lst ();
+var pt;
+var bs;
+var pts = (t).getList ();
+if (pts == null) this.invArg ();
+for (var j = 0; j < pts.size (); j++) {
+if ((pt = JS.SV.ptValue (pts.get (j))) != null) {
+data.addLast (pt);
+} else if ((bs = JS.SV.getBitSet (pts.get (j), true)) != null) {
+data.addLast (bs.cardinality () == 1 ? JU.P3.newP (this.vwr.ms.at[bs.nextSetBit (0)]) : this.vwr.ms.getAtomSetCenter (bs));
+} else {
+this.invArg ();
+}}
+return data;
+}, "JS.T");
 Clazz_defineMethod (c$, "hklParameter", 
 function (i) {
 if (!this.chk && this.vwr.getCurrentUnitCell () == null) this.error (33);
@@ -13359,7 +13378,7 @@ this.ignoreError = true;
 var t = this.iToken;
 isOK = true;
 try {
-isOK = (this.getPoint3f (i, true, false) != null);
+if (this.getPoint3f (i, true, false) == null) isOK = false;
 } catch (e) {
 if (Clazz_exceptionOf (e, Exception)) {
 isOK = false;
@@ -13714,23 +13733,6 @@ return data;
 if (i > 0) return this.vwr.ms.getAtomPointVector ((this).atomExpressionAt (i));
 return null;
 }, "JS.T,~N");
-Clazz_defineMethod (c$, "getPointOrCenterVector", 
-function (t) {
-var data =  new JU.Lst ();
-var pt;
-var bs;
-var pts = (t).getList ();
-if (pts == null) this.invArg ();
-for (var j = 0; j < pts.size (); j++) {
-if ((pt = JS.SV.ptValue (pts.get (j))) != null) {
-data.addLast (pt);
-} else if ((bs = JS.SV.getBitSet (pts.get (j), true)) != null) {
-data.addLast (bs.cardinality () == 1 ? JU.P3.newP (this.vwr.ms.at[bs.nextSetBit (0)]) : this.vwr.ms.getAtomSetCenter (bs));
-} else {
-this.invArg ();
-}}
-return data;
-}, "JS.T");
 c$.getFloatEncodedInt = Clazz_defineMethod (c$, "getFloatEncodedInt", 
 function (strDecimal) {
 var pt = strDecimal.indexOf (".");

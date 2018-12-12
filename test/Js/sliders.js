@@ -21,131 +21,144 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
  *  02111-1307  USA.
  */
-
+_slider = {
+	defaultFront	: 20,
+	defaultBack 	: 100,
+	bond 			: null,
+	radii 			: null,
+	radiiConnect	: null,
+	trans			: null,
+	pack			: null,
+	cameraDepth		: null,
+	specularPercent : null,
+	ambientPercent	: null,
+	diffusePercent	: null,
+	slab 			: null,
+	depth			: null
+}	
 function applyBond(angstroms) {
-	if (firstTimeBond) {
+	if (_show.firstTimeBond) {
 		runJmolScriptWait("wireframe .2;");
 	} else {
 		runJmolScriptWait("wireframe " + angstroms + ";");
-		getbyID('bondMsg').innerHTML = angstroms.toPrecision(1) + " &#197";
+		getbyID('slider.bondMsg').innerHTML = angstroms.toPrecision(1) + " &#197";
 		runJmolScriptWait("save BONDS bondEdit");
 	}
 }
 
-var defaultFront = 20, defaultBack = 100;
 
 loadSliders = function() {
-	bondSlider = new Slider(getbyID("bondSlider-div"), getbyID("bondSlider-input"), "horizontal");
-	bondSlider.setMaximum(100);
-	bondSlider.setMinimum(0);
-	bondSlider.setUnitIncrement(5);
+	_slider.bond = new Slider(getbyID("slider.bond-div"), getbyID("slider.bond-input"), "horizontal");
+	_slider.bond.setMaximum(100);
+	_slider.bond.setMinimum(0);
+	_slider.bond.setUnitIncrement(5);
 	//amount to increment the value when using the arrow keys
-	bondSlider.setValue(15);
-	bondSlider.onchange = function() {
-		applyBond(bondSlider.getValue() / 100)
+	_slider.bond.setValue(15);
+	_slider.bond.onchange = function() {
+		applyBond(_slider.bond.getValue() / 100)
 	}
 	
-	radiiSlider = new Slider(getbyID("radiiSlider-div"), getbyID("radiiSlider-input"), "horizontal");
-	radiiSlider.setMaximum(100);
-	radiiSlider.setMinimum(0);
-	radiiSlider.setUnitIncrement(5);
+	_slider.radii = new Slider(getbyID("slider.radii-div"), getbyID("slider.radii-input"), "horizontal");
+	_slider.radii.setMaximum(100);
+	_slider.radii.setMinimum(0);
+	_slider.radii.setUnitIncrement(5);
 	//amount to increment the value when using the arrow keys
-	radiiSlider.setValue(26);
-	radiiSlider.onchange = function() {
-		applyRadii(radiiSlider.getValue())
+	_slider.radii.setValue(26);
+	_slider.radii.onchange = function() {
+		applyRadii(_slider.radii.getValue())
 	}
 	
-	radiiConnectSlider = new Slider(getbyID("radiiConnectSlider-div"), getbyID("radiiConnectSlider-input"), "horizontal");
-	radiiConnectSlider.setMaximum(100);
+	_slider.radiiConnect = new Slider(getbyID("slider.radiiConnect-div"), getbyID("slider.radiiConnect-input"), "horizontal");
+	_slider.radiiConnect.setMaximum(100);
 	//does not work with values < 1
-	radiiConnectSlider.setMinimum(0);
-	radiiConnectSlider.setUnitIncrement(1);
+	_slider.radiiConnect.setMinimum(0);
+	_slider.radiiConnect.setUnitIncrement(1);
 	//amount to increment the value when using the arrow keys
-	radiiConnectSlider.setValue(80);
-	radiiConnectSlider.onchange = function() {
-		applyConnect(radiiConnectSlider.getValue() / 20)
+	_slider.radiiConnect.setValue(80);
+	_slider.radiiConnect.onchange = function() {
+		applyConnect(_slider.radiiConnect.getValue() / 20)
 	}
 	
-	transSlider = new Slider(getbyID("transSlider-div"), getbyID("transSlider-input"), "horizontal");
-	transSlider.setMaximum(100);
-	transSlider.setMinimum(0);
-	transSlider.setUnitIncrement(4);
+	_slider.trans = new Slider(getbyID("slider.trans-div"), getbyID("slider.trans-input"), "horizontal");
+	_slider.trans.setMaximum(100);
+	_slider.trans.setMinimum(0);
+	_slider.trans.setUnitIncrement(4);
 	//amount to increment the value when using the arrow keys
-	transSlider.setValue(100);
-	transSlider.onchange = function() {
-		applyTrans(transSlider.getValue())
+	_slider.trans.setValue(100);
+	_slider.trans.onchange = function() {
+		applyTrans(_slider.trans.getValue())
 	}
 	
-	packSlider = new Slider(getbyID("packSlider-div"), getbyID("packSlider-input"), "horizontal");
-	packSlider.setMaximum(100);
-	packSlider.setMinimum(0);
-	packSlider.setUnitIncrement(0.5);
+	_slider.pack = new Slider(getbyID("slider.pack-div"), getbyID("slider.pack-input"), "horizontal");
+	_slider.pack.setMaximum(100);
+	_slider.pack.setMinimum(0);
+	_slider.pack.setUnitIncrement(0.5);
 	//amount to increment the value when using the arrow keys
-	packSlider.setValue(1);
-	packSlider.onchange = function() {
-		applyPack(packSlider.getValue() / 20)
+	_slider.pack.setValue(1);
+	_slider.pack.onchange = function() {
+		applyPack(_slider.pack.getValue() / 20)
 	}
 	
 	
-	cameraDepthSlider = new Slider(getbyID("cameraDepthSlider-div"), getbyID("cameraDepthSlider-input"), "horizontal");
-	cameraDepthSlider.setMaximum(100);
-	cameraDepthSlider.setMinimum(1);
-	cameraDepthSlider.setUnitIncrement(2);
+	_slider.cameraDepth = new Slider(getbyID("slider.cameraDepth-div"), getbyID("slider.cameraDepth-input"), "horizontal");
+	_slider.cameraDepth.setMaximum(100);
+	_slider.cameraDepth.setMinimum(1);
+	_slider.cameraDepth.setUnitIncrement(2);
 	//amount to increment the value when using the arrow keys
-	cameraDepthSlider.setValue(5);
-	cameraDepthSlider.onchange = function() {
-		applyCameraDepth(cameraDepthSlider.getValue()/25)
+	_slider.cameraDepth.setValue(5);
+	_slider.cameraDepth.onchange = function() {
+		applyCameraDepth(_slider.cameraDepth.getValue()/25)
 	}
 	
-	SpecularPercentSlider = new Slider(getbyID("SpecularPercentSlider-div"), getbyID("SpecularPercentSlider-input"), "horizontal");
-	SpecularPercentSlider.setMaximum(100);
-	SpecularPercentSlider.setMinimum(0);
-	SpecularPercentSlider.setUnitIncrement(2);
+	_slider.specularPercent = new Slider(getbyID("slider.specularPercent-div"), getbyID("slider.specularPercent-input"), "horizontal");
+	_slider.specularPercent.setMaximum(100);
+	_slider.specularPercent.setMinimum(0);
+	_slider.specularPercent.setUnitIncrement(2);
 	//amount to increment the value when using the arrow keys
-	SpecularPercentSlider.setValue(5);
-	SpecularPercentSlider.onchange = function() {
-		applySpecularPercent(SpecularPercentSlider.getValue())
+	_slider.specularPercent.setValue(5);
+	_slider.specularPercent.onchange = function() {
+		applySpecularPercent(_slider.specularPercent.getValue())
 	}
 	
-	AmbientPercentSlider = new Slider(getbyID("AmbientPercentSlider-div"), getbyID("AmbientPercentSlider-input"), "horizontal");
-	AmbientPercentSlider.setMaximum(100);
-	AmbientPercentSlider.setMinimum(0);
-	AmbientPercentSlider.setUnitIncrement(2);
+	_slider.ambientPercent = new Slider(getbyID("slider.ambientPercent-div"), getbyID("slider.ambientPercent-input"), "horizontal");
+	_slider.ambientPercent.setMaximum(100);
+	_slider.ambientPercent.setMinimum(0);
+	_slider.ambientPercent.setUnitIncrement(2);
 	//amount to increment the value when using the arrow keys
-	AmbientPercentSlider.setValue(5);
-	AmbientPercentSlider.onchange = function() {
-		applyAmbientPercent(AmbientPercentSlider.getValue())
+	_slider.ambientPercent.setValue(5);
+	_slider.ambientPercent.onchange = function() {
+		applyAmbientPercent(_slider.ambientPercent.getValue())
 	}
 	
-	DiffusePercentSlider = new Slider(getbyID("DiffusePercentSlider-div"), getbyID("DiffusePercentSlider-input"), "horizontal");
-	DiffusePercentSlider.setMaximum(100);
-	DiffusePercentSlider.setMinimum(0);
-	DiffusePercentSlider.setUnitIncrement(2);
+	_slider.diffusePercent = new Slider(getbyID("slider.diffusePercent-div"), getbyID("slider.diffusePercent-input"), "horizontal");
+	_slider.diffusePercent.setMaximum(100);
+	_slider.diffusePercent.setMinimum(0);
+	_slider.diffusePercent.setUnitIncrement(2);
 	//amount to increment the value when using the arrow keys
-	DiffusePercentSlider.setValue(5);
-	DiffusePercentSlider.onchange = function() {
-		applyDiffusePercent(DiffusePercentSlider.getValue())
+	_slider.diffusePercent.setValue(5);
+	_slider.diffusePercent.onchange = function() {
+		applyDiffusePercent(_slider.diffusePercent.getValue())
 	}
 	
-	slabSlider = new Slider(getbyID("slabSlider-div"), getbyID("slabSlider-input"), "horizontal");
-	slabSlider.setMaximum(100)
-	slabSlider.setMinimum(0)
-	slabSlider.setUnitIncrement(2) 
+	_slider.slab = new Slider(getbyID("slider.slab-div"), getbyID("slider.slab-input"), "horizontal");
+	_slider.slab.setMaximum(100)
+	_slider.slab.setMinimum(0)
+	_slider.slab.setUnitIncrement(2) 
 	// amount to increment the value when using the
 	// arrow keys
-	slabSlider.setValue(defaultFront)
-	slabSlider.onchange = function() {
-		applySlab(slabSlider.getValue())
+	_slider.slab.setValue(_slider.defaultFront)
+	_slider.slab.onchange = function() {
+		applySlab(_slider.slab.getValue())
 	}
 	
-	depthSlider = new Slider(getbyID("depthSlider-div"), getbyID("depthSlider-input"), "horizontal");
-	depthSlider.setMaximum(100);
-	depthSlider.setMinimum(0);
-	depthSlider.setUnitIncrement(2); // amount to increment the value when using
+	_slider.depth = new Slider(getbyID("slider.depth-div"), getbyID("slider.depth-input"), "horizontal");
+	_slider.depth.setMaximum(100);
+	_slider.depth.setMinimum(0);
+	_slider.depth.setUnitIncrement(2); // amount to increment the value when using
 	// the arrow keys
-	depthSlider.setValue(defaultBack);
-	depthSlider.onchange = function() { // onchange MUST BE all lowercase
-		applyDepth(depthSlider.getValue())
+	_slider.depth.setValue(_slider.defaultBack);
+	_slider.depth.onchange = function() { // onchange MUST BE all lowercase
+		applyDepth(_slider.depth.getValue())
 	}
 }
 

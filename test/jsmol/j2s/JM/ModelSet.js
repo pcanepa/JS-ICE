@@ -1902,8 +1902,10 @@ if ((C = JM.ModelSet.checkMinAttachedAngle (atomNear, minAttachedAngle, v1, v2, 
 }var energy = 0;
 var bo;
 if (isH && !Float.isNaN (C.x) && !Float.isNaN (D.x)) {
+var ca = C.distance (atom);
+if (ca > JM.ModelSet.hbondHCMaxReal) continue;
 bo = 4096;
-energy = JM.HBond.getEnergy (Math.sqrt (d2), C.distance (atom), C.distance (D), atomNear.distance (D)) / 1000;
+energy = JM.HBond.getEnergy (Math.sqrt (d2), ca, C.distance (D), atomNear.distance (D)) / 1000;
 } else {
 bo = 2048;
 }bsHBonds.set (this.addHBond (atom, atomNear, bo, energy));
@@ -2015,7 +2017,7 @@ this.am = newModels;
 this.mc = newModelCount;
 }, "~N");
 Clazz.defineMethod (c$, "assignAtom", 
-function (atomIndex, type, autoBond) {
+function (atomIndex, type, autoBond, addHsAndBond) {
 this.clearDB (atomIndex);
 if (type == null) type = "C";
 var atom = this.at[atomIndex];
@@ -2024,9 +2026,9 @@ var wasH = (atom.getElementNumber () == 1);
 var atomicNumber = JU.Elements.elementNumberFromSymbol (type, true);
 var isDelete = false;
 if (atomicNumber > 0) {
-this.setElement (atom, atomicNumber, false);
+this.setElement (atom, atomicNumber, !addHsAndBond);
 this.vwr.shm.setShapeSizeBs (0, 0, this.vwr.rd, JU.BSUtil.newAndSetBit (atomIndex));
-this.setAtomName (atomIndex, type + atom.getAtomNumber (), false);
+this.setAtomName (atomIndex, type + atom.getAtomNumber (), !addHsAndBond);
 if (this.vwr.getBoolean (603979883)) this.am[atom.mi].isModelKit = true;
 if (!this.am[atom.mi].isModelKit) this.taintAtom (atomIndex, 0);
 } else if (type.equals ("Pl")) {
@@ -2037,7 +2039,8 @@ atom.setFormalCharge (atom.getFormalCharge () - 1);
 isDelete = true;
 } else if (!type.equals (".")) {
 return;
-}this.removeUnnecessaryBonds (atom, isDelete);
+}if (!addHsAndBond) return;
+this.removeUnnecessaryBonds (atom, isDelete);
 var dx = 0;
 if (atom.getCovalentBondCount () == 1) if (wasH) {
 dx = 1.50;
@@ -2059,7 +2062,7 @@ bs = this.vwr.getModelUndeletedAtomsBitSet (atom.mi);
 bs.andNot (this.getAtomBitsMDa (1612709900, null,  new JU.BS ()));
 this.makeConnections2 (0.1, 1.8, 1, 1073741904, bsA, bs, null, false, false, 0);
 }this.vwr.addHydrogens (bsA, false, true);
-}, "~N,~S,~B");
+}, "~N,~S,~B,~B");
 Clazz.defineMethod (c$, "deleteAtoms", 
 function (bs) {
 this.averageAtomPoint = null;
@@ -2843,5 +2846,6 @@ return s;
 }, "JU.BS,~B");
 Clazz.defineStatics (c$,
 "hbondMinRasmol", 2.5,
-"hbondMaxReal", 3.5);
+"hbondMaxReal", 3.5,
+"hbondHCMaxReal", 2.2);
 });

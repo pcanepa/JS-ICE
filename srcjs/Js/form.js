@@ -91,17 +91,32 @@ function formResetAll() {
 }
 
 function createSlider(name, label) {
-	var s = '<div tabIndex="1" class="slider" id="_Slider-div" style="float:left;width:150px;" >'
-		+ '<input class="slider-input" id="_Slider-input" name="_Slider-input" />'
+	var s = '<div tabIndex="1" class="slider" id="_-div" style="float:left;width:150px;" >'
+		+ '<input class="slider-input" id="_-input" name="_-input" />'
 	    + '</div>'
 	    + (label || "") 
 	    + ' <span id="_Msg" class="msgSlider"></span>';
-	return s.replace(/_/g, name);
+	return s.replace(/_/g, "slider." + name);
 	
 }
 
 function createButton(name, text, onclick, disab, style) {
 	return createButton1(name, text, onclick, disab, "button", style);
+}
+
+function createButtonB(name, text, onclick, disab, style) {
+	var s = "<BUTTON type='button' ";
+	s += "NAME='" + name + "' ";
+	s += "ID='" + name + "' ";
+	if (style)
+		s += "style='" + style + "'";
+	if (disab) {
+		s += "DISABLED ";
+	}
+	s += "OnClick='" + onclick + "'>";
+	s += text;
+	s += "</BUTTON>";
+	return s;
 }
 
 //This includes the class
@@ -320,19 +335,13 @@ function createText5(name, text, size, value, onchange, disab) {
 	return s;
 }
 
-function createDiv(name, style) {
-	var s = "<DIV ";
-	s += "NAME='" + name + "'";
-	s += "ID='" + name + "'";
-	s += "STYLE='" + style + "'>";
-	return s;
+function createDiv(id, style, contents) {
+	return "<div id='" + id + "' style='" + style + "'>"
+		+ (contents == null ? "" : contents + "</div>");
 }
 
 function createLine(color, style) {
-	var s = "<HR ";
-	s += "COLOR='#D8E4F8' "
-	s += "STYLE='" + style + "' >";
-	return s;
+	return "<hr color='#D8E4F8' style='" + style + "' >";
 }
 
 
@@ -346,6 +355,10 @@ function setValue(id, val) {
 
 function getValueSel(id) {
 	return getbyID(id)[getbyID(id).selectedIndex].value;
+}
+
+function getTextSel(id) {
+	return getbyID(id)[getbyID(id).selectedIndex].text;
 }
 
 function isChecked(id) {
@@ -363,6 +376,15 @@ function uncheckBox(id) {
 function resetValue(form) {
 	var element = "document." + form + ".reset";
 	return element;
+}
+
+function getRadioSetValue(radios) {
+	// BH -- switched to top radios -- for frequency list as well as spectrum
+	for (var i = 0; i < radios.length; i++) {
+		if (radios[i].checked) {
+			return radios[i].value;
+		}
+	}
 }
 
 function makeDisable(element) {
@@ -455,21 +477,6 @@ function getbyName(na) {
 	return document.getElementsByName(na);
 }
 
-function unique(a) {
-	//this function removes duplicates
-	var r = [];
-	var list = "";
-	for (var i = 0, n = a.length; i < n; i++) {
-		var item = a[i];
-		var key = ";" + item + ";";
-		if (list.indexOf(key) >= 0)
-			continue;
-		list += key;
-		r.push(item);
-	}
-	return r;
-}
-
 //This is meant to add new element to a list
 function addOption(selectbox, text, value) {
 	var optn = document.createElement("OPTION");
@@ -484,9 +491,6 @@ function cleanList(listname) {
 		for (var i = d.options.length; --i >= 0;)
 			d.remove(i);
 }
-
-
-
 
 function selectListItem(list, itemToSelect) {
 	// Loop through all the items
